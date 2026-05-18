@@ -1,0 +1,632 @@
+# Testing And Validation
+
+## Milestone 12 Production Readiness Documentation
+
+Milestone 12 was documentation-only.
+
+Validation performed:
+- Required docs/source context was inspected.
+- `docs/PRODUCTION_CHECKLIST.md` was created.
+- Production migration order was documented.
+- Production forbidden commands were documented.
+- Environment variable safety was documented.
+- Owner bootstrap safety was documented.
+- Local-only validation script warning was documented.
+- `ai_agents/INDEX.json` was validated as JSON after update.
+
+Build:
+- `npm.cmd run build` was not run because Milestone 12 changed documentation only.
+
+No source/SQL changes:
+- No React/source logic files changed.
+- No Supabase migrations changed.
+- No SQL migrations were created.
+- No deployment commands were run.
+
+Future Milestone 13 validation must include:
+- Production Supabase migration dry-run and apply verification.
+- Guild seed and permission catalog verification.
+- RLS/policies/functions/grants verification.
+- Manual Owner bootstrap verification.
+- Pending/member/admin/staff/Owner browser validation.
+- CP denial and scoped CP access validation.
+- GvG one-row vote switching validation.
+- Audit redaction and `get_audit_logs` network validation.
+- Vercel smoke test.
+
+## Milestone 11B Frontend Audit Log Viewer Validation Passed
+
+Build:
+- `npm.cmd run build` passed.
+
+Source/security-path validation:
+- AdminPanel audit viewer imports and calls `src/services/adminAuditService.js` for audit reads.
+- `src/services/adminAuditService.js` calls only `supabase.rpc('get_audit_logs', ...)`.
+- No frontend `supabase.from('audit_logs')` calls were found.
+- No CP table/RPC calls were found in the audit viewer path.
+- No audit write/update/delete/export UI was found in the audit viewer path.
+- No SQL migrations were changed.
+- `public.get_audit_logs(...)` was not changed.
+
+Manual live browser validation passed:
+- Status precheck passed.
+- Owner loaded Audit Logs successfully.
+- Owner filters worked without errors.
+- Load Older pagination worked correctly.
+- Leader/Vice saw assigned guild-scope logs only, with no out-of-scope logs visible.
+- Admin with `view_audit_logs` loaded scoped logs.
+- Admin without `view_audit_logs` had Audit Logs hidden or saw a clean not-authorized state.
+- Normal approved Member had no audit log access.
+- Pending user was blocked from audit access.
+- CP-sensitive metadata was hidden for users without `view_cp`; `cp_old` and `cp_new` were not visible.
+- CP metadata appeared only for an authorized `view_cp` user when the backend returned it.
+- Metadata rendered compactly and safely.
+- Action, guild, date, and limit filters worked.
+- Guild filter did not bypass scope.
+- Empty results displayed a clean empty state.
+- Permission/error state displayed a clean message.
+- Mobile viewport was usable and readable.
+
+Network validation passed after clearing Network and performing only Audit Logs actions:
+- `get_audit_logs`: observed.
+- Direct `audit_logs` table call: none.
+- CP calls: none.
+- Audit write/update/delete/export calls: none.
+
+Bugs found:
+- None.
+
+Incomplete tests:
+- None.
+
+## Milestone 11A Audit Log Read Hardening Validation Passed
+
+Local validation passed:
+- `npx.cmd supabase db reset` passed.
+- `supabase/tests/local_validation_anteiku.sql` passed.
+
+Milestone 11A results:
+- Total PASS: 14
+- Total FAIL: 0
+- Total SKIP: 0
+
+Validated behavior:
+- Owner can read global audit logs through `get_audit_logs`.
+- Leader can read only assigned guild audit logs.
+- Vice can read assigned guild audit logs.
+- Admin with `view_audit_logs` can read scoped audit logs.
+- Admin without `view_audit_logs` cannot read audit logs.
+- Member cannot read audit logs.
+- Pending user cannot read audit logs.
+- Admin with `view_audit_logs` but without `view_cp` receives redacted CP metadata.
+- Admin with both `view_audit_logs` and `view_cp` receives scoped CP metadata.
+- Direct `audit_logs` SELECT returns no rows for non-Owner.
+- `authenticated` has no EXECUTE privilege on `private.write_audit_log`.
+- Audit spoof insert remains blocked.
+
+Validation implementation note:
+- Directly executing `private.write_audit_log` as `authenticated` caused a local Postgres container segfault instead of a normal permission error.
+- The script now validates the revoked grant using `has_function_privilege`, avoiding the crash while still proving normal authenticated users cannot execute the helper.
+
+## Milestone 10 GvG Browser Validation Passed
+
+Inspection result:
+- GvG RPC/RLS support was confirmed before frontend implementation.
+- One vote per event/profile is enforced by `gvg_votes_event_profile_uidx`.
+- Voting writes use `submit_gvg_vote`.
+- Event management writes use `create_gvg_event` and `set_gvg_event_status`.
+- Staff result/reason reads use `get_gvg_results`.
+
+Build:
+- `npm.cmd run build` passed.
+
+Corrected live browser validation passed:
+- Owner signed in, opened AdminPanel, created a draft GvG event, and opened voting.
+- The event appeared active in AdminPanel.
+- Same-guild approved Member signed in, saw the active event on the GvG page, and had no admin controls.
+- Awaiting-event state appeared when no active event existed.
+- Member voted Present, refreshed, and Present persisted.
+- Member switched to Absent with a reason, refreshed, and Absent plus own reason persisted.
+- Member switched back to Present, refreshed, and Present persisted.
+- Read-only SQL confirmed `vote_rows = 1`, final `vote_status = present`, and `absence_reason = null`.
+- Authorized staff saw present/absent counts and absence reasons.
+- Normal Member could not see other users' absence reasons or staff absence logs.
+- Admin without `manage_gvg` could not manage events.
+- Wrong-guild Member could not see/vote for the guild-specific event.
+- Out-of-scope Leader/Vice/Admin could not manage the event.
+- Owner/staff closed the event, and closed-event vote changes were rejected.
+- After clearing Network following initial AdminPanel load, GvG actions used only GvG RPCs/safe reads.
+- No CP RPC/table calls were triggered by GvG actions after Network was cleared.
+- No direct frontend insert/update/upsert/delete calls to `gvg_votes` or `gvg_events` were observed.
+
+Read-only SQL summary:
+- Event found: yes.
+- Event title: `M10 Live Test GvG`.
+- Event scope: guild.
+- Event guild matched the member guild.
+- Event status after open: `active`.
+- Event status after close: `closed`.
+- Member found: yes.
+- Member approval status: `approved`.
+- Member membership status: `active`.
+- Final vote rows: `1`.
+- Final vote status: `present`.
+- Final absence reason: `null`.
+
+Network summary:
+- Allowed GvG calls observed: `create_gvg_event`, `set_gvg_event_status`, `submit_gvg_vote`, `get_gvg_results`, safe `gvg_events` reads, and safe own-vote `gvg_votes` reads.
+- Forbidden CP calls observed after Network clear: none.
+- Direct `gvg_votes` / `gvg_events` writes observed from frontend: none.
+
+## Milestone 9 Permission Management Browser Validation Passed
+
+Manual browser validation passed:
+- Permission Management section appears for authorized Owner/Leader users.
+- Empty state appears when no active Admin memberships exist.
+- After promoting a member to Admin, that Admin appears in Permission Management.
+- Permission checkboxes load from `permission_catalog`.
+- Owner can grant/revoke Admin permissions.
+- Owner can grant/revoke `view_cp` and `update_cp`.
+- Leader can manage allowed non-CP Admin permissions inside assigned guild scope.
+- Leader cannot toggle `view_cp` / `update_cp`.
+- CP permissions remain Owner-only.
+- Admin users do not get Permission Management UI.
+- Member users do not get Admin tab.
+- Network writes used only `grant_admin_permission` / `revoke_admin_permission`.
+- No direct `admin_permissions` writes were found.
+- No CP data/RPC calls occurred during permission-management actions.
+- No GvG logic was touched.
+
+## Milestone 9 Permission Management Build Validation
+
+Inspection result:
+- `grant_admin_permission` and `revoke_admin_permission` exist and are RPC-based.
+- Permission catalog reads are supported.
+- Scoped active Admin membership reads are supported.
+- Scoped current `admin_permissions` reads are supported.
+- Writes remain RPC-only.
+
+Build:
+- `npm.cmd run build` passed.
+
+Manual browser validation pending:
+- Owner can grant/revoke `approve_members`.
+- Owner can grant/revoke `view_cp` and `update_cp`.
+- Leader/Vice can grant/revoke non-CP permissions inside scope.
+- Leader/Vice cannot toggle `view_cp` or `update_cp`.
+- Admin cannot see Permission Management UI.
+- Member cannot see Admin tab.
+- Network writes use only `grant_admin_permission` and `revoke_admin_permission`.
+- No direct `admin_permissions` writes occur.
+- No CP data/RPC calls occur from permission management.
+
+## Milestone 8 Frontend CP Browser Validation Passed
+
+Manual browser validation passed:
+- Owner could see CP Management section.
+- Owner could load CP roster.
+- Missing CP displayed as "Not entered".
+- Owner updated member CP successfully.
+- CP roster refreshed after update.
+- CP leaderboard displayed correctly.
+- Invalid CP inputs were blocked.
+- Normal Member could not see Admin tab or CP UI.
+- CP did not appear on Dashboard/Profile/member-facing pages.
+- Member Network tab showed no CP RPC/table calls.
+- Owner Network tab used only `get_current_cp_roster`, `get_cp_leaderboard`, and `update_member_cp`.
+- No direct `member_cp` or `cp_snapshots` calls were found.
+- No GvG logic was touched.
+
+Local stale-session note:
+- After local DB reset, stale browser auth can cause a `profiles_id_fkey` registration error.
+- Clear localStorage/sessionStorage after local DB resets before retesting auth/registration.
+- This is a local browser/session issue, not a database migration/security failure.
+
+## Milestone 8 Frontend CP Build Validation
+
+Build:
+- `npm.cmd run build` passed.
+
+Implemented behavior awaiting manual browser validation:
+- CP section visible only to Owner/Leader/Vice/Admin with `view_cp`.
+- CP update controls visible only to Owner/Leader/Vice/Admin with `update_cp`.
+- CP roster uses `get_current_cp_roster`.
+- CP leaderboard uses `get_cp_leaderboard`.
+- CP writes use `update_member_cp`.
+- Missing CP displays as `Not entered`.
+
+Security checks for manual validation:
+- Member cannot see CP UI.
+- Member Network tab shows no CP calls.
+- No direct `member_cp` or `cp_snapshots` calls appear.
+- CP does not appear on Dashboard, Profile, member-facing pages, or normal member roster cards.
+
+## Milestone 8 Backend CP Hardening Validation Passed
+
+Local validation passed:
+- `npx.cmd supabase db reset` passed.
+- `supabase/tests/local_validation_anteiku.sql` passed.
+
+Validated behavior:
+- CP update for pending/rejected/suspended profiles is blocked.
+- CP update for approved active profile works.
+- Admin with `update_cp` cannot update CP for non-approved profiles.
+- `get_current_cp_roster` includes approved active members with missing CP as `null`.
+- Members still cannot read CP.
+- Admin without `view_cp` still cannot read CP.
+- Direct `member_cp` / `cp_snapshots` access remains blocked.
+- CP update audit log works.
+- No GvG logic changed.
+
+## Milestone 8 Backend CP Hardening Validation Pending
+
+Validation script updated with CP hardening checks:
+- Owner cannot update CP for pending profile.
+- Owner cannot update CP for rejected profile.
+- Owner cannot update CP for suspended/non-approved profile.
+- Owner can update CP for approved active profile.
+- Admin with `update_cp` cannot update CP for non-approved profile.
+- Admin with `update_cp` can update scoped approved active profile.
+- `get_current_cp_roster` includes active approved member with missing CP row.
+- Missing CP row returns `cp_value is null`.
+- Member still cannot read CP roster.
+- Admin without `view_cp` still cannot read CP roster.
+- Direct `member_cp` access remains blocked.
+- Direct `cp_snapshots` access remains blocked.
+- CP update audit log is written.
+
+Local validation is pending.
+
+## Milestone 7 Frontend Browser Validation Passed
+
+Manual browser validation passed:
+- Owner changed member role `member -> admin -> member`.
+- `owner` role option was not visible.
+- Owner transferred member from Anteiku:Re to Anteiku.
+- Transfer warning appeared before confirm.
+- Transfer reset member role to `member`.
+- Member could sign in after transfer.
+- Member showed new guild and member role.
+- Normal Member still had no Admin tab.
+- Leader permissions work correctly inside assigned guild scope.
+- Leader does not have Owner/global powers.
+- Owner-only guild transfer remains hidden from Leader.
+- Network writes used only `assign_member_role` and `transfer_member_guild`.
+- No CP/GvG table or RPC calls were found.
+
+## Milestone 7 Frontend Build Validation
+
+Build:
+- `npm.cmd run build` passed.
+
+Implemented frontend behavior awaiting manual browser validation:
+- Owner can change member roles among `member`, `admin`, `vice`, and `leader`.
+- `owner` is not exposed as a role option.
+- Leader/Vice role-change options are limited to `member` and `admin`.
+- Admin with `manage_roles` role-change options are limited to `member` and `admin`.
+- Admin without `manage_roles` gets no role-change UI.
+- Owner-only guild transfer UI is available.
+- Transfer warning states that moving guild resets the member's role to Member.
+- Successful role/guild actions refresh the roster.
+
+Security checks for manual validation:
+- Network writes should use only `assign_member_role` and `transfer_member_guild`.
+- No direct `profiles`, `guild_memberships`, or `admin_permissions` writes should appear.
+- No CP/GvG table or RPC calls should appear.
+
+## Milestone 7 Backend Validation Passed
+
+Local validation passed:
+- `npx.cmd supabase db reset` passed.
+- `supabase/tests/local_validation_anteiku.sql` passed.
+
+Validated behavior:
+- Milestone 7 role assignment tests passed.
+- Milestone 7 guild transfer tests passed.
+- Owner can assign `member`, `admin`, `vice`, and `leader`.
+- Owner cannot assign `owner` through normal app RPC.
+- Leader/Vice can assign `member` and `admin` only.
+- Admin with `manage_roles` can assign `member` and `admin` only.
+- Admin/Leader/Vice/Member cannot transfer guilds.
+- Owner-only guild transfer works.
+- Transfer resets role to `member`.
+- Old membership becomes `left` and is not deleted.
+- New membership becomes active primary.
+- Exactly one active primary membership remains.
+- Role-change and transfer audit logs are written.
+- No CP/GvG logic was changed.
+
+## Milestone 7 Backend Role/Guild Management Validation
+
+Implementation status:
+- SQL migration file created for backend role hardening and Owner-only member guild transfer.
+- Local validation script updated with Milestone 7 role assignment and guild transfer checks.
+- Validation has not been run yet.
+
+Expected local validation:
+- Apply migrations in local Supabase with a local database reset.
+- Run `supabase/tests/local_validation_anteiku.sql`.
+- Confirm role assignment checks pass:
+  - Owner can assign `member`, `admin`, `vice`, and `leader`.
+  - Owner cannot assign `owner` through normal app RPC.
+  - Leader/Vice can assign only `member` and `admin` inside scope.
+  - Admin with `manage_roles` can assign only `member` and `admin` inside scope.
+  - Admin without `manage_roles` and Member cannot assign roles.
+- Confirm guild transfer checks pass:
+  - Owner can transfer an approved active member between guilds.
+  - Old membership becomes `left` and non-primary.
+  - New membership becomes active primary with role reset to `member`.
+  - Exactly one active primary membership remains.
+  - Leader/Vice/Admin/Member transfer attempts are blocked.
+  - Role-change and transfer audit logs are written.
+
+Security validation expectations:
+- No CP table or CP RPC access is added.
+- No GvG logic changes are added.
+- Normal app RPCs cannot assign `owner`.
+- Guild transfer is Owner-only in v1.
+
+Milestone 1 validation commands:
+
+```powershell
+npm.cmd install
+npm.cmd run build
+npm.cmd audit
+```
+
+## 2026-05-14 Validation Result
+
+- Initial Codex shell attempts using `npm install` and `npm run build` failed because `npm` was not available in that shell PATH.
+- User local validation with `npm.cmd install`: passed.
+- User local validation with `npm.cmd run build`: passed.
+- `package-lock.json` was generated.
+- `dist/` was generated.
+- User local `npm.cmd audit`: completed with 2 moderate vulnerabilities.
+
+## Audit Note
+
+- Audit finding: `esbuild <=0.24.2` via `vite <=6.4.1`.
+- Scope: Vite development server behavior.
+- Do not run `npm audit fix --force`; it would install Vite 8.0.13 as a breaking major upgrade.
+- Do not upgrade Vite in Milestone 1.
+- Track as a known development-only audit issue for now.
+
+Manual QA targets:
+
+- App renders on mobile-width layout.
+- Navigation changes placeholder pages.
+- No CP values appear anywhere.
+- Pages clearly mark sensitive features as planned or placeholder.
+- Supabase client does not query data.
+
+Future QA must include RLS and direct Supabase API abuse checks.
+
+## Milestone 2 Local Supabase Validation
+
+Completed on 2026-05-14.
+
+Result:
+
+- Total PASS: 29
+- Total FAIL: 0
+- Total SKIP: 0
+- Setup failures: 0
+- Security failures: 0
+
+Validated:
+
+- Migrations apply locally with `npx.cmd supabase db reset`.
+- Seeded guilds exist.
+- `permission_catalog` exists.
+- `view_cp` and `update_cp` are marked sensitive.
+- RLS is enabled.
+- Direct member table access to `member_cp` and `cp_snapshots` is blocked.
+- Member CP RPC access is blocked.
+- Admin without `view_cp` is blocked.
+- Admin with `view_cp` can read scoped CP.
+- Leader can read CP only in assigned guild.
+- Leader wrong-guild CP is blocked.
+- Admin with `approve_members` cannot approve Admin role.
+- Admin with `approve_members` can approve Member role.
+- GvG vote submit/switch keeps one row.
+- Direct `gvg_votes` insert/update is blocked.
+- Audit spoof insert is blocked.
+- Approval/reapply audit flow works.
+- Validation script rolls back local test data.
+
+Security issue found and fixed during validation:
+
+- Private helper parameter shadowing caused CP/RPC permission leakage.
+- Example risk: ambiguous comparisons could make helpers like `is_owner`, `has_role`, or `has_permission` overly broad.
+- Fixed by renaming helper parameters to prefixed `p_*` names and reviewing comparisons.
+- Re-validation passed with 29 PASS / 0 FAIL / 0 SKIP.
+
+## Milestone 3 Frontend Auth Browser Validation
+
+Completed on 2026-05-14 against local Supabase.
+
+Build:
+
+- `npm.cmd run build`: passed after the AuthContext loading fix.
+
+Manual browser result:
+
+- Local Supabase badge shows correctly.
+- Register flow worked.
+- Created user is pending.
+- Sign in works.
+- Pending user is locked to the Pending page.
+- Refresh status works.
+- Sign out works.
+- Hard refresh restores the session and returns the pending user to the Pending page.
+- Signed-out refresh shows the Auth page.
+- Stuck Loading state no longer reproduces.
+
+Network/CP privacy check:
+
+- No protected CP table or RPC calls were observed from the frontend.
+- No `member_cp` calls.
+- No `cp_snapshots` calls.
+- No `get_current_cp_roster` calls.
+- No `get_cp_leaderboard` calls.
+- No `get_cp_growth_report` calls.
+
+Resolved frontend bug:
+
+- Cause: async `onAuthStateChange` callback could wedge session restore/loading state.
+- Fix: keep auth callback synchronous, ignore duplicate `INITIAL_SESSION`, defer profile loading safely, and always clear state/loading on `signOut`.
+
+## Milestone 4 Frontend Approval Workflow Validation
+
+Implementation completed on 2026-05-14.
+
+Build:
+
+- `npm.cmd run build`: passed.
+
+Implemented validation guardrails:
+
+- No SQL migrations were edited.
+- No Owner bootstrap was executed.
+- No package files or dependencies were changed.
+- Approval/rejection writes use only `approve_registration` and `reject_registration`.
+- The frontend approval UI does not expose an Owner approval option.
+- Source check found no protected CP table/RPC identifiers in `src`.
+
+Manual browser validation passed:
+
+- Local Owner bootstrap was applied manually outside migrations.
+- Owner account `test1@local.dev` became approved Owner in Anteiku.
+- Owner could access the app shell and Admin tab.
+- Sign out button is visible in the approved app shell and works.
+- Approval queue loaded pending users.
+- Owner approved `test2` as Member.
+- `test2` could sign in and access the app shell as member.
+- `test2` had role `member` and guild `Anteiku:Re`.
+- Admin tab was hidden for normal member.
+- Owner rejected `test3` with reason.
+- `test3` could sign in but was locked to `RejectedStatus`.
+- Rejected user did not see app shell/member/admin screens.
+- No CP UI or CP data was exposed during testing.
+
+Resolved frontend bug:
+
+- Approved app shell was missing a visible Sign out button.
+- Fixed by adding Sign out to the `AppShell` header.
+- `npm.cmd run build` passed after the fix.
+
+## Milestone 5 Member Profile Editing Validation
+
+Implementation completed on 2026-05-14.
+
+Backend/RPC support confirmed:
+
+- Existing RPC: `public.update_my_profile(p_ign text, p_avatar_key text default null)`.
+- The RPC requires authentication through `auth.uid()`.
+- The RPC updates only the authenticated user's `ign`, `avatar_key`, and `updated_at`.
+- It does not update username, profile slug, guild membership, role, or approval status.
+
+Build:
+
+- `npm.cmd run build`: passed.
+
+Implemented validation guardrails:
+
+- Profile edit mode updates IGN only.
+- Avatar editing was not implemented; the current `avatar_key` is passed through to the RPC.
+- Username, profile slug, guild, role, approval status, and avatar/profile icon are display-only.
+- No direct `profiles` or `guild_memberships` table updates were added.
+- Source check found no protected CP table/RPC identifiers in `src`.
+
+Manual browser validation passed:
+
+- Owner can edit own IGN.
+- Member can edit own IGN.
+- Changed IGN displays correctly after save.
+- Empty/invalid IGN validation works or was checked as implemented.
+- Cancel keeps/restores original IGN.
+- Username/profile slug remained locked and not editable.
+- Guild, role, and approval status remained display-only.
+- Avatar editing was not implemented.
+- Profile update used `update_my_profile` RPC only.
+- No direct `profiles` or `guild_memberships` updates were added.
+- No protected CP table/RPC calls were added or observed.
+
+## Milestone 6 Admin Member Management Validation
+
+Implementation completed on 2026-05-14.
+
+Backend/RPC support confirmed:
+
+- Existing RPC: `public.admin_update_member_ign(p_profile_id uuid, p_ign text)`.
+- Existing RPC: `public.admin_reset_profile_slug(p_profile_id uuid, p_new_slug text)`.
+- `admin_update_member_ign` requires `auth.uid()`, validates non-empty IGN, checks `private.can_edit_member_ign`, updates target `ign`, and writes audit metadata.
+- `admin_reset_profile_slug` requires `auth.uid()`, normalizes lowercase slug, validates slug format, checks `private.can_reset_profile_slug`, updates `username` and `profile_slug` together, and writes audit metadata.
+
+Build:
+
+- `npm.cmd run build`: passed.
+
+Implemented validation guardrails:
+
+- Roster shows active memberships with approved profiles only.
+- Pending, rejected, left, and suspended memberships are excluded.
+- Owner/Leader/Vice can see member management by role.
+- Admin can see member management only with `manage_members`, `edit_member_ign`, or `reset_profile_slug`.
+- Member-management writes use only `admin_update_member_ign` and `admin_reset_profile_slug`.
+- No direct `profiles`, `guild_memberships`, or `admin_permissions` writes were added.
+- Source check found no protected CP table/RPC identifiers in `src`.
+
+Manual browser validation passed:
+
+- Owner can view active approved roster across returned guilds.
+- Owner can filter by guild.
+- Owner can edit another member's IGN.
+- Owner can reset another member's username/profile slug.
+- Roster excludes pending/rejected/left/suspended users.
+- Owner edited `test2` member IGN successfully.
+- `test2` saw updated IGN after sign in.
+- Owner reset `test2` username/profile_slug successfully.
+- `username` and `profile_slug` stayed equal and lowercase.
+- `test2` could still sign in by email.
+- `test2` remained Member in Anteiku:Re.
+- Admin tab remained hidden for normal member.
+- No CP table/RPC calls were found in Network tab.
+
+New product requirement for future milestone:
+
+- Admins/staff should be able to change a member's guild and role.
+- This requires separate Milestone 7 planning/security review and must not be added as an unsafe quick patch.
+
+## Milestone 7 Backend Role/Guild Validation
+
+Implementation files were updated on 2026-05-15. Local validation is pending.
+
+Migration to validate:
+
+- `supabase/migrations/20260515000100_member_guild_role_management.sql`
+
+Validation script updated:
+
+- `supabase/tests/local_validation_anteiku.sql`
+
+Planned validation coverage:
+
+- Owner can assign `member`, `admin`, `vice`, and `leader`.
+- Owner cannot assign `owner`.
+- Leader/Vice can assign `member` and `admin` in scope.
+- Leader/Vice cannot assign `vice`, `leader`, or `owner`.
+- Admin with `manage_roles` can assign `member` and `admin`.
+- Admin cannot assign `vice`, `leader`, or `owner`.
+- Admin without `manage_roles` cannot assign roles.
+- Member cannot assign roles.
+- Owner can transfer member guild.
+- Transfer resets role to `member`.
+- Old membership becomes `left`.
+- New membership is active primary.
+- Exactly one active primary membership remains.
+- Leader/Vice/Admin/Member transfer is blocked.
+- Audit logs are written.
+- No CP access is added.
+
+Recommended validation commands are documented in `docs/TESTING.md`.

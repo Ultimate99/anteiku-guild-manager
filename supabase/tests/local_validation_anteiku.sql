@@ -1,0 +1,1684 @@
+-- Anteiku Guild Manager local validation script.
+-- LOCAL/DISPOSABLE SUPABASE ONLY.
+-- Do not run against production. Uses fake UUIDs/emails and rolls back at the end.
+
+begin;
+
+create temp table validation_results (
+  section text not null,
+  test_name text not null,
+  status text not null check (status in ('PASS', 'FAIL', 'SKIP')),
+  detail text
+) on commit drop;
+
+do $$
+declare
+  anteiku_id constant uuid := '00000000-0000-0000-0000-000000000101';
+  anteiku_re_id constant uuid := '00000000-0000-0000-0000-000000000102';
+  owner_id constant uuid := '10000000-0000-0000-0000-000000000001';
+  leader_id constant uuid := '10000000-0000-0000-0000-000000000002';
+  vice_id constant uuid := '10000000-0000-0000-0000-000000000003';
+  admin_no_cp_id constant uuid := '10000000-0000-0000-0000-000000000004';
+  admin_cp_id constant uuid := '10000000-0000-0000-0000-000000000005';
+  member_id constant uuid := '10000000-0000-0000-0000-000000000006';
+  pending_id constant uuid := '10000000-0000-0000-0000-000000000007';
+  rejected_id constant uuid := '10000000-0000-0000-0000-000000000008';
+  wrong_guild_id constant uuid := '10000000-0000-0000-0000-000000000009';
+  pending_allow_id constant uuid := '10000000-0000-0000-0000-000000000010';
+  seeded_gvg_event_id uuid;
+  required_permission_count integer;
+  sensitive_cp_permission_count integer;
+  seeded_snapshot_count integer;
+  result_count integer;
+  direct_row_count integer;
+  total_pass_count integer;
+  total_fail_count integer;
+  total_skip_count integer;
+  setup_fail_count integer;
+  security_fail_count integer;
+  current_absence_reason text;
+begin
+  insert into validation_results values (
+    'warning',
+    'local_only',
+    'PASS',
+    'This script is for local/disposable Supabase validation only and rolls back at the end.'
+  );
+
+  begin
+    if to_regclass('public.permission_catalog') is null then
+      insert into validation_results values ('setup', 'permission_catalog_exists', 'FAIL', 'public.permission_catalog was not found.');
+    else
+      insert into validation_results values ('setup', 'permission_catalog_exists', 'PASS', 'public.permission_catalog exists.');
+    end if;
+
+    select count(*) into required_permission_count
+    from public.permission_catalog
+    where key in ('view_cp', 'update_cp', 'approve_members', 'manage_gvg');
+
+    if required_permission_count = 4 then
+      insert into validation_results values ('setup', 'required_permission_keys_exist', 'PASS', 'view_cp, update_cp, approve_members, and manage_gvg exist.');
+    else
+      insert into validation_results values ('setup', 'required_permission_keys_exist', 'FAIL', 'Expected 4 required permission keys, found ' || required_permission_count || '.');
+    end if;
+
+    select count(*) into sensitive_cp_permission_count
+    from public.permission_catalog
+    where key in ('view_cp', 'update_cp')
+      and is_sensitive = true;
+
+    if sensitive_cp_permission_count = 2 then
+      insert into validation_results values ('setup', 'cp_permissions_sensitive', 'PASS', 'view_cp and update_cp are marked sensitive.');
+    else
+      insert into validation_results values ('setup', 'cp_permissions_sensitive', 'FAIL', 'Expected 2 sensitive CP permissions, found ' || sensitive_cp_permission_count || '.');
+    end if;
+  exception
+    when others then
+      insert into validation_results values ('setup', 'permission_catalog_setup', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    insert into auth.users (
+      instance_id,
+      id,
+      aud,
+      role,
+      email,
+      encrypted_password,
+      email_confirmed_at,
+      raw_app_meta_data,
+      raw_user_meta_data,
+      created_at,
+      updated_at
+    )
+    values
+      ('00000000-0000-0000-0000-000000000000', owner_id, 'authenticated', 'authenticated', 'owner.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', leader_id, 'authenticated', 'authenticated', 'leader.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', vice_id, 'authenticated', 'authenticated', 'vice.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', admin_no_cp_id, 'authenticated', 'authenticated', 'admin-no-cp.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', admin_cp_id, 'authenticated', 'authenticated', 'admin-cp.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', member_id, 'authenticated', 'authenticated', 'member.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', pending_id, 'authenticated', 'authenticated', 'pending.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', rejected_id, 'authenticated', 'authenticated', 'rejected.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', wrong_guild_id, 'authenticated', 'authenticated', 'wrong-guild.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', pending_allow_id, 'authenticated', 'authenticated', 'pending-allow.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now())
+    on conflict (id) do nothing;
+
+    insert into public.profiles (id, username, profile_slug, ign, approval_status, approved_at)
+    values
+      (owner_id, 'owner_local', 'owner_local', 'Owner Local', 'approved', now()),
+      (leader_id, 'leader_local', 'leader_local', 'Leader Local', 'approved', now()),
+      (vice_id, 'vice_local', 'vice_local', 'Vice Local', 'approved', now()),
+      (admin_no_cp_id, 'admin_no_cp', 'admin_no_cp', 'Admin No CP', 'approved', now()),
+      (admin_cp_id, 'admin_cp', 'admin_cp', 'Admin CP', 'approved', now()),
+      (member_id, 'member_local', 'member_local', 'Member Local', 'approved', now()),
+      (pending_id, 'pending_local', 'pending_local', 'Pending Local', 'pending', null),
+      (rejected_id, 'rejected_local', 'rejected_local', 'Rejected Local', 'rejected', null),
+      (wrong_guild_id, 'wrong_guild', 'wrong_guild', 'Wrong Guild', 'approved', now()),
+      (pending_allow_id, 'pending_allow', 'pending_allow', 'Pending Allow', 'pending', null)
+    on conflict (id) do update
+    set ign = excluded.ign,
+        approval_status = excluded.approval_status,
+        approved_at = excluded.approved_at;
+
+    insert into public.guild_memberships (profile_id, guild_id, role, membership_status, is_primary, assigned_by)
+    values
+      (owner_id, anteiku_id, 'owner', 'active', true, owner_id),
+      (leader_id, anteiku_id, 'leader', 'active', true, owner_id),
+      (vice_id, anteiku_id, 'vice', 'active', true, owner_id),
+      (admin_no_cp_id, anteiku_id, 'admin', 'active', true, owner_id),
+      (admin_cp_id, anteiku_id, 'admin', 'active', true, owner_id),
+      (member_id, anteiku_id, 'member', 'active', true, owner_id),
+      (pending_id, anteiku_id, 'member', 'pending', true, null),
+      (rejected_id, anteiku_id, 'member', 'rejected', true, owner_id),
+      (wrong_guild_id, anteiku_re_id, 'member', 'active', true, owner_id),
+      (pending_allow_id, anteiku_id, 'member', 'pending', true, null)
+    on conflict (profile_id, guild_id) do update
+    set role = excluded.role,
+        membership_status = excluded.membership_status,
+        is_primary = excluded.is_primary,
+        assigned_by = excluded.assigned_by;
+
+    insert into public.admin_permissions (membership_id, permission_key, granted_by)
+    select gm.id, permission_key, owner_id
+    from public.guild_memberships gm
+    cross join (values ('view_cp'), ('update_cp'), ('approve_members'), ('manage_gvg')) as perms(permission_key)
+    where gm.profile_id = admin_cp_id
+      and gm.guild_id = anteiku_id
+    on conflict (membership_id, permission_key) do nothing;
+
+    insert into public.admin_permissions (membership_id, permission_key, granted_by)
+    select gm.id, 'approve_members', owner_id
+    from public.guild_memberships gm
+    where gm.profile_id = admin_no_cp_id
+      and gm.guild_id = anteiku_id
+    on conflict (membership_id, permission_key) do nothing;
+
+    insert into validation_results values ('setup', 'profiles_memberships_seeded', 'PASS', 'Fake local profiles and memberships were seeded.');
+  exception
+    when others then
+      insert into validation_results values ('setup', 'profiles_memberships_seeded', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    insert into public.member_cp (profile_id, guild_id, cp_value, updated_by, updated_at)
+    values
+      (leader_id, anteiku_id, 900000, owner_id, now()),
+      (vice_id, anteiku_id, 850000, owner_id, now()),
+      (admin_cp_id, anteiku_id, 800000, owner_id, now()),
+      (member_id, anteiku_id, 700000, owner_id, now()),
+      (wrong_guild_id, anteiku_re_id, 650000, owner_id, now())
+    on conflict (profile_id) do update
+    set guild_id = excluded.guild_id,
+        cp_value = excluded.cp_value,
+        updated_by = excluded.updated_by,
+        updated_at = excluded.updated_at;
+
+    insert into public.cp_snapshots (
+      profile_id,
+      guild_id,
+      snapshot_week_start,
+      cp_value,
+      captured_by,
+      created_at
+    )
+    values
+      (leader_id, anteiku_id, date '2026-05-11', 880000, owner_id, now()),
+      (vice_id, anteiku_id, date '2026-05-11', 830000, owner_id, now()),
+      (admin_cp_id, anteiku_id, date '2026-05-11', 780000, owner_id, now()),
+      (member_id, anteiku_id, date '2026-05-11', 680000, owner_id, now()),
+      (wrong_guild_id, anteiku_re_id, date '2026-05-11', 620000, owner_id, now())
+    on conflict (profile_id, guild_id, snapshot_week_start) do update
+    set cp_value = excluded.cp_value,
+        captured_by = excluded.captured_by,
+        created_at = excluded.created_at;
+
+    select count(*) into seeded_snapshot_count
+    from public.cp_snapshots
+    where snapshot_week_start = date '2026-05-11'
+      and profile_id in (leader_id, vice_id, admin_cp_id, member_id, wrong_guild_id)
+      and guild_id is not null
+      and cp_value >= 0;
+
+    if seeded_snapshot_count = 5 then
+      insert into validation_results values ('setup', 'cp_snapshots_seeded', 'PASS', 'cp_snapshots seeded with snapshot_week_start date 2026-05-11.');
+    else
+      insert into validation_results values ('setup', 'cp_snapshots_seeded', 'FAIL', 'Expected 5 valid cp_snapshots rows, found ' || seeded_snapshot_count || '.');
+    end if;
+  exception
+    when others then
+      insert into validation_results values ('setup', 'cp_snapshots_seeded', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    insert into public.gvg_events (
+      guild_id,
+      scope,
+      title,
+      status,
+      starts_at,
+      ends_at,
+      created_by,
+      created_at,
+      updated_at
+    )
+    values (
+      anteiku_id,
+      'guild',
+      'Local Validation GvG',
+      'active',
+      now() - interval '1 hour',
+      now() + interval '1 day',
+      owner_id,
+      now(),
+      now()
+    )
+    returning id into seeded_gvg_event_id;
+
+    if seeded_gvg_event_id is not null then
+      insert into validation_results values ('setup', 'gvg_event_seeded', 'PASS', 'Active guild-scoped GvG event seeded with scope = guild.');
+    else
+      insert into validation_results values ('setup', 'gvg_event_seeded', 'FAIL', 'GvG event insert returned null id.');
+    end if;
+  exception
+    when others then
+      insert into validation_results values ('setup', 'gvg_event_seeded', 'FAIL', sqlerrm);
+  end;
+
+  if exists (select 1 from validation_results where section = 'setup' and status = 'FAIL') then
+    insert into validation_results values ('cp', 'dependent_cp_tests', 'SKIP', 'Skipped because setup failed.');
+    insert into validation_results values ('gvg', 'dependent_gvg_tests', 'SKIP', 'Skipped because setup failed.');
+    insert into validation_results values ('permissions', 'dependent_permission_tests', 'SKIP', 'Skipped because setup failed.');
+  else
+    insert into validation_results values ('setup', 'all_prerequisites', 'PASS', 'Permission, CP snapshot, and GvG setup prerequisites passed.');
+
+    if exists (
+      select 1
+      from public.cp_snapshots
+      where profile_id = member_id
+        and guild_id = anteiku_id
+        and snapshot_week_start = date '2026-05-11'
+    ) then
+      insert into validation_results values ('cp', 'cp_snapshot_prerequisite_available', 'PASS', 'Member CP snapshot prerequisite is available.');
+    else
+      insert into validation_results values ('cp', 'cp_snapshot_prerequisite_available', 'FAIL', 'Member CP snapshot prerequisite is missing.');
+    end if;
+
+    if exists (
+      select 1
+      from public.gvg_events
+      where scope = 'guild'
+        and guild_id = anteiku_id
+        and status = 'active'
+        and title = 'Local Validation GvG'
+    ) then
+      insert into validation_results values ('gvg', 'gvg_event_prerequisite_available', 'PASS', 'Active guild GvG prerequisite is available.');
+    else
+      insert into validation_results values ('gvg', 'gvg_event_prerequisite_available', 'FAIL', 'Active guild GvG prerequisite is missing.');
+    end if;
+
+    if exists (
+      select 1
+      from public.permission_catalog
+      where key = 'view_cp'
+        and is_sensitive = true
+    ) then
+      insert into validation_results values ('permissions', 'view_cp_permission_available', 'PASS', 'view_cp permission exists and is sensitive.');
+    else
+      insert into validation_results values ('permissions', 'view_cp_permission_available', 'FAIL', 'view_cp permission prerequisite failed.');
+    end if;
+
+    begin
+      perform set_config('request.jwt.claim.sub', member_id::text, true);
+      perform set_config('request.jwt.claim.role', 'authenticated', true);
+      execute 'set local role authenticated';
+      begin
+        execute 'select count(*) from public.member_cp' into result_count;
+        execute 'reset role';
+
+        if result_count = 0 then
+          insert into validation_results values ('cp', 'member_direct_member_cp_denied', 'PASS', 'Direct member_cp read returned no rows.');
+        else
+          insert into validation_results values ('cp', 'member_direct_member_cp_denied', 'FAIL', 'Direct member_cp read returned ' || result_count || ' rows.');
+        end if;
+      exception
+        when others then
+          execute 'reset role';
+          insert into validation_results values ('cp', 'member_direct_member_cp_denied', 'PASS', 'Direct member_cp read was denied: ' || sqlerrm);
+      end;
+    exception
+      when others then
+        begin
+          execute 'reset role';
+        exception when others then
+          null;
+        end;
+        insert into validation_results values ('cp', 'member_direct_member_cp_denied', 'SKIP', 'Could not switch to authenticated role for direct table test: ' || sqlerrm);
+    end;
+
+    begin
+      perform set_config('request.jwt.claim.sub', member_id::text, true);
+      perform set_config('request.jwt.claim.role', 'authenticated', true);
+      execute 'set local role authenticated';
+      begin
+        execute 'select count(*) from public.cp_snapshots' into result_count;
+        execute 'reset role';
+
+        if result_count = 0 then
+          insert into validation_results values ('cp', 'member_direct_cp_snapshots_denied', 'PASS', 'Direct cp_snapshots read returned no rows.');
+        else
+          insert into validation_results values ('cp', 'member_direct_cp_snapshots_denied', 'FAIL', 'Direct cp_snapshots read returned ' || result_count || ' rows.');
+        end if;
+      exception
+        when others then
+          execute 'reset role';
+          insert into validation_results values ('cp', 'member_direct_cp_snapshots_denied', 'PASS', 'Direct cp_snapshots read was denied: ' || sqlerrm);
+      end;
+    exception
+      when others then
+        begin
+          execute 'reset role';
+        exception when others then
+          null;
+        end;
+        insert into validation_results values ('cp', 'member_direct_cp_snapshots_denied', 'SKIP', 'Could not switch to authenticated role for direct table test: ' || sqlerrm);
+    end;
+
+    begin
+      perform set_config('request.jwt.claim.sub', member_id::text, true);
+      select count(*) into result_count
+      from public.get_current_cp_roster(anteiku_id);
+
+      insert into validation_results values ('cp', 'member_cp_rpc_blocked', 'FAIL', 'Member CP RPC unexpectedly returned ' || result_count || ' rows.');
+    exception
+      when others then
+        insert into validation_results values ('cp', 'member_cp_rpc_blocked', 'PASS', 'Member CP RPC was blocked: ' || sqlerrm);
+    end;
+
+    begin
+      perform set_config('request.jwt.claim.sub', admin_no_cp_id::text, true);
+      select count(*) into result_count
+      from public.get_current_cp_roster(anteiku_id);
+
+      insert into validation_results values ('cp', 'admin_without_view_cp_blocked', 'FAIL', 'Admin without view_cp unexpectedly returned ' || result_count || ' rows.');
+    exception
+      when others then
+        insert into validation_results values ('cp', 'admin_without_view_cp_blocked', 'PASS', 'Admin without view_cp was blocked: ' || sqlerrm);
+    end;
+
+    begin
+      perform set_config('request.jwt.claim.sub', admin_cp_id::text, true);
+      select count(*) into result_count
+      from public.get_current_cp_roster(anteiku_id);
+
+      if result_count > 0 then
+        insert into validation_results values ('cp', 'admin_with_view_cp_allowed', 'PASS', 'Admin with view_cp returned ' || result_count || ' scoped CP rows.');
+      else
+        insert into validation_results values ('cp', 'admin_with_view_cp_allowed', 'FAIL', 'Admin with view_cp returned no rows.');
+      end if;
+    exception
+      when others then
+        insert into validation_results values ('cp', 'admin_with_view_cp_allowed', 'FAIL', 'Admin with view_cp failed: ' || sqlerrm);
+    end;
+
+    begin
+      perform set_config('request.jwt.claim.sub', leader_id::text, true);
+      select count(*) into result_count
+      from public.get_current_cp_roster(anteiku_id);
+
+      if result_count > 0 then
+        insert into validation_results values ('cp', 'leader_scoped_cp_allowed', 'PASS', 'Leader saw ' || result_count || ' CP rows in assigned guild.');
+      else
+        insert into validation_results values ('cp', 'leader_scoped_cp_allowed', 'FAIL', 'Leader saw no CP rows in assigned guild.');
+      end if;
+    exception
+      when others then
+        insert into validation_results values ('cp', 'leader_scoped_cp_allowed', 'FAIL', 'Leader scoped CP failed: ' || sqlerrm);
+    end;
+
+    begin
+      perform set_config('request.jwt.claim.sub', leader_id::text, true);
+      select count(*) into result_count
+      from public.get_current_cp_roster(anteiku_re_id);
+
+      insert into validation_results values ('cp', 'leader_wrong_guild_cp_blocked', 'FAIL', 'Leader wrong-guild CP unexpectedly returned ' || result_count || ' rows.');
+    exception
+      when others then
+        insert into validation_results values ('cp', 'leader_wrong_guild_cp_blocked', 'PASS', 'Leader wrong-guild CP was blocked: ' || sqlerrm);
+    end;
+
+    begin
+      perform set_config('request.jwt.claim.sub', member_id::text, true);
+      perform public.submit_gvg_vote(seeded_gvg_event_id, 'present', null);
+      perform public.submit_gvg_vote(seeded_gvg_event_id, 'absent', 'Local validation absence');
+      select count(*) into result_count
+      from public.gvg_votes gv
+      where gv.gvg_event_id = seeded_gvg_event_id
+        and gv.profile_id = member_id;
+
+      if result_count = 1 then
+        insert into validation_results values ('gvg', 'gvg_vote_upsert_one_row', 'PASS', 'Vote submit/switch kept one row.');
+      else
+        insert into validation_results values ('gvg', 'gvg_vote_upsert_one_row', 'FAIL', 'Expected one vote row, found ' || result_count || '.');
+      end if;
+
+      perform public.submit_gvg_vote(seeded_gvg_event_id, 'present', 'Should clear');
+      select absence_reason into current_absence_reason
+      from public.gvg_votes
+      where public.gvg_votes.gvg_event_id = seeded_gvg_event_id
+        and public.gvg_votes.profile_id = member_id;
+
+      if current_absence_reason is null then
+        insert into validation_results values ('gvg', 'gvg_present_clears_absence_reason', 'PASS', 'Switching back to present cleared absence_reason.');
+      else
+        insert into validation_results values ('gvg', 'gvg_present_clears_absence_reason', 'FAIL', 'absence_reason was not cleared.');
+      end if;
+    exception
+      when others then
+        insert into validation_results values ('gvg', 'gvg_vote_rpc_flow', 'FAIL', sqlerrm);
+    end;
+
+    begin
+      perform set_config('request.jwt.claim.sub', member_id::text, true);
+      perform set_config('request.jwt.claim.role', 'authenticated', true);
+      execute 'set local role authenticated';
+      begin
+        execute 'update public.gvg_votes set vote_status = ''absent'' where profile_id = $1' using member_id;
+        get diagnostics direct_row_count = row_count;
+        execute 'reset role';
+
+        if direct_row_count = 0 then
+          insert into validation_results values ('gvg', 'direct_gvg_vote_update_blocked', 'PASS', 'Direct gvg_votes update affected no rows.');
+        else
+          insert into validation_results values ('gvg', 'direct_gvg_vote_update_blocked', 'FAIL', 'Direct gvg_votes update affected ' || direct_row_count || ' rows.');
+        end if;
+      exception
+        when others then
+          execute 'reset role';
+          insert into validation_results values ('gvg', 'direct_gvg_vote_update_blocked', 'PASS', 'Direct gvg_votes update was denied: ' || sqlerrm);
+      end;
+    exception
+      when others then
+        begin
+          execute 'reset role';
+        exception when others then
+          null;
+        end;
+        insert into validation_results values ('gvg', 'direct_gvg_vote_update_blocked', 'SKIP', 'Could not switch to authenticated role for direct gvg_votes update test: ' || sqlerrm);
+    end;
+
+    begin
+      perform set_config('request.jwt.claim.sub', member_id::text, true);
+      perform set_config('request.jwt.claim.role', 'authenticated', true);
+      execute 'set local role authenticated';
+      begin
+        execute 'insert into public.gvg_votes (gvg_event_id, profile_id, vote_status) values ($1, $2, ''present'')' using seeded_gvg_event_id, wrong_guild_id;
+        execute 'reset role';
+        insert into validation_results values ('gvg', 'direct_gvg_vote_insert_blocked', 'FAIL', 'Direct gvg_votes insert unexpectedly succeeded.');
+      exception
+        when others then
+          execute 'reset role';
+          insert into validation_results values ('gvg', 'direct_gvg_vote_insert_blocked', 'PASS', 'Direct gvg_votes insert was denied: ' || sqlerrm);
+      end;
+    exception
+      when others then
+        begin
+          execute 'reset role';
+        exception when others then
+          null;
+        end;
+        insert into validation_results values ('gvg', 'direct_gvg_vote_insert_blocked', 'SKIP', 'Could not switch to authenticated role for direct gvg_votes insert test: ' || sqlerrm);
+    end;
+
+    begin
+      perform set_config('request.jwt.claim.sub', admin_no_cp_id::text, true);
+      perform public.approve_registration(pending_id, anteiku_id, 'admin');
+      insert into validation_results values ('approval', 'admin_approve_as_admin_blocked', 'FAIL', 'Admin with approve_members unexpectedly approved Admin role.');
+    exception
+      when others then
+        insert into validation_results values ('approval', 'admin_approve_as_admin_blocked', 'PASS', 'Admin approve-as-admin was blocked: ' || sqlerrm);
+    end;
+
+    begin
+      perform set_config('request.jwt.claim.sub', admin_no_cp_id::text, true);
+      perform public.approve_registration(pending_allow_id, anteiku_id, 'member');
+      insert into validation_results values ('approval', 'admin_approve_as_member_allowed', 'PASS', 'Admin with approve_members approved pending user as member.');
+    exception
+      when others then
+        insert into validation_results values ('approval', 'admin_approve_as_member_allowed', 'FAIL', sqlerrm);
+    end;
+
+    begin
+      perform set_config('request.jwt.claim.sub', admin_no_cp_id::text, true);
+      perform public.reject_registration(wrong_guild_id, 'Wrong guild rejection attempt');
+      insert into validation_results values ('approval', 'wrong_guild_reject_blocked', 'FAIL', 'Wrong-guild rejection unexpectedly succeeded.');
+    exception
+      when others then
+        insert into validation_results values ('approval', 'wrong_guild_reject_blocked', 'PASS', 'Wrong-guild rejection was blocked: ' || sqlerrm);
+    end;
+
+    begin
+      perform set_config('request.jwt.claim.sub', rejected_id::text, true);
+      perform public.request_reapply('Local validation reapply request');
+
+      if exists (
+        select 1
+        from public.profiles
+        where id = rejected_id
+          and reapply_requested_at is not null
+          and reapply_note = 'Local validation reapply request'
+      ) then
+        insert into validation_results values ('approval', 'rejected_user_reapply_allowed', 'PASS', 'Rejected user requested reapply.');
+      else
+        insert into validation_results values ('approval', 'rejected_user_reapply_allowed', 'FAIL', 'Reapply fields were not set.');
+      end if;
+    exception
+      when others then
+        insert into validation_results values ('approval', 'rejected_user_reapply_allowed', 'FAIL', sqlerrm);
+    end;
+
+    begin
+      perform set_config('request.jwt.claim.sub', admin_no_cp_id::text, true);
+      perform public.reject_registration(rejected_id, 'Still rejected in local validation');
+
+      if exists (
+        select 1
+        from public.profiles
+        where id = rejected_id
+          and approval_status = 'rejected'
+          and reapply_requested_at is null
+          and reapply_note is null
+      ) then
+        insert into validation_results values ('approval', 'reject_clears_reapply_fields', 'PASS', 'reject_registration cleared reapply fields.');
+      else
+        insert into validation_results values ('approval', 'reject_clears_reapply_fields', 'FAIL', 'reject_registration did not clear reapply fields.');
+      end if;
+    exception
+      when others then
+        insert into validation_results values ('approval', 'reject_clears_reapply_fields', 'FAIL', sqlerrm);
+    end;
+
+    if exists (
+      select 1
+      from public.audit_logs
+      where action in ('registration_approved', 'registration_rejected', 'profile_reapply_requested')
+    ) then
+      insert into validation_results values ('audit', 'approval_reapply_audit_written', 'PASS', 'Approval/reapply actions wrote audit logs.');
+    else
+      insert into validation_results values ('audit', 'approval_reapply_audit_written', 'FAIL', 'Expected approval/reapply audit logs were not found.');
+    end if;
+
+    begin
+      perform set_config('request.jwt.claim.sub', member_id::text, true);
+      perform set_config('request.jwt.claim.role', 'authenticated', true);
+      execute 'set local role authenticated';
+      begin
+        execute 'insert into public.audit_logs (actor_profile_id, action) values ($1, ''spoof_attempt'')' using member_id;
+        execute 'reset role';
+        insert into validation_results values ('audit', 'audit_spoof_denied', 'FAIL', 'Normal authenticated user inserted audit log directly.');
+      exception
+        when others then
+          execute 'reset role';
+          insert into validation_results values ('audit', 'audit_spoof_denied', 'PASS', 'Direct audit insert was denied: ' || sqlerrm);
+      end;
+    exception
+      when others then
+        begin
+          execute 'reset role';
+        exception when others then
+          null;
+        end;
+        insert into validation_results values ('audit', 'audit_spoof_denied', 'SKIP', 'Could not switch to authenticated role for audit spoof test: ' || sqlerrm);
+    end;
+  end if;
+
+  select count(*) into total_pass_count from validation_results where status = 'PASS';
+  select count(*) into total_fail_count from validation_results where status = 'FAIL';
+  select count(*) into total_skip_count from validation_results where status = 'SKIP';
+  select count(*) into setup_fail_count from validation_results where section = 'setup' and status = 'FAIL';
+  select count(*) into security_fail_count
+  from validation_results
+  where section in ('cp', 'gvg', 'approval', 'audit', 'permissions')
+    and status = 'FAIL';
+
+  insert into validation_results values ('summary', 'total_pass', 'PASS', total_pass_count::text);
+  insert into validation_results values ('summary', 'total_fail', case when total_fail_count = 0 then 'PASS' else 'FAIL' end, total_fail_count::text);
+  insert into validation_results values ('summary', 'total_skip', case when total_skip_count = 0 then 'PASS' else 'SKIP' end, total_skip_count::text);
+  insert into validation_results values ('summary', 'setup_failures_count', case when setup_fail_count = 0 then 'PASS' else 'FAIL' end, setup_fail_count::text);
+  insert into validation_results values ('summary', 'security_failures_count', case when security_fail_count = 0 then 'PASS' else 'FAIL' end, security_fail_count::text);
+end;
+$$;
+
+select section, test_name, status, detail
+from validation_results
+order by
+  case status when 'FAIL' then 1 when 'SKIP' then 2 else 3 end,
+  section,
+  test_name;
+
+-- Milestone 7 backend validation: app role assignment hardening and Owner-only guild transfer.
+-- This section is local-only test data and is rolled back with the rest of this script.
+create temp table if not exists milestone7_validation_results (
+  section text not null,
+  test_name text not null,
+  status text not null,
+  details text
+) on commit drop;
+
+do $$
+declare
+  anteiku_id uuid;
+  anteiku_re_id uuid;
+  owner_id uuid := '10000000-0000-4000-8000-000000000701';
+  leader_id uuid := '10000000-0000-4000-8000-000000000702';
+  vice_id uuid := '10000000-0000-4000-8000-000000000703';
+  admin_roles_id uuid := '10000000-0000-4000-8000-000000000704';
+  admin_members_id uuid := '10000000-0000-4000-8000-000000000705';
+  admin_plain_id uuid := '10000000-0000-4000-8000-000000000706';
+  member_actor_id uuid := '10000000-0000-4000-8000-000000000707';
+  role_target_id uuid := '10000000-0000-4000-8000-000000000708';
+  transfer_target_id uuid := '10000000-0000-4000-8000-000000000709';
+  transfer_block_target_id uuid := '10000000-0000-4000-8000-000000000710';
+  role_target_membership_id uuid;
+  transfer_active_count integer;
+  transfer_old_status text;
+  transfer_old_primary boolean;
+  transfer_new_status text;
+  transfer_new_primary boolean;
+  transfer_new_role text;
+begin
+  select g.id into anteiku_id
+  from public.guilds g
+  where g.slug = 'anteiku' or g.name = 'Anteiku'
+  limit 1;
+
+  select g.id into anteiku_re_id
+  from public.guilds g
+  where g.slug in ('anteiku-re', 'anteiku_re') or g.name = 'Anteiku:Re'
+  limit 1;
+
+  if anteiku_id is null or anteiku_re_id is null then
+    insert into milestone7_validation_results
+    values ('setup', 'milestone7_core_guilds_available', 'FAIL', 'Anteiku or Anteiku:Re guild seed row not found.');
+    return;
+  end if;
+
+  insert into auth.users (
+    id,
+    instance_id,
+    aud,
+    role,
+    email,
+    encrypted_password,
+    email_confirmed_at,
+    created_at,
+    updated_at,
+    raw_app_meta_data,
+    raw_user_meta_data
+  )
+  values
+    (owner_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'm7-owner@local.test', 'local-validation', now(), now(), now(), '{}'::jsonb, '{}'::jsonb),
+    (leader_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'm7-leader@local.test', 'local-validation', now(), now(), now(), '{}'::jsonb, '{}'::jsonb),
+    (vice_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'm7-vice@local.test', 'local-validation', now(), now(), now(), '{}'::jsonb, '{}'::jsonb),
+    (admin_roles_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'm7-admin-roles@local.test', 'local-validation', now(), now(), now(), '{}'::jsonb, '{}'::jsonb),
+    (admin_members_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'm7-admin-members@local.test', 'local-validation', now(), now(), now(), '{}'::jsonb, '{}'::jsonb),
+    (admin_plain_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'm7-admin-plain@local.test', 'local-validation', now(), now(), now(), '{}'::jsonb, '{}'::jsonb),
+    (member_actor_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'm7-member-actor@local.test', 'local-validation', now(), now(), now(), '{}'::jsonb, '{}'::jsonb),
+    (role_target_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'm7-role-target@local.test', 'local-validation', now(), now(), now(), '{}'::jsonb, '{}'::jsonb),
+    (transfer_target_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'm7-transfer-target@local.test', 'local-validation', now(), now(), now(), '{}'::jsonb, '{}'::jsonb),
+    (transfer_block_target_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'm7-transfer-block-target@local.test', 'local-validation', now(), now(), now(), '{}'::jsonb, '{}'::jsonb)
+  on conflict (id) do nothing;
+
+  insert into public.profiles (id, username, profile_slug, ign, approval_status)
+  values
+    (owner_id, 'm7-owner', 'm7-owner', 'M7 Owner', 'approved'),
+    (leader_id, 'm7-leader', 'm7-leader', 'M7 Leader', 'approved'),
+    (vice_id, 'm7-vice', 'm7-vice', 'M7 Vice', 'approved'),
+    (admin_roles_id, 'm7-admin-roles', 'm7-admin-roles', 'M7 Admin Roles', 'approved'),
+    (admin_members_id, 'm7-admin-members', 'm7-admin-members', 'M7 Admin Members', 'approved'),
+    (admin_plain_id, 'm7-admin-plain', 'm7-admin-plain', 'M7 Admin Plain', 'approved'),
+    (member_actor_id, 'm7-member-actor', 'm7-member-actor', 'M7 Member Actor', 'approved'),
+    (role_target_id, 'm7-role-target', 'm7-role-target', 'M7 Role Target', 'approved'),
+    (transfer_target_id, 'm7-transfer-target', 'm7-transfer-target', 'M7 Transfer Target', 'approved'),
+    (transfer_block_target_id, 'm7-transfer-block-target', 'm7-transfer-block-target', 'M7 Transfer Block Target', 'approved')
+  on conflict (id) do update
+  set
+    username = excluded.username,
+    profile_slug = excluded.profile_slug,
+    ign = excluded.ign,
+    approval_status = 'approved',
+    updated_at = now();
+
+  insert into public.guild_memberships (profile_id, guild_id, role, membership_status, is_primary, assigned_by)
+  values
+    (owner_id, anteiku_id, 'owner', 'active', true, owner_id),
+    (leader_id, anteiku_id, 'leader', 'active', true, owner_id),
+    (vice_id, anteiku_id, 'vice', 'active', true, owner_id),
+    (admin_roles_id, anteiku_id, 'admin', 'active', true, owner_id),
+    (admin_members_id, anteiku_id, 'admin', 'active', true, owner_id),
+    (admin_plain_id, anteiku_id, 'admin', 'active', true, owner_id),
+    (member_actor_id, anteiku_id, 'member', 'active', true, owner_id),
+    (role_target_id, anteiku_id, 'member', 'active', true, owner_id),
+    (transfer_target_id, anteiku_re_id, 'admin', 'active', true, owner_id),
+    (transfer_block_target_id, anteiku_re_id, 'member', 'active', true, owner_id)
+  on conflict (profile_id, guild_id) do update
+  set
+    role = excluded.role,
+    membership_status = 'active',
+    is_primary = true,
+    assigned_by = owner_id,
+    updated_at = now();
+
+  insert into public.admin_permissions (membership_id, permission_key, granted_by)
+  select gm.id, permission_key, owner_id
+  from public.guild_memberships gm
+  cross join (values ('manage_roles'), ('manage_members')) as permissions(permission_key)
+  where gm.profile_id = admin_roles_id
+    and gm.guild_id = anteiku_id
+    and permission_key = 'manage_roles'
+  on conflict (membership_id, permission_key) do nothing;
+
+  insert into public.admin_permissions (membership_id, permission_key, granted_by)
+  select gm.id, 'manage_members', owner_id
+  from public.guild_memberships gm
+  where gm.profile_id = admin_members_id
+    and gm.guild_id = anteiku_id
+  on conflict (membership_id, permission_key) do nothing;
+
+  select gm.id into role_target_membership_id
+  from public.guild_memberships gm
+  where gm.profile_id = role_target_id
+    and gm.guild_id = anteiku_id;
+
+  perform set_config('request.jwt.claim.role', 'authenticated', true);
+
+  perform set_config('request.jwt.claim.sub', owner_id::text, true);
+
+  begin
+    perform public.assign_member_role(role_target_id, anteiku_id, 'member');
+    insert into milestone7_validation_results values ('role', 'owner_assign_member_allowed', 'PASS', null);
+  exception when others then
+    insert into milestone7_validation_results values ('role', 'owner_assign_member_allowed', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform public.assign_member_role(role_target_id, anteiku_id, 'admin');
+    insert into milestone7_validation_results values ('role', 'owner_assign_admin_allowed', 'PASS', null);
+  exception when others then
+    insert into milestone7_validation_results values ('role', 'owner_assign_admin_allowed', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform public.assign_member_role(role_target_id, anteiku_id, 'vice');
+    insert into milestone7_validation_results values ('role', 'owner_assign_vice_allowed', 'PASS', null);
+  exception when others then
+    insert into milestone7_validation_results values ('role', 'owner_assign_vice_allowed', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform public.assign_member_role(role_target_id, anteiku_id, 'leader');
+    insert into milestone7_validation_results values ('role', 'owner_assign_leader_allowed', 'PASS', null);
+  exception when others then
+    insert into milestone7_validation_results values ('role', 'owner_assign_leader_allowed', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform public.assign_member_role(role_target_id, anteiku_id, 'owner');
+    insert into milestone7_validation_results values ('role', 'owner_assign_owner_blocked', 'FAIL', 'Owner role was unexpectedly assigned.');
+  exception when others then
+    insert into milestone7_validation_results values ('role', 'owner_assign_owner_blocked', 'PASS', sqlerrm);
+  end;
+
+  perform public.assign_member_role(role_target_id, anteiku_id, 'member');
+  perform set_config('request.jwt.claim.sub', leader_id::text, true);
+
+  begin
+    perform public.assign_member_role(role_target_id, anteiku_id, 'admin');
+    insert into milestone7_validation_results values ('role', 'leader_assign_admin_allowed', 'PASS', null);
+  exception when others then
+    insert into milestone7_validation_results values ('role', 'leader_assign_admin_allowed', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform public.assign_member_role(role_target_id, anteiku_id, 'member');
+    insert into milestone7_validation_results values ('role', 'leader_assign_member_allowed', 'PASS', null);
+  exception when others then
+    insert into milestone7_validation_results values ('role', 'leader_assign_member_allowed', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform public.assign_member_role(role_target_id, anteiku_id, 'vice');
+    insert into milestone7_validation_results values ('role', 'leader_assign_vice_blocked', 'FAIL', 'Leader unexpectedly assigned vice.');
+  exception when others then
+    insert into milestone7_validation_results values ('role', 'leader_assign_vice_blocked', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform public.assign_member_role(role_target_id, anteiku_id, 'leader');
+    insert into milestone7_validation_results values ('role', 'leader_assign_leader_blocked', 'FAIL', 'Leader unexpectedly assigned leader.');
+  exception when others then
+    insert into milestone7_validation_results values ('role', 'leader_assign_leader_blocked', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform public.assign_member_role(role_target_id, anteiku_id, 'owner');
+    insert into milestone7_validation_results values ('role', 'leader_assign_owner_blocked', 'FAIL', 'Leader unexpectedly assigned owner.');
+  exception when others then
+    insert into milestone7_validation_results values ('role', 'leader_assign_owner_blocked', 'PASS', sqlerrm);
+  end;
+
+  perform set_config('request.jwt.claim.sub', vice_id::text, true);
+
+  begin
+    perform public.assign_member_role(role_target_id, anteiku_id, 'admin');
+    perform public.assign_member_role(role_target_id, anteiku_id, 'member');
+    insert into milestone7_validation_results values ('role', 'vice_assign_member_admin_allowed', 'PASS', null);
+  exception when others then
+    insert into milestone7_validation_results values ('role', 'vice_assign_member_admin_allowed', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform public.assign_member_role(role_target_id, anteiku_id, 'leader');
+    insert into milestone7_validation_results values ('role', 'vice_assign_leader_blocked', 'FAIL', 'Vice unexpectedly assigned leader.');
+  exception when others then
+    insert into milestone7_validation_results values ('role', 'vice_assign_leader_blocked', 'PASS', sqlerrm);
+  end;
+
+  perform set_config('request.jwt.claim.sub', admin_roles_id::text, true);
+
+  begin
+    perform public.assign_member_role(role_target_id, anteiku_id, 'admin');
+    perform public.assign_member_role(role_target_id, anteiku_id, 'member');
+    insert into milestone7_validation_results values ('role', 'admin_manage_roles_assign_member_admin_allowed', 'PASS', null);
+  exception when others then
+    insert into milestone7_validation_results values ('role', 'admin_manage_roles_assign_member_admin_allowed', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform public.assign_member_role(role_target_id, anteiku_id, 'vice');
+    insert into milestone7_validation_results values ('role', 'admin_assign_vice_blocked', 'FAIL', 'Admin unexpectedly assigned vice.');
+  exception when others then
+    insert into milestone7_validation_results values ('role', 'admin_assign_vice_blocked', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform public.assign_member_role(role_target_id, anteiku_id, 'leader');
+    insert into milestone7_validation_results values ('role', 'admin_assign_leader_blocked', 'FAIL', 'Admin unexpectedly assigned leader.');
+  exception when others then
+    insert into milestone7_validation_results values ('role', 'admin_assign_leader_blocked', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform public.assign_member_role(role_target_id, anteiku_id, 'owner');
+    insert into milestone7_validation_results values ('role', 'admin_assign_owner_blocked', 'FAIL', 'Admin unexpectedly assigned owner.');
+  exception when others then
+    insert into milestone7_validation_results values ('role', 'admin_assign_owner_blocked', 'PASS', sqlerrm);
+  end;
+
+  perform set_config('request.jwt.claim.sub', admin_plain_id::text, true);
+
+  begin
+    perform public.assign_member_role(role_target_id, anteiku_id, 'admin');
+    insert into milestone7_validation_results values ('role', 'admin_without_manage_roles_blocked', 'FAIL', 'Admin without manage_roles unexpectedly assigned role.');
+  exception when others then
+    insert into milestone7_validation_results values ('role', 'admin_without_manage_roles_blocked', 'PASS', sqlerrm);
+  end;
+
+  perform set_config('request.jwt.claim.sub', member_actor_id::text, true);
+
+  begin
+    perform public.assign_member_role(role_target_id, anteiku_id, 'admin');
+    insert into milestone7_validation_results values ('role', 'member_assign_role_blocked', 'FAIL', 'Member unexpectedly assigned role.');
+  exception when others then
+    insert into milestone7_validation_results values ('role', 'member_assign_role_blocked', 'PASS', sqlerrm);
+  end;
+
+  if exists (
+    select 1
+    from public.audit_logs al
+    where al.target_profile_id = role_target_id
+      and al.action = 'member_role_changed'
+      and al.entity_id = role_target_membership_id
+  ) then
+    insert into milestone7_validation_results values ('audit', 'role_change_audit_written', 'PASS', null);
+  else
+    insert into milestone7_validation_results values ('audit', 'role_change_audit_written', 'FAIL', 'member_role_changed audit log not found.');
+  end if;
+
+  perform set_config('request.jwt.claim.sub', owner_id::text, true);
+
+  begin
+    perform public.transfer_member_guild(transfer_target_id, anteiku_re_id, anteiku_id);
+    insert into milestone7_validation_results values ('transfer', 'owner_transfer_allowed', 'PASS', null);
+  exception when others then
+    insert into milestone7_validation_results values ('transfer', 'owner_transfer_allowed', 'FAIL', sqlerrm);
+  end;
+
+  select gm.membership_status, gm.is_primary
+  into transfer_old_status, transfer_old_primary
+  from public.guild_memberships gm
+  where gm.profile_id = transfer_target_id
+    and gm.guild_id = anteiku_re_id;
+
+  select gm.membership_status, gm.is_primary, gm.role
+  into transfer_new_status, transfer_new_primary, transfer_new_role
+  from public.guild_memberships gm
+  where gm.profile_id = transfer_target_id
+    and gm.guild_id = anteiku_id;
+
+  select count(*) into transfer_active_count
+  from public.guild_memberships gm
+  where gm.profile_id = transfer_target_id
+    and gm.membership_status = 'active'
+    and gm.is_primary = true;
+
+  insert into milestone7_validation_results
+  values (
+    'transfer',
+    'transfer_old_membership_left',
+    case when transfer_old_status = 'left' and transfer_old_primary = false then 'PASS' else 'FAIL' end,
+    concat('old_status=', coalesce(transfer_old_status, 'null'), ', old_primary=', coalesce(transfer_old_primary::text, 'null'))
+  );
+
+  insert into milestone7_validation_results
+  values (
+    'transfer',
+    'transfer_new_membership_active_primary_member',
+    case when transfer_new_status = 'active' and transfer_new_primary = true and transfer_new_role = 'member' then 'PASS' else 'FAIL' end,
+    concat('new_status=', coalesce(transfer_new_status, 'null'), ', new_primary=', coalesce(transfer_new_primary::text, 'null'), ', new_role=', coalesce(transfer_new_role, 'null'))
+  );
+
+  insert into milestone7_validation_results
+  values (
+    'transfer',
+    'transfer_exactly_one_active_primary',
+    case when transfer_active_count = 1 then 'PASS' else 'FAIL' end,
+    concat('active_primary_count=', transfer_active_count)
+  );
+
+  if exists (
+    select 1
+    from public.guild_memberships gm
+    where gm.profile_id = transfer_target_id
+      and gm.guild_id = anteiku_re_id
+  ) then
+    insert into milestone7_validation_results values ('transfer', 'transfer_preserves_old_membership_row', 'PASS', null);
+  else
+    insert into milestone7_validation_results values ('transfer', 'transfer_preserves_old_membership_row', 'FAIL', 'Old membership row was deleted.');
+  end if;
+
+  if exists (
+    select 1
+    from public.audit_logs al
+    where al.target_profile_id = transfer_target_id
+      and al.action = 'member_guild_transferred'
+  ) then
+    insert into milestone7_validation_results values ('audit', 'transfer_audit_written', 'PASS', null);
+  else
+    insert into milestone7_validation_results values ('audit', 'transfer_audit_written', 'FAIL', 'member_guild_transferred audit log not found.');
+  end if;
+
+  perform set_config('request.jwt.claim.sub', leader_id::text, true);
+
+  begin
+    perform public.transfer_member_guild(transfer_block_target_id, anteiku_re_id, anteiku_id);
+    insert into milestone7_validation_results values ('transfer', 'leader_transfer_blocked', 'FAIL', 'Leader unexpectedly transferred member.');
+  exception when others then
+    insert into milestone7_validation_results values ('transfer', 'leader_transfer_blocked', 'PASS', sqlerrm);
+  end;
+
+  perform set_config('request.jwt.claim.sub', vice_id::text, true);
+
+  begin
+    perform public.transfer_member_guild(transfer_block_target_id, anteiku_re_id, anteiku_id);
+    insert into milestone7_validation_results values ('transfer', 'vice_transfer_blocked', 'FAIL', 'Vice unexpectedly transferred member.');
+  exception when others then
+    insert into milestone7_validation_results values ('transfer', 'vice_transfer_blocked', 'PASS', sqlerrm);
+  end;
+
+  perform set_config('request.jwt.claim.sub', admin_members_id::text, true);
+
+  begin
+    perform public.transfer_member_guild(transfer_block_target_id, anteiku_re_id, anteiku_id);
+    insert into milestone7_validation_results values ('transfer', 'admin_manage_members_transfer_blocked', 'FAIL', 'Admin with manage_members unexpectedly transferred member.');
+  exception when others then
+    insert into milestone7_validation_results values ('transfer', 'admin_manage_members_transfer_blocked', 'PASS', sqlerrm);
+  end;
+
+  perform set_config('request.jwt.claim.sub', admin_plain_id::text, true);
+
+  begin
+    perform public.transfer_member_guild(transfer_block_target_id, anteiku_re_id, anteiku_id);
+    insert into milestone7_validation_results values ('transfer', 'admin_without_manage_members_transfer_blocked', 'FAIL', 'Admin unexpectedly transferred member.');
+  exception when others then
+    insert into milestone7_validation_results values ('transfer', 'admin_without_manage_members_transfer_blocked', 'PASS', sqlerrm);
+  end;
+
+  perform set_config('request.jwt.claim.sub', member_actor_id::text, true);
+
+  begin
+    perform public.transfer_member_guild(transfer_block_target_id, anteiku_re_id, anteiku_id);
+    insert into milestone7_validation_results values ('transfer', 'member_transfer_blocked', 'FAIL', 'Member unexpectedly transferred member.');
+  exception when others then
+    insert into milestone7_validation_results values ('transfer', 'member_transfer_blocked', 'PASS', sqlerrm);
+  end;
+end $$;
+
+select section, test_name, status, details
+from milestone7_validation_results
+order by section, test_name;
+
+select
+  count(*) filter (where status = 'PASS') as milestone7_total_pass,
+  count(*) filter (where status = 'FAIL') as milestone7_total_fail
+from milestone7_validation_results;
+
+create temp table if not exists milestone8_cp_hardening_results (
+  section text not null,
+  test_name text not null,
+  status text not null,
+  details text
+) on commit drop;
+
+do $$
+declare
+  anteiku_id uuid;
+  re_id uuid;
+  owner_id uuid := '88000000-0000-4000-8000-000000000001'::uuid;
+  admin_update_id uuid := '88000000-0000-4000-8000-000000000002'::uuid;
+  admin_no_view_id uuid := '88000000-0000-4000-8000-000000000003'::uuid;
+  member_id uuid := '88000000-0000-4000-8000-000000000004'::uuid;
+  approved_target_id uuid := '88000000-0000-4000-8000-000000000005'::uuid;
+  pending_target_id uuid := '88000000-0000-4000-8000-000000000006'::uuid;
+  rejected_target_id uuid := '88000000-0000-4000-8000-000000000007'::uuid;
+  suspended_target_id uuid := '88000000-0000-4000-8000-000000000008'::uuid;
+  missing_cp_target_id uuid := '88000000-0000-4000-8000-000000000009'::uuid;
+  admin_membership_id uuid;
+  direct_count integer;
+  roster_missing_count integer;
+  missing_cp_value integer;
+begin
+  select g.id into anteiku_id
+  from public.guilds g
+  where g.slug = 'anteiku' or g.name = 'Anteiku'
+  limit 1;
+
+  select g.id into re_id
+  from public.guilds g
+  where g.slug in ('anteiku-re', 'anteiku_re') or g.name = 'Anteiku:Re'
+  limit 1;
+
+  insert into auth.users (
+    id,
+    aud,
+    role,
+    email,
+    encrypted_password,
+    email_confirmed_at,
+    created_at,
+    updated_at,
+    raw_app_meta_data,
+    raw_user_meta_data
+  )
+  values
+    (owner_id, 'authenticated', 'authenticated', 'm8-owner@local.dev', 'local-validation', now(), now(), now(), '{}'::jsonb, '{}'::jsonb),
+    (admin_update_id, 'authenticated', 'authenticated', 'm8-admin-update@local.dev', 'local-validation', now(), now(), now(), '{}'::jsonb, '{}'::jsonb),
+    (admin_no_view_id, 'authenticated', 'authenticated', 'm8-admin-no-view@local.dev', 'local-validation', now(), now(), now(), '{}'::jsonb, '{}'::jsonb),
+    (member_id, 'authenticated', 'authenticated', 'm8-member@local.dev', 'local-validation', now(), now(), now(), '{}'::jsonb, '{}'::jsonb),
+    (approved_target_id, 'authenticated', 'authenticated', 'm8-approved@local.dev', 'local-validation', now(), now(), now(), '{}'::jsonb, '{}'::jsonb),
+    (pending_target_id, 'authenticated', 'authenticated', 'm8-pending@local.dev', 'local-validation', now(), now(), now(), '{}'::jsonb, '{}'::jsonb),
+    (rejected_target_id, 'authenticated', 'authenticated', 'm8-rejected@local.dev', 'local-validation', now(), now(), now(), '{}'::jsonb, '{}'::jsonb),
+    (suspended_target_id, 'authenticated', 'authenticated', 'm8-suspended@local.dev', 'local-validation', now(), now(), now(), '{}'::jsonb, '{}'::jsonb),
+    (missing_cp_target_id, 'authenticated', 'authenticated', 'm8-missing-cp@local.dev', 'local-validation', now(), now(), now(), '{}'::jsonb, '{}'::jsonb)
+  on conflict (id) do nothing;
+
+  insert into public.profiles (id, username, profile_slug, ign, approval_status)
+  values
+    (owner_id, 'm8_owner', 'm8_owner', 'M8 Owner', 'approved'),
+    (admin_update_id, 'm8_admin_update', 'm8_admin_update', 'M8 Admin Update', 'approved'),
+    (admin_no_view_id, 'm8_admin_no_view', 'm8_admin_no_view', 'M8 Admin No View', 'approved'),
+    (member_id, 'm8_member', 'm8_member', 'M8 Member', 'approved'),
+    (approved_target_id, 'm8_approved', 'm8_approved', 'M8 Approved', 'approved'),
+    (pending_target_id, 'm8_pending', 'm8_pending', 'M8 Pending', 'pending'),
+    (rejected_target_id, 'm8_rejected', 'm8_rejected', 'M8 Rejected', 'rejected'),
+    (suspended_target_id, 'm8_suspended', 'm8_suspended', 'M8 Suspended', 'suspended'),
+    (missing_cp_target_id, 'm8_missing_cp', 'm8_missing_cp', 'M8 Missing CP', 'approved')
+  on conflict (id) do update
+  set approval_status = excluded.approval_status,
+      ign = excluded.ign,
+      updated_at = now();
+
+  insert into public.guild_memberships (profile_id, guild_id, role, membership_status, is_primary)
+  values
+    (owner_id, anteiku_id, 'owner', 'active', true),
+    (admin_update_id, anteiku_id, 'admin', 'active', true),
+    (admin_no_view_id, anteiku_id, 'admin', 'active', true),
+    (member_id, anteiku_id, 'member', 'active', true),
+    (approved_target_id, anteiku_id, 'member', 'active', true),
+    (pending_target_id, anteiku_id, 'member', 'active', true),
+    (rejected_target_id, anteiku_id, 'member', 'active', true),
+    (suspended_target_id, anteiku_id, 'member', 'active', true),
+    (missing_cp_target_id, anteiku_id, 'member', 'active', true)
+  on conflict (profile_id, guild_id) do update
+  set role = excluded.role,
+      membership_status = excluded.membership_status,
+      is_primary = excluded.is_primary,
+      updated_at = now();
+
+  select gm.id into admin_membership_id
+  from public.guild_memberships gm
+  where gm.profile_id = admin_update_id
+    and gm.guild_id = anteiku_id
+    and gm.membership_status = 'active'
+  limit 1;
+
+  insert into public.admin_permissions (membership_id, permission_key, granted_by)
+  values
+    (admin_membership_id, 'view_cp', owner_id),
+    (admin_membership_id, 'update_cp', owner_id)
+  on conflict (membership_id, permission_key) do update
+  set granted_by = excluded.granted_by,
+      created_at = now();
+
+  delete from public.member_cp
+  where profile_id in (approved_target_id, pending_target_id, rejected_target_id, suspended_target_id, missing_cp_target_id);
+
+  perform set_config('request.jwt.claim.sub', owner_id::text, true);
+  perform set_config('request.jwt.claim.role', 'authenticated', true);
+
+  begin
+    execute 'set local role authenticated';
+    perform public.update_member_cp(pending_target_id, 11111, 'validation should fail');
+    execute 'reset role';
+    insert into milestone8_cp_hardening_results values ('cp_hardening', 'owner_pending_cp_update_blocked', 'FAIL', 'Owner unexpectedly updated CP for pending profile.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone8_cp_hardening_results values ('cp_hardening', 'owner_pending_cp_update_blocked', 'PASS', sqlerrm);
+  end;
+
+  begin
+    execute 'set local role authenticated';
+    perform public.update_member_cp(rejected_target_id, 11111, 'validation should fail');
+    execute 'reset role';
+    insert into milestone8_cp_hardening_results values ('cp_hardening', 'owner_rejected_cp_update_blocked', 'FAIL', 'Owner unexpectedly updated CP for rejected profile.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone8_cp_hardening_results values ('cp_hardening', 'owner_rejected_cp_update_blocked', 'PASS', sqlerrm);
+  end;
+
+  begin
+    execute 'set local role authenticated';
+    perform public.update_member_cp(suspended_target_id, 11111, 'validation should fail');
+    execute 'reset role';
+    insert into milestone8_cp_hardening_results values ('cp_hardening', 'owner_suspended_cp_update_blocked', 'FAIL', 'Owner unexpectedly updated CP for suspended profile.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone8_cp_hardening_results values ('cp_hardening', 'owner_suspended_cp_update_blocked', 'PASS', sqlerrm);
+  end;
+
+  begin
+    execute 'set local role authenticated';
+    perform public.update_member_cp(approved_target_id, 12345, 'validation approved update');
+    execute 'reset role';
+    insert into milestone8_cp_hardening_results values ('cp_hardening', 'owner_approved_cp_update_allowed', 'PASS', 'Owner updated approved active profile CP.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone8_cp_hardening_results values ('cp_hardening', 'owner_approved_cp_update_allowed', 'FAIL', sqlerrm);
+  end;
+
+  perform set_config('request.jwt.claim.sub', admin_update_id::text, true);
+
+  begin
+    execute 'set local role authenticated';
+    perform public.update_member_cp(rejected_target_id, 22222, 'validation should fail');
+    execute 'reset role';
+    insert into milestone8_cp_hardening_results values ('cp_hardening', 'admin_update_cp_rejected_profile_blocked', 'FAIL', 'Admin unexpectedly updated CP for rejected profile.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone8_cp_hardening_results values ('cp_hardening', 'admin_update_cp_rejected_profile_blocked', 'PASS', sqlerrm);
+  end;
+
+  begin
+    execute 'set local role authenticated';
+    perform public.update_member_cp(approved_target_id, 23456, 'validation admin approved update');
+    execute 'reset role';
+    insert into milestone8_cp_hardening_results values ('cp_hardening', 'admin_update_cp_approved_profile_allowed', 'PASS', 'Admin with update_cp updated approved active profile CP.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone8_cp_hardening_results values ('cp_hardening', 'admin_update_cp_approved_profile_allowed', 'FAIL', sqlerrm);
+  end;
+
+  perform set_config('request.jwt.claim.sub', owner_id::text, true);
+
+  begin
+    execute 'set local role authenticated';
+    select count(*), max(r.cp_value) into roster_missing_count, missing_cp_value
+    from public.get_current_cp_roster(anteiku_id) r
+    where r.profile_id = missing_cp_target_id;
+    execute 'reset role';
+
+    if roster_missing_count = 1 and missing_cp_value is null then
+      insert into milestone8_cp_hardening_results values ('cp_hardening', 'roster_includes_missing_cp_as_null', 'PASS', 'Roster includes active approved member with no CP row as null.');
+    else
+      insert into milestone8_cp_hardening_results values ('cp_hardening', 'roster_includes_missing_cp_as_null', 'FAIL', 'Missing CP member was absent or CP was not null.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone8_cp_hardening_results values ('cp_hardening', 'roster_includes_missing_cp_as_null', 'FAIL', sqlerrm);
+  end;
+
+  perform set_config('request.jwt.claim.sub', member_id::text, true);
+
+  begin
+    execute 'set local role authenticated';
+    perform count(*) from public.get_current_cp_roster(anteiku_id);
+    execute 'reset role';
+    insert into milestone8_cp_hardening_results values ('cp_hardening', 'member_cp_roster_read_blocked', 'FAIL', 'Member unexpectedly read CP roster.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone8_cp_hardening_results values ('cp_hardening', 'member_cp_roster_read_blocked', 'PASS', sqlerrm);
+  end;
+
+  perform set_config('request.jwt.claim.sub', admin_no_view_id::text, true);
+
+  begin
+    execute 'set local role authenticated';
+    perform count(*) from public.get_current_cp_roster(anteiku_id);
+    execute 'reset role';
+    insert into milestone8_cp_hardening_results values ('cp_hardening', 'admin_without_view_cp_roster_read_blocked', 'FAIL', 'Admin without view_cp unexpectedly read CP roster.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone8_cp_hardening_results values ('cp_hardening', 'admin_without_view_cp_roster_read_blocked', 'PASS', sqlerrm);
+  end;
+
+  perform set_config('request.jwt.claim.sub', member_id::text, true);
+
+  begin
+    execute 'set local role authenticated';
+    select count(*) into direct_count from public.member_cp;
+    execute 'reset role';
+
+    if direct_count = 0 then
+      insert into milestone8_cp_hardening_results values ('cp_hardening', 'direct_member_cp_access_blocked', 'PASS', 'Direct member_cp read returned no rows.');
+    else
+      insert into milestone8_cp_hardening_results values ('cp_hardening', 'direct_member_cp_access_blocked', 'FAIL', 'Direct member_cp read returned rows.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone8_cp_hardening_results values ('cp_hardening', 'direct_member_cp_access_blocked', 'PASS', sqlerrm);
+  end;
+
+  begin
+    execute 'set local role authenticated';
+    select count(*) into direct_count from public.cp_snapshots;
+    execute 'reset role';
+
+    if direct_count = 0 then
+      insert into milestone8_cp_hardening_results values ('cp_hardening', 'direct_cp_snapshots_access_blocked', 'PASS', 'Direct cp_snapshots read returned no rows.');
+    else
+      insert into milestone8_cp_hardening_results values ('cp_hardening', 'direct_cp_snapshots_access_blocked', 'FAIL', 'Direct cp_snapshots read returned rows.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone8_cp_hardening_results values ('cp_hardening', 'direct_cp_snapshots_access_blocked', 'PASS', sqlerrm);
+  end;
+
+  if exists (
+    select 1
+    from public.audit_logs al
+    where al.action = 'member_cp_updated'
+      and al.target_profile_id = approved_target_id
+      and al.metadata ? 'cp_old'
+      and al.metadata ? 'cp_new'
+  ) then
+    insert into milestone8_cp_hardening_results values ('cp_hardening', 'cp_update_audit_log_written', 'PASS', 'CP update audit log includes old/new metadata.');
+  else
+    insert into milestone8_cp_hardening_results values ('cp_hardening', 'cp_update_audit_log_written', 'FAIL', 'CP update audit log not found.');
+  end if;
+end;
+$$;
+
+select section, test_name, status, details
+from milestone8_cp_hardening_results
+order by section, test_name;
+
+select count(*) filter (where status = 'PASS') as milestone8_total_pass,
+       count(*) filter (where status = 'FAIL') as milestone8_total_fail
+from milestone8_cp_hardening_results;
+
+-- Milestone 11A backend validation: audit-log reader hardening and CP metadata redaction.
+-- This section is local-only test data and is rolled back with the rest of this script.
+create temp table if not exists milestone11_audit_hardening_results (
+  section text not null,
+  test_name text not null,
+  status text not null check (status in ('PASS', 'FAIL', 'SKIP')),
+  details text
+) on commit drop;
+
+do $$
+declare
+  anteiku_id uuid := '00000000-0000-0000-0000-000000000101';
+  anteiku_re_id uuid := '00000000-0000-0000-0000-000000000102';
+  owner_id uuid := '10000000-0000-4000-8000-000000001101';
+  leader_id uuid := '10000000-0000-4000-8000-000000001102';
+  vice_id uuid := '10000000-0000-4000-8000-000000001103';
+  admin_audit_id uuid := '10000000-0000-4000-8000-000000001104';
+  admin_audit_cp_id uuid := '10000000-0000-4000-8000-000000001105';
+  admin_plain_id uuid := '10000000-0000-4000-8000-000000001106';
+  member_id uuid := '10000000-0000-4000-8000-000000001107';
+  pending_id uuid := '10000000-0000-4000-8000-000000001108';
+  target_id uuid := '10000000-0000-4000-8000-000000001109';
+  admin_audit_membership_id uuid;
+  admin_audit_cp_membership_id uuid;
+  result_count integer;
+  direct_count integer;
+  audit_metadata jsonb;
+  redacted boolean;
+begin
+  insert into auth.users (
+    instance_id,
+    id,
+    aud,
+    role,
+    email,
+    encrypted_password,
+    email_confirmed_at,
+    raw_app_meta_data,
+    raw_user_meta_data,
+    created_at,
+    updated_at
+  )
+  values
+    ('00000000-0000-0000-0000-000000000000', owner_id, 'authenticated', 'authenticated', 'm11-owner.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+    ('00000000-0000-0000-0000-000000000000', leader_id, 'authenticated', 'authenticated', 'm11-leader.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+    ('00000000-0000-0000-0000-000000000000', vice_id, 'authenticated', 'authenticated', 'm11-vice.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+    ('00000000-0000-0000-0000-000000000000', admin_audit_id, 'authenticated', 'authenticated', 'm11-admin-audit.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+    ('00000000-0000-0000-0000-000000000000', admin_audit_cp_id, 'authenticated', 'authenticated', 'm11-admin-audit-cp.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+    ('00000000-0000-0000-0000-000000000000', admin_plain_id, 'authenticated', 'authenticated', 'm11-admin-plain.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+    ('00000000-0000-0000-0000-000000000000', member_id, 'authenticated', 'authenticated', 'm11-member.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+    ('00000000-0000-0000-0000-000000000000', pending_id, 'authenticated', 'authenticated', 'm11-pending.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+    ('00000000-0000-0000-0000-000000000000', target_id, 'authenticated', 'authenticated', 'm11-target.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now())
+  on conflict (id) do nothing;
+
+  insert into public.profiles (id, username, profile_slug, ign, approval_status, approved_at)
+  values
+    (owner_id, 'm11_owner', 'm11_owner', 'M11 Owner', 'approved', now()),
+    (leader_id, 'm11_leader', 'm11_leader', 'M11 Leader', 'approved', now()),
+    (vice_id, 'm11_vice', 'm11_vice', 'M11 Vice', 'approved', now()),
+    (admin_audit_id, 'm11_admin_audit', 'm11_admin_audit', 'M11 Admin Audit', 'approved', now()),
+    (admin_audit_cp_id, 'm11_admin_cp', 'm11_admin_cp', 'M11 Admin Audit CP', 'approved', now()),
+    (admin_plain_id, 'm11_admin_plain', 'm11_admin_plain', 'M11 Admin Plain', 'approved', now()),
+    (member_id, 'm11_member', 'm11_member', 'M11 Member', 'approved', now()),
+    (pending_id, 'm11_pending', 'm11_pending', 'M11 Pending', 'pending', null),
+    (target_id, 'm11_target', 'm11_target', 'M11 Target', 'approved', now())
+  on conflict (id) do update
+  set ign = excluded.ign,
+      approval_status = excluded.approval_status,
+      approved_at = excluded.approved_at;
+
+  insert into public.guild_memberships (profile_id, guild_id, role, membership_status, is_primary, assigned_by)
+  values
+    (owner_id, anteiku_id, 'owner', 'active', true, owner_id),
+    (leader_id, anteiku_id, 'leader', 'active', true, owner_id),
+    (vice_id, anteiku_id, 'vice', 'active', true, owner_id),
+    (admin_audit_id, anteiku_id, 'admin', 'active', true, owner_id),
+    (admin_audit_cp_id, anteiku_id, 'admin', 'active', true, owner_id),
+    (admin_plain_id, anteiku_id, 'admin', 'active', true, owner_id),
+    (member_id, anteiku_id, 'member', 'active', true, owner_id),
+    (pending_id, anteiku_id, 'member', 'pending', true, null),
+    (target_id, anteiku_id, 'member', 'active', true, owner_id)
+  on conflict (profile_id, guild_id) do update
+  set role = excluded.role,
+      membership_status = excluded.membership_status,
+      is_primary = excluded.is_primary,
+      assigned_by = excluded.assigned_by;
+
+  select gm.id into admin_audit_membership_id
+  from public.guild_memberships gm
+  where gm.profile_id = admin_audit_id
+    and gm.guild_id = anteiku_id
+  limit 1;
+
+  select gm.id into admin_audit_cp_membership_id
+  from public.guild_memberships gm
+  where gm.profile_id = admin_audit_cp_id
+    and gm.guild_id = anteiku_id
+  limit 1;
+
+  insert into public.admin_permissions (membership_id, permission_key, granted_by)
+  values
+    (admin_audit_membership_id, 'view_audit_logs', owner_id),
+    (admin_audit_cp_membership_id, 'view_audit_logs', owner_id),
+    (admin_audit_cp_membership_id, 'view_cp', owner_id)
+  on conflict (membership_id, permission_key) do update
+  set granted_by = excluded.granted_by,
+      created_at = now();
+
+  insert into public.audit_logs (
+    actor_profile_id,
+    target_profile_id,
+    guild_id,
+    action,
+    entity_table,
+    entity_id,
+    metadata
+  )
+  values
+    (
+      owner_id,
+      target_id,
+      anteiku_id,
+      'member_cp_updated',
+      'member_cp',
+      target_id,
+      jsonb_build_object('cp_old', 100, 'cp_new', 200, 'note', 'private CP note', 'safe_label', 'CP update')
+    ),
+    (
+      owner_id,
+      target_id,
+      anteiku_id,
+      'registration_approved',
+      'profiles',
+      target_id,
+      jsonb_build_object('approval_status_old', 'pending', 'approval_status_new', 'approved')
+    ),
+    (
+      owner_id,
+      target_id,
+      anteiku_re_id,
+      'member_role_changed',
+      'guild_memberships',
+      gen_random_uuid(),
+      jsonb_build_object('role_old', 'member', 'role_new', 'admin')
+    ),
+    (
+      owner_id,
+      null,
+      null,
+      'owner_bootstrap_completed',
+      'profiles',
+      owner_id,
+      jsonb_build_object('manual', true)
+    );
+
+  perform set_config('request.jwt.claim.role', 'authenticated', true);
+
+  perform set_config('request.jwt.claim.sub', owner_id::text, true);
+  begin
+    execute 'set local role authenticated';
+    select count(*) into result_count
+    from public.get_audit_logs(null, null, null, null, null, null, 100, null);
+    execute 'reset role';
+
+    if result_count >= 4 then
+      insert into milestone11_audit_hardening_results values ('audit_hardening', 'owner_global_audit_rpc_allowed', 'PASS', 'Owner read global audit logs through RPC.');
+    else
+      insert into milestone11_audit_hardening_results values ('audit_hardening', 'owner_global_audit_rpc_allowed', 'FAIL', 'Owner saw fewer audit logs than expected.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone11_audit_hardening_results values ('audit_hardening', 'owner_global_audit_rpc_allowed', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    execute 'set local role authenticated';
+    select count(*) into result_count
+    from public.get_audit_logs(null, 'member_cp_updated', null, null, null, null, 100, null);
+    execute 'reset role';
+
+    if result_count >= 1 then
+      insert into milestone11_audit_hardening_results values ('audit_hardening', 'action_filter_supported', 'PASS', 'Action filter returned the CP audit log.');
+    else
+      insert into milestone11_audit_hardening_results values ('audit_hardening', 'action_filter_supported', 'FAIL', 'Action filter returned no CP audit log.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone11_audit_hardening_results values ('audit_hardening', 'action_filter_supported', 'FAIL', sqlerrm);
+  end;
+
+  perform set_config('request.jwt.claim.sub', leader_id::text, true);
+  begin
+    execute 'set local role authenticated';
+    select count(*) into result_count
+    from public.get_audit_logs(anteiku_id, null, null, null, null, null, 100, null);
+    execute 'reset role';
+
+    if result_count >= 2 then
+      insert into milestone11_audit_hardening_results values ('audit_hardening', 'leader_scoped_audit_rpc_allowed', 'PASS', 'Leader read assigned guild audit logs.');
+    else
+      insert into milestone11_audit_hardening_results values ('audit_hardening', 'leader_scoped_audit_rpc_allowed', 'FAIL', 'Leader saw fewer scoped logs than expected.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone11_audit_hardening_results values ('audit_hardening', 'leader_scoped_audit_rpc_allowed', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    execute 'set local role authenticated';
+    perform count(*) from public.get_audit_logs(anteiku_re_id, null, null, null, null, null, 100, null);
+    execute 'reset role';
+    insert into milestone11_audit_hardening_results values ('audit_hardening', 'leader_wrong_guild_audit_blocked', 'FAIL', 'Leader unexpectedly read wrong-guild audit logs.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone11_audit_hardening_results values ('audit_hardening', 'leader_wrong_guild_audit_blocked', 'PASS', sqlerrm);
+  end;
+
+  perform set_config('request.jwt.claim.sub', vice_id::text, true);
+  begin
+    execute 'set local role authenticated';
+    select count(*) into result_count
+    from public.get_audit_logs(anteiku_id, null, null, null, null, null, 100, null);
+    execute 'reset role';
+
+    if result_count >= 2 then
+      insert into milestone11_audit_hardening_results values ('audit_hardening', 'vice_scoped_audit_rpc_allowed', 'PASS', 'Vice read assigned guild audit logs.');
+    else
+      insert into milestone11_audit_hardening_results values ('audit_hardening', 'vice_scoped_audit_rpc_allowed', 'FAIL', 'Vice saw fewer scoped logs than expected.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone11_audit_hardening_results values ('audit_hardening', 'vice_scoped_audit_rpc_allowed', 'FAIL', sqlerrm);
+  end;
+
+  perform set_config('request.jwt.claim.sub', admin_audit_id::text, true);
+  begin
+    execute 'set local role authenticated';
+    select count(*) into result_count
+    from public.get_audit_logs(anteiku_id, null, null, null, null, null, 100, null);
+    execute 'reset role';
+
+    if result_count >= 2 then
+      insert into milestone11_audit_hardening_results values ('audit_hardening', 'admin_with_view_audit_allowed', 'PASS', 'Admin with view_audit_logs read scoped audit logs.');
+    else
+      insert into milestone11_audit_hardening_results values ('audit_hardening', 'admin_with_view_audit_allowed', 'FAIL', 'Admin with view_audit_logs saw fewer logs than expected.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone11_audit_hardening_results values ('audit_hardening', 'admin_with_view_audit_allowed', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    execute 'set local role authenticated';
+    select r.metadata, r.metadata_redacted into audit_metadata, redacted
+    from public.get_audit_logs(anteiku_id, 'member_cp_updated', null, null, null, null, 100, null) r
+    limit 1;
+    execute 'reset role';
+
+    if redacted = true
+       and audit_metadata ? 'cp_metadata_redacted'
+       and not audit_metadata ? 'cp_old'
+       and not audit_metadata ? 'cp_new'
+       and not audit_metadata ? 'note' then
+      insert into milestone11_audit_hardening_results values ('audit_hardening', 'admin_without_view_cp_cp_metadata_redacted', 'PASS', 'CP metadata was redacted for Admin without view_cp.');
+    else
+      insert into milestone11_audit_hardening_results values ('audit_hardening', 'admin_without_view_cp_cp_metadata_redacted', 'FAIL', coalesce(audit_metadata::text, 'No CP audit metadata returned.'));
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone11_audit_hardening_results values ('audit_hardening', 'admin_without_view_cp_cp_metadata_redacted', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    execute 'set local role authenticated';
+    select count(*) into direct_count
+    from public.audit_logs
+    where action = 'member_cp_updated';
+    execute 'reset role';
+
+    if direct_count = 0 then
+      insert into milestone11_audit_hardening_results values ('audit_hardening', 'direct_audit_logs_select_non_owner_blocked', 'PASS', 'Direct audit_logs SELECT returned no rows for non-Owner.');
+    else
+      insert into milestone11_audit_hardening_results values ('audit_hardening', 'direct_audit_logs_select_non_owner_blocked', 'FAIL', 'Direct audit_logs SELECT returned ' || direct_count || ' rows.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone11_audit_hardening_results values ('audit_hardening', 'direct_audit_logs_select_non_owner_blocked', 'PASS', sqlerrm);
+  end;
+
+  perform set_config('request.jwt.claim.sub', admin_audit_cp_id::text, true);
+  begin
+    execute 'set local role authenticated';
+    select r.metadata, r.metadata_redacted into audit_metadata, redacted
+    from public.get_audit_logs(anteiku_id, 'member_cp_updated', null, null, null, null, 100, null) r
+    limit 1;
+    execute 'reset role';
+
+    if redacted = false
+       and audit_metadata ? 'cp_old'
+       and audit_metadata ? 'cp_new'
+       and audit_metadata ? 'note' then
+      insert into milestone11_audit_hardening_results values ('audit_hardening', 'admin_with_view_cp_cp_metadata_visible', 'PASS', 'Admin with view_audit_logs and view_cp received scoped CP metadata.');
+    else
+      insert into milestone11_audit_hardening_results values ('audit_hardening', 'admin_with_view_cp_cp_metadata_visible', 'FAIL', coalesce(audit_metadata::text, 'No CP audit metadata returned.'));
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone11_audit_hardening_results values ('audit_hardening', 'admin_with_view_cp_cp_metadata_visible', 'FAIL', sqlerrm);
+  end;
+
+  perform set_config('request.jwt.claim.sub', admin_plain_id::text, true);
+  begin
+    execute 'set local role authenticated';
+    perform count(*) from public.get_audit_logs(anteiku_id, null, null, null, null, null, 100, null);
+    execute 'reset role';
+    insert into milestone11_audit_hardening_results values ('audit_hardening', 'admin_without_view_audit_blocked', 'FAIL', 'Admin without view_audit_logs unexpectedly read audit logs.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone11_audit_hardening_results values ('audit_hardening', 'admin_without_view_audit_blocked', 'PASS', sqlerrm);
+  end;
+
+  perform set_config('request.jwt.claim.sub', member_id::text, true);
+  begin
+    execute 'set local role authenticated';
+    perform count(*) from public.get_audit_logs(anteiku_id, null, null, null, null, null, 100, null);
+    execute 'reset role';
+    insert into milestone11_audit_hardening_results values ('audit_hardening', 'member_audit_read_blocked', 'FAIL', 'Member unexpectedly read audit logs.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone11_audit_hardening_results values ('audit_hardening', 'member_audit_read_blocked', 'PASS', sqlerrm);
+  end;
+
+  perform set_config('request.jwt.claim.sub', pending_id::text, true);
+  begin
+    execute 'set local role authenticated';
+    perform count(*) from public.get_audit_logs(anteiku_id, null, null, null, null, null, 100, null);
+    execute 'reset role';
+    insert into milestone11_audit_hardening_results values ('audit_hardening', 'pending_audit_read_blocked', 'FAIL', 'Pending user unexpectedly read audit logs.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone11_audit_hardening_results values ('audit_hardening', 'pending_audit_read_blocked', 'PASS', sqlerrm);
+  end;
+
+  if has_function_privilege(
+    'authenticated',
+    'private.write_audit_log(uuid, uuid, uuid, text, text, uuid, jsonb)',
+    'execute'
+  ) then
+    insert into milestone11_audit_hardening_results values ('audit_hardening', 'private_write_audit_log_direct_blocked', 'FAIL', 'authenticated still has EXECUTE on private.write_audit_log.');
+  else
+    insert into milestone11_audit_hardening_results values ('audit_hardening', 'private_write_audit_log_direct_blocked', 'PASS', 'authenticated has no EXECUTE privilege on private.write_audit_log.');
+  end if;
+
+  begin
+    execute 'set local role authenticated';
+    insert into public.audit_logs (actor_profile_id, action)
+    values (admin_audit_id, 'spoof_attempt');
+    execute 'reset role';
+    insert into milestone11_audit_hardening_results values ('audit_hardening', 'audit_spoof_insert_still_blocked', 'FAIL', 'Authenticated user inserted audit log directly.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone11_audit_hardening_results values ('audit_hardening', 'audit_spoof_insert_still_blocked', 'PASS', sqlerrm);
+  end;
+end;
+$$;
+
+select section, test_name, status, details
+from milestone11_audit_hardening_results
+order by section, test_name;
+
+select count(*) filter (where status = 'PASS') as milestone11_total_pass,
+       count(*) filter (where status = 'FAIL') as milestone11_total_fail,
+       count(*) filter (where status = 'SKIP') as milestone11_total_skip
+from milestone11_audit_hardening_results;
+
+rollback;

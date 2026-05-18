@@ -1,0 +1,155 @@
+# Supabase RLS
+
+## Production Deployment Reminder
+
+Milestone 12 completed documentation-only production readiness guidance. No production project has been linked, no production migrations have been applied, and no deployment has occurred.
+
+Future production setup must:
+- Apply migrations in documented timestamp order.
+- Verify RLS is enabled on protected tables.
+- Verify policies, functions, grants, constraints, and indexes.
+- Keep CP access RPC/RLS-enforced.
+- Keep audit reads on `public.get_audit_logs(...)`.
+- Keep direct non-Owner `audit_logs` reads hardened.
+- Never run `supabase db reset` on production.
+- Never run local fake-user validation SQL on production.
+
+## Milestone 11A Audit Log Read Hardening
+
+Audit log reads now go through a safe RPC for frontend use:
+
+- `public.get_audit_logs(...)`
+
+Direct non-Owner `audit_logs` SELECT is restricted by the new owner-only direct SELECT policy. This prevents scoped staff with `view_audit_logs` from bypassing SQL-side metadata redaction.
+
+Audit visibility remains database-enforced:
+- Owner can read global audit logs.
+- Leader/Vice can read scoped guild audit logs.
+- Admin can read scoped audit logs only with `view_audit_logs`.
+- Member and pending users cannot read audit logs.
+
+CP metadata redaction:
+- Audit entries that contain CP-sensitive metadata are redacted unless the viewer also passes `private.can_view_cp(actor_id, guild_id)`.
+- Redacted metadata removes CP values and CP update notes, then adds `cp_metadata_redacted = true`.
+- Redaction happens in SQL/RPC, not in frontend code.
+
+Validation:
+- Local Supabase reset passed.
+- Local validation script passed Milestone 11A checks with 14 PASS / 0 FAIL / 0 SKIP.
+
+## Milestone 8 CP RPC Hardening
+
+CP remains RPC-only.
+
+Hardened RPC behavior:
+- `update_member_cp` rejects pending, rejected, suspended, and otherwise non-approved profiles.
+- `update_member_cp` still requires `private.can_update_cp`.
+- `get_current_cp_roster` still requires `private.can_view_cp`.
+- Direct `member_cp` and `cp_snapshots` table access remains blocked by RLS/policies.
+
+No direct CP table policies were broadened.
+
+## Milestone 7 RPC Strategy
+
+Milestone 7 keeps direct table writes blocked for member guild and role management. Sensitive changes use RPCs:
+
+- `public.assign_member_role(p_profile_id uuid, p_guild_id uuid, p_role text)`
+- `public.transfer_member_guild(p_profile_id uuid, p_from_guild_id uuid, p_to_guild_id uuid)`
+
+RLS policy broadening is not required for frontend writes because these operations are handled by permission-checked `SECURITY DEFINER` RPCs with fixed `search_path`.
+
+No CP or GvG RLS policies were changed.
+
+Milestone 2 RLS direction was implemented in Supabase migrations and has been locally validated. Later milestones add focused RPC/RLS hardening migrations on top of that baseline.
+
+## Global Rules
+
+- `auth.uid()` should match `profiles.id`.
+- Pending/rejected users can read only their own safe profile/approval/reapply state.
+- Members must never directly select CP tables.
+- Frontend hiding is not security.
+- Role and permission checks must be database-side for sensitive access.
+- Avoid direct table writes for sensitive actions; prefer permission-checked RPCs.
+- No hard deletes for important records where status/archive can be used.
+
+## Table Strategy
+
+### `profiles`
+
+- SELECT: own row for pending/rejected users; safe same-guild approved profiles for approved members; scoped admin/leader access; Owner all.
+- INSERT: registration trigger/RPC only, with `id = auth.uid()`.
+- UPDATE: users can update own IGN/avatar only through controlled path; slug/username reset requires Owner, scoped Leader/Vice, or Admin with `reset_profile_slug`.
+- DELETE: no client delete.
+
+### `guilds`
+
+- SELECT: core active guild names can be public/visible for registration.
+- INSERT/UPDATE: Owner or approved management RPC only.
+- DELETE: no client delete; archive/status instead.
+
+### `guild_memberships`
+
+- SELECT: own membership; safe same-guild membership info for approved users; scoped Leader/Vice/Admin; Owner all.
+- INSERT/UPDATE: approval and role-management RPCs only.
+- DELETE: no client delete; status changes instead.
+- v1 must enforce one active primary membership per profile with a database constraint/index.
+
+### `permission_catalog`
+
+- SELECT: authenticated approved users may read permission labels if needed for UI; public access is not required.
+- INSERT/UPDATE/DELETE: migration/Owner-controlled only.
+
+### `admin_permissions`
+
+- SELECT: Admin can read own grants; Leader/Vice can read scoped guild grants; Owner all.
+- INSERT/DELETE: grant/revoke RPC only.
+- UPDATE: avoid; revoke and re-grant.
+- Owner only can grant/revoke `view_cp` and `update_cp` to Admins in v1.
+
+### `member_cp`
+
+- SELECT: no direct member access; preferably no broad direct client select at all.
+- INSERT/UPDATE: `update_member_cp` RPC only.
+- DELETE: no client delete.
+- Owner has global access through RPC/views.
+- Leader/Vice have automatic CP view/update inside assigned guild through RPC/views.
+- Admin requires explicit `view_cp` and/or `update_cp`.
+
+### `cp_snapshots`
+
+- SELECT: no direct member access; authorized RPC/views only.
+- INSERT: manual weekly snapshot RPC only.
+- UPDATE/DELETE: no client access.
+- Same CP permission model as `member_cp`.
+
+### `gvg_events`
+
+- SELECT: approved users can read active events in their guild plus global active events.
+- INSERT/UPDATE: Owner globally; Leader/Vice in assigned guild; Admin with `manage_gvg`.
+- DELETE: no client delete; close/cancel/archive instead.
+
+### `gvg_votes`
+
+- SELECT: member can read own vote; authorized leaders/admins can read scoped results and absence reasons.
+- INSERT/UPDATE: current authenticated user only, event active only, user in event scope.
+- DELETE: no client delete.
+- v1 does not allow admins/leaders to edit or remove member votes.
+
+### `audit_logs`
+
+- SELECT: Owner all; Leader/Vice scoped guild logs by default; Admin only with `view_audit_logs`.
+- INSERT: trusted RPCs/triggers only.
+- UPDATE/DELETE: never through client.
+
+## Required Helper Checks
+
+- `is_owner(actor_id)`
+- `has_active_membership(actor_id, guild_id)`
+- `has_role(actor_id, guild_id, roles)`
+- `has_permission(actor_id, guild_id, permission_key)`
+- `can_view_cp(actor_id, guild_id)`
+- `can_update_cp(actor_id, guild_id)`
+- `can_reset_profile_slug(actor_id, target_id)`
+- `can_edit_member_ign(actor_id, target_id)`
+
+Security definer functions must set a fixed `search_path`, validate the caller internally, and avoid recursive RLS pitfalls.
