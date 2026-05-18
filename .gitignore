@@ -9,3 +9,11 @@ yarn-error.log*
 pnpm-debug.log*
 .DS_Store
 Thumbs.db
+
+# Supabase local/internal artifacts
+supabase/.branches/
+supabase/.temp/
+supabase/snippets/
+
+# Local validation output
+supabase/tests/local_validation_output.txt
