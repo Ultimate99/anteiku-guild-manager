@@ -1,14 +1,25 @@
 # Production Readiness Checklist
 
-Milestone 12 is documentation-only. This checklist is for a future approved production Supabase and Vercel deployment milestone.
+Milestone 13A production Supabase setup is complete through migration apply, production schema/RLS/seed verification, and manual Owner bootstrap.
 
-Do not perform production actions until explicitly approved.
+Do not perform additional production actions until explicitly approved.
+
+Current production checkpoint:
+- Production project ref: `mzflfyxxkascrfpteexz`.
+- Project name: `Anteiku Guild Manager Production`.
+- Region: Central EU / Frankfurt.
+- All 9 approved migrations are applied remotely.
+- Production schema/RLS/seed verification passed.
+- Manual Owner bootstrap completed for `ultimatesrb` / `UltimateSRB` in `Anteiku`.
+- Exactly one active Owner membership exists.
+- Vercel is not configured.
+- Production deployment has not happened.
 
 ## Production Supabase Setup
 
-- [ ] Create a fresh production Supabase project.
-- [ ] Record project ref, region, dashboard URL, and production API URL.
-- [ ] Keep production separate from local development.
+- [x] Create a fresh production Supabase project.
+- [x] Record project ref, region, dashboard URL, and production API URL.
+- [x] Keep production separate from local development.
 - [ ] Decide whether a staging Supabase project is needed for Vercel previews.
 - [ ] Configure email/password Auth.
 - [ ] Decide whether email confirmations are required.
@@ -53,14 +64,14 @@ Apply migrations in this order:
 
 Preferred flow:
 
-- [ ] Confirm local repo has the expected migration files.
-- [ ] Confirm target project ref before linking.
-- [ ] Run `supabase link` only after approval.
-- [ ] Run `supabase migration list`.
-- [ ] Run `supabase db push --dry-run`.
-- [ ] Review dry-run output.
-- [ ] Run `supabase db push`.
-- [ ] Verify `supabase_migrations.schema_migrations`.
+- [x] Confirm local repo has the expected migration files.
+- [x] Confirm target project ref before linking.
+- [x] Run `supabase link` only after approval.
+- [x] Run `supabase migration list`.
+- [x] Run `supabase db push --dry-run`.
+- [x] Review dry-run output.
+- [x] Run `supabase db push`.
+- [x] Verify `supabase_migrations.schema_migrations`.
 
 Hazard:
 
@@ -89,34 +100,45 @@ Do not run:
 
 Owner assignment is manual-only.
 
-- [ ] Production migrations are applied.
-- [ ] First real production Auth user exists.
-- [ ] Real `auth.users.id` is copied from Supabase.
-- [ ] `supabase/templates/owner_bootstrap_TEMPLATE.sql` placeholders are replaced.
-- [ ] Guard block is removed only in the reviewed copy being executed.
-- [ ] Initial guild ID is reviewed.
-- [ ] SQL is run in a controlled production SQL editor/session.
-- [ ] Owner profile is approved.
-- [ ] Owner membership is active and primary.
-- [ ] Owner role is `owner`.
-- [ ] There is exactly one active primary membership for the Owner.
-- [ ] Owner bootstrap audit log exists.
-- [ ] No frontend UI exposes Owner assignment.
+- [x] Production migrations are applied.
+- [x] First real production Auth user exists.
+- [x] Real `auth.users.id` is copied from Supabase.
+- [x] `supabase/templates/owner_bootstrap_TEMPLATE.sql` placeholders are replaced.
+- [x] Guard block is removed only in the reviewed copy being executed.
+- [x] Initial guild ID is reviewed.
+- [x] SQL is run in a controlled production SQL editor/session.
+- [x] Owner profile is approved.
+- [x] Owner membership is active and primary.
+- [x] Owner role is `owner`.
+- [x] There is exactly one active primary membership for the Owner.
+- [x] Owner bootstrap audit log exists.
+- [x] No frontend UI exposes Owner assignment.
+
+Production Owner record:
+- Owner Auth UUID: `a89d7b78-7a5d-4b53-86d2-59c918709d60`.
+- Owner email: `krsticmiroslav99@gmail.com`.
+- Owner username/profile slug: `ultimatesrb`.
+- Owner IGN: `UltimateSRB`.
+- Initial guild: `Anteiku`.
+- Initial guild ID: `00000000-0000-0000-0000-000000000101`.
+- `active_owner_membership_count = 1`.
+- `owner_active_primary_membership_count = 1`.
+- `owner_bootstrap_audit_count = 1`.
 
 ## Production Data Checklist
 
-- [ ] Guild `Anteiku` exists.
-- [ ] Guild `Anteiku:Re` exists.
-- [ ] Guild `Anteiku:Rose` exists.
-- [ ] Guild `Anteiku:Goat` exists.
-- [ ] Permission catalog exists.
-- [ ] `view_cp` and `update_cp` are marked sensitive.
-- [ ] No local fake users are present.
-- [ ] No fake CP/GvG/audit demo data was pushed.
+- [x] Guild `Anteiku` exists.
+- [x] Guild `Anteiku:Re` exists.
+- [x] Guild `Anteiku:Rose` exists.
+- [x] Guild `Anteiku:Goat` exists.
+- [x] Permission catalog exists.
+- [x] `view_cp` and `update_cp` are marked sensitive.
+- [x] No local fake users are present.
+- [x] No fake CP/GvG/audit demo data was pushed.
 
 ## RLS And Security Validation
 
-- [ ] RLS enabled on protected tables.
+- [x] RLS enabled on protected tables.
 - [ ] Members cannot read `member_cp`.
 - [ ] Members cannot read `cp_snapshots`.
 - [ ] Members cannot call CP roster/leaderboard/growth RPCs successfully.
@@ -129,12 +151,12 @@ Owner assignment is manual-only.
 - [ ] Admin without needed permissions is denied.
 - [ ] Guild transfer is Owner-only.
 - [ ] Normal app role assignment cannot assign `owner`.
-- [ ] Direct `gvg_votes` writes from frontend are absent.
-- [ ] GvG vote switching keeps one row per event/profile.
-- [ ] Audit viewer uses `get_audit_logs`.
-- [ ] Direct non-Owner `audit_logs` reads are blocked or return no rows.
-- [ ] CP-sensitive audit metadata redacts for users without scoped `view_cp`.
-- [ ] `private.write_audit_log` is not executable by normal authenticated users.
+- [x] Direct `gvg_votes` writes are unavailable through direct table policies.
+- [ ] GvG vote switching keeps one row per event/profile in deployed production browser validation.
+- [ ] Audit viewer uses `get_audit_logs` in deployed production browser validation.
+- [x] Direct non-Owner `audit_logs` reads are blocked or return no rows.
+- [ ] CP-sensitive audit metadata redacts for users without scoped `view_cp` in deployed production browser validation.
+- [x] `private.write_audit_log` is not executable by normal authenticated users.
 
 ## Vercel Deployment Checklist
 

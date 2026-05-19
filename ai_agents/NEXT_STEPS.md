@@ -2,33 +2,43 @@
 
 ## Current Recommendation
 
-Milestone 12 production readiness documentation is complete.
+Milestone 13A production Supabase setup is complete through migrations, production verification, and manual Owner bootstrap.
 
 Validated:
-- Documentation-only runbook/checklist implemented.
-- No source logic changed.
-- No React files changed.
-- No Supabase migrations changed.
-- No production Supabase project was linked.
-- No deployment was performed.
-- No commit was made.
+- Production project ref is `mzflfyxxkascrfpteexz`.
+- All 9 approved migrations are applied remotely.
+- Production schema/RLS/seed verification passed.
+- Protected tables, policies, RPCs, grants, indexes, constraints, and seed data were verified.
+- Owner bootstrap completed for `ultimatesrb` / `UltimateSRB` in `Anteiku`.
+- Exactly one active Owner membership exists.
+- `owner_bootstrapped` audit log exists.
+- Vercel is not configured.
+- Production deployment has not happened.
 
 Recommended next milestone:
-- Milestone 13: production Supabase + Vercel setup only after explicit user approval.
+- Milestone 13B: Vercel setup + Supabase Auth URL configuration + production smoke/security validation.
 
-Milestone 13 should follow:
+Milestone 13B should follow:
 - `docs/DEPLOYMENT.md`
 - `docs/PRODUCTION_CHECKLIST.md`
 
-Milestone 13 must include:
-- Fresh production Supabase project setup.
-- Production Auth Site URL and redirect URL configuration.
-- Safe migration dry-run and apply flow.
-- Manual Owner bootstrap with real production Auth user id.
+Milestone 13B must include:
+- Vercel project setup.
 - Vercel project/env setup using only `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+- No service role key or secret keys in frontend/Vercel public env.
+- Production Auth Site URL and redirect URL configuration.
+- Production deploy.
+- Owner login smoke test.
+- Pending/member/admin security-flow testing.
+- Network checks for CP, GvG, audit, role, and permission paths.
 - Production browser/network/RLS validation.
 
-Do not start production actions without explicit approval.
+Do not start Vercel/Auth URL/deploy actions without explicit approval.
+
+Local tooling note:
+- `package.json` and `package-lock.json` are modified because Supabase CLI was installed locally as dev tooling.
+- Do not revert them.
+- Commit them later with the docs/tooling checkpoint after user approval.
 
 Alternative future feature planning options:
 - Reapply flow UI/RPC integration.

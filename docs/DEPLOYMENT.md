@@ -2,26 +2,26 @@
 
 Vercel is the intended hosting target. Production deployment has not been performed yet.
 
-This document is a runbook for a future approved milestone. Do not deploy, link a production Supabase project, or run production commands without explicit approval.
+Milestone 13A completed production Supabase migration apply, production schema/RLS/seed verification, and manual Owner bootstrap. Do not deploy, configure Auth URLs, or run additional production commands without explicit approval.
 
 ## Production Supabase Project
 
-Create a fresh Supabase project for production. Keep it separate from local development and any future staging project.
+Production Supabase project is created and separate from local development.
 
-Record before proceeding:
+Recorded production project:
 
-- Supabase organization.
-- Production project reference.
-- Region.
-- Production app domain.
-- Production Supabase URL.
-- Browser-safe anon or publishable key.
+- Project ref: `mzflfyxxkascrfpteexz`.
+- Project name: `Anteiku Guild Manager Production`.
+- Region: Central EU / Frankfurt.
+- Production app domain: pending Milestone 13B.
+- Production Supabase URL: retrieve from Supabase dashboard for Vercel `VITE_SUPABASE_URL`.
+- Browser-safe anon or publishable key: retrieve from Supabase dashboard for Vercel `VITE_SUPABASE_ANON_KEY`.
 
 Do not copy service role keys, `sb_secret_*` keys, database URLs, JWT secrets, or SMTP/OAuth secrets into frontend code or Vercel public env.
 
 ## Supabase Auth Configuration
 
-Configure Auth in the Supabase dashboard before production smoke testing:
+Still pending for Milestone 13B. Configure Auth in the Supabase dashboard before production smoke testing:
 
 - Site URL: production Vercel/custom domain.
 - Redirect URLs: exact production URLs.
@@ -33,17 +33,17 @@ The app uses email/password auth through Supabase JS.
 
 ## Migration Workflow
 
-Preferred future workflow:
+Milestone 13A completed this workflow using the local Supabase CLI dev tooling:
 
 ```powershell
-supabase login
-supabase link
-supabase migration list
-supabase db push --dry-run
-supabase db push
+npx.cmd supabase link
+npx.cmd supabase migration list
+npx.cmd supabase db push --dry-run
+npx.cmd supabase db push
+npx.cmd supabase migration list
 ```
 
-Confirm the linked project ref before every remote command.
+Linked project ref was confirmed as `mzflfyxxkascrfpteexz`.
 
 Migration order:
 
@@ -57,7 +57,7 @@ Migration order:
 8. `20260515000200_cp_rpc_hardening.sql`
 9. `20260515000300_audit_log_read_hardening.sql`
 
-After applying migrations, verify:
+After applying migrations, production verification passed:
 
 - Core tables exist.
 - Constraints and indexes exist.
@@ -90,19 +90,18 @@ Also forbidden unless separately reviewed and approved:
 
 ## Owner Bootstrap
 
-Owner bootstrap remains manual-only.
+Owner bootstrap remains manual-only. Production Owner bootstrap was completed in Milestone 13A using `supabase/templates/owner_bootstrap_TEMPLATE.sql`.
 
-Use `supabase/templates/owner_bootstrap_TEMPLATE.sql` only after:
+Completed bootstrap record:
 
-- Production migrations are applied.
-- A real production Supabase Auth user exists.
-- The real `auth.users.id` is known.
-- Placeholders are replaced.
-- The safety guard is intentionally removed.
-- The selected initial guild ID is reviewed.
-- The SQL is run in a controlled SQL editor/session.
+- Owner Auth UUID: `a89d7b78-7a5d-4b53-86d2-59c918709d60`.
+- Owner email: `krsticmiroslav99@gmail.com`.
+- Owner username/profile slug: `ultimatesrb`.
+- Owner IGN: `UltimateSRB`.
+- Initial guild: `Anteiku`.
+- Initial guild ID: `00000000-0000-0000-0000-000000000101`.
 
-After bootstrap, verify:
+Verified after bootstrap:
 
 - Owner profile is `approved`.
 - Owner has exactly one active primary membership.
@@ -111,7 +110,11 @@ After bootstrap, verify:
 - An owner bootstrap audit log exists.
 - No UI exposes Owner assignment.
 
+Do not rerun Owner bootstrap unless a separate recovery plan is approved.
+
 ## Vercel Project
+
+Pending for Milestone 13B.
 
 Configure Vercel:
 
@@ -140,6 +143,8 @@ Recommended policy:
 - Do not allow preview branches to mutate production data unless a separate policy is approved.
 
 ## Post-Deployment Validation
+
+Pending for Milestone 13B.
 
 After deployment:
 

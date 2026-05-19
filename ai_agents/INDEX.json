@@ -1,7 +1,7 @@
 {
   "project": "Anteiku Guild Manager",
-  "currentMilestone": "Milestone 12 production readiness documentation complete",
-  "status": "milestone_12_production_readiness_docs_complete",
+  "currentMilestone": "Milestone 13A production Supabase checkpoint complete",
+  "status": "milestone_13a_production_supabase_checkpoint_complete",
   "milestone7BackendStatus": "SQL/RPC migration created for hardened role assignment and Owner-only guild transfer; local Supabase validation passed.",
   "milestone7ValidationStatus": "npx.cmd supabase db reset passed; local_validation_anteiku.sql passed; role assignment and guild transfer tests passed.",
   "milestone7FrontendStatus": "Admin member role-change and Owner-only guild-transfer UI browser validated; network writes used assign_member_role and transfer_member_guild; no CP/GvG calls observed.",
@@ -11,15 +11,51 @@
   "milestone10Status": "GvG event management and member voting UI implemented and live browser validated. Build passed; Owner event lifecycle, member Present/Absent switching, one-row vote persistence, staff results/reasons, member privacy, permission denial, scope denial, closed-event denial, no CP calls during GvG actions, and no direct GvG table writes all passed.",
   "milestone11AStatus": "Backend audit-log read hardening implemented and locally validated. get_audit_logs provides permission-checked audit reads with SQL-side CP metadata redaction; direct non-Owner audit_logs SELECT is restricted; validation passed 14 PASS / 0 FAIL / 0 SKIP.",
   "milestone11BStatus": "Frontend-only AdminPanel audit log viewer complete. Implemented using only get_audit_logs; build passed; source validation found no direct audit_logs table reads, no CP RPC/table calls in the audit viewer path, and no audit write/update/delete/export UI; manual live browser validation passed with no bugs or incomplete tests.",
-  "milestone12Status": "Docs-only production readiness runbook/checklist complete. Created docs/PRODUCTION_CHECKLIST.md, expanded deployment/setup docs, refreshed README/env/docs/handoff, documented migration order, production safety rules, Owner bootstrap, Vercel env policy, forbidden commands, local-validation warning, and seed.sql hazard. No source, SQL, deployment, production linking, dependencies, or commit actions were performed.",
-  "nextRecommendedStep": "Milestone 13 production Supabase + Vercel setup only after explicit user approval, following docs/DEPLOYMENT.md and docs/PRODUCTION_CHECKLIST.md.",
+  "milestone12Status": "Docs-only production readiness runbook/checklist complete. Created docs/PRODUCTION_CHECKLIST.md, expanded deployment/setup docs, refreshed README/env/docs/handoff, documented migration order, production safety rules, Owner bootstrap, Vercel env policy, forbidden commands, local-validation warning, and seed.sql hazard.",
+  "milestone13AStatus": "Production Supabase project exists; all 9 migrations applied remotely; production schema/RLS/seed verification passed; manual Owner bootstrap complete; exactly one active Owner membership exists; Owner bootstrap audit log exists; Vercel not configured; deployment not performed.",
+  "nextRecommendedStep": "Milestone 13B: configure Vercel, configure Supabase Auth Site URL and Redirect URLs, deploy, and run production smoke/security validation.",
+  "productionSupabase": {
+    "projectRef": "mzflfyxxkascrfpteexz",
+    "projectName": "Anteiku Guild Manager Production",
+    "region": "Central EU / Frankfurt",
+    "migrationsApplied": [
+      "20260514000100",
+      "20260514000200",
+      "20260514000300",
+      "20260514000400",
+      "20260514000500",
+      "20260514000600",
+      "20260515000100",
+      "20260515000200",
+      "20260515000300"
+    ],
+    "schemaRlsSeedVerification": "passed"
+  },
+  "productionOwner": {
+    "authUserId": "a89d7b78-7a5d-4b53-86d2-59c918709d60",
+    "email": "krsticmiroslav99@gmail.com",
+    "username": "ultimatesrb",
+    "profileSlug": "ultimatesrb",
+    "ign": "UltimateSRB",
+    "initialGuild": "Anteiku",
+    "initialGuildId": "00000000-0000-0000-0000-000000000101",
+    "role": "owner",
+    "membershipStatus": "active",
+    "isPrimary": true,
+    "activeOwnerMembershipCount": 1,
+    "ownerActivePrimaryMembershipCount": 1,
+    "ownerBootstrapAuditCount": 1
+  },
   "productionReadiness": {
-    "productionSupabaseCreated": false,
-    "productionSupabaseLinked": false,
-    "productionMigrationsApplied": false,
-    "productionOwnerBootstrapped": false,
+    "productionSupabaseCreated": true,
+    "productionSupabaseLinked": true,
+    "productionMigrationsApplied": true,
+    "productionSchemaRlsSeedVerified": true,
+    "productionOwnerBootstrapped": true,
     "vercelConfigured": false,
+    "authUrlsConfigured": false,
     "deployed": false,
+    "productionSmokeValidated": false,
     "runbookReady": true
   },
   "productionWarnings": [
@@ -27,8 +63,10 @@
     "Do not run supabase/tests/local_validation_anteiku.sql against production because it inserts fake auth users/test data.",
     "supabase/config.toml references missing ./seed.sql; do not use db push --include-seed until resolved.",
     "Never place service role keys, sb_secret_* keys, database URLs, JWT secrets, SMTP secrets, or OAuth secrets in frontend/Vercel public env.",
-    "Owner bootstrap remains manual-only with a real production Auth user id."
+    "Owner assignment remains manual-only and must not be exposed in frontend UI.",
+    "Vercel Preview deployments must not accidentally point to production Supabase unless a separate policy is approved."
   ],
+  "localToolingNote": "package.json and package-lock.json are modified because Supabase CLI was installed locally as dev tooling; do not revert them and commit later with a tooling/docs checkpoint when approved.",
   "localTestingNote": "After local DB reset, stale browser auth can cause profiles_id_fkey registration errors; clear localStorage/sessionStorage before retesting auth/registration.",
   "stack": {
     "frontend": "React + Vite",
@@ -56,12 +94,15 @@
     "GvG event management and member voting persistence",
     "safe audit log reader RPC with CP metadata redaction",
     "read-only AdminPanel audit log viewer using get_audit_logs",
-    "production readiness documentation"
+    "production readiness documentation",
+    "production Supabase migrations",
+    "production schema/RLS/seed verification",
+    "manual production Owner bootstrap"
   ],
   "notImplemented": [
-    "production Supabase deployment",
-    "production Owner bootstrap",
     "Vercel deployment",
+    "production Auth Site URL and Redirect URL configuration",
+    "production browser/network smoke validation",
     "avatar editing",
     "normal-user username/profile slug editing",
     "reapply UI",
@@ -69,14 +110,14 @@
     "weekly CP snapshot/growth report UI",
     "guild/subguild management UI"
   ],
-  "securityStatus": "locally validated in Supabase; production deployment pending",
-  "schemaSpecStatus": "migrations created and locally validated; production application pending",
+  "securityStatus": "locally validated in Supabase and production catalog-verified; deployed app smoke/security validation pending.",
+  "schemaSpecStatus": "migrations created, locally validated, applied to production, and production catalog-verified.",
   "cpDecision": "CP stored outside profiles in member_cp and cp_snapshots; member direct SELECT forbidden; access through permission-checked RPC/views.",
   "roleDecision": "Owner global CP access; Leader/Vice automatic guild-scoped CP access; Admin explicit CP permissions granted only by Owner.",
   "membershipDecision": "v1 enforces one active primary guild membership per user while preserving room for history/future multi-guild.",
   "gvgDecision": "supports guild-specific and global events; v1 vote correction by admins/leaders is not allowed.",
-  "supabaseValidationStatus": "Local validation passed: 29 PASS / 0 FAIL / 0 SKIP; setup failures 0; security failures 0.",
+  "supabaseValidationStatus": "Local validation passed: 29 PASS / 0 FAIL / 0 SKIP; production schema/RLS/seed verification passed after all 9 migrations were applied.",
   "securityIssueFixed": "Private helper parameter shadowing caused CP/RPC permission leakage during validation; fixed with p_* helper parameters and validated successfully.",
-  "validationStatus": "Milestone 11B live browser validation passed after build and source validation; Milestone 12 docs-only validation updated handoff and JSON; npm.cmd audit reports 2 moderate Vite/esbuild dev-server vulnerabilities tracked as development-only.",
+  "validationStatus": "Milestone 13A production migration apply, catalog verification, and Owner bootstrap verification passed; Milestone 13B deployment smoke/security validation pending.",
   "auditStatus": "Do not run npm audit fix --force; it would install Vite 8.0.13 as a breaking major upgrade."
 }

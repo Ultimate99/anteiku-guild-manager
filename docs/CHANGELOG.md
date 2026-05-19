@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-05-19 - Milestone 13A Production Supabase Checkpoint
+
+- Production Supabase project was created and linked: `mzflfyxxkascrfpteexz`.
+- Production project name: `Anteiku Guild Manager Production`.
+- Region: Central EU / Frankfurt.
+- All 9 approved migrations were applied remotely.
+- Production schema/RLS/seed verification passed.
+- Verified protected tables, RLS, policies, RPCs, grants, indexes, constraints, and seed data.
+- Manual Owner bootstrap completed using `supabase/templates/owner_bootstrap_TEMPLATE.sql`.
+- Owner profile `ultimatesrb` / `UltimateSRB` is approved in `Anteiku`.
+- Exactly one active Owner membership exists.
+- `owner_bootstrapped` audit log exists.
+- Vercel is not configured.
+- Production deployment has not happened.
+- Added documentation/handoff checkpoint for Milestone 13B.
+- Noted that `package.json` and `package-lock.json` are modified because Supabase CLI was installed locally as dev tooling and should be committed later with a tooling/docs checkpoint.
+- No source logic, React files, SQL migrations, CP logic, GvG logic, audit logic, role/guild management logic, permission checkbox logic, Vercel config, deploy, or commit actions were included.
+
 ## 2026-05-15 - Milestone 12 Production Readiness Docs
 
 - Added docs-only production readiness runbook/checklist.

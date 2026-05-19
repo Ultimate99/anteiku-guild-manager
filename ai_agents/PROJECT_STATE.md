@@ -1,5 +1,56 @@
 # Project State
 
+## Milestone 13A Production Supabase Checkpoint
+
+Milestone 13A production Supabase setup is partially complete.
+
+Completed:
+- Fresh production Supabase project exists.
+- Production project ref: `mzflfyxxkascrfpteexz`.
+- Project name: `Anteiku Guild Manager Production`.
+- Region: Central EU / Frankfurt.
+- All 9 approved migrations were applied remotely.
+- `npx.cmd supabase migration list` showed local and remote migration history matched.
+- Production schema/RLS/seed verification passed.
+- Protected tables, RLS, policies, RPCs, grants, indexes, and seed data were verified.
+- Owner bootstrap was run manually using `supabase/templates/owner_bootstrap_TEMPLATE.sql`.
+- Exactly one active Owner membership exists.
+- Owner profile is approved.
+- `owner_bootstrapped` audit log exists.
+
+Owner bootstrap record:
+- Owner Auth UUID: `a89d7b78-7a5d-4b53-86d2-59c918709d60`.
+- Owner email: `krsticmiroslav99@gmail.com`.
+- Owner username/profile slug: `ultimatesrb`.
+- Owner IGN: `UltimateSRB`.
+- Initial guild: `Anteiku`.
+- Initial guild ID: `00000000-0000-0000-0000-000000000101`.
+- Role: `owner`.
+- Membership status: `active`.
+- Primary membership: `true`.
+- `active_owner_membership_count = 1`.
+- `owner_active_primary_membership_count = 1`.
+- `owner_bootstrap_audit_count = 1`.
+
+Scope confirmation:
+- No source logic changed during the checkpoint documentation pass.
+- No React files changed.
+- No SQL migrations changed.
+- No SQL migrations were created.
+- No Supabase commands were run during this documentation checkpoint.
+- Owner bootstrap was not rerun.
+- Vercel has not been configured.
+- No production deployment has happened.
+- No commit was made.
+
+Local tooling note:
+- `package.json` and `package-lock.json` are currently modified because Supabase CLI was installed locally as dev tooling.
+- Do not revert those files.
+- Commit them later with a tooling/docs checkpoint when the user approves.
+
+Recommended next milestone:
+- Milestone 13B: Vercel setup + Supabase Auth URL configuration + production smoke/security validation.
+
 ## Milestone 12 Production Readiness Docs Complete
 
 Milestone 12 was implemented as a documentation-only production readiness pass.
@@ -349,7 +400,7 @@ Validated results:
 
 ## Current Milestone
 
-Milestone 12 production readiness documentation is complete. It is docs-only and did not perform deployment or production Supabase setup.
+Milestone 13A production Supabase setup is complete through migrations, production catalog verification, and manual Owner bootstrap. Milestone 13B should configure Vercel, configure Supabase Auth URLs, deploy, and run production smoke/security validation.
 
 ## Current Status
 
@@ -357,7 +408,7 @@ The app is a React + Vite frontend backed by local Supabase migrations/RLS/RPCs.
 
 Current capabilities include local Supabase auth/session restore, registration through `register_profile`, pending/rejected/suspended gates, approval/rejection queue, own IGN editing, admin member profile management, role/guild management through RPCs, Admin permission checkbox management, protected CP management/leaderboard, GvG event management and voting, and read-only audit log viewing through `get_audit_logs`.
 
-Production has not been set up. No production Supabase project is linked, migrations are not applied remotely, Owner bootstrap has not been performed in production, and Vercel deployment is not configured.
+Production Supabase is set up through migrations and Owner bootstrap. Vercel deployment is not configured, production Auth Site URL/redirect URL setup is still pending, and production browser/network smoke validation has not happened.
 
 ## Implemented
 
@@ -399,10 +450,9 @@ Production has not been set up. No production Supabase project is linked, migrat
 
 ## Not Implemented
 
-- Remote/production database schema
-- Production Supabase auth/RPC integration
-- Production Owner bootstrap
 - Vercel deployment
+- Supabase Auth Site URL / Redirect URL production configuration
+- Production browser/network smoke validation
 - Suspended/left/rejected member management
 - Avatar editing
 - Username/profile slug editing for normal users

@@ -1,5 +1,76 @@
 # Testing And Validation
 
+## Milestone 13A Production Supabase Verification And Owner Bootstrap
+
+Milestone 13A production database work is complete through migration apply, catalog verification, and manual Owner bootstrap.
+
+Production project:
+- Project ref: `mzflfyxxkascrfpteexz`.
+- Project name: `Anteiku Guild Manager Production`.
+- Region: Central EU / Frankfurt.
+
+Migration apply:
+- `npx.cmd supabase db push` completed successfully before this documentation checkpoint.
+- `npx.cmd supabase migration list` showed all 9 migrations applied remotely.
+- No `db reset` was run.
+- No `--include-seed` was used.
+- `supabase/tests/local_validation_anteiku.sql` was not run against production.
+
+Remote migrations applied:
+- `20260514000100`
+- `20260514000200`
+- `20260514000300`
+- `20260514000400`
+- `20260514000500`
+- `20260514000600`
+- `20260515000100`
+- `20260515000200`
+- `20260515000300`
+
+Production schema/RLS/seed verification passed:
+- Core tables exist.
+- Core guild seed rows exist: `Anteiku`, `Anteiku:Re`, `Anteiku:Rose`, `Anteiku:Goat`.
+- Permission catalog exists.
+- `view_cp` and `update_cp` are marked sensitive.
+- RLS is enabled on protected tables.
+- Expected RLS policies exist.
+- Expected public RPCs exist.
+- Expected private helper functions exist.
+- `private.write_audit_log` is not executable by normal authenticated users.
+- `public.get_audit_logs(...)` is executable by authenticated users.
+- Expected constraints and indexes exist, including `gvg_votes_event_profile_uidx`.
+- Direct `member_cp` and `cp_snapshots` remain protected by RLS with no direct policies.
+- Direct `audit_logs` SELECT is Owner-only.
+- Direct `gvg_votes` writes remain unavailable through direct table policies.
+
+Owner bootstrap verification passed:
+- Owner Auth UUID: `a89d7b78-7a5d-4b53-86d2-59c918709d60`.
+- Owner email: `krsticmiroslav99@gmail.com`.
+- Owner username/profile slug: `ultimatesrb`.
+- Owner IGN: `UltimateSRB`.
+- Initial guild: `Anteiku`.
+- Initial guild ID: `00000000-0000-0000-0000-000000000101`.
+- Owner profile `approval_status = approved`.
+- Owner membership `role = owner`.
+- Owner membership `membership_status = active`.
+- Owner membership `is_primary = true`.
+- `active_owner_membership_count = 1`.
+- `owner_active_primary_membership_count = 1`.
+- `owner_bootstrap_audit_count = 1`.
+
+Still pending for Milestone 13B:
+- Vercel configuration.
+- Production Auth Site URL and Redirect URL setup.
+- Production deployment.
+- Production browser/network smoke validation.
+- Pending/member/admin security-flow validation against deployed app.
+
+Documentation checkpoint validation:
+- No Supabase commands were run during this documentation checkpoint.
+- No source logic files were edited.
+- No SQL migrations were edited or created.
+- `ai_agents/INDEX.json` must parse after update.
+
 ## Milestone 12 Production Readiness Documentation
 
 Milestone 12 was documentation-only.
