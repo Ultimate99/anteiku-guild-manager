@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-05-20 - Milestone 14A Production Hardening Policy Docs
+
+- Added documentation-only production hardening and cleanup policy guidance.
+- Documented manual Vercel GitHub App restriction checklist for repository-only access to `Ultimate99/anteiku-guild-manager`.
+- Recorded that no Vercel settings, GitHub App settings, production commands, source logic, SQL migrations, deployment, user cleanup, or commit actions were performed.
+- Recorded controlled production test member policy for `krsticmiroslav99+m13b21144225@gmail.com`: keep documented for now, do not hard-delete, preserve validation/audit history, and require explicit approval for cleanup.
+- Documented Preview/Staging policy: Production env only for Production deployments, Preview env unconfigured until staging exists, future staging Supabase must be separate, and broad production redirect wildcards should be avoided.
+- Recorded deferred production smoke tests: GvG production smoke deferred to avoid persistent production test data, and CP redaction browser scenario deferred due missing staff/data setup.
+- Added launch operations checklist for member approvals, audit monitoring, CP updates, GvG event safety, admin permission safety, and production SQL safety.
+
 ## 2026-05-19 - Milestone 13B Production Deployment Validation Passed
 
 - Vercel setup completed for `Ultimate99/anteiku-guild-manager` on production branch `main`.

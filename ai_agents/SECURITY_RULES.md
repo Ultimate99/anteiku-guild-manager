@@ -1,10 +1,23 @@
 # Security Rules
 
+## Milestone 14A Production Hardening Rules
+
+Milestone 14A documented production hardening policy only. It did not run production commands, change Vercel settings, change GitHub App settings, disable/delete/suspend users, edit source logic, edit SQL migrations, deploy, or commit.
+
+Current production hardening rules:
+- Restricting the Vercel GitHub App to `Ultimate99/anteiku-guild-manager` is recommended but must be performed manually only after explicit approval.
+- Do not change Vercel env vars during GitHub App restriction.
+- Keep the controlled production test member documented for now; do not hard-delete it without an approved cleanup plan.
+- Preview deployments should have no Supabase env vars until a separate staging Supabase project exists.
+- Future staging must be separate from production.
+- Production GvG smoke tests that create data require explicit approval and a cleanup/data-retention plan.
+- CP redaction browser tests should preferably use staging with a controlled staff/data setup.
+
 ## Production Readiness Rules
 
 Production deployment must not weaken existing RLS/RPC security.
 
-Milestone 12 documented the production runbook only. It did not deploy, link production Supabase, edit SQL migrations, or change source logic.
+Production is live at `https://anteiku-guild-manager.vercel.app`. Milestone 13B deployment validation passed, and Milestone 14A added hardening/cleanup policy documentation only.
 
 Production hard rules:
 - Members must never see CP values.

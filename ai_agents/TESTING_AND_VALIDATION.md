@@ -1,5 +1,28 @@
 # Testing And Validation
 
+## Milestone 14A Production Hardening Docs Validation
+
+Milestone 14A is documentation-only.
+
+Validation expectations for this pass:
+- `ai_agents/INDEX.json` parses as valid JSON after update.
+- No source logic files changed.
+- No React files changed.
+- No SQL migrations changed.
+- No SQL migrations were created.
+- No production commands were run.
+- No Vercel settings were changed.
+- No GitHub App settings were changed.
+- No users were disabled, deleted, or suspended.
+- No deployment or commit was performed.
+
+Production hardening policies documented:
+- Manual Vercel GitHub App restriction checklist.
+- Controlled production test member retention policy.
+- Preview/Staging separation policy.
+- Deferred GvG production smoke and CP redaction browser-test strategy.
+- Launch operations checklist for approvals, audit monitoring, CP updates, GvG events, admin permissions, and production SQL safety.
+
 ## Milestone 13B Production Deployment Smoke Validation Passed
 
 Milestone 13B is complete.

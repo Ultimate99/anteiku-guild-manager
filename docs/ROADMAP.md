@@ -15,12 +15,21 @@
 - Milestone 11A: backend audit-log read hardening and CP metadata redaction.
 - Milestone 11B: frontend read-only Audit Log Viewer using `get_audit_logs`.
 - Milestone 12: docs-only production readiness runbook/checklist.
+- Milestone 13A: production Supabase migrations, schema/RLS/seed verification, and manual Owner bootstrap.
+- Milestone 13B: Vercel deployment, Supabase Auth URL configuration, and production smoke/security validation.
+- Milestone 14A: docs-only production hardening and cleanup policy.
 
 ## Recommended Next
 
-Milestone 13 should be production Supabase + Vercel setup only after explicit approval.
+Milestone 14B should be a manual production-hardening or cleanup step only after explicit approval.
 
-Milestone 13 should follow:
+Strong candidates:
+
+- Manual Vercel GitHub App restriction to only `Ultimate99/anteiku-guild-manager`.
+- Controlled production test member cleanup planning.
+- Staging Supabase + Vercel Preview environment planning.
+
+Production operations should follow:
 
 - [DEPLOYMENT.md](DEPLOYMENT.md)
 - [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md)

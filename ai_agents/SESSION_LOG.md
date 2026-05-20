@@ -1,5 +1,24 @@
 # Session Log
 
+## 2026-05-20 - Milestone 14A Production Hardening Policy Docs
+
+- Implemented Milestone 14A as a documentation-only production hardening and cleanup policy pass.
+- Documented manual Vercel GitHub App restriction checklist.
+- Recorded that Vercel GitHub App restriction is recommended but not executed.
+- Recorded controlled production test member remains in production:
+  - Email: `krsticmiroslav99+m13b21144225@gmail.com`.
+  - Username/profile slug: `m13bmember21056302`.
+  - IGN: `M13B Member 21056302`.
+  - Status: approved Member.
+- Documented controlled test member policy: keep documented for now, do not hard-delete, preserve validation/audit history, and require explicit approval for cleanup.
+- Documented Preview/Staging policy: Production env only on Production deployments, Preview env unconfigured until staging exists, staging Supabase separate from production, and no broad preview redirect wildcards against production.
+- Recorded deferred production smoke tests:
+  - GvG production smoke remains deferred to avoid persistent production GvG test data.
+  - CP redaction browser scenario remains deferred due missing production staff/data combination.
+- Added launch operations guidance for before inviting real members, approvals, audit log monitoring, CP update safety, GvG event safety, admin permission safety, and production SQL safety.
+- No production commands were run.
+- No source logic, React files, SQL migrations, Supabase schema/RLS/RPC, Vercel settings, GitHub App settings, user cleanup action, deployment, commit, CP logic, GvG logic, audit logic, role/guild management logic, or permission checkbox logic was changed.
+
 ## 2026-05-19 - Milestone 13B Production Deployment Validation Passed
 
 - Milestone 13B Vercel setup, Supabase Auth URL configuration, and production smoke/security validation completed.

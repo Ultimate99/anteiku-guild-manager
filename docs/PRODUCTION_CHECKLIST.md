@@ -15,6 +15,73 @@ Current production checkpoint:
 - Supabase Auth Site URL and Redirect URL allow-list are configured for the production URL.
 - Production smoke/security validation passed with documented deferred production-only items.
 
+## Milestone 14A Production Hardening Policy
+
+Milestone 14A is a documentation-only production hardening and cleanup policy pass.
+
+- [x] No production commands were run.
+- [x] No source logic was changed.
+- [x] No SQL migrations were changed or created.
+- [x] No Vercel settings were changed.
+- [x] No GitHub App settings were changed.
+- [x] No users were disabled, deleted, or suspended.
+- [x] Vercel GitHub App restriction is recommended below but was not executed.
+- [x] The controlled production test member remains in production and is documented below.
+- [x] Preview/staging policy is documented.
+- [x] Deferred production smoke tests and safer future testing paths are documented.
+
+## Vercel GitHub App Hardening Checklist
+
+Manual action only. Do not change Vercel env vars during this step.
+
+- [ ] Open GitHub.
+- [ ] Go to `Settings -> Applications -> Installed GitHub Apps`.
+- [ ] Select `Vercel`.
+- [ ] Restrict repository access to only `Ultimate99/anteiku-guild-manager`.
+- [ ] Save the GitHub App installation changes.
+- [ ] Confirm the Vercel project still points to `Ultimate99/anteiku-guild-manager` on `main`.
+- [ ] Confirm the Vercel project can still deploy from `main` after the restriction.
+- [ ] Do not broaden Vercel access to unrelated repositories unless separately approved.
+
+## Controlled Production Test Member Policy
+
+Controlled test member currently present in production:
+
+- Email: `krsticmiroslav99+m13b21144225@gmail.com`.
+- Username/profile slug: `m13bmember21056302`.
+- IGN: `M13B Member 21056302`.
+- Status: approved Member.
+
+Recommended policy:
+
+- Keep the controlled test member documented for now.
+- Do not hard-delete the user or related profile/membership rows.
+- Preserve validation and audit history.
+- Prefer a future safe status change, Auth-user disable action, or dedicated suspend/leave feature if cleanup is needed.
+- Any cleanup action requires explicit approval, a rollback note, and post-action verification.
+
+## Preview And Staging Policy
+
+- Production Vercel env values must exist only for Production deployments.
+- Preview deployments should have no Supabase env vars until a separate staging Supabase project exists.
+- A future staging Supabase project must be separate from production and must use separate Auth URLs, anon key, database, users, and seed/test data.
+- Preview deployments must never mutate production by default.
+- Avoid broad Supabase redirect wildcards for preview URLs against production.
+- If a preview must connect to production for emergency validation, require explicit approval and a narrow time-boxed checklist.
+
+## Deferred Production Smoke Tests
+
+Deferred by design:
+
+- GvG production smoke was intentionally not tested to avoid persistent production GvG test data because no cleanup/delete flow is in scope.
+- CP redaction browser scenario was intentionally not tested because the needed production staff/data combination does not currently exist.
+
+Preferred future strategy:
+
+- Test GvG event/vote flows in a staging Supabase project first.
+- Test CP audit redaction in staging with a controlled staff user that has `view_audit_logs` but not `view_cp`, plus a controlled CP-sensitive audit entry.
+- Run production GvG or CP-redaction tests only after explicit approval and a cleanup/data-retention plan.
+
 ## Production Supabase Setup
 
 - [x] Create a fresh production Supabase project.
@@ -206,6 +273,56 @@ After clearing Network and performing only the target action:
 - [ ] GvG event management uses approved GvG RPCs/safe reads.
 - [ ] No direct frontend writes to `gvg_votes`.
 - [ ] Permission management writes use only grant/revoke RPCs.
+
+## Launch Operations Checklist
+
+Before inviting real members:
+
+- [ ] Confirm Vercel GitHub App access is repository-scoped.
+- [ ] Confirm Production env contains only `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+- [ ] Confirm Preview env has no production Supabase credentials unless a separately approved policy exists.
+- [ ] Confirm Supabase Auth Site URL and Redirect URLs still match the production domain.
+- [ ] Confirm the controlled test member is intentionally retained or has an approved cleanup plan.
+- [ ] Review the deferred GvG and CP-redaction production tests.
+
+Approval queue operations:
+
+- [ ] Approve only expected users.
+- [ ] Assign the lowest role needed.
+- [ ] Keep Owner assignment manual-only and out of the UI.
+- [ ] Reject unknown registrations with a clear reason when appropriate.
+- [ ] Review audit logs after bulk approval sessions.
+
+CP update operations:
+
+- [ ] Verify the target member and guild before changing CP.
+- [ ] Use only the AdminPanel CP Management UI or approved RPC workflow.
+- [ ] Do not patch `member_cp` or `cp_snapshots` directly.
+- [ ] Review audit logs after CP update sessions.
+
+GvG operations:
+
+- [ ] Create production GvG events only when the event is real or a production test is explicitly approved.
+- [ ] Avoid creating throwaway production GvG events without a cleanup/data-retention plan.
+- [ ] Confirm voting scope and event status before inviting votes.
+- [ ] Use audit/log review after event lifecycle changes where useful.
+
+Admin permission operations:
+
+- [ ] Grant only the minimum required permissions.
+- [ ] Treat `view_cp`, `update_cp`, and `view_audit_logs` as sensitive.
+- [ ] Review permission changes in audit logs.
+- [ ] Revoke temporary permissions after the need ends.
+
+Production SQL safety:
+
+- [ ] Prefer app UI/RPC workflows over manual SQL.
+- [ ] Use read-only SQL for verification whenever possible.
+- [ ] Never run `supabase db reset` on production.
+- [ ] Never run `supabase/tests/local_validation_anteiku.sql` on production.
+- [ ] Never disable RLS or add broad grants.
+- [ ] Never use `db push --include-seed` until the missing `supabase/seed.sql` hazard is resolved.
+- [ ] Never place service-role or secret keys in frontend/Vercel env.
 
 ## Rollback And Safety Notes
 

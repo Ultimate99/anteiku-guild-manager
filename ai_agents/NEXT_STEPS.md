@@ -2,7 +2,7 @@
 
 ## Current Recommendation
 
-Milestone 13B production deployment is complete.
+Milestone 14A docs-only production hardening and cleanup policy is complete.
 
 Validated:
 - Production project ref is `mzflfyxxkascrfpteexz`.
@@ -18,6 +18,8 @@ Validated:
 - Production Vercel env uses only `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
 - No service role key or secret keys were added to frontend/Vercel env.
 - Owner login, AdminPanel, Audit Logs, CP Management, pending user lockout, Member approval, Member CP denial, Network checks, and mobile checks passed.
+- Milestone 14A recorded production hardening policy only.
+- No production commands, Vercel setting changes, GitHub App changes, user cleanup, source changes, SQL changes, deployment, or commit were performed during Milestone 14A.
 
 Documented deferred items:
 - GvG production smoke was intentionally not tested to avoid persistent production GvG test data without a cleanup/delete flow.
@@ -26,20 +28,25 @@ Documented deferred items:
 
 Production note:
 - Controlled test member `krsticmiroslav99+m13b21144225@gmail.com` remains in production as an approved Member unless later cleanup/member management is explicitly approved.
-- Restrict the Vercel GitHub App installation to only `Ultimate99/anteiku-guild-manager` if it is not already repository-scoped.
+- Restrict the Vercel GitHub App installation to only `Ultimate99/anteiku-guild-manager` if it is not already repository-scoped. This is recommended but not yet executed.
+- Preview deployments should have no Supabase env vars until a separate staging Supabase project exists.
+- Never let Preview deployments mutate production by default.
 
 Recommended next milestone:
-- Milestone 14 planning: choose the next production-safe feature or operations task.
+- Milestone 14B: choose one approved production-hardening or cleanup action.
 
-Alternative future feature planning options:
-- Production controlled test-member cleanup policy.
-- Staging Supabase + Vercel Preview environment setup.
+Strong 14B options:
+- Manual Vercel GitHub App restriction to only `Ultimate99/anteiku-guild-manager`.
+- Controlled production test-member cleanup planning.
+- Staging Supabase + Vercel Preview environment planning.
+
+Alternative future feature planning options after hardening:
 - Reapply flow UI/RPC integration.
 - Weekly CP snapshot/growth report planning.
 - Suspended/left/rejected member management planning.
 - Guild/subguild management planning.
 
-Do not start the next feature without a dedicated plan and security review.
+Do not start the next feature or production operation without a dedicated plan, explicit approval, and security review.
 
 ## Historical Note
 

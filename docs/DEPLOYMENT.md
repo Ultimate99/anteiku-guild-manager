@@ -142,15 +142,32 @@ Security note:
 
 - Restrict the Vercel GitHub App installation to only `Ultimate99/anteiku-guild-manager` if it is not already repository-scoped.
 
-## Preview Deployment Caution
+## Vercel GitHub App Hardening
+
+Milestone 14A documents this as a recommended manual hardening action. It has not been executed by the project automation.
+
+Manual checklist:
+
+- Open GitHub.
+- Go to `Settings -> Applications -> Installed GitHub Apps`.
+- Select `Vercel`.
+- Restrict repository access to only `Ultimate99/anteiku-guild-manager`.
+- Save the installation settings.
+- Confirm the Vercel project still deploys from `main`.
+- Do not change Vercel env vars during this step.
+
+## Preview And Staging Policy
 
 Preview deployments can accidentally touch production if they inherit production Supabase env values.
 
 Recommended policy:
 
 - Production Vercel env points to production Supabase.
-- Preview Vercel env points to staging Supabase or is left unconfigured.
-- Do not allow preview branches to mutate production data unless a separate policy is approved.
+- Preview Vercel env is left unconfigured until staging exists.
+- Future staging Vercel env points to a separate staging Supabase project, never production.
+- Do not allow preview branches to mutate production data by default.
+- Avoid broad Supabase redirect wildcards for preview URLs against production.
+- Require explicit approval for any temporary production-connected preview validation.
 
 ## Post-Deployment Validation
 
@@ -182,6 +199,10 @@ Controlled production test member:
 - IGN: `M13B Member 21056302`.
 - Status: approved Member.
 - This member remains in production unless cleanup/member management is explicitly approved later.
+- Do not hard-delete the user/profile/membership rows.
+- Preserve validation/audit history.
+- Prefer a future safe status change, Auth-user disable action, or dedicated suspend/leave feature if cleanup is needed.
+- Any cleanup action needs explicit approval and post-action verification.
 
 Deferred / intentionally not tested in production:
 

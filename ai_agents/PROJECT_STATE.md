@@ -1,5 +1,43 @@
 # Project State
 
+## Milestone 14A Production Hardening Policy Docs Complete
+
+Milestone 14A is complete as a documentation-only production hardening and cleanup policy pass.
+
+Completed:
+- Documented manual Vercel GitHub App restriction checklist.
+- Recorded that Vercel GitHub App restriction is recommended but was not executed.
+- Documented controlled production test member policy.
+- Recorded controlled test member remains in production:
+  - Email: `krsticmiroslav99+m13b21144225@gmail.com`.
+  - Username/profile slug: `m13bmember21056302`.
+  - IGN: `M13B Member 21056302`.
+  - Status: approved Member.
+- Documented Preview/Staging policy:
+  - Production env only on Production deployments.
+  - Preview env should have no Supabase env vars until staging exists.
+  - Future staging Supabase must be separate from production.
+  - Preview deployments must not mutate production by default.
+- Recorded deferred production smoke tests:
+  - GvG production smoke remains deferred to avoid persistent production GvG test data.
+  - CP redaction browser scenario remains deferred due missing production staff/data combination.
+- Added launch operations guidance for approvals, audit monitoring, CP updates, GvG events, admin permissions, and production SQL safety.
+
+Scope confirmation:
+- No source logic changed.
+- No React files changed.
+- No SQL migrations changed.
+- No SQL migrations were created.
+- No production commands were run.
+- No Vercel settings were changed.
+- No GitHub App settings were changed.
+- No users were disabled, deleted, or suspended.
+- No deployment was performed.
+- No commit was made.
+
+Recommended next milestone:
+- Milestone 14B: manual Vercel GitHub App restriction, controlled test-member cleanup planning, or staging/preview setup planning only after explicit approval.
+
 ## Milestone 13B Production Deployment Complete
 
 Milestone 13B Vercel setup, Supabase Auth URL configuration, and production smoke/security validation are complete.
@@ -462,7 +500,7 @@ Validated results:
 
 ## Current Milestone
 
-Milestone 13B production Vercel deployment, Supabase Auth URL configuration, and production smoke/security validation are complete.
+Milestone 14A docs-only production hardening and cleanup policy is complete.
 
 ## Current Status
 
@@ -471,6 +509,8 @@ The app is a React + Vite frontend backed by local Supabase migrations/RLS/RPCs.
 Current capabilities include local Supabase auth/session restore, registration through `register_profile`, pending/rejected/suspended gates, approval/rejection queue, own IGN editing, admin member profile management, role/guild management through RPCs, Admin permission checkbox management, protected CP management/leaderboard, GvG event management and voting, and read-only audit log viewing through `get_audit_logs`.
 
 Production Supabase is set up through migrations and Owner bootstrap. Vercel deployment is live at `https://anteiku-guild-manager.vercel.app`, production Auth Site URL/redirect URL setup is complete, and production browser/network smoke validation has passed with documented deferred items for production GvG data creation and CP redaction browser coverage.
+
+Production hardening policy now documents Vercel GitHub App restriction, controlled test-member retention, Preview/Staging separation, deferred production smoke-test strategy, and launch operations safety.
 
 ## Implemented
 
@@ -512,7 +552,6 @@ Production Supabase is set up through migrations and Owner bootstrap. Vercel dep
 
 ## Not Implemented
 
-- Vercel deployment
 - Suspended/left/rejected member management
 - Avatar editing
 - Username/profile slug editing for normal users

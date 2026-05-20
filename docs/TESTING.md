@@ -1,5 +1,28 @@
 # Testing
 
+## Milestone 14A Production Hardening Test Policy
+
+Milestone 14A is documentation-only. No production commands, source changes, SQL changes, Vercel changes, GitHub App changes, user disable/delete actions, deployment, or commit were performed.
+
+Current production validation status:
+- Milestone 13B production smoke/security validation passed.
+- Production URL: `https://anteiku-guild-manager.vercel.app`.
+- Owner login, AdminPanel, Audit Logs, CP Management, pending lockout, Member approval, Member CP denial, Network checks, and mobile checks passed.
+- Controlled test member remains in production: `krsticmiroslav99+m13b21144225@gmail.com`.
+
+Deferred production tests:
+- GvG production smoke remains intentionally not tested to avoid persistent production GvG test data without a cleanup/delete flow.
+- CP redaction browser scenario remains intentionally not tested because the needed production staff/data combination does not exist.
+- GvG has Milestone 10 local live-browser validation coverage.
+- Audit CP metadata redaction has Milestone 11A backend validation and Milestone 11B audit-viewer source/browser validation coverage.
+
+Future safe testing strategy:
+- Prefer a separate staging Supabase project for production-like GvG and CP-redaction browser tests.
+- Keep Vercel Preview env unconfigured until staging exists.
+- Never point Preview deployments at production by default.
+- Run production tests that create persistent data only after explicit approval and a cleanup/data-retention plan.
+- Continue clearing DevTools Network before each targeted CP, audit, GvG, member, or admin validation action.
+
 ## Milestone 12 Production Readiness Documentation
 
 Milestone 12 is a documentation-only production readiness pass.
