@@ -140,21 +140,22 @@ Production URL:
 
 Security note:
 
-- Restrict the Vercel GitHub App installation to only `Ultimate99/anteiku-guild-manager` if it is not already repository-scoped.
+- Vercel GitHub App installation is restricted to only `Ultimate99/anteiku-guild-manager` as of Milestone 14B.
 
 ## Vercel GitHub App Hardening
 
-Milestone 14A documents this as a recommended manual hardening action. It has not been executed by the project automation.
+Milestone 14A documented this as a recommended manual hardening action. Milestone 14B records that the user manually completed it.
 
-Manual checklist:
+Completed manual checklist:
 
-- Open GitHub.
-- Go to `Settings -> Applications -> Installed GitHub Apps`.
-- Select `Vercel`.
-- Restrict repository access to only `Ultimate99/anteiku-guild-manager`.
-- Save the installation settings.
-- Confirm the Vercel project still deploys from `main`.
-- Do not change Vercel env vars during this step.
+- GitHub `Settings -> Applications -> Installed GitHub Apps` was used.
+- `Vercel` was selected.
+- Repository access was restricted to only `Ultimate99/anteiku-guild-manager`.
+- Vercel project remains connected to `Ultimate99/anteiku-guild-manager` on `main`.
+- Production URL remains `https://anteiku-guild-manager.vercel.app`.
+- Production app health was checked after the restriction.
+- No Vercel env vars were changed during this step.
+- No deploy was performed during the documentation checkpoint.
 
 ## Preview And Staging Policy
 

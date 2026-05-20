@@ -1,5 +1,31 @@
 # Project State
 
+## Milestone 14B Vercel GitHub App Restriction Checkpoint Complete
+
+Milestone 14B is complete as a verification and documentation checkpoint.
+
+Completed:
+- Recorded user-confirmed manual Vercel GitHub App restriction.
+- Vercel GitHub App installation is limited to `Ultimate99/anteiku-guild-manager`.
+- Vercel project remains connected to `Ultimate99/anteiku-guild-manager` on `main`.
+- Production URL remains `https://anteiku-guild-manager.vercel.app`.
+- Production app health was checked in the browser.
+- Browser check loaded title `Anteiku Guild Manager`.
+- No captured browser console errors were observed during this checkpoint.
+- No Vercel env vars were changed.
+
+Scope confirmation:
+- No source logic changed.
+- No React files changed.
+- No SQL migrations changed.
+- No Supabase schema/RLS/RPC changes were made.
+- No production commands were run.
+- No deployment was performed.
+- No commit was made.
+
+Recommended next milestone:
+- Milestone 14C planning: staging Supabase + Vercel Preview environment setup, or controlled production test-member cleanup planning.
+
 ## Milestone 14A Production Hardening Policy Docs Complete
 
 Milestone 14A is complete as a documentation-only production hardening and cleanup policy pass.
@@ -500,7 +526,7 @@ Validated results:
 
 ## Current Milestone
 
-Milestone 14A docs-only production hardening and cleanup policy is complete.
+Milestone 14B Vercel GitHub App restriction verification and docs checkpoint is complete.
 
 ## Current Status
 
@@ -510,7 +536,7 @@ Current capabilities include local Supabase auth/session restore, registration t
 
 Production Supabase is set up through migrations and Owner bootstrap. Vercel deployment is live at `https://anteiku-guild-manager.vercel.app`, production Auth Site URL/redirect URL setup is complete, and production browser/network smoke validation has passed with documented deferred items for production GvG data creation and CP redaction browser coverage.
 
-Production hardening policy now documents Vercel GitHub App restriction, controlled test-member retention, Preview/Staging separation, deferred production smoke-test strategy, and launch operations safety.
+Production hardening policy now documents Vercel GitHub App restriction, controlled test-member retention, Preview/Staging separation, deferred production smoke-test strategy, and launch operations safety. The Vercel GitHub App restriction has since been manually completed and recorded.
 
 ## Implemented
 

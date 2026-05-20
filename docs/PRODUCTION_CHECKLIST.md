@@ -30,17 +30,31 @@ Milestone 14A is a documentation-only production hardening and cleanup policy pa
 - [x] Preview/staging policy is documented.
 - [x] Deferred production smoke tests and safer future testing paths are documented.
 
+## Milestone 14B GitHub App Restriction Checkpoint
+
+Milestone 14B verified and recorded the manual Vercel GitHub App hardening action.
+
+- [x] Vercel GitHub App installation is now limited to `Ultimate99/anteiku-guild-manager` per manual user confirmation.
+- [x] Vercel project remains connected to `Ultimate99/anteiku-guild-manager`.
+- [x] Production URL remains `https://anteiku-guild-manager.vercel.app`.
+- [x] Production app health was checked in the browser after the restriction.
+- [x] Browser check loaded title `Anteiku Guild Manager` at the production URL.
+- [x] No captured browser console errors were observed during the checkpoint check.
+- [x] No Vercel env vars were changed as part of this checkpoint.
+- [x] No source logic or SQL migrations were changed.
+- [x] No deploy or commit was performed.
+
 ## Vercel GitHub App Hardening Checklist
 
 Manual action only. Do not change Vercel env vars during this step.
 
-- [ ] Open GitHub.
-- [ ] Go to `Settings -> Applications -> Installed GitHub Apps`.
-- [ ] Select `Vercel`.
-- [ ] Restrict repository access to only `Ultimate99/anteiku-guild-manager`.
-- [ ] Save the GitHub App installation changes.
-- [ ] Confirm the Vercel project still points to `Ultimate99/anteiku-guild-manager` on `main`.
-- [ ] Confirm the Vercel project can still deploy from `main` after the restriction.
+- [x] Open GitHub.
+- [x] Go to `Settings -> Applications -> Installed GitHub Apps`.
+- [x] Select `Vercel`.
+- [x] Restrict repository access to only `Ultimate99/anteiku-guild-manager`.
+- [x] Save the GitHub App installation changes.
+- [x] Confirm the Vercel project still points to `Ultimate99/anteiku-guild-manager` on `main`.
+- [x] Confirm current production deployment remains healthy after the restriction.
 - [ ] Do not broaden Vercel access to unrelated repositories unless separately approved.
 
 ## Controlled Production Test Member Policy
@@ -278,7 +292,7 @@ After clearing Network and performing only the target action:
 
 Before inviting real members:
 
-- [ ] Confirm Vercel GitHub App access is repository-scoped.
+- [x] Confirm Vercel GitHub App access is repository-scoped.
 - [ ] Confirm Production env contains only `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
 - [ ] Confirm Preview env has no production Supabase credentials unless a separately approved policy exists.
 - [ ] Confirm Supabase Auth Site URL and Redirect URLs still match the production domain.

@@ -1,5 +1,18 @@
 # Session Log
 
+## 2026-05-20 - Milestone 14B Vercel GitHub App Restriction Checkpoint
+
+- User manually restricted the Vercel GitHub App installation to only `Ultimate99/anteiku-guild-manager`.
+- Recorded that the Vercel project remains connected to `Ultimate99/anteiku-guild-manager` on `main`.
+- Production URL remains `https://anteiku-guild-manager.vercel.app`.
+- Production app health was checked in the browser after the restriction.
+- Browser check loaded title `Anteiku Guild Manager`.
+- No captured browser console errors were observed during the checkpoint check.
+- No Vercel env vars were changed.
+- No source logic, React files, SQL migrations, Supabase schema/RLS/RPC, production commands, deployment, commit, CP logic, GvG logic, audit logic, role/guild management logic, or permission checkbox logic was changed.
+- Milestone 14B is complete.
+- Recommended next milestone: Milestone 14C staging Supabase + Vercel Preview environment planning, or controlled production test-member cleanup planning.
+
 ## 2026-05-20 - Milestone 14A Production Hardening Policy Docs
 
 - Implemented Milestone 14A as a documentation-only production hardening and cleanup policy pass.

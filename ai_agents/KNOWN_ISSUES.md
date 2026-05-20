@@ -9,9 +9,9 @@
 - Controlled production test member remains in production and should not be removed or changed unless cleanup/member management is explicitly approved.
 - GvG production smoke was intentionally not tested to avoid persistent production GvG test data without a cleanup/delete flow.
 - CP redaction browser test was intentionally not tested because no production staff/data combination exists for `view_audit_logs` without `view_cp` plus fresh CP-sensitive audit metadata.
-- Vercel GitHub App access should be restricted to only `Ultimate99/anteiku-guild-manager` if it is not already repository-scoped.
 - Milestone 14A documented production hardening and cleanup policy only; no production changes were performed.
-- Vercel GitHub App restriction is recommended but not yet executed.
+- Milestone 14B recorded user-confirmed Vercel GitHub App restriction to only `Ultimate99/anteiku-guild-manager`.
+- Vercel project remains connected to `Ultimate99/anteiku-guild-manager` on `main`.
 - Preview deployments should have no Supabase env vars until a separate staging Supabase project exists.
 - Future staging must use a separate Supabase project, not production.
 
