@@ -2,7 +2,7 @@
 
 Role, guild, and permission behavior is implemented through Supabase RLS/RPCs and frontend UX gating. Sensitive enforcement must remain database-side; frontend conditionals are only presentation.
 
-Production deployment has not been performed yet.
+Production deployment is live at `https://anteiku-guild-manager.vercel.app`. Role and permission enforcement remains database-side through Supabase RLS/RPCs.
 
 Roles:
 

@@ -1,8 +1,6 @@
 # Production Readiness Checklist
 
-Milestone 13A production Supabase setup is complete through migration apply, production schema/RLS/seed verification, and manual Owner bootstrap.
-
-Do not perform additional production actions until explicitly approved.
+Milestone 13B production Vercel deployment, Supabase Auth URL configuration, and production smoke/security validation are complete.
 
 Current production checkpoint:
 - Production project ref: `mzflfyxxkascrfpteexz`.
@@ -12,8 +10,10 @@ Current production checkpoint:
 - Production schema/RLS/seed verification passed.
 - Manual Owner bootstrap completed for `ultimatesrb` / `UltimateSRB` in `Anteiku`.
 - Exactly one active Owner membership exists.
-- Vercel is not configured.
-- Production deployment has not happened.
+- Vercel deployment is live.
+- Production URL: `https://anteiku-guild-manager.vercel.app`.
+- Supabase Auth Site URL and Redirect URL allow-list are configured for the production URL.
+- Production smoke/security validation passed with documented deferred production-only items.
 
 ## Production Supabase Setup
 
@@ -21,11 +21,11 @@ Current production checkpoint:
 - [x] Record project ref, region, dashboard URL, and production API URL.
 - [x] Keep production separate from local development.
 - [ ] Decide whether a staging Supabase project is needed for Vercel previews.
-- [ ] Configure email/password Auth.
-- [ ] Decide whether email confirmations are required.
+- [x] Configure email/password Auth.
+- [x] Decide whether email confirmations are required. Production email confirmation is enabled.
 - [ ] Keep anonymous sign-ins disabled.
-- [ ] Configure production Site URL.
-- [ ] Configure exact production redirect URLs.
+- [x] Configure production Site URL.
+- [x] Configure exact production redirect URLs.
 - [ ] Avoid broad preview redirect wildcards against production.
 - [ ] Confirm no service role key or secret key is copied into frontend/Vercel public env.
 
@@ -38,15 +38,15 @@ VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
 ```
 
-- [ ] `VITE_SUPABASE_URL` points to production Supabase only in Production Vercel env.
-- [ ] `VITE_SUPABASE_ANON_KEY` is the production browser-safe anon/publishable value.
-- [ ] Preview env points to staging Supabase or is intentionally unconfigured.
-- [ ] No `SUPABASE_SERVICE_ROLE_KEY`.
-- [ ] No `sb_secret_*`.
-- [ ] No database URL.
-- [ ] No JWT secret.
-- [ ] No SMTP/OAuth/provider secrets.
-- [ ] No secrets committed to `.env.example`, `.env.local`, docs, or source.
+- [x] `VITE_SUPABASE_URL` points to production Supabase only in Production Vercel env.
+- [x] `VITE_SUPABASE_ANON_KEY` is the production browser-safe anon/publishable value.
+- [x] Preview env does not intentionally point to production Supabase.
+- [x] No `SUPABASE_SERVICE_ROLE_KEY`.
+- [x] No `sb_secret_*`.
+- [x] No database URL.
+- [x] No JWT secret.
+- [x] No SMTP/OAuth/provider secrets.
+- [x] No secrets committed to `.env.example`, `.env.local`, docs, or source.
 
 ## Migration Checklist
 
@@ -135,70 +135,73 @@ Production Owner record:
 - [x] `view_cp` and `update_cp` are marked sensitive.
 - [x] No local fake users are present.
 - [x] No fake CP/GvG/audit demo data was pushed.
+- [x] Controlled production test member is documented and intentionally left in place until cleanup is approved.
 
 ## RLS And Security Validation
 
 - [x] RLS enabled on protected tables.
-- [ ] Members cannot read `member_cp`.
-- [ ] Members cannot read `cp_snapshots`.
-- [ ] Members cannot call CP roster/leaderboard/growth RPCs successfully.
+- [x] Members cannot see CP in deployed production member pages.
+- [x] Member Home/Profile/GvG pages triggered no CP RPC/table calls in manual Network validation.
+- [x] Members cannot read `member_cp`.
+- [x] Members cannot read `cp_snapshots`.
+- [x] Members cannot call CP roster/leaderboard/growth RPCs successfully.
 - [ ] Admin without `view_cp` cannot view CP.
 - [ ] Admin with `view_cp` can view scoped CP only.
 - [ ] Admin with `update_cp` can update scoped approved active profiles only.
 - [ ] Leader/Vice CP access is scoped to assigned guild.
 - [ ] Wrong-guild CP access is denied.
-- [ ] Pending users cannot access member/admin areas.
+- [x] Pending users cannot access member/admin areas.
 - [ ] Admin without needed permissions is denied.
 - [ ] Guild transfer is Owner-only.
 - [ ] Normal app role assignment cannot assign `owner`.
 - [x] Direct `gvg_votes` writes are unavailable through direct table policies.
-- [ ] GvG vote switching keeps one row per event/profile in deployed production browser validation.
-- [ ] Audit viewer uses `get_audit_logs` in deployed production browser validation.
+- [ ] GvG vote switching keeps one row per event/profile in deployed production browser validation. Deferred intentionally to avoid persistent production GvG test data; Milestone 10 local live-browser validation covered this.
+- [x] Audit viewer uses `get_audit_logs` in deployed production browser validation.
 - [x] Direct non-Owner `audit_logs` reads are blocked or return no rows.
-- [ ] CP-sensitive audit metadata redacts for users without scoped `view_cp` in deployed production browser validation.
+- [ ] CP-sensitive audit metadata redacts for users without scoped `view_cp` in deployed production browser validation. Deferred intentionally because no current production staff/data combination exists; Milestone 11A backend validation covered this.
 - [x] `private.write_audit_log` is not executable by normal authenticated users.
 
 ## Vercel Deployment Checklist
 
-- [ ] Vercel project created.
-- [ ] Framework preset is Vite.
-- [ ] Build command is `npm run build`.
-- [ ] Output directory is `dist`.
-- [ ] Production env contains only `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
-- [ ] Preview env does not accidentally point to production Supabase.
-- [ ] Production domain is known.
-- [ ] Supabase Auth Site URL matches production domain.
-- [ ] Supabase redirect URLs include the production domain.
-- [ ] Build passes in Vercel.
+- [x] Vercel project created.
+- [x] Framework preset is Vite.
+- [x] Build command is `npm run build`.
+- [x] Output directory is `dist`.
+- [x] Production env contains only `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+- [x] Preview env does not accidentally point to production Supabase.
+- [x] Production domain is known: `https://anteiku-guild-manager.vercel.app`.
+- [x] Supabase Auth Site URL matches production domain.
+- [x] Supabase redirect URLs include the production domain.
+- [x] Build passes in Vercel.
 
 ## Post-Deploy Smoke Test
 
-- [ ] Production app loads.
-- [ ] No console errors on first load.
-- [ ] Sign up creates a pending user.
-- [ ] Pending user sees only pending state.
-- [ ] Owner can sign in.
-- [ ] Owner can open AdminPanel.
-- [ ] Owner can approve/reject controlled test user.
-- [ ] Approved Member cannot access AdminPanel.
-- [ ] Approved Member cannot see CP.
+- [x] Production app loads.
+- [x] No major console errors on first load.
+- [x] Sign up creates a pending user after email confirmation.
+- [x] Pending user sees only pending state.
+- [x] Owner can sign in.
+- [x] Owner can open AdminPanel.
+- [x] Owner can approve controlled test user.
+- [x] Approved Member cannot access AdminPanel.
+- [x] Approved Member cannot see CP.
 - [ ] Authorized staff can access scoped CP as expected.
-- [ ] GvG event/voting flow works.
-- [ ] One vote row per event/profile is preserved.
-- [ ] Audit Logs load for Owner.
+- [ ] GvG event/voting flow works in production. Deferred intentionally to avoid persistent production GvG test data.
+- [ ] One vote row per event/profile is preserved in production. Deferred intentionally; Milestone 10 local validation passed.
+- [x] Audit Logs load for Owner.
 - [ ] Audit Logs are denied for Member/pending/Admin without permission.
-- [ ] CP-sensitive audit metadata redacts without `view_cp`.
-- [ ] Mobile viewport is readable.
+- [ ] CP-sensitive audit metadata redacts without `view_cp` in production browser. Deferred intentionally; Milestone 11A backend validation passed.
+- [x] Mobile viewport is readable.
 
 ## Network Checks
 
 After clearing Network and performing only the target action:
 
-- [ ] CP UI uses only approved CP RPCs.
-- [ ] Member pages make no CP calls.
-- [ ] Audit viewer uses `get_audit_logs` only.
-- [ ] Audit viewer does not call `audit_logs` table directly.
-- [ ] Audit viewer does not call CP RPCs/tables.
+- [x] CP UI uses only approved CP RPCs.
+- [x] Member pages make no CP calls.
+- [x] Audit viewer uses `get_audit_logs` only.
+- [x] Audit viewer does not call `audit_logs` table directly.
+- [x] Audit viewer does not call CP RPCs/tables.
 - [ ] GvG voting uses `submit_gvg_vote`.
 - [ ] GvG event management uses approved GvG RPCs/safe reads.
 - [ ] No direct frontend writes to `gvg_votes`.

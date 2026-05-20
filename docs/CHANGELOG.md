@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-05-19 - Milestone 13B Production Deployment Validation Passed
+
+- Vercel setup completed for `Ultimate99/anteiku-guild-manager` on production branch `main`.
+- Production URL: `https://anteiku-guild-manager.vercel.app`.
+- Vercel framework preset: Vite.
+- Vercel build command: `npm run build`.
+- Vercel output directory: `dist`.
+- Production env uses only `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+- No service role key, database password/URL, JWT secret, SMTP/OAuth/provider secret, or `sb_secret_*` key was added to frontend/Vercel env.
+- Supabase Auth Site URL and Redirect URL allow-list were configured for `https://anteiku-guild-manager.vercel.app`.
+- Production smoke/security validation passed for Owner login, AdminPanel, Audit Logs, CP Management, pending user lockout, Member approval, Member CP denial, mobile layout, and manual Network checks.
+- Audit Logs Network validation observed `rpc/get_audit_logs`; no direct `/rest/v1/audit_logs`, CP calls, or audit write/update/delete/export calls were observed.
+- CP Management Network validation observed approved CP RPCs only; no direct `/rest/v1/member_cp` or `/rest/v1/cp_snapshots` calls were observed.
+- Member Home/Profile/GvG pages triggered no CP RPC/table calls after clearing Network.
+- Controlled production test member remains in production as an approved Member: `krsticmiroslav99+m13b21144225@gmail.com` / `m13bmember21056302`.
+- GvG production smoke was intentionally not tested to avoid persistent production GvG test data because no cleanup/delete flow is in scope.
+- CP redaction browser test was intentionally not tested because no current production staff/data combination exists for the scenario; Milestone 11A backend validation covered CP metadata redaction.
+- Recommendation recorded to restrict Vercel GitHub App access to only `Ultimate99/anteiku-guild-manager` if it is not already repository-scoped.
+- No source logic, React files, SQL migrations, Supabase schema/RLS/RPC, Vercel env changes after validation, redeploy, or commit were included in the final documentation checkpoint.
+
 ## 2026-05-19 - Milestone 13A Production Supabase Checkpoint
 
 - Production Supabase project was created and linked: `mzflfyxxkascrfpteexz`.
@@ -12,10 +32,10 @@
 - Owner profile `ultimatesrb` / `UltimateSRB` is approved in `Anteiku`.
 - Exactly one active Owner membership exists.
 - `owner_bootstrapped` audit log exists.
-- Vercel is not configured.
-- Production deployment has not happened.
+- At the time of the Milestone 13A checkpoint, Vercel was not configured yet.
+- At the time of the Milestone 13A checkpoint, production deployment had not happened yet.
 - Added documentation/handoff checkpoint for Milestone 13B.
-- Noted that `package.json` and `package-lock.json` are modified because Supabase CLI was installed locally as dev tooling and should be committed later with a tooling/docs checkpoint.
+- Supabase CLI was installed locally as dev tooling during Milestone 13A; the CLI tooling/package changes were committed before Milestone 13B planning/execution.
 - No source logic, React files, SQL migrations, CP logic, GvG logic, audit logic, role/guild management logic, permission checkbox logic, Vercel config, deploy, or commit actions were included.
 
 ## 2026-05-15 - Milestone 12 Production Readiness Docs

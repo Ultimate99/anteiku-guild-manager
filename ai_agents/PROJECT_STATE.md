@@ -1,8 +1,71 @@
 # Project State
 
+## Milestone 13B Production Deployment Complete
+
+Milestone 13B Vercel setup, Supabase Auth URL configuration, and production smoke/security validation are complete.
+
+Completed:
+- Vercel project deployed from `Ultimate99/anteiku-guild-manager` on production branch `main`.
+- Production URL: `https://anteiku-guild-manager.vercel.app`.
+- Vercel framework preset: Vite.
+- Vercel build command: `npm run build`.
+- Vercel output directory: `dist`.
+- Production Vercel env uses only browser-safe frontend variables:
+  - `VITE_SUPABASE_URL`
+  - `VITE_SUPABASE_ANON_KEY`
+- No service role key, database password/URL, JWT secret, SMTP/OAuth secret, provider secret, or `sb_secret_*` key was configured in frontend/Vercel env.
+- Supabase Auth Site URL is set to `https://anteiku-guild-manager.vercel.app`.
+- Supabase Auth Redirect URL allow-list includes `https://anteiku-guild-manager.vercel.app`.
+- Production app loads successfully.
+- Owner login and AdminPanel access passed.
+- Owner mobile AdminPanel validation passed.
+- Audit Logs are readable/usable on desktop and mobile.
+- CP Management is readable/usable on desktop and mobile.
+- Controlled signup created a pending production user after email confirmation.
+- Pending user was locked out of member/admin areas.
+- Owner approved the controlled user as Member.
+- Approved Member login passed.
+- Approved Member cannot access AdminPanel.
+- Approved Member does not see CP values.
+- Member Home/Profile/GvG pages triggered no CP RPC/table calls in manual Network validation.
+- Audit Logs Network validation observed `rpc/get_audit_logs` only for audit viewer reads.
+- No direct `/rest/v1/audit_logs` calls were observed from Audit Logs actions.
+- No CP RPC/table calls or audit write/update/delete/export calls were observed from Audit Logs actions.
+- CP Management Network validation observed approved CP RPCs only.
+- No direct `/rest/v1/member_cp` or `/rest/v1/cp_snapshots` calls were observed.
+- No bugs were found.
+
+Production controlled test member:
+- Email: `krsticmiroslav99+m13b21144225@gmail.com`.
+- Username/profile slug: `m13bmember21056302`.
+- IGN: `M13B Member 21056302`.
+- Status: approved Member.
+- Note: this controlled test member remains in production unless a later cleanup/member-management action is explicitly approved.
+
+Deferred / intentionally not tested in production:
+- GvG production smoke was not tested to avoid persistent production GvG test data because no cleanup/delete flow is in scope.
+- GvG was fully live-browser validated locally in Milestone 10, and production source/static path validation confirms approved RPCs/safe reads.
+- CP redaction browser test was not tested in production because there is no current staff user/data combination with `view_audit_logs` but without `view_cp` and a fresh CP-sensitive audit entry.
+- Backend CP metadata redaction was validated in Milestone 11A, and the audit viewer source uses only `get_audit_logs`.
+
+Security note:
+- Restrict the Vercel GitHub App installation to only `Ultimate99/anteiku-guild-manager` if it is not already repository-scoped.
+
+Scope confirmation:
+- No source logic changed.
+- No React files changed.
+- No SQL migrations changed.
+- No Supabase schema/RLS/RPC changes were made.
+- No Vercel env changes were made after final validation.
+- No deployment rerun was performed during final validation review.
+- No commit was made.
+
+Recommended next milestone:
+- Milestone 14 planning: choose the next production-safe feature or operational cleanup task, such as production test-member cleanup policy, staging/preview environment setup, reapply flow, suspended/left/rejected member management, weekly CP snapshot/growth report UI, or guild/subguild management.
+
 ## Milestone 13A Production Supabase Checkpoint
 
-Milestone 13A production Supabase setup is partially complete.
+Milestone 13A production Supabase setup completed the database-side production checkpoint.
 
 Completed:
 - Fresh production Supabase project exists.
@@ -32,24 +95,23 @@ Owner bootstrap record:
 - `owner_active_primary_membership_count = 1`.
 - `owner_bootstrap_audit_count = 1`.
 
-Scope confirmation:
+Scope confirmation at the time of the 13A checkpoint:
 - No source logic changed during the checkpoint documentation pass.
 - No React files changed.
 - No SQL migrations changed.
 - No SQL migrations were created.
 - No Supabase commands were run during this documentation checkpoint.
 - Owner bootstrap was not rerun.
-- Vercel has not been configured.
-- No production deployment has happened.
+- Vercel had not been configured yet.
+- Production deployment had not happened yet.
 - No commit was made.
 
 Local tooling note:
-- `package.json` and `package-lock.json` are currently modified because Supabase CLI was installed locally as dev tooling.
-- Do not revert those files.
-- Commit them later with a tooling/docs checkpoint when the user approves.
+- Supabase CLI was installed locally as dev tooling during Milestone 13A.
+- The CLI tooling/package changes were committed before Milestone 13B planning/execution.
 
-Recommended next milestone:
-- Milestone 13B: Vercel setup + Supabase Auth URL configuration + production smoke/security validation.
+Historical next milestone:
+- Milestone 13B: Vercel setup + Supabase Auth URL configuration + production smoke/security validation. This was completed later.
 
 ## Milestone 12 Production Readiness Docs Complete
 
@@ -400,7 +462,7 @@ Validated results:
 
 ## Current Milestone
 
-Milestone 13A production Supabase setup is complete through migrations, production catalog verification, and manual Owner bootstrap. Milestone 13B should configure Vercel, configure Supabase Auth URLs, deploy, and run production smoke/security validation.
+Milestone 13B production Vercel deployment, Supabase Auth URL configuration, and production smoke/security validation are complete.
 
 ## Current Status
 
@@ -408,7 +470,7 @@ The app is a React + Vite frontend backed by local Supabase migrations/RLS/RPCs.
 
 Current capabilities include local Supabase auth/session restore, registration through `register_profile`, pending/rejected/suspended gates, approval/rejection queue, own IGN editing, admin member profile management, role/guild management through RPCs, Admin permission checkbox management, protected CP management/leaderboard, GvG event management and voting, and read-only audit log viewing through `get_audit_logs`.
 
-Production Supabase is set up through migrations and Owner bootstrap. Vercel deployment is not configured, production Auth Site URL/redirect URL setup is still pending, and production browser/network smoke validation has not happened.
+Production Supabase is set up through migrations and Owner bootstrap. Vercel deployment is live at `https://anteiku-guild-manager.vercel.app`, production Auth Site URL/redirect URL setup is complete, and production browser/network smoke validation has passed with documented deferred items for production GvG data creation and CP redaction browser coverage.
 
 ## Implemented
 
@@ -451,8 +513,6 @@ Production Supabase is set up through migrations and Owner bootstrap. Vercel dep
 ## Not Implemented
 
 - Vercel deployment
-- Supabase Auth Site URL / Redirect URL production configuration
-- Production browser/network smoke validation
 - Suspended/left/rejected member management
 - Avatar editing
 - Username/profile slug editing for normal users

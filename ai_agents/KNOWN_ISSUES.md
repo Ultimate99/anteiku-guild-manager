@@ -2,12 +2,14 @@
 
 ## Production Readiness
 
-- Production Supabase has not been created or linked.
-- Migrations have not been applied to a remote/production Supabase project.
-- Production Auth Site URL and redirect URLs are not configured.
-- Vercel deployment is not configured or performed.
-- Production Owner bootstrap has not been performed.
-- Milestone 13 needs explicit approval before any production command or deployment.
+- Production Supabase is created, linked, migrated, schema/RLS/seed verified, and Owner-bootstrapped.
+- Production Vercel deployment is live at `https://anteiku-guild-manager.vercel.app`.
+- Production Auth Site URL and Redirect URL allow-list are configured for the production URL.
+- Milestone 13B production smoke/security validation passed.
+- Controlled production test member remains in production and should not be removed or changed unless cleanup/member management is explicitly approved.
+- GvG production smoke was intentionally not tested to avoid persistent production GvG test data without a cleanup/delete flow.
+- CP redaction browser test was intentionally not tested because no production staff/data combination exists for `view_audit_logs` without `view_cp` plus fresh CP-sensitive audit metadata.
+- Vercel GitHub App access should be restricted to only `Ultimate99/anteiku-guild-manager` if it is not already repository-scoped.
 
 ## Production Safety Hazards
 
@@ -27,6 +29,6 @@
 
 ## Development Notes
 
-- Git is not available in the current shell PATH.
+- Git is available in the current shell.
 - After local DB reset, stale browser auth can cause `profiles_id_fkey` registration errors; clear localStorage/sessionStorage before retesting auth/registration.
 - `npm.cmd audit` reports 2 moderate vulnerabilities from `esbuild <=0.24.2` via `vite <=6.4.1`. This affects Vite dev-server behavior. Do not run `npm audit fix --force`; it would install Vite 8.0.13 as a breaking major upgrade.

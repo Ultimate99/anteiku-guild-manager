@@ -1,5 +1,42 @@
 # Session Log
 
+## 2026-05-19 - Milestone 13B Production Deployment Validation Passed
+
+- Milestone 13B Vercel setup, Supabase Auth URL configuration, and production smoke/security validation completed.
+- Production URL: `https://anteiku-guild-manager.vercel.app`.
+- Vercel project deployed from `Ultimate99/anteiku-guild-manager` on `main`.
+- Vercel framework preset: Vite.
+- Vercel build command: `npm run build`.
+- Vercel output directory: `dist`.
+- Vercel Production env contains only `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+- No service role key, database password/URL, JWT secret, SMTP/OAuth/provider secret, or `sb_secret_*` key was added to frontend/Vercel env.
+- Supabase Auth Site URL is configured as `https://anteiku-guild-manager.vercel.app`.
+- Supabase Auth Redirect URL allow-list includes `https://anteiku-guild-manager.vercel.app`.
+- Owner login on production passed.
+- Owner AdminPanel access passed.
+- Owner mobile AdminPanel validation passed.
+- Audit Logs are readable/usable on desktop and mobile.
+- CP Management is readable/usable on desktop and mobile.
+- Controlled production test user registered after email confirmation, started pending, and was locked out of member/admin areas.
+- Owner approved the controlled user as Member.
+- Approved Member login passed.
+- Approved Member cannot access AdminPanel.
+- Approved Member sees no CP values.
+- Manual DevTools Network validation passed for Audit Logs, CP Management, and Member pages.
+- Audit Logs actions used `rpc/get_audit_logs`; no direct `/rest/v1/audit_logs`, CP calls, or audit write/update/delete/export calls were observed.
+- CP Management actions used approved CP RPCs only; no direct `/rest/v1/member_cp` or `/rest/v1/cp_snapshots` calls were observed.
+- Member Home/Profile/GvG pages triggered no CP RPC/table calls after clearing Network.
+- Controlled production test member remains in production:
+  - Email: `krsticmiroslav99+m13b21144225@gmail.com`.
+  - Username/profile slug: `m13bmember21056302`.
+  - IGN: `M13B Member 21056302`.
+  - Status: approved Member.
+- GvG production smoke was intentionally not tested to avoid persistent production GvG test data because no cleanup/delete flow is in scope.
+- CP redaction browser test was intentionally not tested because the needed production staff/data combination does not exist.
+- Backend/source/local validation coverage remains: GvG Milestone 10 and audit CP redaction Milestone 11A/11B.
+- Recommendation recorded: restrict the Vercel GitHub App installation to only `Ultimate99/anteiku-guild-manager` if it is not already repository-scoped.
+- No source logic, React files, SQL migrations, Supabase schema/RLS/RPC, Vercel env, redeploy, commit, CP logic, GvG logic, audit logic, role/guild management logic, or permission checkbox logic changes were made during the final validation review.
+
 ## 2026-05-19 - Milestone 13A Production Supabase Checkpoint
 
 - Production Supabase project exists.
@@ -21,10 +58,10 @@
 - `active_owner_membership_count = 1`.
 - `owner_active_primary_membership_count = 1`.
 - `owner_bootstrap_audit_count = 1`.
-- Vercel has not been configured.
-- Production deployment has not happened.
+- At the time of the Milestone 13A checkpoint, Vercel had not been configured yet.
+- At the time of the Milestone 13A checkpoint, production deployment had not happened yet.
 - Next required milestone: Milestone 13B Vercel setup, Supabase Auth URL configuration, production deploy, and production smoke/security validation.
-- `package.json` and `package-lock.json` are modified because Supabase CLI was installed locally as dev tooling; do not revert them and commit later with a tooling/docs checkpoint.
+- Supabase CLI was installed locally as dev tooling during Milestone 13A; the CLI tooling/package changes were committed before Milestone 13B planning/execution.
 - This checkpoint updated docs/handoff only.
 - No source logic, React files, Supabase migrations, SQL migrations, CP logic, GvG logic, audit logic, role/guild management logic, permission checkbox logic, Vercel configuration, deployment, or commit actions were performed.
 

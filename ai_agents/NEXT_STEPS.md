@@ -2,7 +2,7 @@
 
 ## Current Recommendation
 
-Milestone 13A production Supabase setup is complete through migrations, production verification, and manual Owner bootstrap.
+Milestone 13B production deployment is complete.
 
 Validated:
 - Production project ref is `mzflfyxxkascrfpteexz`.
@@ -12,35 +12,28 @@ Validated:
 - Owner bootstrap completed for `ultimatesrb` / `UltimateSRB` in `Anteiku`.
 - Exactly one active Owner membership exists.
 - `owner_bootstrapped` audit log exists.
-- Vercel is not configured.
-- Production deployment has not happened.
+- Vercel project is deployed from `Ultimate99/anteiku-guild-manager` on `main`.
+- Production URL: `https://anteiku-guild-manager.vercel.app`.
+- Supabase Auth Site URL and Redirect URL allow-list are configured for the production URL.
+- Production Vercel env uses only `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+- No service role key or secret keys were added to frontend/Vercel env.
+- Owner login, AdminPanel, Audit Logs, CP Management, pending user lockout, Member approval, Member CP denial, Network checks, and mobile checks passed.
+
+Documented deferred items:
+- GvG production smoke was intentionally not tested to avoid persistent production GvG test data without a cleanup/delete flow.
+- CP redaction browser test was intentionally not tested because no production staff/data combination exists for `view_audit_logs` without `view_cp` plus fresh CP-sensitive audit metadata.
+- Both deferred areas have earlier backend/source/local validation coverage: GvG in Milestone 10 and audit CP redaction in Milestone 11A/11B.
+
+Production note:
+- Controlled test member `krsticmiroslav99+m13b21144225@gmail.com` remains in production as an approved Member unless later cleanup/member management is explicitly approved.
+- Restrict the Vercel GitHub App installation to only `Ultimate99/anteiku-guild-manager` if it is not already repository-scoped.
 
 Recommended next milestone:
-- Milestone 13B: Vercel setup + Supabase Auth URL configuration + production smoke/security validation.
-
-Milestone 13B should follow:
-- `docs/DEPLOYMENT.md`
-- `docs/PRODUCTION_CHECKLIST.md`
-
-Milestone 13B must include:
-- Vercel project setup.
-- Vercel project/env setup using only `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
-- No service role key or secret keys in frontend/Vercel public env.
-- Production Auth Site URL and redirect URL configuration.
-- Production deploy.
-- Owner login smoke test.
-- Pending/member/admin security-flow testing.
-- Network checks for CP, GvG, audit, role, and permission paths.
-- Production browser/network/RLS validation.
-
-Do not start Vercel/Auth URL/deploy actions without explicit approval.
-
-Local tooling note:
-- `package.json` and `package-lock.json` are modified because Supabase CLI was installed locally as dev tooling.
-- Do not revert them.
-- Commit them later with the docs/tooling checkpoint after user approval.
+- Milestone 14 planning: choose the next production-safe feature or operations task.
 
 Alternative future feature planning options:
+- Production controlled test-member cleanup policy.
+- Staging Supabase + Vercel Preview environment setup.
 - Reapply flow UI/RPC integration.
 - Weekly CP snapshot/growth report planning.
 - Suspended/left/rejected member management planning.

@@ -1,8 +1,8 @@
 # Deployment
 
-Vercel is the intended hosting target. Production deployment has not been performed yet.
+Vercel is the production hosting target.
 
-Milestone 13A completed production Supabase migration apply, production schema/RLS/seed verification, and manual Owner bootstrap. Do not deploy, configure Auth URLs, or run additional production commands without explicit approval.
+Milestone 13B completed Vercel setup, Supabase Auth URL configuration, deployment, and production smoke/security validation.
 
 ## Production Supabase Project
 
@@ -13,7 +13,7 @@ Recorded production project:
 - Project ref: `mzflfyxxkascrfpteexz`.
 - Project name: `Anteiku Guild Manager Production`.
 - Region: Central EU / Frankfurt.
-- Production app domain: pending Milestone 13B.
+- Production app domain: `https://anteiku-guild-manager.vercel.app`.
 - Production Supabase URL: retrieve from Supabase dashboard for Vercel `VITE_SUPABASE_URL`.
 - Browser-safe anon or publishable key: retrieve from Supabase dashboard for Vercel `VITE_SUPABASE_ANON_KEY`.
 
@@ -21,12 +21,12 @@ Do not copy service role keys, `sb_secret_*` keys, database URLs, JWT secrets, o
 
 ## Supabase Auth Configuration
 
-Still pending for Milestone 13B. Configure Auth in the Supabase dashboard before production smoke testing:
+Completed in Milestone 13B:
 
-- Site URL: production Vercel/custom domain.
-- Redirect URLs: exact production URLs.
+- Site URL: `https://anteiku-guild-manager.vercel.app`.
+- Redirect URLs: `https://anteiku-guild-manager.vercel.app`.
 - Preview URLs: use a staging Supabase project when possible; avoid broad preview wildcards pointing at production.
-- Email signup and email confirmation: decide intentionally before launch.
+- Email signup and email confirmation: production email confirmation is enabled.
 - Anonymous sign-ins: keep disabled.
 
 The app uses email/password auth through Supabase JS.
@@ -114,14 +114,16 @@ Do not rerun Owner bootstrap unless a separate recovery plan is approved.
 
 ## Vercel Project
 
-Pending for Milestone 13B.
+Completed in Milestone 13B.
 
-Configure Vercel:
+Vercel configuration:
 
 - Framework preset: Vite.
 - Build command: `npm run build`.
 - Output directory: `dist`.
 - Install command: default npm install behavior unless intentionally changed.
+- Production branch: `main`.
+- GitHub repo: `Ultimate99/anteiku-guild-manager`.
 
 Required Vercel environment variables:
 
@@ -130,7 +132,15 @@ VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
 ```
 
-Only set browser-safe Supabase values. Do not set service role keys or secret keys in frontend env.
+Only browser-safe Supabase values were set. Do not set service role keys or secret keys in frontend env.
+
+Production URL:
+
+- `https://anteiku-guild-manager.vercel.app`
+
+Security note:
+
+- Restrict the Vercel GitHub App installation to only `Ultimate99/anteiku-guild-manager` if it is not already repository-scoped.
 
 ## Preview Deployment Caution
 
@@ -144,24 +154,38 @@ Recommended policy:
 
 ## Post-Deployment Validation
 
-Pending for Milestone 13B.
+Completed in Milestone 13B:
 
-After deployment:
+- Production app loads.
+- Owner can sign in.
+- Owner can access AdminPanel.
+- Owner mobile AdminPanel validation passed.
+- Audit Logs are readable/usable on desktop and mobile.
+- CP Management is readable/usable on desktop and mobile.
+- Controlled signup created a pending production user after email confirmation.
+- Pending user could not access member/admin areas.
+- Owner approved controlled user as Member.
+- Approved Member cannot access AdminPanel.
+- Approved Member cannot see CP.
+- Member Home/Profile/GvG pages triggered no CP RPC/table calls after clearing Network.
+- Audit Logs refresh/load observed `rpc/get_audit_logs`.
+- No direct `/rest/v1/audit_logs` calls were observed during Audit Logs actions.
+- No CP RPC/table calls or audit write/update/delete/export calls were observed during Audit Logs actions.
+- CP Management load/refresh observed approved CP RPCs only.
+- No direct `/rest/v1/member_cp` or `/rest/v1/cp_snapshots` calls were observed.
+- Mobile viewport validation passed.
 
-- Open production URL.
-- Confirm app loads without console errors.
-- Sign up a controlled pending user.
-- Confirm pending user cannot access member/admin areas.
-- Sign in as Owner.
-- Confirm AdminPanel access.
-- Confirm core guilds render.
-- Confirm member CP denial for normal Member.
-- Confirm scoped CP access only for authorized staff.
-- Confirm GvG voting keeps one row per event/profile.
-- Confirm Audit Logs use `get_audit_logs` only.
-- Confirm CP-sensitive audit metadata redacts for users without `view_cp`.
-- Confirm Admin without needed permissions is denied.
-- Confirm wrong-guild access is denied.
-- Inspect Network for CP, audit, GvG, and role/permission paths.
+Controlled production test member:
+
+- Email: `krsticmiroslav99+m13b21144225@gmail.com`.
+- Username/profile slug: `m13bmember21056302`.
+- IGN: `M13B Member 21056302`.
+- Status: approved Member.
+- This member remains in production unless cleanup/member management is explicitly approved later.
+
+Deferred / intentionally not tested in production:
+
+- GvG production smoke was not tested to avoid persistent production GvG test data because no cleanup/delete flow is in scope. Milestone 10 local live-browser validation covered GvG one-row vote switching.
+- CP redaction browser test was not tested because no production staff/data combination exists for `view_audit_logs` without `view_cp` plus fresh CP-sensitive audit metadata. Milestone 11A backend validation covered SQL-side CP metadata redaction.
 
 Use [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) as the launch checklist.
