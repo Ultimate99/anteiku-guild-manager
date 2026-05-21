@@ -1,5 +1,35 @@
 # Testing And Validation
 
+## Milestone 14C AdminPanel Tabs Build And Source Validation
+
+Milestone 14C is frontend-only and is implemented pending manual browser validation.
+
+Build:
+- `npm.cmd run build` passed.
+
+Source/security-path validation:
+- No SQL migration files changed.
+- No source service behavior changes were made.
+- New `src/components/admin/*` section components do not import services, call Supabase, or own sensitive data access.
+- Static source checks found no frontend direct `.from('member_cp')`, `.from('cp_snapshots')`, or `.from('audit_logs')` calls.
+- Audit reads remain isolated through `src/services/adminAuditService.js` and `get_audit_logs`.
+- CP reads/writes remain isolated through `src/services/adminCpService.js` and approved CP RPCs.
+- GvG management still uses existing `src/services/gvgService.js` safe reads/RPCs; no new GvG service paths were added.
+- Inactive AdminPanel sections are not mounted by the coordinator; CP, Audit Logs, and GvG data loaders run only when their tabs are opened or explicitly refreshed.
+
+Manual browser validation pending:
+- Owner tab visibility, tab switching, and section behavior.
+- Admin scoped tab visibility, including denial for missing `view_cp` or `view_audit_logs`.
+- Member and pending-user AdminPanel denial.
+- Mobile tab bar readability and tap targets.
+- Network validation after clearing initial AdminPanel load:
+  - CP tab uses approved CP RPCs only.
+  - Audit Logs tab uses `get_audit_logs` only.
+  - GvG tab uses approved GvG RPCs/safe reads only.
+  - Inactive sensitive tabs do not trigger calls.
+  - No direct `member_cp`, `cp_snapshots`, or `audit_logs` calls.
+  - No unsafe direct `gvg_votes` writes.
+
 ## Milestone 14A Production Hardening Docs Validation
 
 Milestone 14A is documentation-only.

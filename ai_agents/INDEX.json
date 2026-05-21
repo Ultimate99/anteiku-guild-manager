@@ -1,7 +1,7 @@
 {
   "project": "Anteiku Guild Manager",
-  "currentMilestone": "Milestone 14B Vercel GitHub App restriction checkpoint complete",
-  "status": "milestone_14b_vercel_github_app_restriction_complete",
+  "currentMilestone": "Milestone 14C AdminPanel tabs source-validated; manual browser validation pending",
+  "status": "milestone_14c_admin_panel_tabs_source_validated",
   "milestone7BackendStatus": "SQL/RPC migration created for hardened role assignment and Owner-only guild transfer; local Supabase validation passed.",
   "milestone7ValidationStatus": "npx.cmd supabase db reset passed; local_validation_anteiku.sql passed; role assignment and guild transfer tests passed.",
   "milestone7FrontendStatus": "Admin member role-change and Owner-only guild-transfer UI browser validated; network writes used assign_member_role and transfer_member_guild; no CP/GvG calls observed.",
@@ -16,7 +16,8 @@
   "milestone13BStatus": "Production Vercel deployment complete at https://anteiku-guild-manager.vercel.app; Supabase Auth Site URL and Redirect URL configured; production smoke/security validation passed for Owner/AdminPanel, Audit Logs, CP Management, pending lockout, Member approval, Member CP denial, mobile layout, and manual Network checks. GvG production smoke and CP redaction browser scenario were intentionally deferred with prior backend/source/local validation coverage.",
   "milestone14AStatus": "Docs-only production hardening and cleanup policy complete. Documented Vercel GitHub App restriction checklist, controlled production test member retention policy, Preview/Staging policy, deferred production smoke-test strategy, and launch operations checklist. No production commands, source changes, SQL changes, Vercel changes, GitHub App changes, user cleanup, deployment, or commit were performed.",
   "milestone14BStatus": "Vercel GitHub App restriction checkpoint complete. User manually restricted Vercel GitHub App access to only Ultimate99/anteiku-guild-manager; Vercel project remains connected to the repo on main; production URL remains healthy; no Vercel env vars, source logic, SQL migrations, Supabase schema/RLS/RPC, deployment, or commit were changed.",
-  "nextRecommendedStep": "Milestone 14C: staging Supabase plus Vercel Preview environment planning, or controlled production test-member cleanup planning.",
+  "milestone14CStatus": "Frontend-only AdminPanel tabs and section organization implemented. AdminPanel now coordinates mobile-friendly tabs and extracted section components; CP, Audit Logs, and GvG management data lazy-load only when their tabs are opened. npm.cmd run build passed; source/security-path validation found no SQL migration changes, no source service behavior changes, and no direct frontend member_cp, cp_snapshots, or audit_logs table calls. Manual browser validation is pending before marking complete.",
+  "nextRecommendedStep": "Manual browser validation for Milestone 14C AdminPanel tabs, including Owner/Admin/Member visibility, mobile tab usability, and Network checks for lazy CP/Audit/GvG loading.",
   "productionSupabase": {
     "projectRef": "mzflfyxxkascrfpteexz",
     "projectName": "Anteiku Guild Manager Production",
@@ -142,7 +143,8 @@
     "production Supabase Auth URL configuration",
     "production smoke/security validation",
     "production hardening and cleanup policy documentation",
-    "Vercel GitHub App repository-scope restriction"
+    "Vercel GitHub App repository-scope restriction",
+    "mobile-friendly AdminPanel tabs and section components"
   ],
   "notImplemented": [
     "avatar editing",
@@ -160,6 +162,6 @@
   "gvgDecision": "supports guild-specific and global events; v1 vote correction by admins/leaders is not allowed.",
   "supabaseValidationStatus": "Local validation passed: 29 PASS / 0 FAIL / 0 SKIP; production schema/RLS/seed verification passed after all 9 migrations were applied.",
   "securityIssueFixed": "Private helper parameter shadowing caused CP/RPC permission leakage during validation; fixed with p_* helper parameters and validated successfully.",
-  "validationStatus": "Milestone 14B GitHub App restriction checkpoint passed; production app health checked in browser; JSON/source/SQL checks passed; Milestone 13B production deployment, Auth URL configuration, and production smoke/security validation passed; GvG production smoke and CP redaction browser scenario intentionally deferred with prior validation coverage.",
+  "validationStatus": "Milestone 14C build and source/security-path validation passed; manual browser validation is pending. Milestone 14B GitHub App restriction checkpoint passed; production app health checked in browser; JSON/source/SQL checks passed; Milestone 13B production deployment, Auth URL configuration, and production smoke/security validation passed; GvG production smoke and CP redaction browser scenario intentionally deferred with prior validation coverage.",
   "auditStatus": "Do not run npm audit fix --force; it would install Vite 8.0.13 as a breaking major upgrade."
 }

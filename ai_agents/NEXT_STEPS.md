@@ -2,6 +2,36 @@
 
 ## Current Recommendation
 
+Milestone 14C AdminPanel tabs + section organization is implemented, build-passed, and source/security-path validated. Manual browser validation is the next required step before marking Milestone 14C complete.
+
+Validate manually in the browser:
+- Owner sees the expected tabs and can switch between them.
+- Owner Approvals, Members, CP, GvG, Audit Logs, Permissions, and Tools tabs behave as before.
+- CP tab loads only when opened and uses approved CP RPCs only.
+- Audit Logs tab loads only when opened and uses `get_audit_logs` only.
+- GvG tab loads only when opened and uses approved GvG RPCs/safe reads only.
+- Admin users see only allowed tabs.
+- Admin without `view_cp` cannot see/use CP.
+- Admin without `view_audit_logs` cannot see/use Audit Logs.
+- Member and pending users cannot access AdminPanel.
+- Mobile tab bar is readable and tappable.
+- No major console errors appear.
+
+Network validation:
+- Open AdminPanel, clear Network, then switch tabs one at a time.
+- Inactive CP/Audit/GvG tabs should not trigger sensitive calls.
+- Opening CP may call `get_current_cp_roster`, `get_cp_leaderboard`, and `update_member_cp` only when updating.
+- Opening Audit Logs may call `get_audit_logs` only.
+- Opening GvG may call approved GvG RPCs/safe reads only.
+- No direct `member_cp`, `cp_snapshots`, or `audit_logs` calls should appear.
+- No direct unsafe `gvg_votes` writes should appear.
+
+After manual browser validation passes:
+- Update docs/handoff to mark Milestone 14C complete.
+- Commit with a message such as `refactor: organize admin panel into tabs`.
+
+## Previous Recommendation - Milestone 14B
+
 Milestone 14B Vercel GitHub App restriction verification and docs checkpoint is complete.
 
 Validated:

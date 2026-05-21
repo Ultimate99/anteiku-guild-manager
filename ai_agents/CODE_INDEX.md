@@ -22,7 +22,15 @@
 - `src/pages/Dashboard.jsx`: Approved-user safe guild dashboard.
 - `src/pages/Profile.jsx`: Safe profile display without CP, plus own IGN edit mode for approved users.
 - `src/pages/Gvg.jsx`: GvG voting placeholder without persistence.
-- `src/pages/AdminPanel.jsx`: Restricted admin view with registration approval/rejection queue, active approved member management, and planned future admin modules.
+- `src/pages/AdminPanel.jsx`: Restricted AdminPanel coordinator for admin permission loading, visible tab calculation, active tab state, lazy section loading, and section action handlers.
+- `src/components/admin/AdminTabs.jsx`: Mobile-first AdminPanel tab bar.
+- `src/components/admin/AdminApprovalsSection.jsx`: Registration approval/rejection queue section.
+- `src/components/admin/AdminMembersSection.jsx`: Active approved member management section.
+- `src/components/admin/AdminCpSection.jsx`: Admin-only CP roster/update/leaderboard section.
+- `src/components/admin/AdminGvgSection.jsx`: GvG event management/results section.
+- `src/components/admin/AdminAuditSection.jsx`: Read-only audit log viewer section.
+- `src/components/admin/AdminPermissionsSection.jsx`: Admin permission checkbox management section.
+- `src/components/admin/AdminToolsSection.jsx`: Planned/future admin tools section.
 - `src/styles/app.css`: Plain mobile-first dark styling.
 
 ## Documentation
@@ -112,3 +120,29 @@
   - Shows `Sensitive CP metadata hidden.` when `metadata_redacted` is true.
 - `src/styles/app.css`
   - Adds mobile-first dark/red audit filters, cards, metadata summary, and load-older styles.
+
+## Milestone 14C AdminPanel Tabs And Section Organization
+
+- `src/pages/AdminPanel.jsx`
+  - Coordinates AdminPanel session/membership context, admin permission-key loading, visible tab calculation, active tab state, and section handlers.
+  - Renders only the active tab section.
+  - Lazy-loads CP, Audit Logs, and GvG management data only when those tabs are opened.
+  - Keeps backend/RLS/RPC checks as the authority and preserves existing service paths.
+- `src/components/admin/AdminTabs.jsx`
+  - Mobile-first horizontal tab bar for Approvals, Members, CP, GvG, Audit Logs, Permissions, and Tools.
+- `src/components/admin/AdminApprovalsSection.jsx`
+  - Extracted approval queue UI; writes still flow through existing approval RPC handlers.
+- `src/components/admin/AdminMembersSection.jsx`
+  - Extracted member management UI; writes still flow through existing member-management RPC handlers.
+- `src/components/admin/AdminCpSection.jsx`
+  - Extracted CP UI; CP service paths remain approved CP RPCs only.
+- `src/components/admin/AdminGvgSection.jsx`
+  - Extracted GvG management UI; GvG service paths remain approved RPCs/safe reads.
+- `src/components/admin/AdminAuditSection.jsx`
+  - Extracted audit viewer UI; audit reads remain `get_audit_logs` only.
+- `src/components/admin/AdminPermissionsSection.jsx`
+  - Extracted permission checkbox UI; writes remain `grant_admin_permission` / `revoke_admin_permission`.
+- `src/components/admin/AdminToolsSection.jsx`
+  - Extracted planned admin modules placeholder.
+- `src/styles/app.css`
+  - Adds sticky/mobile horizontal admin tab styling and tab content spacing.

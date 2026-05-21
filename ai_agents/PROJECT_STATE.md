@@ -1,5 +1,61 @@
 # Project State
 
+## Milestone 14C AdminPanel Tabs Implementation Source-Validated
+
+Milestone 14C has been implemented as a frontend-only AdminPanel organization refactor. Build and source/security-path validation passed. Manual browser validation is still required before marking the milestone complete.
+
+Implemented:
+- Split the large AdminPanel into section components:
+  - `src/components/admin/AdminTabs.jsx`
+  - `src/components/admin/AdminApprovalsSection.jsx`
+  - `src/components/admin/AdminMembersSection.jsx`
+  - `src/components/admin/AdminCpSection.jsx`
+  - `src/components/admin/AdminGvgSection.jsx`
+  - `src/components/admin/AdminAuditSection.jsx`
+  - `src/components/admin/AdminPermissionsSection.jsx`
+  - `src/components/admin/AdminToolsSection.jsx`
+- Kept `src/pages/AdminPanel.jsx` as the coordinator for auth/session context, current membership, permission-key loading, visible-tab calculation, active tab state, and action handlers.
+- Added mobile-first horizontal admin tabs:
+  - Approvals
+  - Members
+  - CP
+  - GvG
+  - Audit Logs
+  - Permissions
+  - Tools
+- Added sticky dark/crimson tab styling in `src/styles/app.css`.
+- Rendered only the active AdminPanel section.
+- Lazy-loaded CP, Audit Logs, and GvG management sections when their tabs are opened instead of on initial AdminPanel render.
+
+Validation:
+- `npm.cmd run build` passed.
+- No SQL migration files changed.
+- No source service behavior changes were made.
+- New admin section components do not import services or call Supabase directly.
+- Static source checks found no frontend direct `.from('member_cp')`, `.from('cp_snapshots')`, or `.from('audit_logs')` calls.
+- Audit reads remain isolated through `src/services/adminAuditService.js` and `get_audit_logs`.
+- CP reads/writes remain isolated through approved CP RPCs in `src/services/adminCpService.js`.
+- GvG paths remain through existing `src/services/gvgService.js` safe reads/RPCs; no new GvG service calls were added.
+
+Pending manual browser validation:
+- Owner/Admin tab visibility and tab switching.
+- Owner Approvals, Members, CP, GvG, Audit Logs, Permissions, and Tools tab behavior.
+- Admin-scoped tab visibility, including Admin without `view_cp` and Admin without `view_audit_logs`.
+- Member and pending-user AdminPanel denial.
+- Mobile tab bar usability.
+- Network validation after opening AdminPanel and switching tabs:
+  - inactive CP/Audit/GvG tabs should not trigger sensitive calls;
+  - CP tab may call only approved CP RPCs;
+  - Audit tab may call only `get_audit_logs`;
+  - GvG tab may call approved GvG RPCs/safe reads only.
+
+Scope confirmation:
+- No SQL migrations changed.
+- No Supabase schema/RLS/RPC logic changed.
+- No CP, GvG, audit, role/guild, or permission behavior changed.
+- No deployment was performed.
+- No commit was made.
+
 ## Milestone 14B Vercel GitHub App Restriction Checkpoint Complete
 
 Milestone 14B is complete as a verification and documentation checkpoint.
@@ -526,7 +582,7 @@ Validated results:
 
 ## Current Milestone
 
-Milestone 14B Vercel GitHub App restriction verification and docs checkpoint is complete.
+Milestone 14C AdminPanel tabs + section organization is implemented, build-passed, and source/security-path validated. Manual browser validation is pending.
 
 ## Current Status
 
@@ -537,6 +593,8 @@ Current capabilities include local Supabase auth/session restore, registration t
 Production Supabase is set up through migrations and Owner bootstrap. Vercel deployment is live at `https://anteiku-guild-manager.vercel.app`, production Auth Site URL/redirect URL setup is complete, and production browser/network smoke validation has passed with documented deferred items for production GvG data creation and CP redaction browser coverage.
 
 Production hardening policy now documents Vercel GitHub App restriction, controlled test-member retention, Preview/Staging separation, deferred production smoke-test strategy, and launch operations safety. The Vercel GitHub App restriction has since been manually completed and recorded.
+
+Milestone 14C reorganizes AdminPanel into mobile-friendly tabs and section components. The refactor is frontend-only and behavior-preserving; CP, Audit Logs, and GvG management sections now lazy-load when their tabs are opened. Manual browser validation is still required before marking Milestone 14C complete.
 
 ## Implemented
 
@@ -575,6 +633,7 @@ Production hardening policy now documents Vercel GitHub App restriction, control
 - Manual Milestone 10 browser GvG validation.
 - Safe audit log reader RPC with CP metadata redaction.
 - Read-only AdminPanel audit log viewer using `get_audit_logs`.
+- Mobile-friendly AdminPanel tabs and section components.
 
 ## Not Implemented
 

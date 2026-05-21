@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-05-20 - Milestone 14C AdminPanel Tabs Implemented
+
+- Refactored AdminPanel into a frontend-only tabbed coordinator plus section components.
+- Added AdminPanel tabs for Approvals, Members, CP, GvG, Audit Logs, Permissions, and Tools.
+- Added mobile-first sticky horizontal tab styling with dark/crimson Anteiku styling.
+- Rendered only the active AdminPanel section.
+- Lazy-loaded CP, Audit Logs, and GvG management data when their tabs are opened instead of on initial AdminPanel render.
+- Preserved existing security paths: Audit Logs use `get_audit_logs`, CP uses approved CP RPCs, and GvG uses approved RPCs/safe reads.
+- `npm.cmd run build` passed.
+- Source validation found no direct frontend `member_cp`, `cp_snapshots`, or `audit_logs` table calls.
+- No SQL migrations, Supabase schema/RLS/RPC logic, CP logic, GvG logic, audit logic, role/guild behavior, permission checkbox behavior, deployment, or commit actions were changed.
+- Manual browser validation remains pending before marking Milestone 14C complete.
+
 ## 2026-05-20 - Milestone 14B Vercel GitHub App Restriction Checkpoint
 
 - Recorded user-confirmed Vercel GitHub App restriction to only `Ultimate99/anteiku-guild-manager`.

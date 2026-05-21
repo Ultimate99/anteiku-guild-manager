@@ -345,6 +345,60 @@ textarea {
   gap: 14px;
 }
 
+.admin-tab-bar {
+  position: sticky;
+  top: 8px;
+  z-index: 4;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(10, 10, 14, 0.96);
+  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(16px);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(197, 22, 39, 0.72) rgba(255, 255, 255, 0.08);
+}
+
+.admin-tab-bar::-webkit-scrollbar {
+  height: 6px;
+}
+
+.admin-tab-bar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.admin-tab-bar::-webkit-scrollbar-thumb {
+  background: rgba(197, 22, 39, 0.72);
+}
+
+.admin-tab-button {
+  flex: 0 0 auto;
+  min-width: max-content;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #15151c;
+  color: #c9c9d0;
+  font-size: 0.8rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.admin-tab-button[data-active="true"] {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: #c51627;
+  color: #fff;
+  box-shadow: 0 8px 22px rgba(197, 22, 39, 0.24);
+}
+
+.admin-tab-content {
+  display: grid;
+  gap: 12px;
+}
+
 .section-heading-row {
   display: grid;
   gap: 12px;

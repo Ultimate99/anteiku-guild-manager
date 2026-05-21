@@ -7,7 +7,7 @@ project_id = "Project_Anteiku"
 [api]
 enabled = true
 # Port to use for the API URL.
-port = 54321
+port = 55421
 # Schemas to expose in your API. Tables, views and stored procedures in this schema will get API
 # endpoints. `public` and `graphql_public` schemas are included by default.
 schemas = ["public", "graphql_public"]
@@ -25,10 +25,11 @@ enabled = false
 # key_path = "../certs/my-key.pem"
 
 [db]
-# Port to use for the local database URL.
-port = 54322
+# Local Postgres port.
+# Changed from 54322 because Windows blocked that port.
+port = 55429
 # Port used by db diff command to initialize the shadow database.
-shadow_port = 54320
+shadow_port = 55431
 # Maximum amount of time to wait for health check when starting the local database.
 health_timeout = "2m"
 # The database major version to use. This has to be the same as your remote database's. Run `SHOW
@@ -38,7 +39,7 @@ major_version = 17
 [db.pooler]
 enabled = false
 # Port to use for the local connection pooler.
-port = 54329
+port = 55430
 # Specifies when a server connection can be reused by other clients.
 # Configure one of the supported pooler modes: `transaction`, `session`.
 pool_mode = "transaction"
@@ -58,11 +59,10 @@ enabled = true
 schema_paths = []
 
 [db.seed]
-# If enabled, seeds the database after migrations during a db reset.
-enabled = true
-# Specifies an ordered list of seed files to load during db reset.
-# Supports glob patterns relative to supabase directory: "./seeds/*.sql"
-sql_paths = ["./seed.sql"]
+# Seed data is handled by migration 20260514000400_seed_core_data.sql.
+# No supabase/seed.sql file exists, so keep this disabled.
+enabled = false
+sql_paths = []
 
 [db.network_restrictions]
 # Enable management of network restrictions.
@@ -88,9 +88,9 @@ enabled = true
 [studio]
 enabled = true
 # Port to use for Supabase Studio.
-port = 54323
+port = 55423
 # External URL of the API server that frontend connects to.
-api_url = "http://127.0.0.1"
+api_url = "http://127.0.0.1:55421"
 # OpenAI API Key to use for Supabase AI in the Supabase Studio.
 openai_api_key = "env(OPENAI_API_KEY)"
 
@@ -99,10 +99,10 @@ openai_api_key = "env(OPENAI_API_KEY)"
 [inbucket]
 enabled = true
 # Port to use for the email testing server web interface.
-port = 54324
+port = 55424
 # Uncomment to expose additional ports for testing user applications that send emails.
 # smtp_port = 54325
-# pop3_port = 54326
+# pop3_port = 54326A
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
@@ -382,7 +382,7 @@ deno_version = 2
 
 [analytics]
 enabled = true
-port = 54327
+port = 55432
 # Configure one of the supported backends: `postgres`, `bigquery`.
 backend = "postgres"
 
