@@ -1,8 +1,8 @@
 # Testing And Validation
 
-## Milestone 14C AdminPanel Tabs Build And Source Validation
+## Milestone 14C AdminPanel Tabs Validation Passed
 
-Milestone 14C is frontend-only and is implemented pending manual browser validation.
+Milestone 14C is frontend-only and complete in production.
 
 Build:
 - `npm.cmd run build` passed.
@@ -17,18 +17,26 @@ Source/security-path validation:
 - GvG management still uses existing `src/services/gvgService.js` safe reads/RPCs; no new GvG service paths were added.
 - Inactive AdminPanel sections are not mounted by the coordinator; CP, Audit Logs, and GvG data loaders run only when their tabs are opened or explicitly refreshed.
 
-Manual browser validation pending:
-- Owner tab visibility, tab switching, and section behavior.
-- Admin scoped tab visibility, including denial for missing `view_cp` or `view_audit_logs`.
-- Member and pending-user AdminPanel denial.
-- Mobile tab bar readability and tap targets.
-- Network validation after clearing initial AdminPanel load:
-  - CP tab uses approved CP RPCs only.
-  - Audit Logs tab uses `get_audit_logs` only.
-  - GvG tab uses approved GvG RPCs/safe reads only.
-  - Inactive sensitive tabs do not trigger calls.
-  - No direct `member_cp`, `cp_snapshots`, or `audit_logs` calls.
-  - No unsafe direct `gvg_votes` writes.
+Local browser/source-path validation:
+- Owner and admin tab switching passed.
+- Mobile `390px` tab UX passed.
+- Lazy-load/network validation passed through local Kong logs.
+- CP tab used only `get_current_cp_roster` and `get_cp_leaderboard`.
+- Audit Logs tab used only `get_audit_logs`.
+- GvG tab used safe `gvg_events` read only.
+- No direct `member_cp`, `cp_snapshots`, `audit_logs`, or unsafe `gvg_votes` writes were observed.
+- No major console errors or tab-refactor bugs were found.
+
+Production smoke validation passed after Vercel deployment:
+- Production URL: `https://anteiku-guild-manager.vercel.app`.
+- Owner can log in.
+- AdminPanel opens.
+- Admin tabs are visible.
+- Owner can switch Approvals, Members, CP, GvG, Audit Logs, Permissions, and Tools.
+- Audit Logs tab loads.
+- CP tab loads.
+- Mobile tab layout is usable.
+- Member cannot access AdminPanel.
 
 ## Milestone 14A Production Hardening Docs Validation
 

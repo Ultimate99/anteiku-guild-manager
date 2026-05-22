@@ -1,5 +1,28 @@
 # Session Log
 
+## 2026-05-22 - Milestone 14C Production Rollout Complete
+
+- Milestone 14C AdminPanel tabs refactor was committed and pushed to GitHub `main` before this documentation checkpoint.
+- Vercel deployed the production build.
+- Production URL: `https://anteiku-guild-manager.vercel.app`.
+- Manual production smoke validation passed:
+  - Owner can log in.
+  - AdminPanel opens.
+  - Admin tabs are visible.
+  - Owner can switch Approvals, Members, CP, GvG, Audit Logs, Permissions, and Tools.
+  - Audit Logs tab loads.
+  - CP tab loads.
+  - Mobile tab layout is usable.
+  - Member cannot access AdminPanel.
+- Local browser/network validation had already confirmed lazy-loading behavior:
+  - CP tab used approved CP RPCs only.
+  - Audit Logs tab used `get_audit_logs` only.
+  - GvG tab used safe GvG reads/RPC paths only.
+  - No direct `member_cp`, `cp_snapshots`, `audit_logs`, or unsafe `gvg_votes` writes were observed.
+- This checkpoint updated docs/handoff only.
+- No source logic, React files, SQL migrations, Supabase schema/RLS/RPC, Vercel env, deployment, commit, CP logic, GvG logic, audit logic, role/guild management logic, or permission checkbox logic was changed during this checkpoint.
+- Milestone 14C is complete in production.
+
 ## 2026-05-20 - Milestone 14C AdminPanel Tabs Implementation
 
 - Implemented Milestone 14C as a frontend-only AdminPanel tabs + section organization refactor.
@@ -16,7 +39,7 @@
 - `npm.cmd run build` passed.
 - Static source validation found no direct frontend `member_cp`, `cp_snapshots`, or `audit_logs` table calls.
 - No SQL migrations, Supabase schema/RLS/RPC logic, CP logic, GvG logic, audit logic, role/guild behavior, permission checkbox behavior, deployment, or commit actions were changed.
-- Manual browser validation remains pending before marking Milestone 14C complete.
+- Manual browser and production rollout validation were completed later; Milestone 14C is now complete in production.
 
 ## 2026-05-20 - Milestone 14B Vercel GitHub App Restriction Checkpoint
 

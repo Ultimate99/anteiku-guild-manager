@@ -2,33 +2,26 @@
 
 ## Current Recommendation
 
-Milestone 14C AdminPanel tabs + section organization is implemented, build-passed, and source/security-path validated. Manual browser validation is the next required step before marking Milestone 14C complete.
+Milestone 14C AdminPanel tabs + section organization is complete in production.
 
-Validate manually in the browser:
-- Owner sees the expected tabs and can switch between them.
-- Owner Approvals, Members, CP, GvG, Audit Logs, Permissions, and Tools tabs behave as before.
-- CP tab loads only when opened and uses approved CP RPCs only.
-- Audit Logs tab loads only when opened and uses `get_audit_logs` only.
-- GvG tab loads only when opened and uses approved GvG RPCs/safe reads only.
-- Admin users see only allowed tabs.
-- Admin without `view_cp` cannot see/use CP.
-- Admin without `view_audit_logs` cannot see/use Audit Logs.
-- Member and pending users cannot access AdminPanel.
-- Mobile tab bar is readable and tappable.
-- No major console errors appear.
+Recorded production validation:
+- Production URL: `https://anteiku-guild-manager.vercel.app`.
+- Owner can log in.
+- AdminPanel opens.
+- Admin tabs are visible.
+- Owner can switch Approvals, Members, CP, GvG, Audit Logs, Permissions, and Tools.
+- Audit Logs tab loads.
+- CP tab loads.
+- Mobile tab layout is usable.
+- Member cannot access AdminPanel.
 
-Network validation:
-- Open AdminPanel, clear Network, then switch tabs one at a time.
-- Inactive CP/Audit/GvG tabs should not trigger sensitive calls.
-- Opening CP may call `get_current_cp_roster`, `get_cp_leaderboard`, and `update_member_cp` only when updating.
-- Opening Audit Logs may call `get_audit_logs` only.
-- Opening GvG may call approved GvG RPCs/safe reads only.
-- No direct `member_cp`, `cp_snapshots`, or `audit_logs` calls should appear.
-- No direct unsafe `gvg_votes` writes should appear.
+Recommended next milestone options:
+- Milestone 14D: staging Supabase + Vercel Preview environment planning, so future GvG and CP redaction scenarios can be tested without mutating production.
+- Controlled production test-member cleanup planning for `krsticmiroslav99+m13b21144225@gmail.com`, with no hard delete unless explicitly approved.
+- AdminPanel polish planning for sticky-under-header tab behavior and slightly tighter small-mobile tab spacing.
+- Future feature planning: reapply flow UI, suspended/left/rejected member management, weekly CP snapshot/growth report UI, or guild/subguild management UI.
 
-After manual browser validation passes:
-- Update docs/handoff to mark Milestone 14C complete.
-- Commit with a message such as `refactor: organize admin panel into tabs`.
+Do not start the next feature, production operation, or cleanup action without a dedicated plan, explicit approval, and security review.
 
 ## Previous Recommendation - Milestone 14B
 

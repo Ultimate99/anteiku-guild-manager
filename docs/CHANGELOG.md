@@ -1,6 +1,6 @@
 # Changelog
 
-## 2026-05-20 - Milestone 14C AdminPanel Tabs Implemented
+## 2026-05-22 - Milestone 14C AdminPanel Tabs Production Rollout Complete
 
 - Refactored AdminPanel into a frontend-only tabbed coordinator plus section components.
 - Added AdminPanel tabs for Approvals, Members, CP, GvG, Audit Logs, Permissions, and Tools.
@@ -10,8 +10,12 @@
 - Preserved existing security paths: Audit Logs use `get_audit_logs`, CP uses approved CP RPCs, and GvG uses approved RPCs/safe reads.
 - `npm.cmd run build` passed.
 - Source validation found no direct frontend `member_cp`, `cp_snapshots`, or `audit_logs` table calls.
-- No SQL migrations, Supabase schema/RLS/RPC logic, CP logic, GvG logic, audit logic, role/guild behavior, permission checkbox behavior, deployment, or commit actions were changed.
-- Manual browser validation remains pending before marking Milestone 14C complete.
+- Local browser/network validation passed: CP used approved CP RPCs only, Audit Logs used `get_audit_logs` only, GvG used safe GvG paths only, and no direct `member_cp`, `cp_snapshots`, `audit_logs`, or unsafe `gvg_votes` writes were observed.
+- The committed/pushed `main` build was deployed by Vercel.
+- Production URL: `https://anteiku-guild-manager.vercel.app`.
+- Production smoke validation passed: Owner login, AdminPanel open, visible tabs, Owner switching through Approvals/Members/CP/GvG/Audit Logs/Permissions/Tools, Audit Logs load, CP load, mobile tab usability, and Member AdminPanel denial.
+- No SQL migrations, Supabase schema/RLS/RPC logic, CP logic, GvG logic, audit logic, role/guild behavior, permission checkbox behavior, Vercel env, deployment, or commit actions were changed during the final documentation checkpoint.
+- Milestone 14C is complete in production.
 
 ## 2026-05-20 - Milestone 14B Vercel GitHub App Restriction Checkpoint
 
