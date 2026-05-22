@@ -170,6 +170,51 @@ Recommended policy:
 - Avoid broad Supabase redirect wildcards for preview URLs against production.
 - Require explicit approval for any temporary production-connected preview validation.
 
+## Future Staging Supabase And Preview Setup
+
+Milestone 14D records this as a plan only. No staging project exists yet, and no Vercel Preview env vars were changed during the planning checkpoint.
+
+Staging architecture:
+
+- Create a fresh Supabase project for staging.
+- Apply the same 9 migrations as production.
+- Keep staging separate from production for URL, anon/publishable key, Auth users, Owner bootstrap, and test data.
+- Allow fake/test data only in staging.
+- Do not copy production data into staging unless explicitly approved.
+- Do not use `db push --include-seed`; this repo has no `supabase/seed.sql`, and core seed data comes from migration `20260514000400_seed_core_data.sql`.
+
+Preview env variables, once staging exists:
+
+```text
+VITE_SUPABASE_URL=<staging Supabase URL>
+VITE_SUPABASE_ANON_KEY=<staging anon/publishable key>
+```
+
+Forbidden in Vercel frontend env:
+
+- service role key
+- `sb_secret_*` keys
+- database password or database URL
+- JWT secret
+- SMTP secrets
+- OAuth/provider secrets
+
+If staging is not ready, keep Vercel Preview env unconfigured.
+
+Auth URL strategy:
+
+- Production Supabase Site URL remains `https://anteiku-guild-manager.vercel.app`.
+- Production redirect URLs should remain production-only.
+- Staging Supabase Site URL and Redirect URLs should match the chosen staging/preview URL strategy.
+- Preview wildcard redirects, if needed, belong only in staging Supabase.
+- Avoid broad Preview wildcard redirects in production Supabase.
+
+Future implementation split:
+
+- Milestone 14E: create/link staging Supabase, run migration dry-run/apply, verify schema/RLS/seed.
+- Milestone 14F: configure Vercel Preview env with staging Supabase only and configure staging Auth URLs.
+- Milestone 14G: run staging validation with controlled test users/data.
+
 ## Post-Deployment Validation
 
 Completed in Milestone 13B:

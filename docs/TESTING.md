@@ -1,5 +1,33 @@
 # Testing
 
+## Milestone 14D Staging And Preview Test Plan
+
+Milestone 14D is documentation-only. No staging Supabase project was created, no Supabase commands were run, no Vercel env vars were changed, no deployment was performed, and no source or SQL files were edited.
+
+Future staging validation should use a fresh staging Supabase project with the same 9 migrations as production and separate Auth users/test data.
+
+Required staging-only test users:
+- Owner.
+- Approved Member.
+- Admin with `view_audit_logs` but without `view_cp`.
+- Admin with both `view_audit_logs` and `view_cp`.
+- Wrong-guild Member.
+- Pending user.
+
+Move these deferred production tests to staging:
+- Full GvG smoke test: create event, open voting, Member votes Present, switches Absent with reason, switches back Present, and one vote row remains.
+- CP audit redaction browser scenario: staff with `view_audit_logs` but no `view_cp` sees redaction notice; staff with both permissions sees only backend-returned metadata.
+- Permission denial flows for Admin without needed permissions, Member, and pending users.
+- Wrong-guild access checks.
+- Cleanup/archive experiments.
+
+Network checks in staging should confirm:
+- Audit viewer uses `get_audit_logs` only.
+- CP UI uses approved CP RPCs only.
+- GvG uses approved GvG RPCs/safe reads only.
+- Member pages make no CP calls.
+- No direct `member_cp`, `cp_snapshots`, `audit_logs`, or unsafe `gvg_votes` writes.
+
 ## Milestone 14A Production Hardening Test Policy
 
 Milestone 14A is documentation-only. No production commands, source changes, SQL changes, Vercel changes, GitHub App changes, user disable/delete actions, deployment, or commit were performed.

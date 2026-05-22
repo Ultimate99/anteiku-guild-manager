@@ -14,6 +14,8 @@
 - Vercel project remains connected to `Ultimate99/anteiku-guild-manager` on `main`.
 - Preview deployments should have no Supabase env vars until a separate staging Supabase project exists.
 - Future staging must use a separate Supabase project, not production.
+- Milestone 14D documents the future staging/preview plan, but staging has not been created yet.
+- Vercel Preview env has not been configured for staging yet.
 
 ## Production Safety Hazards
 
@@ -24,6 +26,10 @@
 - Do not hard-delete the controlled production test member; preserve audit/history unless a cleanup plan is explicitly approved.
 - Do not create production GvG test events without explicit approval and a cleanup/data-retention plan.
 - Do not broaden Supabase redirect wildcards for Preview deployments against production.
+- Do not point Vercel Preview env at production Supabase by default.
+- Do not add preview wildcard redirects to production Supabase. If preview wildcards are needed, use staging Supabase.
+- Do not use `db push --include-seed` for staging or production until the missing `supabase/seed.sql` hazard is intentionally resolved.
+- Do not run Owner bootstrap against the wrong project; staging and production Owner bootstrap actions must be separately reviewed.
 
 ## Product Gaps
 

@@ -1,5 +1,26 @@
 # Security Rules
 
+## Milestone 14D Staging And Preview Rules
+
+Milestone 14D documents staging/preview policy only. It did not create a staging project, link Supabase CLI, run Supabase commands, change Vercel env vars, deploy, commit, edit source logic, or edit SQL migrations.
+
+Future staging rules:
+- Staging must be a fresh Supabase project separate from production.
+- Staging must use separate Auth users, URL, anon/publishable key, Owner bootstrap, and test data.
+- Fake/test data is allowed only in staging.
+- Do not copy production data into staging unless explicitly approved.
+- Apply the same approved migrations as production.
+- Do not use `db push --include-seed` until the missing `supabase/seed.sql` hazard is resolved.
+- Confirm the target project ref before linking, pushing migrations, or bootstrapping Owner.
+
+Future Vercel Preview rules:
+- Production Vercel env remains production Supabase only.
+- Preview Vercel env should point only to staging Supabase once staging exists.
+- If staging is not ready, Preview env should remain unconfigured.
+- Never add service role keys, `sb_secret_*`, database passwords/URLs, JWT secrets, SMTP secrets, or OAuth/provider secrets to frontend/Vercel env.
+- Production Auth URLs stay production-only.
+- Preview wildcard redirects, if needed, belong in staging Supabase, not production Supabase.
+
 ## Milestone 14A Production Hardening Rules
 
 Milestone 14A documented production hardening policy only. It did not run production commands, change Vercel settings, change GitHub App settings, disable/delete/suspend users, edit source logic, edit SQL migrations, deploy, or commit.

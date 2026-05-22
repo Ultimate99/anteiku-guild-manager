@@ -1,5 +1,26 @@
 # Session Log
 
+## 2026-05-22 - Milestone 14D Staging And Preview Planning Docs
+
+- Implemented Milestone 14D as a documentation-only staging Supabase + Vercel Preview planning checkpoint.
+- Documented that future staging should use a fresh Supabase project with the same 9 migrations as production.
+- Documented that staging must have separate Auth users, URL, anon/publishable key, Owner bootstrap, and fake/test data.
+- Documented that production data must not be copied into staging unless explicitly approved.
+- Documented Vercel Preview env policy:
+  - Production env remains production Supabase only.
+  - Preview env should point only to staging Supabase when staging exists.
+  - Preview env should remain unconfigured until staging is ready.
+  - No service role key, database credentials, `sb_secret_*`, JWT secret, SMTP secret, or OAuth/provider secret belongs in frontend/Vercel env.
+- Documented Auth URL policy:
+  - Production Site URL remains `https://anteiku-guild-manager.vercel.app`.
+  - Production redirect URLs remain production-only.
+  - Preview wildcard redirects, if needed, belong only in staging Supabase.
+- Documented future staging users and validation targets for GvG, CP audit redaction, permission denial, wrong-guild access, and cleanup/archive experiments.
+- No staging Supabase project was created.
+- No Supabase CLI link or command was run.
+- No Vercel env vars were changed.
+- No source logic, React files, SQL migrations, Supabase schema/RLS/RPC, deployment, commit, CP logic, GvG logic, audit logic, role/guild management logic, or permission checkbox logic was changed.
+
 ## 2026-05-22 - Milestone 14C Production Rollout Complete
 
 - Milestone 14C AdminPanel tabs refactor was committed and pushed to GitHub `main` before this documentation checkpoint.
@@ -52,7 +73,7 @@
 - No Vercel env vars were changed.
 - No source logic, React files, SQL migrations, Supabase schema/RLS/RPC, production commands, deployment, commit, CP logic, GvG logic, audit logic, role/guild management logic, or permission checkbox logic was changed.
 - Milestone 14B is complete.
-- Recommended next milestone: Milestone 14C staging Supabase + Vercel Preview environment planning, or controlled production test-member cleanup planning.
+- Historical next options at that checkpoint included staging Supabase + Vercel Preview environment planning or controlled production test-member cleanup planning.
 
 ## 2026-05-20 - Milestone 14A Production Hardening Policy Docs
 

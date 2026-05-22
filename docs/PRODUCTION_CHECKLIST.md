@@ -14,6 +14,8 @@ Current production checkpoint:
 - Production URL: `https://anteiku-guild-manager.vercel.app`.
 - Supabase Auth Site URL and Redirect URL allow-list are configured for the production URL.
 - Production smoke/security validation passed with documented deferred production-only items.
+- Milestone 14C AdminPanel tabs refactor is complete in production.
+- Milestone 14D staging Supabase + Vercel Preview planning is documented; staging has not been created yet.
 
 ## Milestone 14A Production Hardening Policy
 
@@ -82,6 +84,64 @@ Recommended policy:
 - Preview deployments must never mutate production by default.
 - Avoid broad Supabase redirect wildcards for preview URLs against production.
 - If a preview must connect to production for emergency validation, require explicit approval and a narrow time-boxed checklist.
+
+## Milestone 14D Staging Supabase And Vercel Preview Plan
+
+Milestone 14D is documentation-only. No staging project was created, no Supabase commands were run, no Vercel env vars were changed, and no deployment was performed.
+
+Staging Supabase architecture:
+
+- [ ] Create a fresh staging Supabase project only after explicit approval.
+- [ ] Apply the same 9 migrations as production.
+- [ ] Use a separate staging Supabase URL.
+- [ ] Use a separate staging anon/publishable key.
+- [ ] Use separate staging Auth users.
+- [ ] Bootstrap a separate staging Owner.
+- [ ] Allow fake/test users and data only in staging.
+- [ ] Do not copy production data to staging unless explicitly approved.
+- [ ] Do not use `db push --include-seed`; core seed data is in migration `20260514000400_seed_core_data.sql`.
+
+Vercel Preview env policy:
+
+- [ ] Keep Production env pointed at production Supabase only.
+- [ ] Configure Preview env only after staging exists.
+- [ ] Set Preview `VITE_SUPABASE_URL` to the staging Supabase URL.
+- [ ] Set Preview `VITE_SUPABASE_ANON_KEY` to the staging anon/publishable key.
+- [ ] Do not add a service role key.
+- [ ] Do not add a database password or database URL.
+- [ ] Do not add `sb_secret_*` keys.
+- [ ] Leave Preview env unconfigured if staging is not ready.
+
+Auth URL strategy:
+
+- [x] Keep production Site URL as `https://anteiku-guild-manager.vercel.app`.
+- [x] Keep production redirect URLs production-only.
+- [ ] Configure staging Site URL to match the chosen staging/preview URL strategy.
+- [ ] Add Preview wildcard redirects only to staging Supabase if needed.
+- [ ] Do not add broad Preview wildcard redirects to production Supabase.
+
+Future staging test users:
+
+- [ ] Owner.
+- [ ] Approved Member.
+- [ ] Admin with `view_audit_logs` but without `view_cp`.
+- [ ] Admin with both `view_audit_logs` and `view_cp`.
+- [ ] Wrong-guild Member.
+- [ ] Pending user.
+
+Future staging validation targets:
+
+- [ ] Full GvG smoke test.
+- [ ] CP audit redaction browser scenario.
+- [ ] Permission denial flows.
+- [ ] Wrong-guild access.
+- [ ] Cleanup/archive experiments.
+
+Recommended future phases:
+
+- Milestone 14E: create/link staging Supabase, dry-run/apply migrations, verify schema/RLS/seed.
+- Milestone 14F: configure Vercel Preview env with staging Supabase only and staging Auth URLs.
+- Milestone 14G: staging validation with controlled test users/data.
 
 ## Deferred Production Smoke Tests
 

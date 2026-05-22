@@ -2,21 +2,26 @@
 
 ## Current Recommendation
 
-Milestone 14C AdminPanel tabs + section organization is complete in production.
+Milestone 14D staging Supabase + Vercel Preview planning is complete as a docs-only checkpoint.
 
-Recorded production validation:
-- Production URL: `https://anteiku-guild-manager.vercel.app`.
-- Owner can log in.
-- AdminPanel opens.
-- Admin tabs are visible.
-- Owner can switch Approvals, Members, CP, GvG, Audit Logs, Permissions, and Tools.
-- Audit Logs tab loads.
-- CP tab loads.
-- Mobile tab layout is usable.
-- Member cannot access AdminPanel.
+Recorded staging/preview plan:
+- Create a fresh staging Supabase project later.
+- Apply the same 9 migrations as production.
+- Use separate staging URL, anon/publishable key, Auth users, Owner bootstrap, and test data.
+- Do not copy production data unless explicitly approved.
+- Keep Production Vercel env pointed only at production Supabase.
+- Configure Preview env later with staging Supabase only:
+  - `VITE_SUPABASE_URL`
+  - `VITE_SUPABASE_ANON_KEY`
+- Keep Preview env unconfigured until staging exists.
+- Never add service role keys, database credentials, `sb_secret_*`, JWT secrets, SMTP secrets, or OAuth/provider secrets to frontend/Vercel env.
+- Keep production Auth URLs production-only.
+- Put preview wildcard redirects only in staging Supabase if they are needed.
 
 Recommended next milestone options:
-- Milestone 14D: staging Supabase + Vercel Preview environment planning, so future GvG and CP redaction scenarios can be tested without mutating production.
+- Milestone 14E: create/link staging Supabase, run migration dry-run/apply, and verify schema/RLS/seed.
+- Milestone 14F: configure Vercel Preview env with staging Supabase only plus staging Auth URLs.
+- Milestone 14G: staging validation with controlled test users/data.
 - Controlled production test-member cleanup planning for `krsticmiroslav99+m13b21144225@gmail.com`, with no hard delete unless explicitly approved.
 - AdminPanel polish planning for sticky-under-header tab behavior and slightly tighter small-mobile tab spacing.
 - Future feature planning: reapply flow UI, suspended/left/rejected member management, weekly CP snapshot/growth report UI, or guild/subguild management UI.
@@ -60,10 +65,8 @@ Production note:
 - Preview deployments should have no Supabase env vars until a separate staging Supabase project exists.
 - Never let Preview deployments mutate production by default.
 
-Recommended next milestone:
-- Milestone 14C: choose one approved production-hardening or cleanup action.
-
-Strong 14C options:
+Historical next options at that checkpoint:
+- Choose one approved production-hardening or cleanup action.
 - Staging Supabase + Vercel Preview environment planning.
 - Controlled production test-member cleanup planning.
 

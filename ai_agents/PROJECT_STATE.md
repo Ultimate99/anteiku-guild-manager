@@ -1,5 +1,44 @@
 # Project State
 
+## Milestone 14D Staging And Preview Planning Docs Complete
+
+Milestone 14D is complete as a documentation-only staging Supabase + Vercel Preview planning pass. No staging project was created, no Supabase CLI link or command was run, no Vercel env vars were changed, no deployment was performed, and no source or SQL files were changed.
+
+Documented plan:
+- Future staging must use a fresh Supabase project, separate from production.
+- Staging should receive the same 9 migrations as production.
+- Staging must use a separate Supabase URL, anon/publishable key, Auth users, Owner bootstrap, and fake/test data.
+- Production data must not be copied to staging unless explicitly approved.
+- Production Vercel env remains production-only.
+- Vercel Preview env should point only to staging Supabase when staging exists:
+  - `VITE_SUPABASE_URL`
+  - `VITE_SUPABASE_ANON_KEY`
+- Preview env should remain unconfigured until staging is ready.
+- No service role key, database password/URL, `sb_secret_*`, JWT secret, SMTP secret, or OAuth/provider secret belongs in frontend/Vercel env.
+- Production Auth Site URL remains `https://anteiku-guild-manager.vercel.app`.
+- Production redirect URLs should remain production-only.
+- Preview wildcard redirects, if needed, belong only in staging Supabase.
+
+Staging test plan:
+- Owner.
+- Approved Member.
+- Admin with `view_audit_logs` but without `view_cp`.
+- Admin with both `view_audit_logs` and `view_cp`.
+- Wrong-guild Member.
+- Pending user.
+
+Deferred production tests moved to staging:
+- Full GvG smoke test.
+- CP audit redaction browser scenario.
+- Permission denial flows.
+- Wrong-guild access.
+- Cleanup/archive experiments.
+
+Recommended future phases:
+- Milestone 14E: create/link staging Supabase, dry-run/apply migrations, verify schema/RLS/seed.
+- Milestone 14F: configure Vercel Preview env with staging Supabase only and staging Auth URLs.
+- Milestone 14G: staging validation with controlled test users/data.
+
 ## Milestone 14C AdminPanel Tabs Complete In Production
 
 Milestone 14C is complete. The frontend-only AdminPanel organization refactor was implemented, build/source validated, committed/pushed to GitHub `main`, deployed by Vercel, and manually production-smoke validated at `https://anteiku-guild-manager.vercel.app`.
@@ -87,8 +126,8 @@ Scope confirmation:
 - No deployment was performed.
 - No commit was made.
 
-Recommended next milestone:
-- Milestone 14C planning: staging Supabase + Vercel Preview environment setup, or controlled production test-member cleanup planning.
+Historical next options at the time:
+- Staging Supabase + Vercel Preview environment setup, or controlled production test-member cleanup planning.
 
 ## Milestone 14A Production Hardening Policy Docs Complete
 
@@ -590,7 +629,7 @@ Validated results:
 
 ## Current Milestone
 
-Milestone 14C AdminPanel tabs + section organization is complete in production.
+Milestone 14D staging Supabase + Vercel Preview planning is complete as a docs-only checkpoint.
 
 ## Current Status
 
@@ -603,6 +642,8 @@ Production Supabase is set up through migrations and Owner bootstrap. Vercel dep
 Production hardening policy now documents Vercel GitHub App restriction, controlled test-member retention, Preview/Staging separation, deferred production smoke-test strategy, and launch operations safety. The Vercel GitHub App restriction has since been manually completed and recorded.
 
 Milestone 14C reorganized AdminPanel into mobile-friendly tabs and section components. The refactor is frontend-only and behavior-preserving; CP, Audit Logs, and GvG management sections lazy-load when their tabs are opened. Production rollout validation passed after the Vercel deployment.
+
+Milestone 14D records the staging/preview plan for future non-production validation. Staging has not been created yet; Vercel Preview env remains unchanged.
 
 ## Implemented
 

@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-05-22 - Milestone 14D Staging And Preview Planning Docs
+
+- Added documentation-only staging Supabase + Vercel Preview planning.
+- Documented future staging architecture: fresh Supabase project, same 9 migrations as production, separate URL, separate anon/publishable key, separate Auth users, separate Owner bootstrap, and staging-only fake/test data.
+- Documented that production data must not be copied into staging unless explicitly approved.
+- Documented Vercel Preview env policy: Production env remains production-only; Preview env should point only to staging Supabase when staging exists.
+- Documented allowed Preview env vars: `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+- Documented forbidden frontend/Vercel env values: service role keys, database passwords/URLs, `sb_secret_*` keys, JWT secrets, SMTP secrets, and OAuth/provider secrets.
+- Documented Auth URL strategy: production Site URL remains `https://anteiku-guild-manager.vercel.app`, production redirects stay production-only, and Preview wildcard redirects belong only in staging Supabase if needed.
+- Documented future staging test users and moved deferred GvG smoke, CP audit redaction, permission denial, wrong-guild access, and cleanup/archive experiments to staging.
+- Documented future phases: 14E staging Supabase create/link/migrate/verify, 14F Vercel Preview env + staging Auth URLs, and 14G staging validation.
+- No staging project was created, no Supabase commands were run, no Vercel env vars were changed, no deployment was performed, and no source or SQL files were changed.
+
 ## 2026-05-22 - Milestone 14C AdminPanel Tabs Production Rollout Complete
 
 - Refactored AdminPanel into a frontend-only tabbed coordinator plus section components.

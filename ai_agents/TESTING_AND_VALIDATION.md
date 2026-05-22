@@ -1,5 +1,36 @@
 # Testing And Validation
 
+## Milestone 14D Staging And Preview Planning Docs
+
+Milestone 14D is documentation-only.
+
+Validation expectations for this pass:
+- `ai_agents/INDEX.json` parses as valid JSON after update.
+- No source logic files changed.
+- No React files changed.
+- No SQL migrations changed.
+- No SQL migrations were created.
+- No Supabase commands were run.
+- No staging Supabase project was created.
+- No Supabase CLI link was changed.
+- No Vercel env vars were changed.
+- No deployment or commit was performed.
+
+Staging validation targets documented for future milestones:
+- Full GvG smoke test.
+- CP audit redaction browser scenario with an Admin who has `view_audit_logs` but not `view_cp`.
+- Permission denial flows.
+- Wrong-guild access checks.
+- Cleanup/archive experiments.
+
+Future staging test accounts documented:
+- Owner.
+- Approved Member.
+- Admin with `view_audit_logs` but without `view_cp`.
+- Admin with both `view_audit_logs` and `view_cp`.
+- Wrong-guild Member.
+- Pending user.
+
 ## Milestone 14C AdminPanel Tabs Validation Passed
 
 Milestone 14C is frontend-only and complete in production.

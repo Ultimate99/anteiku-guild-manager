@@ -1,7 +1,7 @@
 {
   "project": "Anteiku Guild Manager",
-  "currentMilestone": "Milestone 14C AdminPanel tabs complete in production",
-  "status": "milestone_14c_admin_panel_tabs_complete",
+  "currentMilestone": "Milestone 14D staging Supabase and Vercel Preview planning docs complete",
+  "status": "milestone_14d_staging_preview_planning_docs_complete",
   "milestone7BackendStatus": "SQL/RPC migration created for hardened role assignment and Owner-only guild transfer; local Supabase validation passed.",
   "milestone7ValidationStatus": "npx.cmd supabase db reset passed; local_validation_anteiku.sql passed; role assignment and guild transfer tests passed.",
   "milestone7FrontendStatus": "Admin member role-change and Owner-only guild-transfer UI browser validated; network writes used assign_member_role and transfer_member_guild; no CP/GvG calls observed.",
@@ -17,7 +17,8 @@
   "milestone14AStatus": "Docs-only production hardening and cleanup policy complete. Documented Vercel GitHub App restriction checklist, controlled production test member retention policy, Preview/Staging policy, deferred production smoke-test strategy, and launch operations checklist. No production commands, source changes, SQL changes, Vercel changes, GitHub App changes, user cleanup, deployment, or commit were performed.",
   "milestone14BStatus": "Vercel GitHub App restriction checkpoint complete. User manually restricted Vercel GitHub App access to only Ultimate99/anteiku-guild-manager; Vercel project remains connected to the repo on main; production URL remains healthy; no Vercel env vars, source logic, SQL migrations, Supabase schema/RLS/RPC, deployment, or commit were changed.",
   "milestone14CStatus": "Frontend-only AdminPanel tabs and section organization complete in production. AdminPanel coordinates mobile-friendly tabs and extracted section components; CP, Audit Logs, and GvG management data lazy-load only when their tabs are opened. npm.cmd run build passed; source/security-path validation found no SQL migration changes, no source service behavior changes, and no direct frontend member_cp, cp_snapshots, or audit_logs table calls. Local browser/network validation passed, and production smoke validation passed for Owner login, AdminPanel access, all tab switching, Audit Logs load, CP load, mobile tab layout, and Member AdminPanel denial.",
-  "nextRecommendedStep": "Plan the next approved milestone: staging Supabase plus Vercel Preview environment, controlled production test-member cleanup, AdminPanel tab polish, reapply flow, suspended/left/rejected member management, weekly CP snapshot/growth report UI, or guild/subguild management UI.",
+  "milestone14DStatus": "Docs-only staging Supabase and Vercel Preview planning complete. Documented future staging architecture, Preview env policy, Auth URL strategy, staging test users, deferred tests moved to staging, risks/blockers, and future phases. No staging project was created, no Supabase commands were run, no Vercel env vars were changed, no deployment was performed, and no source or SQL files were changed.",
+  "nextRecommendedStep": "Milestone 14E planning/execution approval for staging Supabase creation/link/migration dry-run/apply/schema verification, or a separate approved cleanup/polish feature plan.",
   "productionSupabase": {
     "projectRef": "mzflfyxxkascrfpteexz",
     "projectName": "Anteiku Guild Manager Production",
@@ -99,6 +100,37 @@
       "Staging Supabase plus Vercel Preview environment planning."
     ]
   },
+  "stagingPreviewPlan": {
+    "milestone14DCompleted": true,
+    "docsOnly": true,
+    "stagingSupabaseCreated": false,
+    "supabaseCliLinkedToStaging": false,
+    "vercelPreviewEnvConfigured": false,
+    "deploymentPerformed": false,
+    "recommendedArchitecture": "Fresh staging Supabase project with the same 9 migrations as production; separate URL, anon/publishable key, Auth users, Owner bootstrap, and staging-only fake/test data. Production data must not be copied unless explicitly approved.",
+    "previewEnvPolicy": "Production env remains production Supabase only. Preview env should point only to staging Supabase once staging exists, using VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY. If staging is not ready, Preview env should remain unconfigured.",
+    "authUrlPolicy": "Production Site URL remains https://anteiku-guild-manager.vercel.app and production redirect URLs remain production-only. Staging Auth URLs should match the staging/preview URL strategy. Preview wildcards, if needed, belong only in staging Supabase.",
+    "stagingTestUsers": [
+      "Owner",
+      "Approved Member",
+      "Admin with view_audit_logs but without view_cp",
+      "Admin with view_audit_logs and view_cp",
+      "Wrong-guild Member",
+      "Pending user"
+    ],
+    "deferredTestsMovedToStaging": [
+      "Full GvG smoke test",
+      "CP audit redaction browser scenario",
+      "Permission denial flows",
+      "Wrong-guild access",
+      "Cleanup/archive experiments"
+    ],
+    "futurePhases": [
+      "14E: create/link staging Supabase, dry-run/apply migrations, verify schema/RLS/seed",
+      "14F: configure Vercel Preview env with staging Supabase only and staging Auth URLs",
+      "14G: staging validation with controlled test users/data"
+    ]
+  },
   "productionWarnings": [
     "Do not run supabase db reset against production.",
     "Do not run supabase/tests/local_validation_anteiku.sql against production because it inserts fake auth users/test data.",
@@ -106,6 +138,8 @@
     "Never place service role keys, sb_secret_* keys, database URLs, JWT secrets, SMTP secrets, or OAuth secrets in frontend/Vercel public env.",
     "Owner assignment remains manual-only and must not be exposed in frontend UI.",
     "Vercel Preview deployments must not accidentally point to production Supabase unless a separate policy is approved.",
+    "Vercel Preview env should remain unconfigured until staging Supabase exists.",
+    "Preview wildcard redirects should not be added to production Supabase; use staging Supabase for preview wildcards if needed.",
     "Do not hard-delete the controlled production test member unless an explicit cleanup plan is approved.",
     "Do not create production GvG test data without explicit approval and cleanup/data-retention planning."
   ],
