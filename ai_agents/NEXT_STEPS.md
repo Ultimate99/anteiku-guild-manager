@@ -33,9 +33,55 @@ Recommended next milestone:
 Later milestone options:
 - Configure Vercel Preview env with staging Supabase only after staging bootstrap planning is approved.
 - Run staging validation with controlled test users/data.
+- Future CP-focused milestone: CP Update Window / Member CP Self-Submit.
 - Controlled production test-member cleanup planning for `krsticmiroslav99+m13b21144225@gmail.com`, with no hard delete unless explicitly approved.
 - AdminPanel polish planning for sticky-under-header tab behavior and slightly tighter small-mobile tab spacing.
 - Future feature planning: reapply flow UI, suspended/left/rejected member management, weekly CP snapshot/growth report UI, or guild/subguild management UI.
+
+## Future CP Update Window / Member CP Self-Submit
+
+Record this as a future CP-focused milestone candidate after staging is fully usable and after staging CP redaction/GvG smoke validation.
+
+Corrected CP privacy rule going forward:
+- Members can see their own CP through an approved backend/RPC flow.
+- Members can update/submit their own CP only through an approved backend/RPC flow.
+- Members must not see other members' CP.
+- Members must not see CP roster, CP leaderboard, CP snapshots, or other members' CP history.
+- Members must never directly select or update `member_cp`.
+- Members must never directly read `cp_snapshots`.
+- Admins/leaders/staff can see CP only through scoped role/permission checks and safe RLS/RPC.
+
+Future behavior:
+- AdminPanel CP tab can open, close, or schedule a CP Update Window.
+- Member Profile can show a "Your CP" section with the member's own current CP only.
+- If the update window is open, the member can submit their own CP.
+- If the update window is closed, the input/update action is disabled and the backend rejects updates even if the frontend is bypassed.
+- Staff can later review submitted CP through existing authorized CP tools.
+
+Recommended backend-first design:
+- Add a future `cp_update_windows` table with guild/scope, status, opens/closes timestamps, creator/closer, and audit-friendly timestamps.
+- Add future RPCs: `create_cp_update_window`, `set_cp_update_window_status`, `get_active_cp_update_window_for_me`, `get_my_cp`, and `submit_my_cp_update`.
+- `get_my_cp` must use `auth.uid()` and return only the caller's own CP.
+- `submit_my_cp_update` must use `auth.uid()`, verify approved active membership, verify the caller updates only self, verify the window is open using database/server time, and verify the window applies to the caller's guild/scope.
+- Admin open/close must require Owner/Leader/Vice scope or a safe CP permission such as `update_cp` or a future `manage_cp_windows`.
+- Audit logs must record CP submissions/updates, and `get_audit_logs` CP metadata redaction must continue to work.
+
+Future frontend surfaces:
+- AdminPanel CP tab: status badge (`Open`, `Closed`, `Scheduled`), open/close controls, optional guild scope, start/end time, notes, and countdown.
+- Member Profile: "Your CP", own current CP, input/submit while open, disabled state while closed, success/error state.
+
+Future validation requirements:
+- Member can see own CP but not other members' CP.
+- Member cannot access CP roster, leaderboard, snapshots, or other members' CP history.
+- Member cannot directly query `member_cp` or `cp_snapshots`.
+- Member can submit own CP while window is open.
+- Member cannot submit while window is closed.
+- Member cannot submit CP for another profile.
+- Wrong-guild member cannot use another guild's CP window.
+- Admin can open/close CP window in scope.
+- CP submission writes audit log.
+- Audit metadata redacts correctly for users without `view_cp`.
+- Network validation shows only safe RPCs: `get_my_cp`, `get_active_cp_update_window_for_me`, and `submit_my_cp_update`.
 
 Do not start the next feature, production operation, or cleanup action without a dedicated plan, explicit approval, and security review.
 

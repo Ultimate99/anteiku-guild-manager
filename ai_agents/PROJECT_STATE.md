@@ -690,6 +690,8 @@ Validated results:
 
 Milestone 14F staging Owner bootstrap is complete. Milestone 14G staging controlled test users plus permission matrix setup planning/execution is recommended next.
 
+Future CP-focused milestone candidate recorded: CP Update Window / Member CP Self-Submit. Corrected CP privacy rule going forward: members can see their own CP through safe backend/RPC flow, but must not see other members' CP, CP roster, CP leaderboard, CP snapshots, or other members' CP history. Members must not directly select or update `member_cp` and must not directly read `cp_snapshots`.
+
 ## Current Status
 
 The app is a React + Vite frontend backed by local Supabase migrations/RLS/RPCs. Milestones 10, 11A, and 11B are complete and validated. Milestone 12 is complete as a documentation-only production readiness pass.
@@ -749,6 +751,7 @@ Milestone 14D recorded the staging/preview plan for future non-production valida
 - Avatar editing
 - Username/profile slug editing for normal users
 - Reapply UI
+- CP Update Window / Member CP Self-Submit
 - Weekly CP snapshot/growth report UI
 - Guild/subguild management UI
 

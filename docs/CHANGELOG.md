@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-05-23 - Future CP Update Window / Member CP Self-Submit Roadmap Note
+
+- Recorded future CP-focused milestone candidate: CP Update Window / Member CP Self-Submit.
+- Corrected future CP privacy rule: members may see their own CP through safe backend/RPC flow, but must not see other members' CP.
+- Recorded that members must not see CP roster, CP leaderboard, CP snapshots, or other members' CP history.
+- Recorded future backend-first direction: `cp_update_windows` plus safe RPCs such as `create_cp_update_window`, `set_cp_update_window_status`, `get_active_cp_update_window_for_me`, `get_my_cp`, and `submit_my_cp_update`.
+- Recorded security requirements for self-only CP submission, database/server-time window checks, guild/scope checks, audit logging, and audit metadata redaction.
+- Recorded future frontend surfaces for AdminPanel CP window controls and Member Profile "Your CP".
+- No source code, SQL migrations, Supabase/RLS/RPC behavior, production data, deployment, or commit action was included.
+
 ## 2026-05-23 - Milestone 14F Staging Owner Bootstrap Complete
 
 - Completed and verified staging Owner bootstrap for `ckyihuxkioeibzpgwenc` / `Anteiku Guild Manager Staging`.

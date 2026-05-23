@@ -1,5 +1,30 @@
 # Testing
 
+## Future CP Update Window / Member CP Self-Submit Validation
+
+Future feature candidate only. Do not treat this as implemented.
+
+Corrected CP privacy rule:
+- Members can see their own CP through an approved backend/RPC flow.
+- Members can submit/update only their own CP through an approved backend/RPC flow.
+- Members cannot see other members' CP.
+- Members cannot see CP roster, CP leaderboard, CP snapshots, or other members' CP history.
+- Members cannot directly query `member_cp` or `cp_snapshots`.
+
+Future validation requirements:
+- Member can see own CP.
+- Member cannot see other members' CP.
+- Member cannot access CP roster/leaderboard/snapshots.
+- Member can submit own CP while a CP Update Window is open.
+- Member cannot submit CP while the window is closed.
+- Member cannot submit CP for another profile.
+- Wrong-guild member cannot use another guild's CP window.
+- Admin can open/close CP window in scope.
+- CP submission writes audit log.
+- Audit metadata redacts correctly for users without `view_cp`.
+- Network validation shows only safe RPCs such as `get_my_cp`, `get_active_cp_update_window_for_me`, and `submit_my_cp_update`.
+- No direct `member_cp` or `cp_snapshots` frontend table calls occur.
+
 ## Milestone 14F Staging Owner Bootstrap Verification
 
 Milestone 14F is complete for staging Owner bootstrap.

@@ -21,6 +21,7 @@
   "milestone14EStatus": "Staging Supabase migration/apply/verification complete. Project ckyihuxkioeibzpgwenc / Anteiku Guild Manager Staging exists, same 9 migrations as production were applied, schema/RLS/seed verification passed, permission catalog count is 10 and exactly matches the seed migration, no staging Owner/test users existed at the 14E checkpoint, no production Supabase or Vercel env vars were touched, and no source or SQL files were changed.",
   "milestone14FStatus": "Staging Owner bootstrap complete and verified. Staging Owner auth UUID e02a6d7a-0663-4a89-b558-9f57245f6361 uses email krsticmiroslav99+agm-staging-owner@gmail.com, username/profile slug staging_owner, IGN Staging Owner, role owner, active primary Anteiku membership, active_owner_count 1, and owner_bootstrapped audit log count 1. No controlled staging test users exist yet, Vercel Preview remains unconfigured, production was not touched, and no source or SQL files were changed.",
   "nextRecommendedStep": "Milestone 14G staging controlled test users plus permission matrix setup planning/execution.",
+  "futureCpUpdateWindowStatus": "Future CP-focused milestone candidate recorded. Corrected future CP privacy rule: members can see their own CP through safe backend/RPC flow and may submit only their own CP during an applicable open CP Update Window; members must not see other members' CP, CP roster, CP leaderboard, CP snapshots, or other members' CP history. Backend/RLS/RPC work is required before implementation.",
   "productionSupabase": {
     "projectRef": "mzflfyxxkascrfpteexz",
     "projectName": "Anteiku Guild Manager Production",
@@ -219,13 +220,14 @@
     "avatar editing",
     "normal-user username/profile slug editing",
     "reapply UI",
+    "CP Update Window / Member CP Self-Submit",
     "suspended/left/rejected member management",
     "weekly CP snapshot/growth report UI",
     "guild/subguild management UI"
   ],
   "securityStatus": "locally validated in Supabase, production catalog-verified, production smoke/security validated, Milestone 14C AdminPanel tabs production-smoke validated, Milestone 14E staging schema/RLS/seed verified, and Milestone 14F staging Owner bootstrap verified. Deferred production-only GvG and CP redaction browser scenarios remain documented.",
   "schemaSpecStatus": "migrations created, locally validated, applied to production, production catalog-verified, applied to staging, and staging schema/RLS/seed verified.",
-  "cpDecision": "CP stored outside profiles in member_cp and cp_snapshots; member direct SELECT forbidden; access through permission-checked RPC/views.",
+  "cpDecision": "CP stored outside profiles in member_cp and cp_snapshots; member direct SELECT forbidden. Corrected future rule: members may see their own CP only through safe auth.uid()-scoped RPC, but must not see other members' CP, CP roster, CP leaderboard, CP snapshots, or CP history.",
   "roleDecision": "Owner global CP access; Leader/Vice automatic guild-scoped CP access; Admin explicit CP permissions granted only by Owner.",
   "membershipDecision": "v1 enforces one active primary guild membership per user while preserving room for history/future multi-guild.",
   "gvgDecision": "supports guild-specific and global events; v1 vote correction by admins/leaders is not allowed.",

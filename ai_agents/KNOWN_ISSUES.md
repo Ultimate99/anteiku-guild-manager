@@ -41,6 +41,7 @@
 - Suspended/left/rejected member management is not implemented.
 - Avatar editing is not implemented.
 - Normal users cannot edit username/profile slug by design.
+- CP Update Window / Member CP Self-Submit is not implemented. Future rule: members may see and submit only their own CP through safe RPCs when allowed by an open CP update window; they must not see other members' CP, roster, leaderboard, snapshots, or CP history.
 - Weekly CP snapshot/growth report UI is not implemented.
 - Guild/subguild management UI is not implemented.
 

@@ -41,7 +41,7 @@ Production deployment must not weaken existing RLS/RPC security.
 Production is live at `https://anteiku-guild-manager.vercel.app`. Milestone 13B deployment validation passed, and Milestone 14A added hardening/cleanup policy documentation only.
 
 Production hard rules:
-- Members must never see CP values.
+- Current implemented production behavior keeps member-facing CP hidden. Corrected future CP privacy rule: members may see their own CP only through a safe backend/RPC flow, but must never see other members' CP.
 - CP access must remain enforced by Supabase RLS/RPC, not frontend hiding.
 - Pending users must not access member/admin areas.
 - Owner bootstrap remains manual-only with a known real Auth user id.
@@ -85,8 +85,15 @@ CP update eligibility:
 CP roster safety:
 - Authorized CP roster reads include active approved members only.
 - Missing CP is returned as `null`, not `0`.
-- CP values remain unavailable to Members.
+- CP roster, leaderboard, snapshots, and other members' CP remain unavailable to Members.
 - Frontend must still avoid direct `member_cp` and `cp_snapshots` table access.
+
+Future CP Update Window / Member CP Self-Submit rules:
+- Members may see their own current CP through `get_my_cp` or equivalent safe RPC.
+- Members may submit/update only their own CP through `submit_my_cp_update` or equivalent safe RPC.
+- Backend must verify `auth.uid()`, approved active membership, self-only target, applicable open CP Update Window using database/server time, and guild/scope.
+- Frontend disabled inputs are not security controls; backend/RPC remains the authority.
+- CP submissions must write audit logs, and `get_audit_logs` CP metadata redaction must continue to work.
 
 ## Milestone 7 Security Rules
 
@@ -102,7 +109,7 @@ No database security implementation exists yet. These are approved Milestone 2 s
 
 ## CP Privacy
 
-CP is private. Members must not see CP values or query CP values.
+CP is private across users. Corrected future rule: members may see their own CP through approved backend/RPC flow, but must not see other members' CP or query CP tables directly.
 
 Approved CP design:
 
@@ -110,6 +117,8 @@ Approved CP design:
 - Store current CP in `member_cp`.
 - Store manual weekly history/growth in `cp_snapshots`.
 - Members must never directly select `member_cp` or `cp_snapshots`.
+- Members must not see CP roster, CP leaderboard, CP snapshots, or other members' CP history.
+- Future own-CP reads must use `auth.uid()` and return only the caller's own CP.
 - Authorized CP access must go through permission-checked RPC/views.
 - Owner has global CP visibility and update access.
 - Leader/Vice have automatic CP visibility and update access inside assigned guild.
