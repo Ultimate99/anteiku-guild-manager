@@ -1,5 +1,35 @@
 # Testing And Validation
 
+## Milestone 14F Staging Owner Bootstrap Verification Passed
+
+Milestone 14F staging Owner bootstrap is complete.
+
+Staging Owner verification:
+- Project ref: `ckyihuxkioeibzpgwenc`.
+- Project name: `Anteiku Guild Manager Staging`.
+- Auth UUID: `e02a6d7a-0663-4a89-b558-9f57245f6361`.
+- Email: `krsticmiroslav99+agm-staging-owner@gmail.com`.
+- Username/profile slug: `staging_owner`.
+- IGN: `Staging Owner`.
+- Initial guild: `Anteiku`.
+- Initial guild ID: `00000000-0000-0000-0000-000000000101`.
+- Profile approval status: `approved`.
+- Membership role: `owner`.
+- Membership status: `active`.
+- Primary membership: `true`.
+- `active_owner_count = 1`.
+- `owner_bootstrapped` audit log count: `1`.
+
+Scope confirmation:
+- No production project was touched.
+- No Vercel env vars were changed.
+- No deployment was performed.
+- No source files or SQL migrations were changed.
+- No controlled staging test users were created.
+
+Recommended next validation planning:
+- Milestone 14G: staging controlled test users plus permission matrix setup planning/execution.
+
 ## Milestone 14E Staging Supabase Verification Passed
 
 Milestone 14E staging Supabase migration/apply/verification is complete.
@@ -24,10 +54,10 @@ Scope confirmation:
 - No Vercel env vars were changed.
 - No deployment was performed.
 - No source files or SQL migrations were changed.
-- No staging Owner or test users were created.
+- Staging Owner was not created during 14E; it was bootstrapped later in Milestone 14F.
 
 Recommended next validation planning:
-- Milestone 14F: staging Owner bootstrap planning.
+- Milestone 14F: staging Owner bootstrap planning. Completed later.
 
 ## Milestone 14D Staging And Preview Planning Docs
 

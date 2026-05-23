@@ -15,7 +15,8 @@
 - Preview deployments should not be configured until the approved staging/Vercel Preview step.
 - Staging uses a separate Supabase project, not production.
 - Milestone 14E staging migration/apply/verification is complete for project `ckyihuxkioeibzpgwenc` / `Anteiku Guild Manager Staging`.
-- Staging has no Owner or test users yet.
+- Milestone 14F staging Owner bootstrap is complete and verified.
+- Staging has no controlled test users yet.
 - Vercel Preview env has not been configured for staging yet.
 
 ## Production Safety Hazards
@@ -31,6 +32,7 @@
 - Do not add preview wildcard redirects to production Supabase. If preview wildcards are needed, use staging Supabase.
 - Do not use `db push --include-seed` for staging or production until the missing `supabase/seed.sql` hazard is intentionally resolved.
 - Do not run Owner bootstrap against the wrong project; staging and production Owner bootstrap actions must be separately reviewed.
+- Do not rerun staging Owner bootstrap unless a recovery plan is explicitly approved; staging already has exactly one active Owner.
 - `manage_permissions` is not seeded in the current permission catalog migration. Treat it as a future/open permission question, not a Milestone 14E blocker, unless explicitly approved later.
 
 ## Product Gaps

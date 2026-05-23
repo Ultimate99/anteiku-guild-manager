@@ -172,7 +172,7 @@ Recommended policy:
 
 ## Future Staging Supabase And Preview Setup
 
-Milestone 14E completed staging Supabase migration/apply/verification. No Vercel Preview env vars were changed, no deployment was performed, and no staging Owner or test users have been created yet.
+Milestone 14E completed staging Supabase migration/apply/verification. Milestone 14F completed and verified staging Owner bootstrap. No Vercel Preview env vars were changed, no deployment was performed, and no controlled staging test users have been created yet.
 
 Staging architecture:
 
@@ -186,6 +186,20 @@ Staging architecture:
 - Do not use `db push --include-seed`; this repo has no `supabase/seed.sql`, and core seed data comes from migration `20260514000400_seed_core_data.sql`.
 - Permission catalog count is 10 and exactly matches the seed migration.
 - `manage_permissions` is not seeded in the current migration set and remains a future/open permission question unless explicitly approved later.
+
+Staging Owner:
+
+- Auth UUID: `e02a6d7a-0663-4a89-b558-9f57245f6361`.
+- Email: `krsticmiroslav99+agm-staging-owner@gmail.com`.
+- Username/profile slug: `staging_owner`.
+- IGN: `Staging Owner`.
+- Initial guild: `Anteiku`.
+- Initial guild ID: `00000000-0000-0000-0000-000000000101`.
+- Role: `owner`.
+- Membership status: `active`.
+- Primary membership: `true`.
+- `active_owner_count = 1`.
+- `owner_bootstrapped` audit log count: `1`.
 
 Preview env variables, once staging exists:
 
@@ -216,7 +230,8 @@ Auth URL strategy:
 Future implementation split:
 
 - Milestone 14E: create/link staging Supabase, run migration dry-run/apply, verify schema/RLS/seed. Complete.
-- Milestone 14F: staging Owner bootstrap planning.
+- Milestone 14F: staging Owner bootstrap. Complete.
+- Milestone 14G: staging controlled test users plus permission matrix setup planning/execution.
 - Later: configure Vercel Preview env with staging Supabase only and configure staging Auth URLs after bootstrap planning is approved.
 - Later: run staging validation with controlled test users/data.
 

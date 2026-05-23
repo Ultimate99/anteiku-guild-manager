@@ -16,7 +16,8 @@ Current production checkpoint:
 - Production smoke/security validation passed with documented deferred production-only items.
 - Milestone 14C AdminPanel tabs refactor is complete in production.
 - Milestone 14E staging Supabase migration/apply/verification is complete for `ckyihuxkioeibzpgwenc`.
-- Staging has no Owner or test users yet.
+- Milestone 14F staging Owner bootstrap is complete and verified.
+- Staging has no controlled test users yet.
 - Vercel Preview env has not been configured for staging yet.
 
 ## Milestone 14A Production Hardening Policy
@@ -107,7 +108,40 @@ Milestone 14E is complete.
 
 Recommended next milestone:
 
-- Milestone 14F: staging Owner bootstrap planning.
+- Milestone 14F: staging Owner bootstrap planning. Completed later.
+
+## Milestone 14F Staging Owner Bootstrap
+
+Milestone 14F is complete.
+
+- [x] Staging Owner Auth user exists.
+- [x] Staging Owner profile exists.
+- [x] `approval_status = approved`.
+- [x] Username/profile slug is `staging_owner`.
+- [x] IGN is `Staging Owner`.
+- [x] Initial guild is `Anteiku`.
+- [x] Membership role is `owner`.
+- [x] Membership status is `active`.
+- [x] Primary membership is `true`.
+- [x] `active_owner_count = 1`.
+- [x] `owner_bootstrapped` audit log count is `1`.
+- [x] Production project was not touched.
+- [x] Vercel env vars were not changed.
+- [x] Source and SQL files were not changed.
+- [ ] Controlled staging test users have not been created yet.
+- [ ] Vercel Preview env has not been configured yet.
+
+Staging Owner record:
+
+- Auth UUID: `e02a6d7a-0663-4a89-b558-9f57245f6361`.
+- Email: `krsticmiroslav99+agm-staging-owner@gmail.com`.
+- Username/profile slug: `staging_owner`.
+- IGN: `Staging Owner`.
+- Initial guild ID: `00000000-0000-0000-0000-000000000101`.
+
+Recommended next milestone:
+
+- Milestone 14G: staging controlled test users plus permission matrix setup planning/execution.
 
 ## Milestone 14D Staging Supabase And Vercel Preview Plan
 
@@ -120,7 +154,7 @@ Staging Supabase architecture:
 - [ ] Use a separate staging Supabase URL.
 - [ ] Use a separate staging anon/publishable key.
 - [ ] Use separate staging Auth users.
-- [ ] Bootstrap a separate staging Owner.
+- [x] Bootstrap a separate staging Owner.
 - [ ] Allow fake/test users and data only in staging.
 - [ ] Do not copy production data to staging unless explicitly approved.
 - [ ] Do not use `db push --include-seed`; core seed data is in migration `20260514000400_seed_core_data.sql`.
@@ -163,8 +197,9 @@ Future staging validation targets:
 
 Recommended future phases:
 
-- Milestone 14E: create/link staging Supabase, dry-run/apply migrations, verify schema/RLS/seed.
-- Milestone 14F: configure Vercel Preview env with staging Supabase only and staging Auth URLs.
+- Milestone 14E: create/link staging Supabase, dry-run/apply migrations, verify schema/RLS/seed. Complete.
+- Milestone 14F: bootstrap and verify staging Owner. Complete.
+- Milestone 14G: staging controlled test users plus permission matrix setup planning/execution.
 - Milestone 14G: staging validation with controlled test users/data.
 
 ## Deferred Production Smoke Tests

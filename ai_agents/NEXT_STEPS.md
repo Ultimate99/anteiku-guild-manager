@@ -2,7 +2,7 @@
 
 ## Current Recommendation
 
-Milestone 14E staging Supabase migration/apply/verification is complete.
+Milestone 14F staging Owner bootstrap is complete.
 
 Recorded staging status:
 - Staging Supabase project exists: `ckyihuxkioeibzpgwenc`.
@@ -11,14 +11,24 @@ Recorded staging status:
 - Same 9 migrations as production were applied.
 - Staging schema/RLS/seed verification passed.
 - Permission catalog count is 10 and exactly matches the seed migration.
-- No staging Owner or test users exist yet.
+- Staging Owner exists and is verified:
+  - Auth UUID: `e02a6d7a-0663-4a89-b558-9f57245f6361`.
+  - Email: `krsticmiroslav99+agm-staging-owner@gmail.com`.
+  - Username/profile slug: `staging_owner`.
+  - IGN: `Staging Owner`.
+  - Role: `owner`.
+  - Membership status: `active`.
+  - Primary membership: `true`.
+  - `active_owner_count = 1`.
+  - `owner_bootstrapped` audit log count: `1`.
+- No controlled staging test users exist yet.
 - Production Supabase was not touched.
 - Vercel Preview env remains unconfigured.
 - No source or SQL files were changed.
 - `manage_permissions` is not seeded in the current migration set and remains a future/open permission question unless explicitly approved later.
 
 Recommended next milestone:
-- Milestone 14F: staging Owner bootstrap planning.
+- Milestone 14G: staging controlled test users plus permission matrix setup planning/execution.
 
 Later milestone options:
 - Configure Vercel Preview env with staging Supabase only after staging bootstrap planning is approved.

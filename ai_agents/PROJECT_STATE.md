@@ -1,5 +1,36 @@
 # Project State
 
+## Milestone 14F Staging Owner Bootstrap Complete
+
+Milestone 14F is complete. The staging Owner was created manually in staging Auth before execution, bootstrapped using the manual Owner bootstrap template pattern, and verified in staging. No production Supabase project was touched, no Vercel env vars were changed, no deployment was performed, and no source or SQL files were changed.
+
+Staging Owner:
+- Project ref: `ckyihuxkioeibzpgwenc`.
+- Project name: `Anteiku Guild Manager Staging`.
+- Auth UUID: `e02a6d7a-0663-4a89-b558-9f57245f6361`.
+- Email: `krsticmiroslav99+agm-staging-owner@gmail.com`.
+- Username/profile slug: `staging_owner`.
+- IGN: `Staging Owner`.
+- Initial guild: `Anteiku`.
+- Initial guild ID: `00000000-0000-0000-0000-000000000101`.
+- Role: `owner`.
+- Membership status: `active`.
+- Primary membership: `true`.
+- `active_owner_count = 1`.
+- `owner_bootstrapped` audit log count: `1`.
+
+Scope confirmation:
+- No production project was touched.
+- Production project ref `mzflfyxxkascrfpteexz` was not used.
+- No Vercel Preview env vars were configured.
+- No deployment was performed.
+- No source code, SQL migrations, or new migrations were changed or created.
+- No controlled staging test users have been created yet.
+- No commit was made during execution.
+
+Recommended next milestone:
+- Milestone 14G: staging controlled test users plus permission matrix setup planning/execution.
+
 ## Milestone 14E Staging Supabase Migration And Verification Complete
 
 Milestone 14E is complete. Staging Supabase was created before this checkpoint, linked, migrated, and verified as a staging-only environment. No production Supabase project was touched, no Vercel env vars were changed, no deployment was performed, and no source or SQL files were changed.
@@ -14,7 +45,7 @@ Staging Supabase:
 - Permission catalog count is 10 and exactly matches `20260514000400_seed_core_data.sql`.
 - Earlier "7 permissions" staging report was a partial summary mistake.
 - `manage_permissions` is not seeded in the current migration set and remains a future/open permission question unless explicitly approved later.
-- No staging Owner or test users have been created yet.
+- Staging Owner was not created during 14E; it was bootstrapped later in Milestone 14F.
 
 Scope confirmation:
 - No production project was touched.
@@ -25,8 +56,8 @@ Scope confirmation:
 - No Owner bootstrap was run.
 - No commit was made.
 
-Recommended next milestone:
-- Milestone 14F: staging Owner bootstrap planning.
+Recommended next milestone at the time:
+- Milestone 14F: staging Owner bootstrap planning. Completed later.
 
 ## Milestone 14D Staging And Preview Planning Docs Complete
 
@@ -657,7 +688,7 @@ Validated results:
 
 ## Current Milestone
 
-Milestone 14E staging Supabase migration/apply/verification is complete. Milestone 14F staging Owner bootstrap planning is recommended next.
+Milestone 14F staging Owner bootstrap is complete. Milestone 14G staging controlled test users plus permission matrix setup planning/execution is recommended next.
 
 ## Current Status
 
@@ -671,7 +702,7 @@ Production hardening policy now documents Vercel GitHub App restriction, control
 
 Milestone 14C reorganized AdminPanel into mobile-friendly tabs and section components. The refactor is frontend-only and behavior-preserving; CP, Audit Logs, and GvG management sections lazy-load when their tabs are opened. Production rollout validation passed after the Vercel deployment.
 
-Milestone 14D recorded the staging/preview plan for future non-production validation. Milestone 14E has since created/linked the staging Supabase project, applied the same 9 migrations as production, and verified staging schema/RLS/seed. Staging has no Owner or test users yet; Vercel Preview env remains unchanged.
+Milestone 14D recorded the staging/preview plan for future non-production validation. Milestone 14E created/linked the staging Supabase project, applied the same 9 migrations as production, and verified staging schema/RLS/seed. Milestone 14F bootstrapped and verified the staging Owner. Staging has no controlled test users yet; Vercel Preview env remains unchanged.
 
 ## Implemented
 

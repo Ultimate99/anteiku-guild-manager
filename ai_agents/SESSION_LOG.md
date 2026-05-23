@@ -1,5 +1,23 @@
 # Session Log
 
+## 2026-05-23 - Milestone 14F Staging Owner Bootstrap Complete
+
+- Milestone 14F staging Owner bootstrap completed and was verified.
+- Staging project: `ckyihuxkioeibzpgwenc` / `Anteiku Guild Manager Staging`.
+- Staging Owner Auth UUID: `e02a6d7a-0663-4a89-b558-9f57245f6361`.
+- Staging Owner email: `krsticmiroslav99+agm-staging-owner@gmail.com`.
+- Username/profile slug: `staging_owner`.
+- IGN: `Staging Owner`.
+- Initial guild: `Anteiku`.
+- Owner membership role is `owner`, status is `active`, and `is_primary = true`.
+- `active_owner_count = 1`.
+- `owner_bootstrapped` audit log count is `1`.
+- No controlled staging test users were created.
+- No production Supabase project was touched.
+- No Vercel env vars were changed.
+- No source files, SQL migrations, new migrations, deployment, or commit were included.
+- Recommended next milestone: Milestone 14G staging controlled test users plus permission matrix setup planning/execution.
+
 ## 2026-05-23 - Milestone 14E Staging Supabase Verification Complete
 
 - Milestone 14E staging Supabase migration/apply/verification completed.
@@ -10,7 +28,7 @@
 - Permission catalog count is 10 and exactly matches `20260514000400_seed_core_data.sql`.
 - Earlier "7 permissions" report was confirmed to be a partial summary mistake.
 - `manage_permissions` is not seeded in the current migration set and remains a future/open permission question unless explicitly approved later.
-- No staging Owner or test users were created.
+- No staging Owner or test users were created during 14E.
 - No production Supabase project was touched.
 - No Vercel env vars were changed.
 - No source files, SQL migrations, new migrations, deployment, or commit were included.
