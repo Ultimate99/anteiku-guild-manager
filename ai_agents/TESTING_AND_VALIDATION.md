@@ -1,5 +1,41 @@
 # Testing And Validation
 
+## Milestone 15A Member Status Backend Validation Passed
+
+Milestone 15A backend/database validation is complete.
+
+Local validation passed:
+- `npx.cmd supabase db reset` passed.
+- `supabase/tests/local_validation_anteiku.sql` passed.
+
+Milestone 15A results:
+- Total PASS: 22
+- Total FAIL: 0
+- Total SKIP: 0
+
+Validated:
+- Migration applies cleanly.
+- `guild_memberships.roster_status` defaults to `active`.
+- Invalid roster status values are rejected.
+- Owner can set all statuses.
+- Leader/Vice can set scoped non-Owner statuses.
+- Admin with `manage_members` can set only allowed non-terminal statuses.
+- Admin without `manage_members` is denied.
+- Admin cannot set `suspended`, `left`, or `kicked`.
+- Admin cannot affect Owners or change self.
+- Member status changes are denied.
+- Last active Owner protection works.
+- `suspended`, `left`, and `kicked` remove active membership access.
+- `inactive` and `on_break` preserve active membership but cannot see/vote on active GvG events.
+- `trial` retains normal GvG voting access.
+- `member_status_history` rows are inserted with private reasons.
+- `member_roster_status_changed` audit logs are inserted without private reason text.
+- Members cannot read private status history.
+- Scoped staff can read status history.
+
+Build:
+- `npm.cmd run build` was not run because Milestone 15A changed only SQL and docs, with no frontend/source changes.
+
 ## Milestone 14H Staging CP Redaction And GvG Smoke Validation Passed
 
 Milestone 14H is complete.

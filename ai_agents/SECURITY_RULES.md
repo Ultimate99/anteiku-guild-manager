@@ -1,5 +1,23 @@
 # Security Rules
 
+## Milestone 15A Member Status Security Rules
+
+Member Status is separate from auth/approval and hard membership state.
+
+Current rules:
+- `profiles.approval_status` remains the account/registration gate.
+- `guild_memberships.membership_status` remains the hard security/access gate.
+- `guild_memberships.roster_status` is the roster lifecycle/status label.
+- `active`, `trial`, and `pending_transfer` keep normal access.
+- `inactive` and `on_break` are not hard lockouts; they keep active membership but are excluded from GvG participation/expectation.
+- `suspended`, `left`, and `kicked` are hard roster-access blocks.
+- `kicked` maps to `membership_status = 'left'` because `membership_status = 'rejected'` is reserved for registration/reapply.
+- Members cannot change their own roster status.
+- Admin with `manage_members` can set only non-terminal statuses and cannot affect Owners or self.
+- Leader/Vice can set scoped non-Owner statuses.
+- Owner can set all statuses, but the last active Owner cannot be blocked/removed.
+- Private status reasons live in `member_status_history`, not in broadly visible audit metadata.
+
 ## Milestone 14D Staging And Preview Rules
 
 Milestone 14D documents staging/preview policy only. It did not create a staging project, link Supabase CLI, run Supabase commands, change Vercel env vars, deploy, commit, edit source logic, or edit SQL migrations.

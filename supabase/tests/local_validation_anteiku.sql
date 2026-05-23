@@ -1681,4 +1681,553 @@ select count(*) filter (where status = 'PASS') as milestone11_total_pass,
        count(*) filter (where status = 'SKIP') as milestone11_total_skip
 from milestone11_audit_hardening_results;
 
+-- Milestone 15A backend validation: member roster status current state,
+-- private history, audit logging, role/permission rules, and GvG eligibility.
+-- This section is local-only test data and is rolled back with the rest of this script.
+create temp table if not exists milestone15a_member_status_results (
+  section text not null,
+  test_name text not null,
+  status text not null check (status in ('PASS', 'FAIL', 'SKIP')),
+  details text
+) on commit drop;
+
+do $$
+declare
+  anteiku_id uuid := '00000000-0000-0000-0000-000000000101';
+  anteiku_re_id uuid := '00000000-0000-0000-0000-000000000102';
+  owner_primary_id uuid := '10000000-0000-5000-8000-000000001501';
+  owner_secondary_id uuid := '10000000-0000-5000-8000-000000001502';
+  leader_id uuid := '10000000-0000-5000-8000-000000001503';
+  vice_id uuid := '10000000-0000-5000-8000-000000001504';
+  admin_manage_id uuid := '10000000-0000-5000-8000-000000001505';
+  admin_plain_id uuid := '10000000-0000-5000-8000-000000001506';
+  member_id uuid := '10000000-0000-5000-8000-000000001507';
+  member_two_id uuid := '10000000-0000-5000-8000-000000001508';
+  wrong_guild_member_id uuid := '10000000-0000-5000-8000-000000001509';
+  default_member_id uuid := '10000000-0000-5000-8000-000000001510';
+  owner_primary_membership_id uuid;
+  owner_secondary_membership_id uuid;
+  admin_manage_membership_id uuid;
+  member_membership_id uuid;
+  member_two_membership_id uuid;
+  wrong_guild_membership_id uuid;
+  default_membership_id uuid;
+  gvg_event_id uuid;
+  updated_membership public.guild_memberships%rowtype;
+  status_name text;
+  expected_membership_status text;
+  result_count integer;
+  active_owner_count integer;
+begin
+  insert into auth.users (
+    instance_id,
+    id,
+    aud,
+    role,
+    email,
+    encrypted_password,
+    email_confirmed_at,
+    raw_app_meta_data,
+    raw_user_meta_data,
+    created_at,
+    updated_at
+  )
+  values
+    ('00000000-0000-0000-0000-000000000000', owner_primary_id, 'authenticated', 'authenticated', 'm15-owner-primary.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+    ('00000000-0000-0000-0000-000000000000', owner_secondary_id, 'authenticated', 'authenticated', 'm15-owner-secondary.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+    ('00000000-0000-0000-0000-000000000000', leader_id, 'authenticated', 'authenticated', 'm15-leader.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+    ('00000000-0000-0000-0000-000000000000', vice_id, 'authenticated', 'authenticated', 'm15-vice.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+    ('00000000-0000-0000-0000-000000000000', admin_manage_id, 'authenticated', 'authenticated', 'm15-admin-manage.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+    ('00000000-0000-0000-0000-000000000000', admin_plain_id, 'authenticated', 'authenticated', 'm15-admin-plain.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+    ('00000000-0000-0000-0000-000000000000', member_id, 'authenticated', 'authenticated', 'm15-member.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+    ('00000000-0000-0000-0000-000000000000', member_two_id, 'authenticated', 'authenticated', 'm15-member-two.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+    ('00000000-0000-0000-0000-000000000000', wrong_guild_member_id, 'authenticated', 'authenticated', 'm15-wrong-guild.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+    ('00000000-0000-0000-0000-000000000000', default_member_id, 'authenticated', 'authenticated', 'm15-default.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now())
+  on conflict (id) do nothing;
+
+  insert into public.profiles (id, username, profile_slug, ign, approval_status, approved_at)
+  values
+    (owner_primary_id, 'm15_owner_primary', 'm15_owner_primary', 'M15 Owner Primary', 'approved', now()),
+    (owner_secondary_id, 'm15_owner_secondary', 'm15_owner_secondary', 'M15 Owner Secondary', 'approved', now()),
+    (leader_id, 'm15_leader', 'm15_leader', 'M15 Leader', 'approved', now()),
+    (vice_id, 'm15_vice', 'm15_vice', 'M15 Vice', 'approved', now()),
+    (admin_manage_id, 'm15_admin_manage', 'm15_admin_manage', 'M15 Admin Manage', 'approved', now()),
+    (admin_plain_id, 'm15_admin_plain', 'm15_admin_plain', 'M15 Admin Plain', 'approved', now()),
+    (member_id, 'm15_member', 'm15_member', 'M15 Member', 'approved', now()),
+    (member_two_id, 'm15_member_two', 'm15_member_two', 'M15 Member Two', 'approved', now()),
+    (wrong_guild_member_id, 'm15_wrong_guild', 'm15_wrong_guild', 'M15 Wrong Guild', 'approved', now()),
+    (default_member_id, 'm15_default', 'm15_default', 'M15 Default', 'approved', now())
+  on conflict (id) do update
+  set ign = excluded.ign,
+      approval_status = excluded.approval_status,
+      approved_at = excluded.approved_at;
+
+  insert into public.guild_memberships (profile_id, guild_id, role, membership_status, is_primary, assigned_by)
+  values
+    (owner_primary_id, anteiku_id, 'owner', 'active', true, owner_primary_id),
+    (owner_secondary_id, anteiku_id, 'owner', 'active', true, owner_primary_id),
+    (leader_id, anteiku_id, 'leader', 'active', true, owner_primary_id),
+    (vice_id, anteiku_id, 'vice', 'active', true, owner_primary_id),
+    (admin_manage_id, anteiku_id, 'admin', 'active', true, owner_primary_id),
+    (admin_plain_id, anteiku_id, 'admin', 'active', true, owner_primary_id),
+    (member_id, anteiku_id, 'member', 'active', true, owner_primary_id),
+    (member_two_id, anteiku_id, 'member', 'active', true, owner_primary_id),
+    (wrong_guild_member_id, anteiku_re_id, 'member', 'active', true, owner_primary_id),
+    (default_member_id, anteiku_id, 'member', 'active', true, owner_primary_id)
+  on conflict (profile_id, guild_id) do update
+  set role = excluded.role,
+      membership_status = excluded.membership_status,
+      is_primary = excluded.is_primary,
+      assigned_by = excluded.assigned_by,
+      roster_status = 'active';
+
+  select id into owner_primary_membership_id from public.guild_memberships where profile_id = owner_primary_id and guild_id = anteiku_id;
+  select id into owner_secondary_membership_id from public.guild_memberships where profile_id = owner_secondary_id and guild_id = anteiku_id;
+  select id into admin_manage_membership_id from public.guild_memberships where profile_id = admin_manage_id and guild_id = anteiku_id;
+  select id into member_membership_id from public.guild_memberships where profile_id = member_id and guild_id = anteiku_id;
+  select id into member_two_membership_id from public.guild_memberships where profile_id = member_two_id and guild_id = anteiku_id;
+  select id into wrong_guild_membership_id from public.guild_memberships where profile_id = wrong_guild_member_id and guild_id = anteiku_re_id;
+  select id into default_membership_id from public.guild_memberships where profile_id = default_member_id and guild_id = anteiku_id;
+
+  insert into public.admin_permissions (membership_id, permission_key, granted_by)
+  values (admin_manage_membership_id, 'manage_members', owner_primary_id)
+  on conflict (membership_id, permission_key) do update
+  set granted_by = excluded.granted_by,
+      created_at = now();
+
+  insert into public.gvg_events (
+    guild_id,
+    scope,
+    title,
+    status,
+    starts_at,
+    ends_at,
+    created_by,
+    created_at,
+    updated_at
+  )
+  values (
+    anteiku_id,
+    'guild',
+    'Milestone 15A Local GvG',
+    'active',
+    now() - interval '1 hour',
+    now() + interval '1 day',
+    owner_primary_id,
+    now(),
+    now()
+  )
+  returning id into gvg_event_id;
+
+  if exists (
+    select 1
+    from public.guild_memberships
+    where id = default_membership_id
+      and roster_status = 'active'
+  ) then
+    insert into milestone15a_member_status_results values ('schema', 'default_roster_status_active', 'PASS', 'New memberships default to roster_status active.');
+  else
+    insert into milestone15a_member_status_results values ('schema', 'default_roster_status_active', 'FAIL', 'Default roster_status was not active.');
+  end if;
+
+  begin
+    update public.guild_memberships
+    set roster_status = 'invalid_status'
+    where id = default_membership_id;
+
+    insert into milestone15a_member_status_results values ('schema', 'invalid_roster_status_rejected', 'FAIL', 'Invalid roster_status update unexpectedly succeeded.');
+  exception when others then
+    insert into milestone15a_member_status_results values ('schema', 'invalid_roster_status_rejected', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_primary_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+
+    foreach status_name in array array[
+      'active',
+      'trial',
+      'inactive',
+      'on_break',
+      'pending_transfer',
+      'suspended',
+      'active',
+      'left',
+      'active',
+      'kicked',
+      'active'
+    ] loop
+      expected_membership_status := case status_name
+        when 'suspended' then 'suspended'
+        when 'left' then 'left'
+        when 'kicked' then 'left'
+        else 'active'
+      end;
+
+      execute 'set local role authenticated';
+      select * into updated_membership
+      from public.update_member_roster_status(member_membership_id, status_name, 'owner validation status change');
+      execute 'reset role';
+
+      if updated_membership.roster_status <> status_name
+         or updated_membership.membership_status <> expected_membership_status then
+        raise exception 'Expected status %, membership %, got status %, membership %',
+          status_name,
+          expected_membership_status,
+          updated_membership.roster_status,
+          updated_membership.membership_status;
+      end if;
+    end loop;
+
+    insert into milestone15a_member_status_results values ('rpc', 'owner_can_set_all_statuses', 'PASS', 'Owner set every roster status and restored hard-blocked statuses.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone15a_member_status_results values ('rpc', 'owner_can_set_all_statuses', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', leader_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    execute 'set local role authenticated';
+    select * into updated_membership
+    from public.update_member_roster_status(member_membership_id, 'on_break', 'leader scoped status test');
+    execute 'reset role';
+
+    perform set_config('request.jwt.claim.sub', vice_id::text, true);
+    execute 'set local role authenticated';
+    select * into updated_membership
+    from public.update_member_roster_status(member_membership_id, 'suspended', 'vice scoped hard block');
+    execute 'reset role';
+
+    perform set_config('request.jwt.claim.sub', leader_id::text, true);
+    execute 'set local role authenticated';
+    select * into updated_membership
+    from public.update_member_roster_status(member_membership_id, 'active', 'leader restores active');
+    execute 'reset role';
+
+    if updated_membership.roster_status = 'active' and updated_membership.membership_status = 'active' then
+      insert into milestone15a_member_status_results values ('rpc', 'leader_vice_scoped_status_allowed', 'PASS', 'Leader/Vice updated scoped non-Owner roster statuses and restored active.');
+    else
+      insert into milestone15a_member_status_results values ('rpc', 'leader_vice_scoped_status_allowed', 'FAIL', 'Leader/Vice status update did not end active.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone15a_member_status_results values ('rpc', 'leader_vice_scoped_status_allowed', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', leader_id::text, true);
+    execute 'set local role authenticated';
+    perform public.update_member_roster_status(wrong_guild_membership_id, 'inactive', 'wrong guild should fail');
+    execute 'reset role';
+    insert into milestone15a_member_status_results values ('rpc', 'leader_wrong_guild_denied', 'FAIL', 'Leader updated wrong-guild member status.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone15a_member_status_results values ('rpc', 'leader_wrong_guild_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_manage_id::text, true);
+    execute 'set local role authenticated';
+    select * into updated_membership
+    from public.update_member_roster_status(member_membership_id, 'inactive', 'admin allowed status');
+    execute 'reset role';
+
+    if updated_membership.roster_status = 'inactive' and updated_membership.membership_status = 'active' then
+      insert into milestone15a_member_status_results values ('rpc', 'admin_manage_members_allowed_non_terminal', 'PASS', 'Admin with manage_members set inactive without hard-locking membership.');
+    else
+      insert into milestone15a_member_status_results values ('rpc', 'admin_manage_members_allowed_non_terminal', 'FAIL', 'Admin allowed status did not preserve active membership.');
+    end if;
+
+    perform set_config('request.jwt.claim.sub', owner_primary_id::text, true);
+    execute 'set local role authenticated';
+    perform public.update_member_roster_status(member_membership_id, 'active', 'restore for next tests');
+    execute 'reset role';
+  exception when others then
+    execute 'reset role';
+    insert into milestone15a_member_status_results values ('rpc', 'admin_manage_members_allowed_non_terminal', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_manage_id::text, true);
+    execute 'set local role authenticated';
+    perform public.update_member_roster_status(member_membership_id, 'suspended', 'admin hard block should fail');
+    execute 'reset role';
+    insert into milestone15a_member_status_results values ('rpc', 'admin_terminal_status_denied', 'FAIL', 'Admin set suspended.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone15a_member_status_results values ('rpc', 'admin_terminal_status_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_plain_id::text, true);
+    execute 'set local role authenticated';
+    perform public.update_member_roster_status(member_membership_id, 'trial', 'plain admin should fail');
+    execute 'reset role';
+    insert into milestone15a_member_status_results values ('rpc', 'admin_without_manage_members_denied', 'FAIL', 'Admin without manage_members changed status.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone15a_member_status_results values ('rpc', 'admin_without_manage_members_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_manage_id::text, true);
+    execute 'set local role authenticated';
+    perform public.update_member_roster_status(owner_secondary_membership_id, 'inactive', 'admin owner target should fail');
+    execute 'reset role';
+    insert into milestone15a_member_status_results values ('rpc', 'admin_cannot_affect_owner', 'FAIL', 'Admin affected Owner roster status.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone15a_member_status_results values ('rpc', 'admin_cannot_affect_owner', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_manage_id::text, true);
+    execute 'set local role authenticated';
+    perform public.update_member_roster_status(admin_manage_membership_id, 'inactive', 'admin self should fail');
+    execute 'reset role';
+    insert into milestone15a_member_status_results values ('rpc', 'admin_cannot_change_self_status', 'FAIL', 'Admin changed their own roster status.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone15a_member_status_results values ('rpc', 'admin_cannot_change_self_status', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_two_id::text, true);
+    execute 'set local role authenticated';
+    perform public.update_member_roster_status(member_membership_id, 'trial', 'member should fail');
+    execute 'reset role';
+    insert into milestone15a_member_status_results values ('rpc', 'member_status_change_denied', 'FAIL', 'Member changed roster status.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone15a_member_status_results values ('rpc', 'member_status_change_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    update public.guild_memberships
+    set membership_status = 'suspended',
+        roster_status = 'suspended'
+    where role = 'owner'
+      and profile_id <> owner_secondary_id;
+
+    update public.guild_memberships
+    set membership_status = 'active',
+        roster_status = 'active',
+        is_primary = true
+    where id = owner_secondary_membership_id;
+
+    perform set_config('request.jwt.claim.sub', owner_secondary_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+
+    begin
+      execute 'set local role authenticated';
+      perform public.update_member_roster_status(owner_secondary_membership_id, 'suspended', 'last owner should fail');
+      execute 'reset role';
+      insert into milestone15a_member_status_results values ('rpc', 'last_active_owner_protected', 'FAIL', 'Last active Owner was hard-blocked.');
+    exception when others then
+      execute 'reset role';
+      insert into milestone15a_member_status_results values ('rpc', 'last_active_owner_protected', 'PASS', sqlerrm);
+    end;
+
+    update public.guild_memberships
+    set membership_status = 'active',
+        roster_status = 'active',
+        is_primary = true
+    where id in (owner_primary_membership_id, owner_secondary_membership_id);
+  exception when others then
+    execute 'reset role';
+    insert into milestone15a_member_status_results values ('rpc', 'last_active_owner_protected_setup', 'FAIL', sqlerrm);
+  end;
+
+  select count(*) into active_owner_count
+  from public.guild_memberships gm
+  join public.profiles p on p.id = gm.profile_id
+  where gm.role = 'owner'
+    and gm.membership_status = 'active'
+    and p.approval_status = 'approved'
+    and gm.profile_id in (owner_primary_id, owner_secondary_id);
+
+  if active_owner_count = 2 then
+    insert into milestone15a_member_status_results values ('rpc', 'active_owner_count_restored', 'PASS', 'Both local validation Owners are active after last-owner test.');
+  else
+    insert into milestone15a_member_status_results values ('rpc', 'active_owner_count_restored', 'FAIL', 'Expected 2 active Owners, found ' || active_owner_count || '.');
+  end if;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_primary_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+
+    foreach status_name in array array['suspended', 'left', 'kicked'] loop
+      execute 'set local role authenticated';
+      select * into updated_membership
+      from public.update_member_roster_status(member_membership_id, status_name, 'hard block validation');
+      execute 'reset role';
+
+      if private.has_active_membership(member_id, anteiku_id) then
+        raise exception 'Hard-block status % still has active membership.', status_name;
+      end if;
+
+      execute 'set local role authenticated';
+      perform public.update_member_roster_status(member_membership_id, 'active', 'restore after hard block validation');
+      execute 'reset role';
+    end loop;
+
+    insert into milestone15a_member_status_results values ('access', 'hard_block_statuses_remove_active_access', 'PASS', 'suspended/left/kicked remove active membership access.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone15a_member_status_results values ('access', 'hard_block_statuses_remove_active_access', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_primary_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    execute 'set local role authenticated';
+    perform public.update_member_roster_status(member_membership_id, 'inactive', 'inactive gvg validation');
+    execute 'reset role';
+
+    if not private.has_active_membership(member_id, anteiku_id) then
+      raise exception 'inactive unexpectedly removed hard active membership.';
+    end if;
+
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    execute 'set local role authenticated';
+    begin
+      perform public.submit_gvg_vote(gvg_event_id, 'present', null);
+      execute 'reset role';
+      insert into milestone15a_member_status_results values ('gvg', 'inactive_gvg_vote_denied', 'FAIL', 'inactive member submitted GvG vote.');
+    exception when others then
+      execute 'reset role';
+      insert into milestone15a_member_status_results values ('gvg', 'inactive_gvg_vote_denied', 'PASS', sqlerrm);
+    end;
+
+    execute 'set local role authenticated';
+    select count(*) into result_count
+    from public.gvg_events
+    where id = gvg_event_id;
+    execute 'reset role';
+
+    if result_count = 0 then
+      insert into milestone15a_member_status_results values ('gvg', 'inactive_gvg_event_hidden_by_rls', 'PASS', 'inactive member does not see active GvG event through member RLS.');
+    else
+      insert into milestone15a_member_status_results values ('gvg', 'inactive_gvg_event_hidden_by_rls', 'FAIL', 'inactive member saw active GvG event.');
+    end if;
+
+    perform set_config('request.jwt.claim.sub', owner_primary_id::text, true);
+    execute 'set local role authenticated';
+    perform public.update_member_roster_status(member_membership_id, 'on_break', 'on_break gvg validation');
+    execute 'reset role';
+
+    if not private.has_active_membership(member_id, anteiku_id) then
+      raise exception 'on_break unexpectedly removed hard active membership.';
+    end if;
+
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    execute 'set local role authenticated';
+    begin
+      perform public.submit_gvg_vote(gvg_event_id, 'present', null);
+      execute 'reset role';
+      insert into milestone15a_member_status_results values ('gvg', 'on_break_gvg_vote_denied', 'FAIL', 'on_break member submitted GvG vote.');
+    exception when others then
+      execute 'reset role';
+      insert into milestone15a_member_status_results values ('gvg', 'on_break_gvg_vote_denied', 'PASS', sqlerrm);
+    end;
+
+    perform set_config('request.jwt.claim.sub', owner_primary_id::text, true);
+    execute 'set local role authenticated';
+    perform public.update_member_roster_status(member_membership_id, 'trial', 'trial gvg validation');
+    execute 'reset role';
+
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    execute 'set local role authenticated';
+    perform public.submit_gvg_vote(gvg_event_id, 'present', null);
+    execute 'reset role';
+    insert into milestone15a_member_status_results values ('gvg', 'trial_gvg_vote_allowed', 'PASS', 'trial member retained normal GvG voting access.');
+
+    perform set_config('request.jwt.claim.sub', owner_primary_id::text, true);
+    execute 'set local role authenticated';
+    perform public.update_member_roster_status(member_membership_id, 'active', 'restore after gvg validation');
+    execute 'reset role';
+  exception when others then
+    execute 'reset role';
+    insert into milestone15a_member_status_results values ('gvg', 'inactive_on_break_gvg_eligibility', 'FAIL', sqlerrm);
+  end;
+
+  if exists (
+    select 1
+    from public.member_status_history
+    where membership_id = member_membership_id
+      and new_status in ('inactive', 'on_break', 'trial')
+      and reason is not null
+  ) then
+    insert into milestone15a_member_status_results values ('history', 'status_history_inserted', 'PASS', 'Status history rows were inserted with private reasons.');
+  else
+    insert into milestone15a_member_status_results values ('history', 'status_history_inserted', 'FAIL', 'Expected status history rows were not found.');
+  end if;
+
+  if exists (
+    select 1
+    from public.audit_logs
+    where action = 'member_roster_status_changed'
+      and entity_table = 'guild_memberships'
+      and entity_id = member_membership_id
+      and metadata ? 'old_status'
+      and metadata ? 'new_status'
+      and metadata ? 'membership_id'
+      and metadata ? 'guild_id'
+      and metadata ? 'reason_provided'
+      and not metadata ? 'reason'
+  ) then
+    insert into milestone15a_member_status_results values ('audit', 'status_change_audit_log_inserted', 'PASS', 'Audit log includes status metadata without private reason text.');
+  else
+    insert into milestone15a_member_status_results values ('audit', 'status_change_audit_log_inserted', 'FAIL', 'Expected status-change audit log metadata was not found.');
+  end if;
+
+  perform set_config('request.jwt.claim.sub', member_id::text, true);
+  perform set_config('request.jwt.claim.role', 'authenticated', true);
+  begin
+    execute 'set local role authenticated';
+    select count(*) into result_count
+    from public.member_status_history
+    where membership_id = member_membership_id;
+    execute 'reset role';
+
+    if result_count = 0 then
+      insert into milestone15a_member_status_results values ('history_rls', 'member_cannot_read_private_status_history', 'PASS', 'Member direct status-history read returned no rows.');
+    else
+      insert into milestone15a_member_status_results values ('history_rls', 'member_cannot_read_private_status_history', 'FAIL', 'Member read ' || result_count || ' status history rows.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone15a_member_status_results values ('history_rls', 'member_cannot_read_private_status_history', 'PASS', sqlerrm);
+  end;
+
+  perform set_config('request.jwt.claim.sub', leader_id::text, true);
+  begin
+    execute 'set local role authenticated';
+    select count(*) into result_count
+    from public.member_status_history
+    where membership_id = member_membership_id;
+    execute 'reset role';
+
+    if result_count > 0 then
+      insert into milestone15a_member_status_results values ('history_rls', 'scoped_staff_can_read_status_history', 'PASS', 'Scoped Leader read private status history.');
+    else
+      insert into milestone15a_member_status_results values ('history_rls', 'scoped_staff_can_read_status_history', 'FAIL', 'Scoped Leader saw no status history.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone15a_member_status_results values ('history_rls', 'scoped_staff_can_read_status_history', 'FAIL', sqlerrm);
+  end;
+end;
+$$;
+
+select section, test_name, status, details
+from milestone15a_member_status_results
+order by section, test_name;
+
+select count(*) filter (where status = 'PASS') as milestone15a_total_pass,
+       count(*) filter (where status = 'FAIL') as milestone15a_total_fail,
+       count(*) filter (where status = 'SKIP') as milestone15a_total_skip
+from milestone15a_member_status_results;
+
 rollback;

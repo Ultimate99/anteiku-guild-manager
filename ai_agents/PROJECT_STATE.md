@@ -1,5 +1,48 @@
 # Project State
 
+## Milestone 15A Member Status Backend Implemented And Validated
+
+Milestone 15A backend/database work is complete locally. It adds a separate roster lifecycle concept without reusing `profiles.approval_status` or `guild_memberships.membership_status`.
+
+Implemented:
+- New migration: `supabase/migrations/20260523000100_member_roster_status_system.sql`.
+- `guild_memberships.roster_status text not null default 'active'`.
+- Allowed roster statuses: `active`, `trial`, `inactive`, `on_break`, `suspended`, `left`, `kicked`, and `pending_transfer`.
+- New private staff-history table: `member_status_history`.
+- New safe RPC: `public.update_member_roster_status(p_membership_id uuid, p_new_status text, p_reason text default null)`.
+- New audit action: `member_roster_status_changed`.
+- GvG eligibility now excludes `inactive` and `on_break` members from active event visibility/voting while preserving their hard active membership.
+
+Security behavior:
+- `active`, `trial`, and `pending_transfer` keep normal access.
+- `inactive` and `on_break` are not hard lockouts; users can still log in and keep active membership, but they are excluded from GvG participation/expectation.
+- `suspended`, `left`, and `kicked` are hard roster-access blocks.
+- `suspended` maps to `membership_status = 'suspended'`.
+- `left` maps to `membership_status = 'left'`.
+- `kicked` maps to `membership_status = 'left'` because current `membership_status` has no `kicked` value and `rejected` is reserved for registration/reapply semantics.
+- Owner can set all statuses globally, with last-active-Owner protection.
+- Leader/Vice can set scoped non-Owner statuses.
+- Admin with `manage_members` can set only `active`, `trial`, `inactive`, `on_break`, and `pending_transfer`; Admin cannot set hard-block statuses, affect Owners, or change self.
+- Members cannot change roster status.
+- Private reasons live only in `member_status_history`; audit metadata records only whether a reason exists.
+
+Validation:
+- `npx.cmd supabase db reset` passed locally.
+- `supabase/tests/local_validation_anteiku.sql` passed.
+- Milestone 15A validation result: 22 PASS / 0 FAIL / 0 SKIP.
+- Existing local validation sections still passed.
+
+Scope confirmation:
+- Backend/database only.
+- No React components or frontend UI were changed.
+- No production Supabase project was touched.
+- No Vercel env vars were changed.
+- No deployment was performed.
+- No commit was made.
+
+Recommended next milestone:
+- Milestone 15B frontend planning for Member Status UI/access gating.
+
 ## Milestone 14H Staging CP Redaction And GvG Smoke Validation Complete
 
 Milestone 14H is complete. Staging browser validation and read-only SQL verification passed for CP audit redaction, CP metadata visibility, full GvG smoke, permission denial checks, wrong-guild denial, and pending-user lockout.
@@ -738,7 +781,7 @@ Validated results:
 
 ## Current Milestone
 
-Milestone 14H staging CP audit redaction and GvG full-smoke validation is complete. Recommended next milestone options are Vercel Preview env configuration with staging Supabase or Member Status System planning.
+Milestone 15A Member Status backend/database implementation is complete and locally validated. Recommended next milestone is Milestone 15B frontend planning for Member Status UI/access gating.
 
 Future CP-focused milestone candidate recorded: CP Update Window / Member CP Self-Submit. Corrected CP privacy rule going forward: members can see their own CP through safe backend/RPC flow, but must not see other members' CP, CP roster, CP leaderboard, CP snapshots, or other members' CP history. Members must not directly select or update `member_cp` and must not directly read `cp_snapshots`.
 
@@ -754,7 +797,7 @@ Production hardening policy now documents Vercel GitHub App restriction, control
 
 Milestone 14C reorganized AdminPanel into mobile-friendly tabs and section components. The refactor is frontend-only and behavior-preserving; CP, Audit Logs, and GvG management sections lazy-load when their tabs are opened. Production rollout validation passed after the Vercel deployment.
 
-Milestone 14D recorded the staging/preview plan for future non-production validation. Milestone 14E created/linked the staging Supabase project, applied the same 9 migrations as production, and verified staging schema/RLS/seed. Milestone 14F bootstrapped and verified the staging Owner. Milestone 14G created and verified controlled staging users and permissions. Milestone 14H validated CP audit redaction and GvG smoke in staging. Vercel Preview env remains unchanged.
+Milestone 14D recorded the staging/preview plan for future non-production validation. Milestone 14E created/linked the staging Supabase project, applied the same 9 migrations as production, and verified staging schema/RLS/seed. Milestone 14F bootstrapped and verified the staging Owner. Milestone 14G created and verified controlled staging users and permissions. Milestone 14H validated CP audit redaction and GvG smoke in staging. Milestone 15A implemented and locally validated backend Member Status support. Vercel Preview env remains unchanged.
 
 ## Implemented
 

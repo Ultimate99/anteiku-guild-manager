@@ -1,5 +1,32 @@
 # Role Permissions
 
+## Milestone 15A Member Status Rules
+
+Roster status is a lifecycle concept, not a replacement for approval or hard membership security.
+
+Status meanings:
+- `active`: normal access, reliable participant.
+- `trial`: normal access, marked as trial.
+- `pending_transfer`: normal access, flagged for staff review.
+- `inactive`: can log in and view own profile; excluded from GvG expectation/eligibility.
+- `on_break`: can log in and view own profile; excluded from GvG expectation/eligibility.
+- `suspended`: blocked from member/admin areas; shows suspension notice in future frontend work.
+- `left`: blocked from member/admin areas; preserved for history.
+- `kicked`: blocked from member/admin areas; preserved for history.
+
+Status-changing authority:
+- Owner can set all statuses globally, with last-active-Owner protection.
+- Leader/Vice can set scoped non-Owner statuses.
+- Admin with `manage_members` can set only `active`, `trial`, `inactive`, `on_break`, and `pending_transfer`.
+- Admin cannot set `suspended`, `left`, or `kicked`.
+- Admin cannot affect Owners or change their own status.
+- Members cannot change roster status.
+
+Hard-block mapping:
+- `suspended` sets `membership_status = 'suspended'`.
+- `left` sets `membership_status = 'left'`.
+- `kicked` sets `membership_status = 'left'`; `rejected` remains for registration/reapply.
+
 ## Milestone 7 Role And Transfer Rules
 
 Normal app role assignment:
@@ -19,9 +46,7 @@ Guild transfer:
 - Transferred member role resets to `member`.
 - Owner assignment remains manual-only.
 
-Milestone 2 role direction is approved for documentation/spec purposes only.
-
-No database roles, memberships, permission rows, or RLS checks have been implemented yet.
+Milestone 2 role direction was later implemented through Supabase migrations, RLS, and RPCs.
 
 ## Roles
 

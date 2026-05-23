@@ -12,6 +12,33 @@ Roles:
 - Admin
 - Member
 
+## Member Status
+
+Milestone 15A adds backend Member Status support through `guild_memberships.roster_status`.
+
+Status meanings:
+- `active`: normal access, reliable participant.
+- `trial`: normal access, marked as trial.
+- `pending_transfer`: normal access, flagged for staff review.
+- `inactive`: can log in and view own profile; excluded from GvG expectation/eligibility.
+- `on_break`: can log in and view own profile; excluded from GvG expectation/eligibility.
+- `suspended`: blocked from member/admin areas.
+- `left`: blocked from member/admin areas and preserved for history.
+- `kicked`: blocked from member/admin areas and preserved for history.
+
+Status authority:
+- Owner can set all statuses globally, with last-active-Owner protection.
+- Leader/Vice can set scoped non-Owner statuses.
+- Admin with `manage_members` can set only `active`, `trial`, `inactive`, `on_break`, and `pending_transfer`.
+- Admin cannot set `suspended`, `left`, or `kicked`.
+- Admin cannot affect Owners or change self.
+- Members cannot change status.
+
+Hard-block mapping:
+- `suspended` -> `membership_status = 'suspended'`
+- `left` -> `membership_status = 'left'`
+- `kicked` -> `membership_status = 'left'`
+
 ## Role Defaults
 
 Owner:

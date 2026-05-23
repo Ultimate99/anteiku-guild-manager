@@ -2,44 +2,28 @@
 
 ## Current Recommendation
 
-Milestone 14H staging CP audit redaction and GvG full-smoke validation is complete.
+Milestone 15A Member Status backend/database implementation is complete and locally validated.
 
-Recorded staging status:
-- Staging Supabase project exists: `ckyihuxkioeibzpgwenc`.
-- Project name: `Anteiku Guild Manager Staging`.
-- Project URL: `https://ckyihuxkioeibzpgwenc.supabase.co`.
-- Same 9 migrations as production were applied.
-- Staging schema/RLS/seed verification passed.
-- Permission catalog count is 10 and exactly matches the seed migration.
-- Staging Owner exists and is verified:
-  - Auth UUID: `e02a6d7a-0663-4a89-b558-9f57245f6361`.
-  - Email: `krsticmiroslav99+agm-staging-owner@gmail.com`.
-  - Username/profile slug: `staging_owner`.
-  - IGN: `Staging Owner`.
-  - Role: `owner`.
-  - Membership status: `active`.
-  - Primary membership: `true`.
-  - `active_owner_count = 1`.
-  - `owner_bootstrapped` audit log count: `1`.
-- Controlled staging test users exist and were verified in Milestone 14G:
-  - `staging_member`
-  - `staging_pending`
-  - `staging_wrongguild`
-  - `staging_audit_nocp`
-  - `staging_audit_cp`
-  - `staging_admin_noperms`
-- Milestone 14H validation passed for CP audit redaction, CP metadata visibility, full GvG smoke, permission denial checks, wrong-guild denial, and pending lockout.
-- Test data remains in staging intentionally.
+Recorded Milestone 15A status:
+- New migration: `supabase/migrations/20260523000100_member_roster_status_system.sql`.
+- `guild_memberships.roster_status` is the current roster lifecycle status.
+- `member_status_history` stores staff-only private status history/reasons.
+- `update_member_roster_status(...)` is the safe status-change RPC.
+- `member_roster_status_changed` audit logs are written without full private reason text.
+- `inactive` and `on_break` preserve active membership but are excluded from GvG eligibility/expectation.
+- `suspended`, `left`, and `kicked` hard-block access by changing `membership_status`; `kicked` maps to `membership_status = 'left'`.
+- Local validation passed: `npx.cmd supabase db reset` and `supabase/tests/local_validation_anteiku.sql`.
+- Milestone 15A focused validation result: 22 PASS / 0 FAIL / 0 SKIP.
+- No frontend UI has been implemented yet.
 - Production Supabase was not touched.
 - Vercel Preview env remains unconfigured.
-- No source or SQL files were changed.
-- `manage_permissions` is not seeded in the current migration set and remains a future/open permission question unless explicitly approved later.
+- No deployment or commit was performed.
 
 Recommended next milestone:
-- Vercel Preview env configuration with staging Supabase, or Member Status System planning.
+- Milestone 15B frontend planning for Member Status UI/access gating.
 
 Later milestone options:
-- Configure Vercel Preview env with staging Supabase only after staging bootstrap planning is approved.
+- Configure Vercel Preview env with staging Supabase only after an approved plan.
 - Future CP-focused milestone: CP Update Window / Member CP Self-Submit.
 - Controlled production test-member cleanup planning for `krsticmiroslav99+m13b21144225@gmail.com`, with no hard delete unless explicitly approved.
 - AdminPanel polish planning for sticky-under-header tab behavior and slightly tighter small-mobile tab spacing.

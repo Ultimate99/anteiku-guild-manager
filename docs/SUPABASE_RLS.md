@@ -1,8 +1,35 @@
 # Supabase RLS
 
-The local Supabase RLS/RPC implementation has been validated through Milestone 11A, and the Milestone 11B frontend audit viewer has been live-browser validated against the safe audit RPC. These migrations have not been applied to production yet.
+The local Supabase RLS/RPC implementation has been validated through Milestone 15A, and the Milestone 11B frontend audit viewer has been live-browser validated against the safe audit RPC.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
+
+## Milestone 15A Member Status RLS/RPC
+
+Member Status backend support is implemented locally.
+
+New table:
+- `member_status_history`
+
+RLS:
+- Members cannot directly read private status history/reasons.
+- Scoped staff can read history if they are Owner, scoped Leader/Vice, or Admin with `manage_members`.
+- No direct client writes are allowed for history.
+
+RPC:
+- `public.update_member_roster_status(p_membership_id uuid, p_new_status text, p_reason text default null)`
+
+Rules:
+- Owner can set all statuses globally, but cannot block/remove the last active Owner.
+- Leader/Vice can set scoped non-Owner statuses.
+- Admin with `manage_members` can set only non-terminal statuses.
+- Members cannot change status.
+- `inactive` and `on_break` preserve active membership but are excluded from GvG event visibility/voting.
+- `suspended`, `left`, and `kicked` hard-block access through `membership_status`.
+- `kicked` maps to `membership_status = 'left'`.
+
+Validation:
+- Milestone 15A local validation passed with 22 PASS / 0 FAIL / 0 SKIP.
 
 ## Milestone 11A Audit Log Reads
 

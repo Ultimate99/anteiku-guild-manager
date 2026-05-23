@@ -1,7 +1,7 @@
 {
   "project": "Anteiku Guild Manager",
-  "currentMilestone": "Milestone 14H staging CP redaction and GvG smoke validation complete",
-  "status": "milestone_14h_staging_validation_complete",
+  "currentMilestone": "Milestone 15A Member Status backend implementation complete",
+  "status": "milestone_15a_backend_validated",
   "milestone7BackendStatus": "SQL/RPC migration created for hardened role assignment and Owner-only guild transfer; local Supabase validation passed.",
   "milestone7ValidationStatus": "npx.cmd supabase db reset passed; local_validation_anteiku.sql passed; role assignment and guild transfer tests passed.",
   "milestone7FrontendStatus": "Admin member role-change and Owner-only guild-transfer UI browser validated; network writes used assign_member_role and transfer_member_guild; no CP/GvG calls observed.",
@@ -22,7 +22,8 @@
   "milestone14FStatus": "Staging Owner bootstrap complete and verified. Staging Owner auth UUID e02a6d7a-0663-4a89-b558-9f57245f6361 uses email krsticmiroslav99+agm-staging-owner@gmail.com, username/profile slug staging_owner, IGN Staging Owner, role owner, active primary Anteiku membership, active_owner_count 1, and owner_bootstrapped audit log count 1. No controlled staging test users existed at the 14F checkpoint, Vercel Preview remained unconfigured, production was not touched, and no source or SQL files were changed.",
   "milestone14GStatus": "Controlled staging test users and permission matrix setup complete. staging_member, staging_pending, staging_wrongguild, staging_audit_nocp, staging_audit_cp, and staging_admin_noperms exist and were verified. staging_audit_nocp has view_audit_logs only, staging_audit_cp has view_audit_logs plus view_cp, staging_admin_noperms has no permissions, staging_wrongguild is active in Anteiku:Rose, staging_pending is pending, and active_owner_count remained 1.",
   "milestone14HStatus": "Staging CP audit redaction and GvG full-smoke validation complete. Owner updated staging_member CP to 1234567 through CP UI; staging_audit_nocp saw Sensitive CP metadata hidden without CP value/cp_old/cp_new; staging_audit_cp saw backend-returned New CP 1,234,567; Owner created/opened/closed M14H Staging GvG Smoke; staging_member voted Present, switched Absent with reason, then returned Present; SQL confirmed one gvg_votes row with final present and absence_reason null; wrong-guild, admin no-permission, and pending lockout checks passed. Test data remains in staging intentionally. Production, Vercel, source, and SQL migrations were unchanged.",
-  "nextRecommendedStep": "Vercel Preview env configuration with staging Supabase, or Member Status System planning.",
+  "milestone15AStatus": "Backend Member Status implementation complete and locally validated. Migration 20260523000100_member_roster_status_system.sql adds guild_memberships.roster_status, member_status_history, update_member_roster_status RPC, member_roster_status_changed audit logging, and GvG eligibility protection for inactive/on_break. Local db reset passed and local_validation_anteiku.sql passed with Milestone 15A result 22 PASS / 0 FAIL / 0 SKIP. No frontend UI, production Supabase, Vercel env, deployment, or commit action was included.",
+  "nextRecommendedStep": "Milestone 15B frontend planning for Member Status UI/access gating.",
   "futureCpUpdateWindowStatus": "Future CP-focused milestone candidate recorded. Corrected future CP privacy rule: members can see their own CP through safe backend/RPC flow and may submit only their own CP during an applicable open CP Update Window; members must not see other members' CP, CP roster, CP leaderboard, CP snapshots, or other members' CP history. Backend/RLS/RPC work is required before implementation.",
   "productionSupabase": {
     "projectRef": "mzflfyxxkascrfpteexz",
@@ -171,6 +172,35 @@
       "Later: configure Vercel Preview env with staging Supabase only and staging Auth URLs"
     ]
   },
+  "memberStatusSystem": {
+    "milestone15ACompleted": true,
+    "backendValidatedLocally": true,
+    "migration": "20260523000100_member_roster_status_system.sql",
+    "currentStatusColumn": "guild_memberships.roster_status",
+    "historyTable": "member_status_history",
+    "statusRpc": "update_member_roster_status",
+    "auditAction": "member_roster_status_changed",
+    "allowedStatuses": [
+      "active",
+      "trial",
+      "inactive",
+      "on_break",
+      "suspended",
+      "left",
+      "kicked",
+      "pending_transfer"
+    ],
+    "hardBlockMapping": {
+      "suspended": "membership_status = suspended",
+      "left": "membership_status = left",
+      "kicked": "membership_status = left"
+    },
+    "gvgEligibility": "active, trial, and pending_transfer can see/vote on active GvG events; inactive and on_break keep active membership but are excluded from active GvG event visibility/voting.",
+    "historyPrivacy": "Private reasons live in member_status_history and are staff-only through RLS; audit metadata records reason_provided but not full reason text.",
+    "validation": "npx.cmd supabase db reset passed; local_validation_anteiku.sql passed; Milestone 15A result 22 PASS / 0 FAIL / 0 SKIP.",
+    "frontendImplemented": false,
+    "nextMilestone": "Milestone 15B frontend planning for Member Status UI/access gating."
+  },
   "productionWarnings": [
     "Do not run supabase db reset against production.",
     "Do not run supabase/tests/local_validation_anteiku.sql against production because it inserts fake auth users/test data.",
@@ -181,7 +211,8 @@
     "Vercel Preview env remains unconfigured even though staging Supabase now exists; configure it only in an approved future milestone.",
     "Preview wildcard redirects should not be added to production Supabase; use staging Supabase for preview wildcards if needed.",
     "Do not hard-delete the controlled production test member unless an explicit cleanup plan is approved.",
-    "Do not create production GvG test data without explicit approval and cleanup/data-retention planning."
+    "Do not create production GvG test data without explicit approval and cleanup/data-retention planning.",
+    "Milestone 15A migration is locally validated only and must not be applied to production/staging without a separate approved rollout plan."
   ],
   "localToolingNote": "Supabase CLI was installed locally as dev tooling during Milestone 13A, and the CLI tooling/package changes were committed before Milestone 13B planning/execution.",
   "localTestingNote": "After local DB reset, stale browser auth can cause profiles_id_fkey registration errors; clear localStorage/sessionStorage before retesting auth/registration.",
@@ -224,25 +255,27 @@
     "staging Supabase migrations and schema/RLS/seed verification",
     "manual staging Owner bootstrap",
     "controlled staging test-user and permission matrix setup",
-    "staging CP audit redaction and GvG full-smoke validation"
+    "staging CP audit redaction and GvG full-smoke validation",
+    "backend Member Status roster_status/history/RPC/audit support"
   ],
   "notImplemented": [
     "avatar editing",
     "normal-user username/profile slug editing",
     "reapply UI",
     "CP Update Window / Member CP Self-Submit",
-    "suspended/left/rejected member management",
+    "Member Status frontend UI/access gating",
+    "suspended/left/rejected member management UI",
     "weekly CP snapshot/growth report UI",
     "guild/subguild management UI"
   ],
-  "securityStatus": "locally validated in Supabase, production catalog-verified, production smoke/security validated, Milestone 14C AdminPanel tabs production-smoke validated, Milestone 14E staging schema/RLS/seed verified, Milestone 14F staging Owner bootstrap verified, Milestone 14G staging users/permissions verified, and Milestone 14H staging CP redaction/GvG smoke validated. Deferred production-only GvG and CP redaction scenarios are now covered in staging.",
-  "schemaSpecStatus": "migrations created, locally validated, applied to production, production catalog-verified, applied to staging, and staging schema/RLS/seed verified.",
+  "securityStatus": "locally validated in Supabase, production catalog-verified, production smoke/security validated, Milestone 14C AdminPanel tabs production-smoke validated, Milestone 14E staging schema/RLS/seed verified, Milestone 14F staging Owner bootstrap verified, Milestone 14G staging users/permissions verified, Milestone 14H staging CP redaction/GvG smoke validated, and Milestone 15A Member Status backend security locally validated. Deferred production-only GvG and CP redaction scenarios are now covered in staging.",
+  "schemaSpecStatus": "migrations created and locally validated through Milestone 15A. Production and staging have the earlier approved 9-migration baseline; Milestone 15A migration has not been applied remotely in this checkpoint.",
   "cpDecision": "CP stored outside profiles in member_cp and cp_snapshots; member direct SELECT forbidden. Corrected future rule: members may see their own CP only through safe auth.uid()-scoped RPC, but must not see other members' CP, CP roster, CP leaderboard, CP snapshots, or CP history.",
   "roleDecision": "Owner global CP access; Leader/Vice automatic guild-scoped CP access; Admin explicit CP permissions granted only by Owner.",
-  "membershipDecision": "v1 enforces one active primary guild membership per user while preserving room for history/future multi-guild.",
-  "gvgDecision": "supports guild-specific and global events; v1 vote correction by admins/leaders is not allowed.",
-  "supabaseValidationStatus": "Local validation passed: 29 PASS / 0 FAIL / 0 SKIP; production schema/RLS/seed verification passed after all 9 migrations were applied; staging schema/RLS/seed verification passed after the same 9 migrations were applied.",
+  "membershipDecision": "v1 enforces one active primary guild membership per user while preserving room for history/future multi-guild. Milestone 15A adds separate roster_status for lifecycle state and preserves membership_status as the hard security/access state.",
+  "gvgDecision": "supports guild-specific and global events; v1 vote correction by admins/leaders is not allowed. Milestone 15A excludes inactive/on_break roster statuses from active GvG event visibility/voting while preserving active membership.",
+  "supabaseValidationStatus": "Local validation passed through Milestone 15A: db reset passed and local_validation_anteiku.sql passed, including Milestone 15A result 22 PASS / 0 FAIL / 0 SKIP. Production schema/RLS/seed verification passed after the prior 9 migrations were applied; staging schema/RLS/seed verification passed after the same 9 migrations were applied.",
   "securityIssueFixed": "Private helper parameter shadowing caused CP/RPC permission leakage during validation; fixed with p_* helper parameters and validated successfully.",
-  "validationStatus": "Milestone 14H staging validation passed. CP audit redaction, CP metadata visibility for view_cp, full GvG smoke, permission denial, wrong-guild denial, pending lockout, and read-only SQL verification passed on staging ckyihuxkioeibzpgwenc. Test data remains in staging intentionally. Literal DevTools request capture was unavailable through browser automation, but source-path inspection confirmed approved RPC usage; this caveat is non-blocking. Milestone 14G staging users/permissions, Milestone 14F Owner bootstrap, and Milestone 14E staging migration/apply/verification passed. Production remains unchanged.",
+  "validationStatus": "Milestone 15A backend validation passed locally. db reset applied migration 20260523000100_member_roster_status_system.sql, and local_validation_anteiku.sql passed with Milestone 15A result 22 PASS / 0 FAIL / 0 SKIP. Milestone 14H staging validation also passed previously. Production remains unchanged.",
   "auditStatus": "Do not run npm audit fix --force; it would install Vite 8.0.13 as a breaking major upgrade."
 }

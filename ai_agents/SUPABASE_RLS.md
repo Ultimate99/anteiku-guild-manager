@@ -14,6 +14,35 @@ Future production setup must:
 - Never run `supabase db reset` on production.
 - Never run local fake-user validation SQL on production.
 
+## Milestone 15A Member Status RLS/RPC
+
+Milestone 15A adds backend-only Member Status support.
+
+New table:
+- `public.member_status_history`
+
+RLS:
+- Members cannot directly read private status reasons/history.
+- Scoped staff can read status history when they are Owner, scoped Leader/Vice, or Admin with `manage_members`.
+- No direct client insert/update/delete policies exist for `member_status_history`.
+
+New RPC:
+- `public.update_member_roster_status(p_membership_id uuid, p_new_status text, p_reason text default null)`
+
+Security behavior:
+- Status writes must use the RPC.
+- Owner can set all statuses globally, with last-active-Owner protection.
+- Leader/Vice can set scoped non-Owner statuses.
+- Admin with `manage_members` can set only `active`, `trial`, `inactive`, `on_break`, and `pending_transfer`.
+- Members cannot change status.
+- `suspended`, `left`, and `kicked` are hard blocks through `membership_status`.
+- `kicked` maps to `membership_status = 'left'`; `rejected` remains reserved for registration/reapply.
+- `inactive` and `on_break` preserve active membership but are excluded from GvG event visibility/voting.
+
+Validation:
+- Local Supabase reset passed.
+- Local validation script passed Milestone 15A checks with 22 PASS / 0 FAIL / 0 SKIP.
+
 ## Milestone 11A Audit Log Read Hardening
 
 Audit log reads now go through a safe RPC for frontend use:

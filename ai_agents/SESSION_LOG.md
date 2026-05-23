@@ -1,5 +1,28 @@
 # Session Log
 
+## 2026-05-23 - Milestone 15A Member Status Backend Complete
+
+- Milestone 15A backend/database implementation completed locally.
+- Added migration `20260523000100_member_roster_status_system.sql`.
+- Added `guild_memberships.roster_status`.
+- Added private `member_status_history`.
+- Added `update_member_roster_status(...)` RPC.
+- Added `member_roster_status_changed` audit logging.
+- Added GvG eligibility protection so `inactive` and `on_break` users keep active membership but cannot see/vote on active GvG events.
+- Hard-block statuses map to hard membership states:
+  - `suspended` -> `membership_status = 'suspended'`
+  - `left` -> `membership_status = 'left'`
+  - `kicked` -> `membership_status = 'left'`
+- Local validation passed:
+  - `npx.cmd supabase db reset`
+  - `supabase/tests/local_validation_anteiku.sql`
+  - Milestone 15A section: 22 PASS / 0 FAIL / 0 SKIP
+- No React/frontend UI was implemented.
+- No production Supabase project was touched.
+- No Vercel env vars were changed.
+- No deployment or commit was performed.
+- Recommended next milestone: Milestone 15B frontend planning for Member Status UI/access gating.
+
 ## 2026-05-23 - Milestone 14H Staging CP Redaction And GvG Smoke Complete
 
 - Milestone 14H staging validation completed.

@@ -4,7 +4,7 @@
 
 Milestone 12 documented production readiness only. The schema has been validated locally, but it has not been applied to production Supabase.
 
-Production migration order:
+Current local migration order:
 
 1. `20260514000100_core_schema.sql`
 2. `20260514000200_constraints_indexes.sql`
@@ -15,10 +15,51 @@ Production migration order:
 7. `20260515000100_member_guild_role_management.sql`
 8. `20260515000200_cp_rpc_hardening.sql`
 9. `20260515000300_audit_log_read_hardening.sql`
+10. `20260523000100_member_roster_status_system.sql`
+
+Migration `20260523000100_member_roster_status_system.sql` is implemented and locally validated for Milestone 15A. It has not been applied to production or staging in this checkpoint.
 
 Do not run `supabase db reset` or `supabase/tests/local_validation_anteiku.sql` against production.
 
 `supabase/config.toml` references missing `./seed.sql`; do not use `db push --include-seed` until that hazard is resolved. Core guild and permission seed data currently lives in migration `20260514000400_seed_core_data.sql`.
+
+## Milestone 15A Member Roster Status System
+
+Migration:
+- `supabase/migrations/20260523000100_member_roster_status_system.sql`
+
+Current roster status:
+- `guild_memberships.roster_status text not null default 'active'`.
+- Allowed values: `active`, `trial`, `inactive`, `on_break`, `suspended`, `left`, `kicked`, `pending_transfer`.
+- `roster_status` is separate from `profiles.approval_status`.
+- `roster_status` is separate from `guild_memberships.membership_status`, which remains the hard security/access state.
+
+Private history:
+- `member_status_history` stores `membership_id`, `profile_id`, `guild_id`, old/new status, private reason, changer, and timestamp.
+- Members do not directly read private status history/reasons.
+- Scoped staff can read status history through RLS.
+- There are no direct client write policies for history.
+
+Status-change RPC:
+- `public.update_member_roster_status(p_membership_id uuid, p_new_status text, p_reason text default null)`.
+- Owner can set all statuses globally, with last-active-Owner protection.
+- Leader/Vice can set scoped non-Owner statuses.
+- Admin with `manage_members` can set only `active`, `trial`, `inactive`, `on_break`, and `pending_transfer`.
+- Members cannot change roster status.
+
+Hard-block mapping:
+- `suspended` sets `membership_status = 'suspended'`.
+- `left` sets `membership_status = 'left'`.
+- `kicked` sets `membership_status = 'left'` because current `membership_status` has no `kicked` value and `rejected` remains reserved for registration/reapply.
+
+GvG behavior:
+- `inactive` and `on_break` keep active membership but are excluded from active GvG event visibility/voting.
+- `active`, `trial`, and `pending_transfer` remain GvG eligible.
+
+Audit:
+- Status changes write `member_roster_status_changed`.
+- Audit metadata includes old/new status, membership id, guild id, hard membership status old/new, and `reason_provided`.
+- Full private reason text is not stored in broadly visible audit metadata.
 
 ## Milestone 11A Audit Log Read Hardening
 
@@ -184,6 +225,7 @@ Planned columns:
 - `guild_id uuid not null references guilds(id)`
 - `role text not null`
 - `membership_status text not null default 'pending'`
+- `roster_status text not null default 'active'`
 - `is_primary boolean not null default true`
 - `assigned_by uuid null references profiles(id)`
 - `created_at timestamptz not null default now()`

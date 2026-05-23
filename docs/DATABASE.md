@@ -1,10 +1,10 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for the local Anteiku Guild Manager backend have been implemented and validated locally through Milestone 11A. They have not been applied to a production Supabase project yet.
+The Supabase schema/RLS/RPC migrations for the local Anteiku Guild Manager backend have been implemented and validated locally through Milestone 15A.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
-## Production Migration Order
+## Current Local Migration Order
 
 1. `20260514000100_core_schema.sql`
 2. `20260514000200_constraints_indexes.sql`
@@ -15,8 +15,39 @@ Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION
 7. `20260515000100_member_guild_role_management.sql`
 8. `20260515000200_cp_rpc_hardening.sql`
 9. `20260515000300_audit_log_read_hardening.sql`
+10. `20260523000100_member_roster_status_system.sql`
+
+Migration `20260523000100_member_roster_status_system.sql` is locally validated. It has not been applied to production or staging in this checkpoint.
 
 Do not run `supabase db reset` against production. Do not run `supabase/tests/local_validation_anteiku.sql` against production because it inserts fake auth users and local test data.
+
+## Milestone 15A Member Status Backend
+
+New migration:
+- `supabase/migrations/20260523000100_member_roster_status_system.sql`
+
+Adds:
+- `guild_memberships.roster_status`
+- `member_status_history`
+- `public.update_member_roster_status(p_membership_id uuid, p_new_status text, p_reason text default null)`
+- `member_roster_status_changed` audit log action
+
+Roster statuses:
+- `active`, `trial`, `inactive`, `on_break`, `suspended`, `left`, `kicked`, `pending_transfer`
+
+Security mapping:
+- `profiles.approval_status` remains the account/registration state.
+- `guild_memberships.membership_status` remains the hard access/security state.
+- `roster_status` is the lifecycle label.
+- `inactive` and `on_break` keep active membership but are excluded from GvG event visibility/voting.
+- `suspended` maps to `membership_status = 'suspended'`.
+- `left` maps to `membership_status = 'left'`.
+- `kicked` maps to `membership_status = 'left'`; `rejected` remains reserved for registration/reapply.
+
+History/privacy:
+- Members cannot directly read private status history/reasons.
+- Scoped staff can read `member_status_history`.
+- Status reasons are not placed in broadly visible audit metadata.
 
 ## Milestone 11A Audit Log Reader
 
@@ -39,7 +70,7 @@ Direct non-Owner table reads from `audit_logs` are restricted. Future audit UI m
 
 - `profiles`: one row per Supabase Auth user, with `id uuid primary key references auth.users(id)`.
 - `guilds`: core guilds and future subguilds.
-- `guild_memberships`: profile-to-guild membership, role, status, and primary membership.
+- `guild_memberships`: profile-to-guild membership, role, hard membership status, roster lifecycle status, and primary membership.
 - `permission_catalog`: approved Admin permission keys.
 - `admin_permissions`: explicit Admin permission grants.
 - `member_cp`: current CP values, protected from member reads.
@@ -47,6 +78,7 @@ Direct non-Owner table reads from `audit_logs` are restricted. Future audit UI m
 - `gvg_events`: guild-specific and global GvG events.
 - `gvg_votes`: one vote per user per event.
 - `audit_logs`: trusted record of sensitive/admin actions.
+- `member_status_history`: private staff-only status history/reasons.
 
 ## Key Decisions
 
@@ -90,9 +122,10 @@ Owner only can grant Admin CP permissions in v1.
 
 ## Local Validation Status
 
-Local Supabase validation passed with 29 PASS / 0 FAIL / 0 SKIP.
+Local Supabase validation passed through Milestone 15A.
 
 The validation confirmed that migrations apply locally, seed data exists, permission catalog rules are present, CP privacy is enforced by direct table denial and RPC checks, GvG vote integrity works, approval/reapply behavior is scoped, and audit spoofing is blocked.
+Milestone 15A added 22 PASS / 0 FAIL / 0 SKIP focused checks for roster status, history privacy, status-change permissions, last active Owner protection, and GvG eligibility.
 ## Milestone 7 Backend Additions
 
 New migration:
