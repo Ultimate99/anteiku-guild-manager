@@ -2,26 +2,27 @@
 
 ## Current Recommendation
 
-Milestone 14D staging Supabase + Vercel Preview planning is complete as a docs-only checkpoint.
+Milestone 14E staging Supabase migration/apply/verification is complete.
 
-Recorded staging/preview plan:
-- Create a fresh staging Supabase project later.
-- Apply the same 9 migrations as production.
-- Use separate staging URL, anon/publishable key, Auth users, Owner bootstrap, and test data.
-- Do not copy production data unless explicitly approved.
-- Keep Production Vercel env pointed only at production Supabase.
-- Configure Preview env later with staging Supabase only:
-  - `VITE_SUPABASE_URL`
-  - `VITE_SUPABASE_ANON_KEY`
-- Keep Preview env unconfigured until staging exists.
-- Never add service role keys, database credentials, `sb_secret_*`, JWT secrets, SMTP secrets, or OAuth/provider secrets to frontend/Vercel env.
-- Keep production Auth URLs production-only.
-- Put preview wildcard redirects only in staging Supabase if they are needed.
+Recorded staging status:
+- Staging Supabase project exists: `ckyihuxkioeibzpgwenc`.
+- Project name: `Anteiku Guild Manager Staging`.
+- Project URL: `https://ckyihuxkioeibzpgwenc.supabase.co`.
+- Same 9 migrations as production were applied.
+- Staging schema/RLS/seed verification passed.
+- Permission catalog count is 10 and exactly matches the seed migration.
+- No staging Owner or test users exist yet.
+- Production Supabase was not touched.
+- Vercel Preview env remains unconfigured.
+- No source or SQL files were changed.
+- `manage_permissions` is not seeded in the current migration set and remains a future/open permission question unless explicitly approved later.
 
-Recommended next milestone options:
-- Milestone 14E: create/link staging Supabase, run migration dry-run/apply, and verify schema/RLS/seed.
-- Milestone 14F: configure Vercel Preview env with staging Supabase only plus staging Auth URLs.
-- Milestone 14G: staging validation with controlled test users/data.
+Recommended next milestone:
+- Milestone 14F: staging Owner bootstrap planning.
+
+Later milestone options:
+- Configure Vercel Preview env with staging Supabase only after staging bootstrap planning is approved.
+- Run staging validation with controlled test users/data.
 - Controlled production test-member cleanup planning for `krsticmiroslav99+m13b21144225@gmail.com`, with no hard delete unless explicitly approved.
 - AdminPanel polish planning for sticky-under-header tab behavior and slightly tighter small-mobile tab spacing.
 - Future feature planning: reapply flow UI, suspended/left/rejected member management, weekly CP snapshot/growth report UI, or guild/subguild management UI.
@@ -62,7 +63,7 @@ Documented deferred items:
 Production note:
 - Controlled test member `krsticmiroslav99+m13b21144225@gmail.com` remains in production as an approved Member unless later cleanup/member management is explicitly approved.
 - Vercel GitHub App restriction is complete.
-- Preview deployments should have no Supabase env vars until a separate staging Supabase project exists.
+- Preview deployments should have no Supabase env vars until the approved Vercel Preview configuration milestone.
 - Never let Preview deployments mutate production by default.
 
 Historical next options at that checkpoint:

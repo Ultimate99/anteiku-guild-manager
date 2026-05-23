@@ -1,5 +1,33 @@
 # Project State
 
+## Milestone 14E Staging Supabase Migration And Verification Complete
+
+Milestone 14E is complete. Staging Supabase was created before this checkpoint, linked, migrated, and verified as a staging-only environment. No production Supabase project was touched, no Vercel env vars were changed, no deployment was performed, and no source or SQL files were changed.
+
+Staging Supabase:
+- Project ref: `ckyihuxkioeibzpgwenc`.
+- Project name: `Anteiku Guild Manager Staging`.
+- Project URL: `https://ckyihuxkioeibzpgwenc.supabase.co`.
+- Region: Central EU / Frankfurt.
+- Same 9 migrations as production were applied and verified.
+- Schema/RLS/seed verification passed.
+- Permission catalog count is 10 and exactly matches `20260514000400_seed_core_data.sql`.
+- Earlier "7 permissions" staging report was a partial summary mistake.
+- `manage_permissions` is not seeded in the current migration set and remains a future/open permission question unless explicitly approved later.
+- No staging Owner or test users have been created yet.
+
+Scope confirmation:
+- No production project was touched.
+- Production project ref `mzflfyxxkascrfpteexz` was not used for staging execution.
+- No Vercel Preview env vars were configured.
+- No deployment was performed.
+- No source code, SQL migrations, or new migrations were changed or created.
+- No Owner bootstrap was run.
+- No commit was made.
+
+Recommended next milestone:
+- Milestone 14F: staging Owner bootstrap planning.
+
 ## Milestone 14D Staging And Preview Planning Docs Complete
 
 Milestone 14D is complete as a documentation-only staging Supabase + Vercel Preview planning pass. No staging project was created, no Supabase CLI link or command was run, no Vercel env vars were changed, no deployment was performed, and no source or SQL files were changed.
@@ -34,10 +62,10 @@ Deferred production tests moved to staging:
 - Wrong-guild access.
 - Cleanup/archive experiments.
 
-Recommended future phases:
-- Milestone 14E: create/link staging Supabase, dry-run/apply migrations, verify schema/RLS/seed.
-- Milestone 14F: configure Vercel Preview env with staging Supabase only and staging Auth URLs.
-- Milestone 14G: staging validation with controlled test users/data.
+Recommended future phases at the time:
+- Milestone 14E: create/link staging Supabase, dry-run/apply migrations, verify schema/RLS/seed. Completed later.
+- Milestone 14F: staging Owner bootstrap planning.
+- Later: configure Vercel Preview env with staging Supabase only and staging Auth URLs after bootstrap planning is approved.
 
 ## Milestone 14C AdminPanel Tabs Complete In Production
 
@@ -629,7 +657,7 @@ Validated results:
 
 ## Current Milestone
 
-Milestone 14D staging Supabase + Vercel Preview planning is complete as a docs-only checkpoint.
+Milestone 14E staging Supabase migration/apply/verification is complete. Milestone 14F staging Owner bootstrap planning is recommended next.
 
 ## Current Status
 
@@ -643,7 +671,7 @@ Production hardening policy now documents Vercel GitHub App restriction, control
 
 Milestone 14C reorganized AdminPanel into mobile-friendly tabs and section components. The refactor is frontend-only and behavior-preserving; CP, Audit Logs, and GvG management sections lazy-load when their tabs are opened. Production rollout validation passed after the Vercel deployment.
 
-Milestone 14D records the staging/preview plan for future non-production validation. Staging has not been created yet; Vercel Preview env remains unchanged.
+Milestone 14D recorded the staging/preview plan for future non-production validation. Milestone 14E has since created/linked the staging Supabase project, applied the same 9 migrations as production, and verified staging schema/RLS/seed. Staging has no Owner or test users yet; Vercel Preview env remains unchanged.
 
 ## Implemented
 

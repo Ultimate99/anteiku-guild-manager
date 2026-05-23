@@ -12,9 +12,10 @@
 - Milestone 14A documented production hardening and cleanup policy only; no production changes were performed.
 - Milestone 14B recorded user-confirmed Vercel GitHub App restriction to only `Ultimate99/anteiku-guild-manager`.
 - Vercel project remains connected to `Ultimate99/anteiku-guild-manager` on `main`.
-- Preview deployments should have no Supabase env vars until a separate staging Supabase project exists.
-- Future staging must use a separate Supabase project, not production.
-- Milestone 14D documents the future staging/preview plan, but staging has not been created yet.
+- Preview deployments should not be configured until the approved staging/Vercel Preview step.
+- Staging uses a separate Supabase project, not production.
+- Milestone 14E staging migration/apply/verification is complete for project `ckyihuxkioeibzpgwenc` / `Anteiku Guild Manager Staging`.
+- Staging has no Owner or test users yet.
 - Vercel Preview env has not been configured for staging yet.
 
 ## Production Safety Hazards
@@ -30,6 +31,7 @@
 - Do not add preview wildcard redirects to production Supabase. If preview wildcards are needed, use staging Supabase.
 - Do not use `db push --include-seed` for staging or production until the missing `supabase/seed.sql` hazard is intentionally resolved.
 - Do not run Owner bootstrap against the wrong project; staging and production Owner bootstrap actions must be separately reviewed.
+- `manage_permissions` is not seeded in the current permission catalog migration. Treat it as a future/open permission question, not a Milestone 14E blocker, unless explicitly approved later.
 
 ## Product Gaps
 

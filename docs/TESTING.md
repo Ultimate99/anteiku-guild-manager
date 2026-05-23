@@ -1,10 +1,37 @@
 # Testing
 
+## Milestone 14E Staging Supabase Verification
+
+Milestone 14E is complete for staging Supabase migration/apply/verification.
+
+Staging project:
+- Project ref: `ckyihuxkioeibzpgwenc`.
+- Project name: `Anteiku Guild Manager Staging`.
+- Project URL: `https://ckyihuxkioeibzpgwenc.supabase.co`.
+
+Verified:
+- Same 9 migrations as production were applied to staging.
+- Migration history matched after apply.
+- Schema/RLS/seed verification passed.
+- Permission catalog count is 10.
+- Permission catalog exactly matches `20260514000400_seed_core_data.sql`.
+- Earlier "7 permissions" report was a partial summary mistake.
+- `manage_permissions` is not seeded in the current migration set and remains a future/open permission question unless explicitly approved later.
+
+Not done yet:
+- No staging Owner exists.
+- No staging test users exist.
+- Vercel Preview env is not configured.
+- No staging browser validation with controlled users has been run.
+
+Recommended next test planning:
+- Milestone 14F: staging Owner bootstrap planning.
+
 ## Milestone 14D Staging And Preview Test Plan
 
-Milestone 14D is documentation-only. No staging Supabase project was created, no Supabase commands were run, no Vercel env vars were changed, no deployment was performed, and no source or SQL files were edited.
+Milestone 14D was documentation-only. No staging Supabase project was created during 14D, no Supabase commands were run, no Vercel env vars were changed, no deployment was performed, and no source or SQL files were edited.
 
-Future staging validation should use a fresh staging Supabase project with the same 9 migrations as production and separate Auth users/test data.
+Milestone 14E later created/linked staging and applied/verified the same 9 migrations as production. Future staging browser validation should use separate Auth users/test data.
 
 Required staging-only test users:
 - Owner.

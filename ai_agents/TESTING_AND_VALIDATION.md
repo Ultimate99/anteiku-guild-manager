@@ -1,5 +1,34 @@
 # Testing And Validation
 
+## Milestone 14E Staging Supabase Verification Passed
+
+Milestone 14E staging Supabase migration/apply/verification is complete.
+
+Staging project:
+- Project ref: `ckyihuxkioeibzpgwenc`.
+- Project name: `Anteiku Guild Manager Staging`.
+- Project URL: `https://ckyihuxkioeibzpgwenc.supabase.co`.
+
+Validation completed:
+- Same 9 migrations as production were applied to staging.
+- Migration history matched after apply.
+- Core schema/RLS/policies/RPCs/private helpers/grants/indexes/constraints were verified.
+- Core guild seed data exists.
+- Permission catalog count is 10.
+- Permission catalog exactly matches `20260514000400_seed_core_data.sql`.
+- Earlier "7 permissions" report was a partial summary mistake.
+- `manage_permissions` is not seeded in the current migration set and remains a future/open permission question unless explicitly approved later.
+
+Scope confirmation:
+- No production project was touched.
+- No Vercel env vars were changed.
+- No deployment was performed.
+- No source files or SQL migrations were changed.
+- No staging Owner or test users were created.
+
+Recommended next validation planning:
+- Milestone 14F: staging Owner bootstrap planning.
+
 ## Milestone 14D Staging And Preview Planning Docs
 
 Milestone 14D is documentation-only.

@@ -164,24 +164,28 @@ Preview deployments can accidentally touch production if they inherit production
 Recommended policy:
 
 - Production Vercel env points to production Supabase.
-- Preview Vercel env is left unconfigured until staging exists.
-- Future staging Vercel env points to a separate staging Supabase project, never production.
+- Preview Vercel env remains unconfigured until the approved Vercel Preview milestone.
+- Future staging Vercel env points to the separate staging Supabase project, never production.
 - Do not allow preview branches to mutate production data by default.
 - Avoid broad Supabase redirect wildcards for preview URLs against production.
 - Require explicit approval for any temporary production-connected preview validation.
 
 ## Future Staging Supabase And Preview Setup
 
-Milestone 14D records this as a plan only. No staging project exists yet, and no Vercel Preview env vars were changed during the planning checkpoint.
+Milestone 14E completed staging Supabase migration/apply/verification. No Vercel Preview env vars were changed, no deployment was performed, and no staging Owner or test users have been created yet.
 
 Staging architecture:
 
-- Create a fresh Supabase project for staging.
-- Apply the same 9 migrations as production.
+- Staging Supabase project: `ckyihuxkioeibzpgwenc`.
+- Project name: `Anteiku Guild Manager Staging`.
+- Project URL: `https://ckyihuxkioeibzpgwenc.supabase.co`.
+- Same 9 migrations as production are applied and verified.
 - Keep staging separate from production for URL, anon/publishable key, Auth users, Owner bootstrap, and test data.
 - Allow fake/test data only in staging.
 - Do not copy production data into staging unless explicitly approved.
 - Do not use `db push --include-seed`; this repo has no `supabase/seed.sql`, and core seed data comes from migration `20260514000400_seed_core_data.sql`.
+- Permission catalog count is 10 and exactly matches the seed migration.
+- `manage_permissions` is not seeded in the current migration set and remains a future/open permission question unless explicitly approved later.
 
 Preview env variables, once staging exists:
 
@@ -211,9 +215,10 @@ Auth URL strategy:
 
 Future implementation split:
 
-- Milestone 14E: create/link staging Supabase, run migration dry-run/apply, verify schema/RLS/seed.
-- Milestone 14F: configure Vercel Preview env with staging Supabase only and configure staging Auth URLs.
-- Milestone 14G: run staging validation with controlled test users/data.
+- Milestone 14E: create/link staging Supabase, run migration dry-run/apply, verify schema/RLS/seed. Complete.
+- Milestone 14F: staging Owner bootstrap planning.
+- Later: configure Vercel Preview env with staging Supabase only and configure staging Auth URLs after bootstrap planning is approved.
+- Later: run staging validation with controlled test users/data.
 
 ## Post-Deployment Validation
 
