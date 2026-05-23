@@ -16,7 +16,9 @@
 - Staging uses a separate Supabase project, not production.
 - Milestone 14E staging migration/apply/verification is complete for project `ckyihuxkioeibzpgwenc` / `Anteiku Guild Manager Staging`.
 - Milestone 14F staging Owner bootstrap is complete and verified.
-- Staging has no controlled test users yet.
+- Milestone 14G controlled staging test users and permission matrix setup is complete.
+- Milestone 14H staging CP audit redaction and GvG full-smoke validation is complete.
+- Staging test data remains intentionally; do not cleanup/delete it unless separately approved.
 - Vercel Preview env has not been configured for staging yet.
 
 ## Production Safety Hazards
@@ -33,6 +35,7 @@
 - Do not use `db push --include-seed` for staging or production until the missing `supabase/seed.sql` hazard is intentionally resolved.
 - Do not run Owner bootstrap against the wrong project; staging and production Owner bootstrap actions must be separately reviewed.
 - Do not rerun staging Owner bootstrap unless a recovery plan is explicitly approved; staging already has exactly one active Owner.
+- Literal DevTools request capture was unavailable during 14H browser automation; source-path inspection confirmed approved RPC usage. Treat this as a recorded caveat, not a 14H blocker.
 - `manage_permissions` is not seeded in the current permission catalog migration. Treat it as a future/open permission question, not a Milestone 14E blocker, unless explicitly approved later.
 
 ## Product Gaps

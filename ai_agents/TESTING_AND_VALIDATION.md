@@ -1,5 +1,60 @@
 # Testing And Validation
 
+## Milestone 14H Staging CP Redaction And GvG Smoke Validation Passed
+
+Milestone 14H is complete.
+
+Staging target:
+- Project ref: `ckyihuxkioeibzpgwenc`.
+- Project name: `Anteiku Guild Manager Staging`.
+
+Browser validation passed:
+- Owner updated `staging_member` CP to `1234567` through the CP UI.
+- `staging_audit_nocp` could access Audit Logs.
+- `staging_audit_nocp` saw `Sensitive CP metadata hidden.` for the CP-sensitive audit row.
+- `staging_audit_nocp` did not see CP value, `cp_old`, or `cp_new`.
+- `staging_audit_cp` could access Audit Logs.
+- `staging_audit_cp` saw backend-returned CP metadata: `New CP 1,234,567`.
+- Owner created and opened GvG event `M14H Staging GvG Smoke` for Anteiku.
+- `staging_member` voted Present, switched to Absent with reason, then switched back to Present.
+- Owner closed the event.
+- `staging_wrongguild` could not see or vote on the Anteiku-scoped event.
+- `staging_admin_noperms` did not see restricted admin tools.
+- `staging_pending` was locked to the Pending page.
+
+Read-only SQL verification passed:
+- `staging_member` CP row exists with `cp_value = 1234567`.
+- CP audit log row exists with `member_cp_updated` metadata.
+- GvG event exists and is closed.
+- Exactly one `gvg_votes` row exists for `staging_member` and the event.
+- Final vote status is `present`.
+- Final absence reason is `null`.
+- `staging_wrongguild` remains active in `anteiku-rose`.
+- Permission matrix remains expected.
+- Active Owner count remains `1`.
+
+Deferred production tests now covered in staging:
+- Full GvG smoke test.
+- CP audit redaction browser scenario.
+- Permission denial flows.
+- Wrong-guild access.
+- Pending-user lockout.
+
+Network validation caveat:
+- Literal DevTools request capture was not available through browser automation.
+- Source-path inspection confirmed Audit uses `get_audit_logs`.
+- Source-path inspection confirmed CP uses `get_current_cp_roster`, `get_cp_leaderboard`, and `update_member_cp`.
+- Source-path inspection confirmed GvG writes use approved RPCs, with the own-vote `gvg_votes` read expected and safe.
+- This caveat is non-blocking for Milestone 14H completion.
+
+Scope confirmation:
+- Production was not touched.
+- Vercel Preview was not configured.
+- No deployment was performed.
+- No source files or SQL migrations were changed.
+- Test data remains in staging intentionally.
+- `.env.local` was restored to local Supabase settings after validation.
+
 ## Milestone 14F Staging Owner Bootstrap Verification Passed
 
 Milestone 14F staging Owner bootstrap is complete.
@@ -25,7 +80,7 @@ Scope confirmation:
 - No Vercel env vars were changed.
 - No deployment was performed.
 - No source files or SQL migrations were changed.
-- No controlled staging test users were created.
+- No controlled staging test users were created during 14F; they were created later in Milestone 14G.
 
 Recommended next validation planning:
 - Milestone 14G: staging controlled test users plus permission matrix setup planning/execution.

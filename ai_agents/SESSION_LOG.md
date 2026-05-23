@@ -1,5 +1,29 @@
 # Session Log
 
+## 2026-05-23 - Milestone 14H Staging CP Redaction And GvG Smoke Complete
+
+- Milestone 14H staging validation completed.
+- Staging project: `ckyihuxkioeibzpgwenc` / `Anteiku Guild Manager Staging`.
+- Owner updated `staging_member` CP to `1234567` through the CP UI.
+- `staging_audit_nocp` saw `Sensitive CP metadata hidden.` and did not see CP value, `cp_old`, or `cp_new`.
+- `staging_audit_cp` saw backend-returned CP metadata: `New CP 1,234,567`.
+- Owner created and opened GvG event `M14H Staging GvG Smoke`.
+- `staging_member` voted Present, switched Absent with reason, then switched back Present.
+- Owner closed the GvG event.
+- Read-only SQL confirmed exactly one `gvg_votes` row for `staging_member` and the event, final status `present`, and `absence_reason = null`.
+- `staging_wrongguild` could not see or vote on the Anteiku event.
+- `staging_admin_noperms` did not see restricted admin tools.
+- `staging_pending` was locked to the Pending page.
+- Active Owner count remained `1`.
+- Deferred production GvG smoke and CP audit redaction scenarios are now covered in staging.
+- Literal DevTools request capture was unavailable through browser automation; source-path inspection confirmed approved RPC usage. This caveat is non-blocking.
+- Test data remains in staging intentionally.
+- No production Supabase project was touched.
+- No Vercel env vars were changed.
+- No source files, SQL migrations, new migrations, deployment, cleanup/delete, or commit were included.
+- `.env.local` was restored to local Supabase settings after validation.
+- Recommended next milestone: Vercel Preview env configuration with staging Supabase, or Member Status System planning.
+
 ## 2026-05-23 - Milestone 14F Staging Owner Bootstrap Complete
 
 - Milestone 14F staging Owner bootstrap completed and was verified.
@@ -12,7 +36,7 @@
 - Owner membership role is `owner`, status is `active`, and `is_primary = true`.
 - `active_owner_count = 1`.
 - `owner_bootstrapped` audit log count is `1`.
-- No controlled staging test users were created.
+- No controlled staging test users were created during 14F.
 - No production Supabase project was touched.
 - No Vercel env vars were changed.
 - No source files, SQL migrations, new migrations, deployment, or commit were included.
@@ -122,8 +146,8 @@
 - Documented controlled test member policy: keep documented for now, do not hard-delete, preserve validation/audit history, and require explicit approval for cleanup.
 - Documented Preview/Staging policy: Production env only on Production deployments, Preview env unconfigured until staging exists, staging Supabase separate from production, and no broad preview redirect wildcards against production.
 - Recorded deferred production smoke tests:
-  - GvG production smoke remains deferred to avoid persistent production GvG test data.
-  - CP redaction browser scenario remains deferred due missing production staff/data combination.
+  - GvG production smoke was deferred to avoid persistent production GvG test data. Milestone 14H later covered full GvG smoke in staging.
+  - CP redaction browser scenario was deferred due to missing production staff/data combination. Milestone 14H later covered the browser scenario in staging.
 - Added launch operations guidance for before inviting real members, approvals, audit log monitoring, CP update safety, GvG event safety, admin permission safety, and production SQL safety.
 - No production commands were run.
 - No source logic, React files, SQL migrations, Supabase schema/RLS/RPC, Vercel settings, GitHub App settings, user cleanup action, deployment, commit, CP logic, GvG logic, audit logic, role/guild management logic, or permission checkbox logic was changed.

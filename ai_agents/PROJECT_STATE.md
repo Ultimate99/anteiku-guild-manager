@@ -1,5 +1,55 @@
 # Project State
 
+## Milestone 14H Staging CP Redaction And GvG Smoke Validation Complete
+
+Milestone 14H is complete. Staging browser validation and read-only SQL verification passed for CP audit redaction, CP metadata visibility, full GvG smoke, permission denial checks, wrong-guild denial, and pending-user lockout.
+
+Staging validation target:
+- Project ref: `ckyihuxkioeibzpgwenc`.
+- Project name: `Anteiku Guild Manager Staging`.
+- Production project ref `mzflfyxxkascrfpteexz` was not touched.
+
+Validated:
+- Owner updated `staging_member` CP to `1234567` through the CP UI.
+- `staging_audit_nocp` could access Audit Logs and saw `Sensitive CP metadata hidden.`.
+- `staging_audit_nocp` did not see CP value, `cp_old`, or `cp_new`.
+- `staging_audit_cp` could access Audit Logs and saw backend-returned CP metadata: `New CP 1,234,567`.
+- Owner created and opened GvG event `M14H Staging GvG Smoke`.
+- `staging_member` voted Present, switched to Absent with reason, then switched back to Present.
+- Owner closed the event.
+- Read-only SQL confirmed exactly one `gvg_votes` row for `staging_member` and the event, final vote status `present`, and `absence_reason = null`.
+- `staging_wrongguild` could not see or vote on the Anteiku-scoped event.
+- `staging_admin_noperms` did not see restricted admin tools.
+- `staging_pending` was locked to the Pending page.
+- Active Owner count remained `1`.
+
+Deferred production tests now covered in staging:
+- Full GvG smoke test.
+- CP audit redaction browser scenario.
+- Permission denial flows.
+- Wrong-guild access.
+- Pending-user lockout.
+
+Network validation caveat:
+- Literal DevTools request capture was not available through the browser automation surface.
+- Source-path inspection confirmed Audit uses `get_audit_logs`.
+- Source-path inspection confirmed CP uses `get_current_cp_roster`, `get_cp_leaderboard`, and `update_member_cp`.
+- Source-path inspection confirmed GvG writes use approved RPCs, with the own-vote `gvg_votes` read expected and safe.
+- This caveat is recorded as non-blocking for Milestone 14H completion.
+
+Scope confirmation:
+- Test data remains in staging intentionally.
+- No staging cleanup/delete was performed.
+- No production Supabase project was touched.
+- No Vercel Preview env vars were configured.
+- No deployment was performed.
+- No source code, SQL migrations, or new migrations were changed or created.
+- `.env.local` was restored to local Supabase settings after validation.
+- No commit was made during this docs checkpoint.
+
+Recommended next milestone:
+- Vercel Preview env configuration with staging Supabase, or Member Status System planning.
+
 ## Milestone 14F Staging Owner Bootstrap Complete
 
 Milestone 14F is complete. The staging Owner was created manually in staging Auth before execution, bootstrapped using the manual Owner bootstrap template pattern, and verified in staging. No production Supabase project was touched, no Vercel env vars were changed, no deployment was performed, and no source or SQL files were changed.
@@ -25,7 +75,7 @@ Scope confirmation:
 - No Vercel Preview env vars were configured.
 - No deployment was performed.
 - No source code, SQL migrations, or new migrations were changed or created.
-- No controlled staging test users have been created yet.
+- No controlled staging test users had been created at the 14F checkpoint; they were created later in Milestone 14G.
 - No commit was made during execution.
 
 Recommended next milestone:
@@ -207,8 +257,8 @@ Completed:
   - Future staging Supabase must be separate from production.
   - Preview deployments must not mutate production by default.
 - Recorded deferred production smoke tests:
-  - GvG production smoke remains deferred to avoid persistent production GvG test data.
-  - CP redaction browser scenario remains deferred due missing production staff/data combination.
+  - GvG production smoke was deferred to avoid persistent production GvG test data. Milestone 14H later covered full GvG smoke in staging.
+  - CP redaction browser scenario was deferred due to missing production staff/data combination. Milestone 14H later covered the browser scenario in staging.
 - Added launch operations guidance for approvals, audit monitoring, CP updates, GvG events, admin permissions, and production SQL safety.
 
 Scope confirmation:
@@ -688,7 +738,7 @@ Validated results:
 
 ## Current Milestone
 
-Milestone 14F staging Owner bootstrap is complete. Milestone 14G staging controlled test users plus permission matrix setup planning/execution is recommended next.
+Milestone 14H staging CP audit redaction and GvG full-smoke validation is complete. Recommended next milestone options are Vercel Preview env configuration with staging Supabase or Member Status System planning.
 
 Future CP-focused milestone candidate recorded: CP Update Window / Member CP Self-Submit. Corrected CP privacy rule going forward: members can see their own CP through safe backend/RPC flow, but must not see other members' CP, CP roster, CP leaderboard, CP snapshots, or other members' CP history. Members must not directly select or update `member_cp` and must not directly read `cp_snapshots`.
 
@@ -704,7 +754,7 @@ Production hardening policy now documents Vercel GitHub App restriction, control
 
 Milestone 14C reorganized AdminPanel into mobile-friendly tabs and section components. The refactor is frontend-only and behavior-preserving; CP, Audit Logs, and GvG management sections lazy-load when their tabs are opened. Production rollout validation passed after the Vercel deployment.
 
-Milestone 14D recorded the staging/preview plan for future non-production validation. Milestone 14E created/linked the staging Supabase project, applied the same 9 migrations as production, and verified staging schema/RLS/seed. Milestone 14F bootstrapped and verified the staging Owner. Staging has no controlled test users yet; Vercel Preview env remains unchanged.
+Milestone 14D recorded the staging/preview plan for future non-production validation. Milestone 14E created/linked the staging Supabase project, applied the same 9 migrations as production, and verified staging schema/RLS/seed. Milestone 14F bootstrapped and verified the staging Owner. Milestone 14G created and verified controlled staging users and permissions. Milestone 14H validated CP audit redaction and GvG smoke in staging. Vercel Preview env remains unchanged.
 
 ## Implemented
 

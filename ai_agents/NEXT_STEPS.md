@@ -2,7 +2,7 @@
 
 ## Current Recommendation
 
-Milestone 14F staging Owner bootstrap is complete.
+Milestone 14H staging CP audit redaction and GvG full-smoke validation is complete.
 
 Recorded staging status:
 - Staging Supabase project exists: `ckyihuxkioeibzpgwenc`.
@@ -21,18 +21,25 @@ Recorded staging status:
   - Primary membership: `true`.
   - `active_owner_count = 1`.
   - `owner_bootstrapped` audit log count: `1`.
-- No controlled staging test users exist yet.
+- Controlled staging test users exist and were verified in Milestone 14G:
+  - `staging_member`
+  - `staging_pending`
+  - `staging_wrongguild`
+  - `staging_audit_nocp`
+  - `staging_audit_cp`
+  - `staging_admin_noperms`
+- Milestone 14H validation passed for CP audit redaction, CP metadata visibility, full GvG smoke, permission denial checks, wrong-guild denial, and pending lockout.
+- Test data remains in staging intentionally.
 - Production Supabase was not touched.
 - Vercel Preview env remains unconfigured.
 - No source or SQL files were changed.
 - `manage_permissions` is not seeded in the current migration set and remains a future/open permission question unless explicitly approved later.
 
 Recommended next milestone:
-- Milestone 14G: staging controlled test users plus permission matrix setup planning/execution.
+- Vercel Preview env configuration with staging Supabase, or Member Status System planning.
 
 Later milestone options:
 - Configure Vercel Preview env with staging Supabase only after staging bootstrap planning is approved.
-- Run staging validation with controlled test users/data.
 - Future CP-focused milestone: CP Update Window / Member CP Self-Submit.
 - Controlled production test-member cleanup planning for `krsticmiroslav99+m13b21144225@gmail.com`, with no hard delete unless explicitly approved.
 - AdminPanel polish planning for sticky-under-header tab behavior and slightly tighter small-mobile tab spacing.

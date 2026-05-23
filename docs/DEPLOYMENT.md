@@ -172,7 +172,7 @@ Recommended policy:
 
 ## Future Staging Supabase And Preview Setup
 
-Milestone 14E completed staging Supabase migration/apply/verification. Milestone 14F completed and verified staging Owner bootstrap. No Vercel Preview env vars were changed, no deployment was performed, and no controlled staging test users have been created yet.
+Milestone 14E completed staging Supabase migration/apply/verification. Milestone 14F completed and verified staging Owner bootstrap. Milestone 14G completed controlled staging test-user and permission matrix setup. Milestone 14H completed staging CP audit redaction and GvG full-smoke validation. No Vercel Preview env vars were changed and no deployment was performed.
 
 Staging architecture:
 
@@ -231,9 +231,9 @@ Future implementation split:
 
 - Milestone 14E: create/link staging Supabase, run migration dry-run/apply, verify schema/RLS/seed. Complete.
 - Milestone 14F: staging Owner bootstrap. Complete.
-- Milestone 14G: staging controlled test users plus permission matrix setup planning/execution.
-- Later: configure Vercel Preview env with staging Supabase only and configure staging Auth URLs after bootstrap planning is approved.
-- Later: run staging validation with controlled test users/data.
+- Milestone 14G: staging controlled test users plus permission matrix setup planning/execution. Complete.
+- Milestone 14H: staging CP audit redaction and GvG full-smoke validation. Complete.
+- Later: configure Vercel Preview env with staging Supabase only and configure staging Auth URLs.
 
 ## Post-Deployment Validation
 
@@ -272,7 +272,7 @@ Controlled production test member:
 
 Deferred / intentionally not tested in production:
 
-- GvG production smoke was not tested to avoid persistent production GvG test data because no cleanup/delete flow is in scope. Milestone 10 local live-browser validation covered GvG one-row vote switching.
-- CP redaction browser test was not tested because no production staff/data combination exists for `view_audit_logs` without `view_cp` plus fresh CP-sensitive audit metadata. Milestone 11A backend validation covered SQL-side CP metadata redaction.
+- GvG production smoke was not tested to avoid persistent production GvG test data because no cleanup/delete flow is in scope. Milestone 10 local live-browser validation covered GvG one-row vote switching, and Milestone 14H now covers full GvG smoke in staging.
+- CP redaction browser test was not tested in production because no production staff/data combination exists for `view_audit_logs` without `view_cp` plus fresh CP-sensitive audit metadata. Milestone 11A backend validation covered SQL-side CP metadata redaction, and Milestone 14H now covers the browser scenario in staging.
 
 Use [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) as the launch checklist.

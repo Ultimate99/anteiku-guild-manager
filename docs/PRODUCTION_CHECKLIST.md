@@ -17,7 +17,8 @@ Current production checkpoint:
 - Milestone 14C AdminPanel tabs refactor is complete in production.
 - Milestone 14E staging Supabase migration/apply/verification is complete for `ckyihuxkioeibzpgwenc`.
 - Milestone 14F staging Owner bootstrap is complete and verified.
-- Staging has no controlled test users yet.
+- Milestone 14G controlled staging test users and permission matrix setup is complete.
+- Milestone 14H staging CP audit redaction and GvG full-smoke validation is complete.
 - Vercel Preview env has not been configured for staging yet.
 
 ## Milestone 14A Production Hardening Policy
@@ -103,8 +104,8 @@ Milestone 14E is complete.
 - [x] No production project was touched.
 - [x] No Vercel env vars were changed.
 - [x] No source or SQL files were changed.
-- [ ] Staging Owner has not been bootstrapped yet.
-- [ ] Staging test users have not been created yet.
+- [x] Staging Owner was not bootstrapped during 14E; it was bootstrapped later in 14F.
+- [x] Staging test users were not created during 14E; they were created later in 14G.
 
 Recommended next milestone:
 
@@ -128,7 +129,7 @@ Milestone 14F is complete.
 - [x] Production project was not touched.
 - [x] Vercel env vars were not changed.
 - [x] Source and SQL files were not changed.
-- [ ] Controlled staging test users have not been created yet.
+- [x] Controlled staging test users were created later in 14G.
 - [ ] Vercel Preview env has not been configured yet.
 
 Staging Owner record:
@@ -143,6 +144,42 @@ Recommended next milestone:
 
 - Milestone 14G: staging controlled test users plus permission matrix setup planning/execution.
 
+## Milestone 14H Staging Validation
+
+Milestone 14H is complete.
+
+- [x] CP audit redaction browser scenario passed in staging.
+- [x] `staging_audit_nocp` saw `Sensitive CP metadata hidden.`.
+- [x] `staging_audit_nocp` did not see CP value, `cp_old`, or `cp_new`.
+- [x] `staging_audit_cp` saw backend-returned CP metadata: `New CP 1,234,567`.
+- [x] Full GvG smoke test passed in staging.
+- [x] `staging_member` voted Present, switched Absent with reason, then switched back Present.
+- [x] SQL confirmed exactly one `gvg_votes` row with final status `present` and `absence_reason = null`.
+- [x] Wrong-guild access denial passed.
+- [x] Permission denial checks passed.
+- [x] Pending-user lockout passed.
+- [x] Active Owner count remained `1`.
+- [x] Production project was not touched.
+- [x] Vercel env vars were not changed.
+- [x] Source and SQL files were not changed.
+- [x] Staging test data remains intentionally.
+
+Network caveat:
+
+- Literal DevTools request capture was unavailable through browser automation.
+- Source-path inspection confirmed Audit uses `get_audit_logs`.
+- Source-path inspection confirmed CP uses `get_current_cp_roster`, `get_cp_leaderboard`, and `update_member_cp`.
+- Source-path inspection confirmed GvG writes use approved RPCs, with the own-vote `gvg_votes` read expected and safe.
+- This caveat is non-blocking for Milestone 14H completion.
+
+Deferred production tests now covered in staging:
+
+- [x] Full GvG smoke test.
+- [x] CP audit redaction browser scenario.
+- [x] Permission denial flows.
+- [x] Wrong-guild access.
+- [x] Pending-user lockout.
+
 ## Milestone 14D Staging Supabase And Vercel Preview Plan
 
 Milestone 14D was documentation-only. No staging project was created, no Supabase commands were run, no Vercel env vars were changed, and no deployment was performed during that checkpoint. Milestone 14E later created/linked staging and applied/verified migrations.
@@ -151,13 +188,13 @@ Staging Supabase architecture:
 
 - [x] Create a fresh staging Supabase project only after explicit approval.
 - [x] Apply the same 9 migrations as production.
-- [ ] Use a separate staging Supabase URL.
-- [ ] Use a separate staging anon/publishable key.
-- [ ] Use separate staging Auth users.
+- [x] Use a separate staging Supabase URL.
+- [x] Use a separate staging anon/publishable key.
+- [x] Use separate staging Auth users.
 - [x] Bootstrap a separate staging Owner.
-- [ ] Allow fake/test users and data only in staging.
-- [ ] Do not copy production data to staging unless explicitly approved.
-- [ ] Do not use `db push --include-seed`; core seed data is in migration `20260514000400_seed_core_data.sql`.
+- [x] Allow fake/test users and data only in staging.
+- [x] Do not copy production data to staging unless explicitly approved.
+- [x] Do not use `db push --include-seed`; core seed data is in migration `20260514000400_seed_core_data.sql`.
 
 Vercel Preview env policy:
 
@@ -180,39 +217,39 @@ Auth URL strategy:
 
 Future staging test users:
 
-- [ ] Owner.
-- [ ] Approved Member.
-- [ ] Admin with `view_audit_logs` but without `view_cp`.
-- [ ] Admin with both `view_audit_logs` and `view_cp`.
-- [ ] Wrong-guild Member.
-- [ ] Pending user.
+- [x] Owner.
+- [x] Approved Member.
+- [x] Admin with `view_audit_logs` but without `view_cp`.
+- [x] Admin with both `view_audit_logs` and `view_cp`.
+- [x] Wrong-guild Member.
+- [x] Pending user.
 
 Future staging validation targets:
 
-- [ ] Full GvG smoke test.
-- [ ] CP audit redaction browser scenario.
-- [ ] Permission denial flows.
-- [ ] Wrong-guild access.
+- [x] Full GvG smoke test.
+- [x] CP audit redaction browser scenario.
+- [x] Permission denial flows.
+- [x] Wrong-guild access.
 - [ ] Cleanup/archive experiments.
 
 Recommended future phases:
 
 - Milestone 14E: create/link staging Supabase, dry-run/apply migrations, verify schema/RLS/seed. Complete.
 - Milestone 14F: bootstrap and verify staging Owner. Complete.
-- Milestone 14G: staging controlled test users plus permission matrix setup planning/execution.
-- Milestone 14G: staging validation with controlled test users/data.
+- Milestone 14G: staging controlled test users plus permission matrix setup planning/execution. Complete.
+- Milestone 14H: staging CP audit redaction and GvG full-smoke validation. Complete.
 
 ## Deferred Production Smoke Tests
 
 Deferred by design:
 
-- GvG production smoke was intentionally not tested to avoid persistent production GvG test data because no cleanup/delete flow is in scope.
-- CP redaction browser scenario was intentionally not tested because the needed production staff/data combination does not currently exist.
+- GvG production smoke was intentionally not tested to avoid persistent production GvG test data because no cleanup/delete flow is in scope. Milestone 14H now covers the full GvG smoke in staging.
+- CP redaction browser scenario was intentionally not tested in production because the needed production staff/data combination does not currently exist. Milestone 14H now covers the browser scenario in staging.
 
 Preferred future strategy:
 
-- Test GvG event/vote flows in a staging Supabase project first.
-- Test CP audit redaction in staging with a controlled staff user that has `view_audit_logs` but not `view_cp`, plus a controlled CP-sensitive audit entry.
+- Keep future GvG event/vote experiments in staging unless production execution is explicitly approved.
+- Keep future CP audit redaction experiments in staging unless production execution is explicitly approved.
 - Run production GvG or CP-redaction tests only after explicit approval and a cleanup/data-retention plan.
 
 ## Production Supabase Setup

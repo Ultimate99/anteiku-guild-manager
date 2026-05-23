@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-05-23 - Milestone 14H Staging CP Redaction And GvG Smoke Complete
+
+- Completed staging CP audit redaction browser validation.
+- Completed staging CP metadata visibility validation for a scoped `view_cp` user.
+- Completed staging GvG full smoke validation.
+- Completed staging permission denial, wrong-guild denial, and pending lockout checks.
+- Owner updated `staging_member` CP to `1234567` through the CP UI.
+- `staging_audit_nocp` saw `Sensitive CP metadata hidden.` and did not see CP value, `cp_old`, or `cp_new`.
+- `staging_audit_cp` saw backend-returned CP metadata: `New CP 1,234,567`.
+- Owner created and opened GvG event `M14H Staging GvG Smoke`.
+- `staging_member` voted Present, switched Absent with reason, then switched back Present.
+- Owner closed the GvG event.
+- Read-only SQL confirmed exactly one `gvg_votes` row with final status `present` and `absence_reason = null`.
+- `staging_wrongguild` could not see or vote on the Anteiku event.
+- `staging_admin_noperms` did not see restricted admin tools.
+- `staging_pending` was locked to the Pending page.
+- Active Owner count remained `1`.
+- Deferred production GvG smoke and CP audit redaction browser scenarios are now covered in staging.
+- Recorded network caveat: literal DevTools request capture was unavailable through browser automation, but source-path inspection confirmed approved RPC usage. This is not a 14H blocker.
+- Test data remains in staging intentionally.
+- No production Supabase project was touched, no Vercel env vars were changed, no deployment was performed, and no source or SQL files were changed.
+
 ## 2026-05-23 - Future CP Update Window / Member CP Self-Submit Roadmap Note
 
 - Recorded future CP-focused milestone candidate: CP Update Window / Member CP Self-Submit.
@@ -19,7 +41,7 @@
 - Verified Owner membership in `Anteiku` with role `owner`, status `active`, and primary membership `true`.
 - Verified `active_owner_count = 1`.
 - Verified `owner_bootstrapped` audit log count is `1`.
-- Recorded that no controlled staging test users exist yet.
+- Recorded that no controlled staging test users existed at the 14F checkpoint.
 - Recorded that Vercel Preview remains unconfigured.
 - Recorded next milestone recommendation: Milestone 14G staging controlled test users plus permission matrix setup planning/execution.
 - No production Supabase project was touched, no Vercel env vars were changed, no deployment was performed, and no source or SQL files were changed.

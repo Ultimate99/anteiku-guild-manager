@@ -1,5 +1,52 @@
 # Testing
 
+## Milestone 14H Staging CP Redaction And GvG Smoke Validation
+
+Milestone 14H is complete against staging `ckyihuxkioeibzpgwenc` / `Anteiku Guild Manager Staging`.
+
+Passed:
+- CP audit redaction browser scenario.
+- CP metadata visibility for a scoped `view_cp` user.
+- Full GvG smoke test.
+- Permission denial checks.
+- Wrong-guild access denial.
+- Pending-user lockout.
+- Read-only SQL verification.
+
+Key validation details:
+- Owner updated `staging_member` CP to `1234567` through the CP UI.
+- `staging_audit_nocp` saw `Sensitive CP metadata hidden.` and did not see CP value, `cp_old`, or `cp_new`.
+- `staging_audit_cp` saw backend-returned CP metadata: `New CP 1,234,567`.
+- Owner created and opened GvG event `M14H Staging GvG Smoke`.
+- `staging_member` voted Present, switched to Absent with reason, then switched back to Present.
+- Owner closed the event.
+- SQL confirmed exactly one `gvg_votes` row for `staging_member` and the event, final vote status `present`, and `absence_reason = null`.
+- `staging_wrongguild` could not see or vote on the Anteiku event.
+- `staging_admin_noperms` did not see restricted admin tools.
+- `staging_pending` was locked to the Pending page.
+- Active Owner count remained `1`.
+
+Deferred production tests now covered in staging:
+- Full GvG smoke test.
+- CP audit redaction browser scenario.
+- Permission denial flows.
+- Wrong-guild access.
+- Pending-user lockout.
+
+Network caveat:
+- Literal DevTools request capture was not available through browser automation.
+- Source-path inspection confirmed Audit uses `get_audit_logs`.
+- Source-path inspection confirmed CP uses `get_current_cp_roster`, `get_cp_leaderboard`, and `update_member_cp`.
+- Source-path inspection confirmed GvG writes use approved RPCs, with the own-vote `gvg_votes` read expected and safe.
+- This is a recorded caveat, not a 14H blocker.
+
+Scope:
+- Production was not touched.
+- Vercel Preview was not configured.
+- No deployment was performed.
+- No source files or SQL migrations were changed.
+- Test data remains in staging intentionally.
+
 ## Future CP Update Window / Member CP Self-Submit Validation
 
 Future feature candidate only. Do not treat this as implemented.
@@ -43,7 +90,7 @@ Verified:
 - `owner_bootstrapped` audit log count: `1`.
 
 Not done yet:
-- No controlled staging test users exist.
+- No controlled staging test users existed at the 14F checkpoint; they were created later in 14G.
 - Vercel Preview env is not configured.
 - No staging browser validation with controlled users has been run.
 

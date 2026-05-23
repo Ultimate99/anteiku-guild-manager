@@ -33,6 +33,7 @@ Current production hardening rules:
 - Future staging must be separate from production.
 - Production GvG smoke tests that create data require explicit approval and a cleanup/data-retention plan.
 - CP redaction browser tests should preferably use staging with a controlled staff/data setup.
+- Milestone 14H completed staging coverage for deferred production GvG smoke and CP audit redaction using `ckyihuxkioeibzpgwenc`; do not repeat those tests in production without explicit approval and a cleanup/data-retention plan.
 
 ## Production Readiness Rules
 
