@@ -2,7 +2,19 @@
 
 ## Current Recommendation
 
-Milestone 15D staging rollout and browser validation passed. The 15A Member Status migration is applied and verified in staging, and the 15B frontend is browser-validated through staging users.
+Milestone 15E production rollout is complete. The Member Status System is live in production after DB migration, frontend deployment, and production smoke validation.
+
+Recorded Milestone 15E status:
+- Production project: `mzflfyxxkascrfpteexz` / `Anteiku Guild Manager Production`.
+- Applied only `20260523000100_member_roster_status_system.sql`.
+- Production DB verification passed.
+- Existing production memberships were backfilled to `roster_status = active`.
+- Active Owner count remained `1`.
+- `main` was pushed and Vercel deployed the frontend.
+- Production smoke validation passed for Owner Member Status UI, Owner CP/Audit/GvG loading, Member Dashboard/Profile/GvG, Member AdminPanel denial, and CP non-leakage.
+- No production roster-status mutation smoke was performed.
+- No service role keys, Vercel env changes, destructive SQL, `db reset`, or `--include-seed` were used.
+- Supabase CLI is currently linked to production `mzflfyxxkascrfpteexz`; relink deliberately before future staging/local Supabase work.
 
 Recorded Milestone 15D status:
 - Staging project: `ckyihuxkioeibzpgwenc` / `Anteiku Guild Manager Staging`.
@@ -48,8 +60,11 @@ Recorded Milestone 15A backend status:
 - No deployment or commit was performed.
 
 Recommended next milestone:
-- Milestone 15E production rollout planning/execution gate.
-- Do not deploy the 15B frontend to production before the Milestone 15A migration is applied and verified in production; the frontend now reads `guild_memberships.roster_status`.
+- Optional controlled production status mutation smoke, using the controlled production test member only with explicit approval and restore to `active`.
+- CP Update Window planning.
+- Weekly CP Snapshot/Growth Reports planning.
+- Member status history UI planning.
+- Announcements or onboarding/invite-code planning.
 
 Later milestone options:
 - Configure Vercel Preview env with staging Supabase only after an approved plan.

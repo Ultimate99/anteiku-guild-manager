@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-05-24 - Milestone 15E Member Status Production Rollout Complete
+
+- Applied `20260523000100_member_roster_status_system.sql` to production only after dry-run showed it was the only pending migration.
+- Verified production DB schema/RLS/RPC state for `guild_memberships.roster_status`, `member_status_history`, `update_member_roster_status(...)`, policies/grants, indexes, and backfilled memberships.
+- Confirmed production memberships were backfilled to `roster_status = active`.
+- Confirmed active Owner count remains `1`.
+- Pushed `main` and Vercel deployed the Member Status frontend.
+- Production smoke validation passed for Owner AdminPanel Members status UI, CP tab, Audit Logs, GvG, Member Dashboard/Profile/GvG, Member AdminPanel denial, and CP non-leakage.
+- No production roster-status mutation smoke was performed.
+- Optional future production mutation smoke must use the controlled production test member only, require explicit approval, and restore to `active`.
+- No service role keys, Vercel env changes, destructive SQL, `db reset`, or `--include-seed` were used.
+- Supabase CLI is currently linked to production `mzflfyxxkascrfpteexz`; future staging/local work must explicitly relink before Supabase commands.
+
 ## 2026-05-24 - Milestone 15D Member Status Staging Validation Passed
 
 - Applied `20260523000100_member_roster_status_system.sql` to staging only after a dry-run showed it was the only pending migration.
@@ -15,7 +28,7 @@
 - Source-path validation still shows status updates use only `update_member_roster_status`, with no direct frontend `guild_memberships` writes, no frontend `member_status_history` calls, no new direct `member_cp`/`cp_snapshots`/`audit_logs` calls, and CP privacy unchanged.
 - Restored `.env.local` to local Supabase and restarted Vite locally.
 - Production, Vercel env, deployment, and commit actions were not performed.
-- Production rollout remains pending; do not deploy the 15B frontend to production until the 15A migration is applied and verified in production.
+- Production rollout later completed in Milestone 15E.
 
 ## 2026-05-23 - Milestone 15B Member Status Frontend Implemented
 
@@ -30,7 +43,7 @@
 - `npm.cmd run build` passed.
 - Source/security checks found no direct frontend `guild_memberships` updates, no direct `member_status_history` calls, and no new direct `member_cp`, `cp_snapshots`, or `audit_logs` table calls.
 - Browser validation later passed through staging in Milestone 15D.
-- This frontend should not be deployed before the Milestone 15A migration is applied and verified in the target environment.
+- This frontend was later deployed to production in Milestone 15E after the production migration was applied and verified.
 - No SQL migrations, backend/RLS/RPC changes, production, Vercel env, deployment, or commit action was included.
 
 ## 2026-05-23 - Milestone 15A Member Status Backend Complete

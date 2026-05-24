@@ -1,5 +1,22 @@
 # Session Log
 
+## 2026-05-24 - Milestone 15E Member Status Production Rollout Complete
+
+- Milestone 15E production rollout completed.
+- Production project: `mzflfyxxkascrfpteexz` / `Anteiku Guild Manager Production`.
+- Applied only `20260523000100_member_roster_status_system.sql` to production.
+- Production DB verification passed for `guild_memberships.roster_status`, default `active`, `NOT NULL`, allowed status check, roster-status index, `member_status_history`, RLS/policies/grants, and `update_member_roster_status(...)`.
+- Existing production memberships were backfilled to `roster_status = active`.
+- Active Owner count remained `1`.
+- Pushed commit `23866be feat: add member roster status system` to `main`.
+- Vercel deployed the Member Status frontend.
+- Production smoke validation passed for Owner Home/Profile/GvG/Admin, Members tab roster status badges/filter/controls, CP tab, Audit Logs, Member Home/Profile/GvG, Member AdminPanel denial, and CP non-leakage.
+- No production roster-status mutation smoke was performed.
+- Optional future mutation smoke should use the controlled production test member only, require explicit approval, and restore to `active`.
+- No service role keys, Vercel env changes, destructive SQL, `db reset`, or `--include-seed` were used.
+- Supabase CLI is currently linked to production `mzflfyxxkascrfpteexz`; future staging/local work must explicitly relink before Supabase commands.
+- Recommended next options: optional controlled production status mutation smoke, CP Update Window planning, Weekly CP Snapshot/Growth Reports planning, Member status history UI planning, or announcements/onboarding/invite-code planning.
+
 ## 2026-05-24 - Milestone 15D Staging Member Status Validation Passed
 
 - Milestone 15D staging migration rollout and browser validation passed.
@@ -19,8 +36,7 @@
 - Source-path validation passed: status updates use `update_member_roster_status` only, no direct `guild_memberships` writes, no frontend `member_status_history` calls, no new direct `member_cp`/`cp_snapshots`/`audit_logs` table calls, and CP privacy unchanged.
 - `.env.local` was restored to local Supabase settings and Vite was restarted locally.
 - No Vercel env vars were changed, no deployment was performed, no commit was made, and no production rollout was attempted.
-- Production rollout remains pending; do not deploy the frontend to production until the 15A migration is applied and verified in production.
-- Recommended next milestone: Milestone 15E production rollout planning/execution gate.
+- Production rollout later completed in Milestone 15E.
 
 ## 2026-05-23 - Milestone 15B Member Status Frontend Implemented
 

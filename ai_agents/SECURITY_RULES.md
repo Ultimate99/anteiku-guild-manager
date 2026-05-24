@@ -2,7 +2,7 @@
 
 ## Milestone 15A Member Status Security Rules
 
-Member Status is separate from auth/approval and hard membership state.
+Member Status is live in production as of Milestone 15E and remains separate from auth/approval and hard membership state.
 
 Current rules:
 - `profiles.approval_status` remains the account/registration gate.
@@ -17,6 +17,8 @@ Current rules:
 - Leader/Vice can set scoped non-Owner statuses.
 - Owner can set all statuses, but the last active Owner cannot be blocked/removed.
 - Private status reasons live in `member_status_history`, not in broadly visible audit metadata.
+- Production roster-status mutation smoke was not performed during rollout.
+- Any optional production mutation smoke must use the controlled production test member only, require explicit approval, and restore to `active`.
 
 ## Milestone 14D Staging And Preview Rules
 
@@ -72,6 +74,7 @@ Production hard rules:
 - Do not run `supabase db reset` on production.
 - Do not run local fake-user validation SQL on production.
 - Do not disable RLS or add broad grants.
+- Supabase CLI is currently linked to production `mzflfyxxkascrfpteexz` after Milestone 15E; explicitly relink before future staging/local Supabase work.
 
 ## Milestone 11A Audit Log Read Safety
 

@@ -6,7 +6,7 @@ Current production checkpoint:
 - Production project ref: `mzflfyxxkascrfpteexz`.
 - Project name: `Anteiku Guild Manager Production`.
 - Region: Central EU / Frankfurt.
-- All 9 approved migrations are applied remotely.
+- All 10 approved migrations are applied remotely, including `20260523000100_member_roster_status_system.sql`.
 - Production schema/RLS/seed verification passed.
 - Manual Owner bootstrap completed for `ultimatesrb` / `UltimateSRB` in `Anteiku`.
 - Exactly one active Owner membership exists.
@@ -20,8 +20,9 @@ Current production checkpoint:
 - Milestone 14G controlled staging test users and permission matrix setup is complete.
 - Milestone 14H staging CP audit redaction and GvG full-smoke validation is complete.
 - Milestone 15D Member Status staging migration/browser validation is complete.
-- Production does not yet have `20260523000100_member_roster_status_system.sql`.
-- Do not deploy the Member Status frontend to production until the production DB migration is applied and verified.
+- Milestone 15E Member Status production rollout is complete.
+- Production has `20260523000100_member_roster_status_system.sql` applied and verified.
+- Member Status frontend is deployed and smoke-tested in production.
 - Vercel Preview env has not been configured for staging yet.
 
 ## Milestone 14A Production Hardening Policy
@@ -82,6 +83,7 @@ Recommended policy:
 - Preserve validation and audit history.
 - Prefer a future safe status change, Auth-user disable action, or dedicated suspend/leave feature if cleanup is needed.
 - Any cleanup action requires explicit approval, a rollback note, and post-action verification.
+- Optional Member Status mutation smoke must use this controlled production test member only, require explicit approval, and restore `roster_status` to `active`.
 
 ## Preview And Staging Policy
 
@@ -203,6 +205,31 @@ Milestone 15D is complete for staging only.
 Recommended next milestone:
 
 - Milestone 15E: production rollout planning/execution gate.
+
+## Milestone 15E Member Status Production Rollout
+
+Milestone 15E is complete.
+
+- [x] Production project confirmed: `mzflfyxxkascrfpteexz`.
+- [x] Staging project `ckyihuxkioeibzpgwenc` was not touched.
+- [x] Dry-run showed only `20260523000100_member_roster_status_system.sql` pending.
+- [x] `20260523000100_member_roster_status_system.sql` was applied to production.
+- [x] Production DB verification passed for `roster_status`, `member_status_history`, RLS/policies/grants, backfilled memberships, and `update_member_roster_status(...)`.
+- [x] Existing production memberships were backfilled to `roster_status = active`.
+- [x] Active Owner count remained `1`.
+- [x] `main` was pushed.
+- [x] Vercel deployed the Member Status frontend.
+- [x] Production Owner smoke validation passed.
+- [x] Production Member smoke validation passed.
+- [x] Member had no AdminPanel access.
+- [x] No CP leakage was found.
+- [x] No production roster-status mutation smoke was performed.
+- [x] No service role keys, Vercel env changes, destructive SQL, `db reset`, or `--include-seed` were used.
+
+Operational note:
+
+- Supabase CLI is currently linked to production `mzflfyxxkascrfpteexz`.
+- Future staging/local work must explicitly relink before Supabase commands.
 
 ## Milestone 14D Staging Supabase And Vercel Preview Plan
 

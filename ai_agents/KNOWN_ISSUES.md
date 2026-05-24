@@ -19,7 +19,7 @@
 - Milestone 14G controlled staging test users and permission matrix setup is complete.
 - Milestone 14H staging CP audit redaction and GvG full-smoke validation is complete.
 - Milestone 15D Member Status staging migration/browser validation is complete.
-- Production rollout for the Member Status migration/frontend remains pending.
+- Milestone 15E Member Status production rollout is complete.
 - Staging test data remains intentionally; do not cleanup/delete it unless separately approved.
 - Vercel Preview env has not been configured for staging yet.
 
@@ -39,7 +39,8 @@
 - Do not rerun staging Owner bootstrap unless a recovery plan is explicitly approved; staging already has exactly one active Owner.
 - Literal DevTools request capture was unavailable during 14H browser automation; source-path inspection confirmed approved RPC usage. Treat this as a recorded caveat, not a 14H blocker.
 - `manage_permissions` is not seeded in the current permission catalog migration. Treat it as a future/open permission question, not a Milestone 14E blocker, unless explicitly approved later.
-- The 15B Member Status frontend reads `guild_memberships.roster_status`; do not deploy it to production until `20260523000100_member_roster_status_system.sql` is applied and verified in production.
+- Supabase CLI is currently linked to production `mzflfyxxkascrfpteexz`; future staging/local work must explicitly relink before Supabase commands.
+- Optional production roster-status mutation smoke must use the controlled production test member only, require explicit approval, and restore to `active`.
 
 ## Product Gaps
 

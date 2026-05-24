@@ -14,7 +14,7 @@ Roles:
 
 ## Member Status
 
-Milestone 15A adds backend Member Status support through `guild_memberships.roster_status`.
+Member Status is live in production as of Milestone 15E and is implemented through `guild_memberships.roster_status`.
 
 Status meanings:
 - `active`: normal access, reliable participant.

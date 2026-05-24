@@ -1,5 +1,44 @@
 # Testing
 
+## Milestone 15E Member Status Production Rollout Validation
+
+Milestone 15E production rollout validation passed against `mzflfyxxkascrfpteexz` / `Anteiku Guild Manager Production`.
+
+Migration:
+- Dry-run showed only `20260523000100_member_roster_status_system.sql` pending.
+- The migration was applied to production.
+- Production migration history showed `20260523000100` applied remotely.
+
+Production DB verification:
+- `guild_memberships.roster_status` exists with default `active` and `NOT NULL`.
+- Allowed status check constraint and roster-status index exist.
+- `member_status_history` exists with RLS enabled.
+- No public/client write policies exist for `member_status_history`.
+- `update_member_roster_status(...)` exists with authenticated execute grant.
+- Existing production memberships were backfilled to `roster_status = active`.
+- Active Owner count remained `1`.
+
+Production smoke:
+- Production app loads.
+- Owner can sign in.
+- Owner can open AdminPanel.
+- Members tab loads with roster status badges, filter, and controls.
+- CP tab still loads for authorized Owner.
+- Audit Logs still load for Owner.
+- GvG page still loads.
+- Member can sign in.
+- Member cannot access AdminPanel.
+- Member sees own roster status safely on Profile.
+- Member sees no CP roster, leaderboard, snapshots, or other-member CP exposure.
+- No captured console errors were observed.
+
+Not performed:
+- No production roster-status mutation smoke was performed.
+- If mutation smoke is approved later, use the controlled production test member only and restore to `active`.
+
+Operational note:
+- Supabase CLI is currently linked to production `mzflfyxxkascrfpteexz`; relink before future staging/local Supabase commands.
+
 ## Milestone 15D Member Status Staging Validation
 
 Milestone 15D staging validation passed against `ckyihuxkioeibzpgwenc` / `Anteiku Guild Manager Staging`.
@@ -26,8 +65,7 @@ Source/security-path validation:
 - CP privacy unchanged.
 
 Production gate:
-- Production rollout is pending.
-- Do not deploy the 15B frontend to production until the 15A migration is applied and verified in production.
+- Production rollout passed in Milestone 15E.
 
 ## Milestone 15B Member Status Frontend Build/Source Validation
 
@@ -46,7 +84,7 @@ Source/security-path validation:
 
 Browser validation:
 - Staging browser validation passed in Milestone 15D after the 15A migration was applied to staging.
-- Production validation remains pending until the production database migration is applied and verified.
+- Production validation passed in Milestone 15E after the production database migration was applied and verified.
 
 Milestone 15D browser validation confirmed:
 - Owner sees roster status badges, filter, and controls in Admin Members.

@@ -1,5 +1,37 @@
 # Project State
 
+## Milestone 15E Member Status Production Rollout Complete
+
+Milestone 15E is complete. The Member Status System is live in production after the production database migration, frontend deployment, and production smoke validation all passed.
+
+Production rollout:
+- Production project ref: `mzflfyxxkascrfpteexz`.
+- Applied only migration `20260523000100_member_roster_status_system.sql`.
+- Production DB verification passed for `guild_memberships.roster_status`, default `active`, `NOT NULL`, allowed-status check constraint, roster-status index, `member_status_history`, RLS/policies/grants, and `update_member_roster_status(...)`.
+- Existing production memberships were backfilled to `roster_status = active`.
+- Active Owner count remained `1`.
+- Commit `23866be feat: add member roster status system` was pushed to `main`.
+- Vercel deployed the Member Status frontend.
+- Production smoke validation passed for Owner AdminPanel/Members/CP/Audit/GvG paths and Member Home/Profile/GvG paths.
+
+Security/scope:
+- No production roster-status mutation smoke was performed.
+- Optional future mutation smoke must use the controlled production test member only, require explicit approval, and restore the user to `active`.
+- No service role keys, Vercel env changes, destructive SQL, `db reset`, or `--include-seed` were used.
+- No production data was copied, deleted, or mutated beyond the schema migration/backfill.
+- Member smoke found no AdminPanel access and no CP leakage.
+
+Operational note:
+- Supabase CLI is currently linked to production project `mzflfyxxkascrfpteexz`.
+- Future staging/local work must explicitly relink before running Supabase commands.
+
+Recommended next milestone options:
+- Optional controlled production status mutation smoke.
+- CP Update Window planning.
+- Weekly CP Snapshot/Growth Reports planning.
+- Member status history UI planning.
+- Announcements or onboarding/invite codes.
+
 ## Milestone 15D Member Status Staging Validation Passed
 
 Milestone 15D staging migration rollout and browser validation passed. The Milestone 15A Member Status migration was applied to staging only, and the Milestone 15B frontend was validated against controlled staging users.
@@ -41,11 +73,10 @@ Scope confirmation:
 - No source or SQL changes were made during this 15D docs checkpoint.
 
 Production gate:
-- Production rollout remains pending.
-- Do not deploy the 15B frontend to production until the 15A migration has been dry-run, applied, and verified in production.
+- Production rollout later completed in Milestone 15E.
 
 Recommended next milestone:
-- Milestone 15E production rollout planning/execution gate for the Member Status migration and frontend release.
+- Completed later: Milestone 15E production rollout planning/execution gate for the Member Status migration and frontend release.
 
 ## Milestone 15B Member Status Frontend Implemented And Staging Browser Validated
 
@@ -70,10 +101,10 @@ Validation:
 
 Browser validation status:
 - Milestone 15B was browser-validated through staging in Milestone 15D after applying the 15A migration to staging.
-- Production browser validation is still pending and must wait until the production database migration is applied and verified.
+- Production browser validation passed in Milestone 15E after the production database migration was applied and verified.
 
 Recommended next milestone:
-- Milestone 15E production rollout planning/execution gate.
+- Optional controlled production status mutation smoke, CP Update Window planning, Weekly CP Snapshot/Growth Reports planning, Member status history UI planning, or announcements/onboarding/invite-code planning.
 
 Rollout warning:
 - Do not deploy this frontend to staging or production before the Milestone 15A migration is applied and verified in that target, because the frontend now reads `guild_memberships.roster_status`.
@@ -859,7 +890,7 @@ Validated results:
 
 ## Current Milestone
 
-Milestone 15D Member Status staging rollout and browser validation passed. Staging has the 15A migration applied and verified, and the 15B frontend is browser-validated through staging. Production rollout remains pending. Recommended next milestone is Milestone 15E production rollout planning/execution gate. Do not deploy the frontend to production until the production database has the 15A migration applied and verified.
+Milestone 15E Member Status production rollout is complete. The production DB has `20260523000100_member_roster_status_system.sql`, the frontend is deployed from `main`, and production smoke validation passed. Recommended next options are optional controlled production mutation smoke, CP Update Window planning, Weekly CP Snapshot/Growth Reports planning, Member status history UI planning, or announcements/onboarding/invite-code planning.
 
 Future CP-focused milestone candidate recorded: CP Update Window / Member CP Self-Submit. Corrected CP privacy rule going forward: members can see their own CP through safe backend/RPC flow, but must not see other members' CP, CP roster, CP leaderboard, CP snapshots, or other members' CP history. Members must not directly select or update `member_cp` and must not directly read `cp_snapshots`.
 
@@ -875,7 +906,7 @@ Production hardening policy now documents Vercel GitHub App restriction, control
 
 Milestone 14C reorganized AdminPanel into mobile-friendly tabs and section components. The refactor is frontend-only and behavior-preserving; CP, Audit Logs, and GvG management sections lazy-load when their tabs are opened. Production rollout validation passed after the Vercel deployment.
 
-Milestone 14D recorded the staging/preview plan for future non-production validation. Milestone 14E created/linked the staging Supabase project, applied the same 9 migrations as production, and verified staging schema/RLS/seed. Milestone 14F bootstrapped and verified the staging Owner. Milestone 14G created and verified controlled staging users and permissions. Milestone 14H validated CP audit redaction and GvG smoke in staging. Milestone 15A implemented and locally validated backend Member Status support. Milestone 15B implemented the frontend UI/access gating. Milestone 15D applied the 15A migration to staging and browser-validated the 15B frontend against staging users. Vercel Preview env remains unchanged.
+Milestone 14D recorded the staging/preview plan for future non-production validation. Milestone 14E created/linked the staging Supabase project, applied the same 9 migrations as production, and verified staging schema/RLS/seed. Milestone 14F bootstrapped and verified the staging Owner. Milestone 14G created and verified controlled staging users and permissions. Milestone 14H validated CP audit redaction and GvG smoke in staging. Milestone 15A implemented and locally validated backend Member Status support. Milestone 15B implemented the frontend UI/access gating. Milestone 15D applied the 15A migration to staging and browser-validated the 15B frontend against staging users. Milestone 15E applied the 15A migration to production, deployed the frontend, and passed production smoke validation. Vercel Preview env remains unchanged.
 
 ## Implemented
 

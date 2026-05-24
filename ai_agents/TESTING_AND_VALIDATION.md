@@ -1,5 +1,56 @@
 # Testing And Validation
 
+## Milestone 15E Member Status Production Rollout Validation Passed
+
+Milestone 15E production rollout validation passed.
+
+Production target:
+- Project ref: `mzflfyxxkascrfpteexz`.
+- Project name: `Anteiku Guild Manager Production`.
+- Staging project `ckyihuxkioeibzpgwenc` was not touched.
+
+Migration:
+- Dry-run showed only `20260523000100_member_roster_status_system.sql` pending.
+- `20260523000100_member_roster_status_system.sql` was applied to production.
+- Post-push migration history showed `20260523000100` applied remotely.
+
+Production DB verification:
+- `guild_memberships.roster_status` exists with default `active` and `NOT NULL`.
+- Allowed status check constraint exists.
+- Roster-status index exists.
+- `member_status_history` exists.
+- RLS is enabled on `member_status_history`.
+- No public/client write policies were found for `member_status_history`.
+- `update_member_roster_status(...)` exists with authenticated execute grant.
+- Four production membership rows were verified and all were backfilled to `roster_status = active`.
+- Active Owner count remained `1`.
+
+Frontend deployment:
+- Commit `23866be feat: add member roster status system` was pushed to `main`.
+- Vercel served the deployed production bundle containing Member Status frontend paths.
+
+Production smoke validation:
+- Production app loaded.
+- Owner sign-in passed.
+- Owner Home/Profile/GvG/Admin loaded.
+- Members tab loaded with roster status badges, filter, and controls.
+- CP tab loaded for Owner.
+- Audit Logs loaded for Owner.
+- Member sign-in passed.
+- Member had no Admin nav.
+- Member Profile showed own roster status safely.
+- Member GvG loaded.
+- Member saw no CP roster, leaderboard, snapshots, or other-member CP exposure.
+- No captured console errors were observed.
+
+Scope:
+- No production roster-status mutation smoke was performed.
+- Optional future mutation smoke must use the controlled production test member only, require explicit approval, and restore to `active`.
+- No service role keys, Vercel env changes, destructive SQL, `db reset`, or `--include-seed` were used.
+
+Operational warning:
+- Supabase CLI is currently linked to production `mzflfyxxkascrfpteexz`; explicitly relink before future staging/local Supabase commands.
+
 ## Milestone 15D Member Status Staging Validation Passed
 
 Milestone 15D staging migration rollout and browser validation passed.
@@ -43,8 +94,7 @@ Scope:
 - No production, Vercel, deployment, commit, source, or SQL migration changes were performed during this 15D docs checkpoint.
 
 Production gate:
-- Production rollout is pending.
-- Do not deploy the 15B frontend to production until the 15A migration is applied and verified in production.
+- Production rollout later passed in Milestone 15E.
 
 ## Milestone 15B Member Status Frontend Build/Source Validation Passed
 
@@ -61,20 +111,20 @@ Static/source validation:
 - No `supabase/migrations` or `supabase/tests` files changed during Milestone 15B.
 - `git diff --check` reported only CRLF normalization warnings.
 
-Implemented validation targets awaiting browser confirmation:
+Implemented validation targets confirmed through staging and production where applicable:
 - Owner sees roster status badges/filter/control in Admin Members.
 - Owner can set member roster statuses through the RPC wrapper.
-- Admin with `manage_members` is offered non-terminal statuses only.
+- Admin with `manage_members` is offered non-terminal statuses only; backend/local validation covers enforcement, and no matching production/staging account was used for browser confirmation.
 - Admin without `manage_members` cannot use roster status controls.
 - Member cannot change own roster status.
-- `suspended`, `left`, and `kicked` show restricted notices.
+- `suspended` restricted notice was browser-validated in staging; `left` and `kicked` backend behavior was locally validated.
 - `inactive` and `on_break` can still reach profile/dashboard but do not get GvG vote controls.
 - Status changes should produce backend audit/history rows through Milestone 15A RPC behavior.
 - No CP appears on member Dashboard/Profile/GvG pages.
 
 Browser validation:
 - Staging browser validation passed in Milestone 15D after the 15A migration was applied to staging.
-- Production browser validation remains pending until the production database migration is applied and verified.
+- Production browser validation passed in Milestone 15E after the production database migration was applied and verified.
 
 ## Milestone 15A Member Status Backend Validation Passed
 

@@ -2,7 +2,7 @@
 
 ## Milestone 15A Member Status Rules
 
-Roster status is a lifecycle concept, not a replacement for approval or hard membership security.
+Roster status is live in production as of Milestone 15E. It is a lifecycle concept, not a replacement for approval or hard membership security.
 
 Status meanings:
 - `active`: normal access, reliable participant.

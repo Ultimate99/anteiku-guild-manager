@@ -1,6 +1,6 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for the local Anteiku Guild Manager backend have been implemented and validated locally through Milestone 15A.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and validated through Milestone 15A locally, Milestone 15D in staging, and Milestone 15E in production for Member Status.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
@@ -17,7 +17,15 @@ Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION
 9. `20260515000300_audit_log_read_hardening.sql`
 10. `20260523000100_member_roster_status_system.sql`
 
-Migration `20260523000100_member_roster_status_system.sql` is locally validated. It has not been applied to production or staging in this checkpoint.
+Migration `20260523000100_member_roster_status_system.sql` is locally validated, staging validated, and production applied/verified as of Milestone 15E.
+
+Production Member Status rollout:
+- Existing production memberships were backfilled to `roster_status = active`.
+- Active Owner count remained `1`.
+- Production smoke validation passed after frontend deployment.
+- No production roster-status mutation smoke was performed.
+- Optional future mutation smoke must use the controlled production test member only, require explicit approval, and restore to `active`.
+- Supabase CLI is currently linked to production `mzflfyxxkascrfpteexz`; relink before future staging/local Supabase commands.
 
 Do not run `supabase db reset` against production. Do not run `supabase/tests/local_validation_anteiku.sql` against production because it inserts fake auth users and local test data.
 

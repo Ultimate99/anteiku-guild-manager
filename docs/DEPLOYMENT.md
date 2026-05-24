@@ -59,9 +59,9 @@ Migration order:
 
 Additional migration status:
 
-- `20260523000100_member_roster_status_system.sql` is applied and verified in staging only as of Milestone 15D.
-- `20260523000100_member_roster_status_system.sql` is not applied to production yet.
-- Do not deploy the Member Status frontend to production until this migration is dry-run, applied, and verified in production.
+- `20260523000100_member_roster_status_system.sql` is applied and verified in staging as of Milestone 15D.
+- `20260523000100_member_roster_status_system.sql` is applied and verified in production as of Milestone 15E.
+- Member Status frontend deployment to production completed after production DB verification.
 
 After applying migrations, production verification passed:
 
@@ -74,6 +74,7 @@ After applying migrations, production verification passed:
 - Core guild seed rows exist.
 - Permission catalog rows exist.
 - `supabase_migrations.schema_migrations` reflects the expected migration timestamps.
+- Member Status production verification passed for `roster_status`, `member_status_history`, RLS/policies/grants, `update_member_roster_status(...)`, backfilled memberships, and active Owner count.
 
 Do not use `db push --include-seed` until the missing `supabase/seed.sql` hazard in `supabase/config.toml` is resolved. The required core seed data is currently handled by migration `20260514000400_seed_core_data.sql`.
 
@@ -93,6 +94,12 @@ Also forbidden unless separately reviewed and approved:
 - `supabase/tests/local_validation_anteiku.sql`.
 - Any fake-user local validation script.
 - Any command that uses service role credentials from frontend or public env.
+- Production roster-status mutation smoke without explicit approval. If approved later, use the controlled production test member only and restore to `active`.
+
+Operational warning:
+
+- Supabase CLI is currently linked to production project `mzflfyxxkascrfpteexz` after Milestone 15E.
+- Future staging/local Supabase work must explicitly relink before running Supabase commands.
 
 ## Owner Bootstrap
 

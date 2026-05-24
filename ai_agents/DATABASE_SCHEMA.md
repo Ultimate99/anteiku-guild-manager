@@ -2,7 +2,7 @@
 
 ## Production Deployment Status
 
-Milestone 12 documented production readiness only. The schema has been validated locally, but it has not been applied to production Supabase.
+Production Supabase is live and migrated through Milestone 15E. The Member Status migration `20260523000100_member_roster_status_system.sql` is applied and verified in production.
 
 Current local migration order:
 
@@ -17,7 +17,18 @@ Current local migration order:
 9. `20260515000300_audit_log_read_hardening.sql`
 10. `20260523000100_member_roster_status_system.sql`
 
-Migration `20260523000100_member_roster_status_system.sql` is implemented and locally validated for Milestone 15A. It has not been applied to production or staging in this checkpoint.
+Migration `20260523000100_member_roster_status_system.sql` is implemented, locally validated, staging validated, and production applied/verified.
+
+Production Member Status verification:
+- Existing production memberships were backfilled to `roster_status = active`.
+- Active Owner count remained `1`.
+- `member_status_history` exists with RLS enabled and no public/client write policies.
+- `update_member_roster_status(...)` exists with authenticated execute grant.
+- Production frontend smoke validation passed after deployment.
+- No production roster-status mutation smoke was performed.
+- Optional future mutation smoke must use the controlled production test member only, require explicit approval, and restore to `active`.
+
+Operational note: Supabase CLI is currently linked to production `mzflfyxxkascrfpteexz`; future staging/local work must explicitly relink before Supabase commands.
 
 Do not run `supabase db reset` or `supabase/tests/local_validation_anteiku.sql` against production.
 
