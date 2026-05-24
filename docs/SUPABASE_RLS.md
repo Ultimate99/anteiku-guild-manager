@@ -1,8 +1,34 @@
 # Supabase RLS
 
-The local Supabase RLS/RPC implementation has been validated through Milestone 15A, and the Milestone 11B frontend audit viewer has been live-browser validated against the safe audit RPC.
+The local Supabase RLS/RPC implementation has been validated through Milestone 19B, and the Milestone 11B frontend audit viewer has been live-browser validated against the safe audit RPC.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
+
+## Milestone 19B CP Update Window RLS/RPC
+
+Milestone 19B is backend/database-only and locally validated. Staging and production rollout are pending.
+
+New table:
+- `cp_update_windows`
+
+RLS/grants:
+- RLS is enabled.
+- Direct table grants are revoked from `public`, `anon`, and `authenticated`.
+- No direct client table policies are added.
+- Members and staff use RPCs instead of direct table access.
+
+RPCs:
+- `get_active_cp_update_window_for_me()` returns only safe own-guild window status and submit eligibility.
+- `get_my_cp()` returns only the caller's own CP.
+- `submit_my_cp_update(integer)` updates only the caller's own CP after approval, active membership, roster eligibility, guild scope, CP value, and open-window checks.
+- `open_cp_update_window(...)` and `close_cp_update_window(uuid)` require `private.can_update_cp`.
+
+Audit:
+- `member_cp_self_submitted` audit metadata includes CP old/new values.
+- `get_audit_logs(...)` redacts CP self-submit metadata for viewers without scoped `view_cp`.
+
+Validation:
+- Milestone 19B local validation passed with 32 PASS / 0 FAIL / 0 SKIP.
 
 ## Milestone 15A Member Status RLS/RPC
 
@@ -99,7 +125,9 @@ CP metadata redaction:
 
 ## Local Validation Status
 
-Local validation result: 29 PASS / 0 FAIL / 0 SKIP.
+Base local validation result: 29 PASS / 0 FAIL / 0 SKIP.
+
+Latest focused local validation includes Milestone 19B CP Update Window checks: 32 PASS / 0 FAIL / 0 SKIP.
 
 Validated:
 

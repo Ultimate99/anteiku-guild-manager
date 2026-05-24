@@ -1,5 +1,35 @@
 # Project State
 
+## Milestone 19B CP Update Window Backend Implemented
+
+Milestone 19B is implemented and locally validated as backend/database-only support for CP Update Window / Member CP Self-Submit.
+
+Implemented locally:
+- Added migration `20260524000100_cp_update_window_self_submit.sql`.
+- Added guild-scoped `cp_update_windows` with one open window per guild.
+- Added RPC-only member CP self-submit support.
+- Added safe own-CP read support for members through `get_my_cp()`.
+- Added safe own-guild window status through `get_active_cp_update_window_for_me()`.
+- Added staff window management RPCs: `open_cp_update_window(...)` and `close_cp_update_window(...)`.
+- Added `member_cp_self_submitted`, `cp_update_window_opened`, and `cp_update_window_closed` audit actions.
+- Extended audit redaction so CP old/new metadata from member self-submits is hidden from audit users without scoped `view_cp`.
+
+Validation:
+- `npx.cmd supabase db reset` passed locally.
+- `supabase/tests/local_validation_anteiku.sql` passed.
+- Milestone 19B focused validation result: 32 PASS / 0 FAIL / 0 SKIP.
+- Existing local validation sections still passed, including CP hardening, audit hardening, and Member Status checks.
+
+Scope confirmation:
+- Backend/database only.
+- No frontend CP Update Window UI is implemented yet.
+- No React components were edited.
+- No staging or production project was touched.
+- No deployment, Vercel configuration, or commit was performed.
+
+Recommended next step:
+- Milestone 19C frontend planning for Profile `Your CP` self-submit UI and AdminPanel CP Update Window controls.
+
 ## Milestone 16H Member-Facing UI Production Rollout Complete
 
 Milestone 16H is complete. The member-facing compact UI/copy pass is live in production at `https://anteiku-guild-manager.vercel.app`.

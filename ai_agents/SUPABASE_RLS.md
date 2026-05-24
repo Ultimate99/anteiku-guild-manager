@@ -1,8 +1,39 @@
 # Supabase RLS
 
+## Milestone 19B CP Update Window RLS/RPC
+
+Milestone 19B is implemented and locally validated only. Staging and production do not have this migration yet.
+
+New table:
+- `public.cp_update_windows`
+
+RLS/grants:
+- RLS is enabled.
+- Direct table grants are revoked from `public`, `anon`, and `authenticated`.
+- No direct client SELECT/INSERT/UPDATE/DELETE policies are exposed.
+- Staff and member access is RPC-only.
+
+Member-safe RPCs:
+- `get_active_cp_update_window_for_me()` returns only safe own-guild window status, server time, `can_submit`, and a reason code.
+- `get_my_cp()` returns only the caller's own current CP in their active primary guild.
+- `submit_my_cp_update(p_cp_value integer)` updates only the caller's own CP after database-side eligibility and open-window checks.
+
+Staff RPCs:
+- `open_cp_update_window(...)` and `close_cp_update_window(...)` require `private.can_update_cp(actor_id, guild_id)`.
+- That preserves the existing CP authority model: Owner globally, Leader/Vice in scope, and Admin only with scoped `update_cp`.
+
+Security behavior:
+- Members cannot directly read `member_cp`, `cp_snapshots`, or `cp_update_windows`.
+- Frontend disabled controls are UX only; the RPCs enforce open-window timing, guild scope, roster eligibility, and self-only CP update rules.
+- Audit redaction includes `member_cp_self_submitted` rows so users without scoped `view_cp` do not see `cp_old` or `cp_new`.
+
+Validation:
+- Local Supabase reset passed.
+- Local validation script passed Milestone 19B checks with 32 PASS / 0 FAIL / 0 SKIP.
+
 ## Production Deployment Reminder
 
-Milestone 12 completed documentation-only production readiness guidance. No production project has been linked, no production migrations have been applied, and no deployment has occurred.
+Production is live, but Milestone 19B has not been applied to staging or production. Treat `20260524000100_cp_update_window_self_submit.sql` as local-only until a separate rollout gate is approved.
 
 Future production setup must:
 - Apply migrations in documented timestamp order.

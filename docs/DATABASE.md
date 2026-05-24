@@ -1,6 +1,6 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and validated through Milestone 15A locally, Milestone 15D in staging, and Milestone 15E in production for Member Status.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and validated through Milestone 19B locally. Remote production is live through the previously deployed migrations; the Milestone 19B CP Update Window migration is local-only until a later rollout gate.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
@@ -16,8 +16,11 @@ Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION
 8. `20260515000200_cp_rpc_hardening.sql`
 9. `20260515000300_audit_log_read_hardening.sql`
 10. `20260523000100_member_roster_status_system.sql`
+11. `20260524000100_cp_update_window_self_submit.sql` - local only; not applied to staging or production yet.
 
 Migration `20260523000100_member_roster_status_system.sql` is locally validated, staging validated, and production applied/verified as of Milestone 15E.
+
+Migration `20260524000100_cp_update_window_self_submit.sql` is locally validated only.
 
 Production Member Status rollout:
 - Existing production memberships were backfilled to `roster_status = active`.
@@ -28,6 +31,42 @@ Production Member Status rollout:
 - Supabase CLI is currently linked to production `mzflfyxxkascrfpteexz`; relink before future staging/local Supabase commands.
 
 Do not run `supabase db reset` against production. Do not run `supabase/tests/local_validation_anteiku.sql` against production because it inserts fake auth users and local test data.
+
+## Milestone 19B CP Update Window Backend
+
+New migration:
+- `supabase/migrations/20260524000100_cp_update_window_self_submit.sql`
+
+Adds:
+- `cp_update_windows`
+- `get_active_cp_update_window_for_me()`
+- `get_my_cp()`
+- `submit_my_cp_update(p_cp_value integer)`
+- `open_cp_update_window(p_guild_id uuid, p_opens_at timestamptz default null, p_closes_at timestamptz default null, p_note text default null)`
+- `close_cp_update_window(p_window_id uuid)`
+- `member_cp_self_submitted`, `cp_update_window_opened`, and `cp_update_window_closed` audit actions.
+
+Window behavior:
+- CP Update Windows are guild-scoped.
+- Only one open window can exist per guild.
+- Opening/closing uses existing CP update authority: Owner, scoped Leader/Vice, or scoped Admin with `update_cp`.
+- Window timing is checked using database/server time.
+
+Member behavior:
+- Members can read only their own CP through `get_my_cp()`.
+- Members can submit only their own CP through `submit_my_cp_update(...)`.
+- `active`, `trial`, and `pending_transfer` can submit while the guild window is open.
+- `inactive` and `on_break` can read own CP but cannot submit.
+- `suspended`, `left`, and `kicked` remain blocked.
+- Members still cannot directly read or write `member_cp`, read `cp_snapshots`, or read `cp_update_windows`.
+
+Audit/redaction:
+- Member self-submit audit metadata includes old/new CP but `get_audit_logs(...)` redacts those values unless the viewer has scoped `view_cp`.
+
+Rollout status:
+- Local validation passed.
+- Staging and production migration rollout are pending.
+- Frontend UI is not implemented yet.
 
 ## Milestone 15A Member Status Backend
 
@@ -130,10 +169,11 @@ Owner only can grant Admin CP permissions in v1.
 
 ## Local Validation Status
 
-Local Supabase validation passed through Milestone 15A.
+Local Supabase validation passed through Milestone 19B.
 
 The validation confirmed that migrations apply locally, seed data exists, permission catalog rules are present, CP privacy is enforced by direct table denial and RPC checks, GvG vote integrity works, approval/reapply behavior is scoped, and audit spoofing is blocked.
 Milestone 15A added 22 PASS / 0 FAIL / 0 SKIP focused checks for roster status, history privacy, status-change permissions, last active Owner protection, and GvG eligibility.
+Milestone 19B added 32 PASS / 0 FAIL / 0 SKIP focused checks for CP Update Window RLS/RPC behavior, member own-CP read/submit, roster eligibility, audit creation, and CP metadata redaction.
 ## Milestone 7 Backend Additions
 
 New migration:

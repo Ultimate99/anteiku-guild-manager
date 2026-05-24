@@ -1,5 +1,36 @@
 # Security Rules
 
+## Milestone 19B CP Update Window Security Rules
+
+Milestone 19B is implemented and locally validated only. It is not applied to staging or production yet.
+
+CP Update Window rules:
+- CP Update Windows are guild-scoped.
+- Only one open CP Update Window can exist per guild.
+- Window writes are RPC-only through `open_cp_update_window(...)` and `close_cp_update_window(...)`.
+- Opening/closing a window requires Owner, scoped Leader/Vice, or scoped Admin with `update_cp`.
+- Closing a window only freezes submissions; weekly snapshots remain future work.
+
+Member self-submit rules:
+- Members can read their own current CP only through `get_my_cp()`.
+- Members can submit their own CP only through `submit_my_cp_update(p_cp_value integer)`.
+- Members cannot pass a target profile id.
+- Members cannot directly SELECT or UPDATE `member_cp`.
+- Members cannot directly read `cp_snapshots`.
+- Members cannot directly read `cp_update_windows`.
+- CP value must be non-negative.
+- Database/server time decides whether a window is open.
+
+Roster eligibility:
+- `active`, `trial`, and `pending_transfer` can submit CP during an applicable open window.
+- `inactive` and `on_break` can read own CP but cannot submit.
+- `suspended`, `left`, and `kicked` remain hard-blocked by membership/security state.
+
+Audit/redaction:
+- Member submissions write `member_cp_self_submitted`.
+- Audit metadata includes `cp_old`, `cp_new`, `window_id`, and source.
+- `get_audit_logs(...)` redacts CP metadata for audit viewers without scoped `view_cp`.
+
 ## Milestone 17D Controlled Guild Onboarding Rules
 
 Milestone 17D prepares the app copy for disabling email confirmation later, but production email confirmation remains enabled until a separately approved Auth setting change.

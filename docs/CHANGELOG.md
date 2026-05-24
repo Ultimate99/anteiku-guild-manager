@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-05-24 - Milestone 19B CP Update Window Backend Implemented
+
+- Added local backend/database support for CP Update Window / Member CP Self-Submit.
+- Created migration `20260524000100_cp_update_window_self_submit.sql`.
+- Added guild-scoped `cp_update_windows` with one-open-window-per-guild enforcement.
+- Added member-safe RPCs `get_active_cp_update_window_for_me()`, `get_my_cp()`, and `submit_my_cp_update(integer)`.
+- Added staff RPCs `open_cp_update_window(...)` and `close_cp_update_window(uuid)` using existing CP update authority.
+- Added audit actions `member_cp_self_submitted`, `cp_update_window_opened`, and `cp_update_window_closed`.
+- Extended audit redaction so CP old/new values from member self-submit rows are hidden from viewers without scoped `view_cp`.
+- Updated local validation SQL with Milestone 19B checks.
+- Local Supabase reset passed.
+- Local validation passed, including Milestone 19B result 32 PASS / 0 FAIL / 0 SKIP.
+- No frontend UI, staging, production, Vercel, deployment, or commit action was performed.
+
 ## 2026-05-24 - Milestone 16H Member-Facing UI Production Rollout Complete
 
 - Deployed `53c7907 style: clean up member-facing UI` to production.

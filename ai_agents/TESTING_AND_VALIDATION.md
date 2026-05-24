@@ -1,5 +1,42 @@
 # Testing And Validation
 
+## Milestone 19B CP Update Window Backend Validation
+
+Milestone 19B backend/database implementation passed local validation.
+
+Migration:
+- `supabase/migrations/20260524000100_cp_update_window_self_submit.sql`
+
+Validation commands:
+- `npx.cmd supabase db reset`
+- `supabase/tests/local_validation_anteiku.sql`
+
+Focused 19B validation result:
+- 32 PASS / 0 FAIL / 0 SKIP.
+
+Validated:
+- `cp_update_windows` exists with RLS enabled.
+- Direct client table grants are absent.
+- One-open-window-per-guild constraint works.
+- Owner and authorized staff can open/close windows.
+- Member and Admin without `update_cp` cannot open/close windows.
+- Members can read active window status only for their own guild.
+- Members can read only their own CP through `get_my_cp()`.
+- Members cannot directly read `member_cp`, `cp_snapshots`, or `cp_update_windows`.
+- Members can submit own CP while a valid window is open.
+- Submits are denied when no window is open, window is closed, future, or expired.
+- Negative CP is rejected.
+- Wrong-guild, inactive, on_break, suspended, left, and kicked submit paths are denied.
+- Multiple submissions update latest CP and keep audit trail.
+- `member_cp_self_submitted` audit rows are created.
+- `cp_old`/`cp_new` are redacted in `get_audit_logs(...)` for audit users without `view_cp`.
+- `cp_old`/`cp_new` are visible through `get_audit_logs(...)` for scoped users with `view_cp`.
+- Existing admin CP RPC behavior still passed.
+
+Not run:
+- `npm.cmd run build` was not needed because 19B changed only database migration/tests/docs and no frontend code.
+- Staging and production rollout were not performed.
+
 ## Milestone 16H Member-Facing UI Production Smoke Passed
 
 Milestone 16H deployed the member-facing compact UI/copy pass to production.

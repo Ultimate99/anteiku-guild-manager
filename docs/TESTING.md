@@ -1,5 +1,38 @@
 # Testing
 
+## Milestone 19B CP Update Window Backend Validation
+
+Milestone 19B backend/database validation passed locally.
+
+Commands:
+- `npx.cmd supabase db reset`
+- `supabase/tests/local_validation_anteiku.sql`
+
+Focused 19B result:
+- 32 PASS / 0 FAIL / 0 SKIP.
+
+Validated:
+- `cp_update_windows` table exists with RLS enabled.
+- Direct client grants are absent.
+- One open CP Update Window per guild is enforced.
+- Owner and authorized CP staff can open/close windows.
+- Member and Admin without `update_cp` cannot open/close windows.
+- Member can read safe active-window info only for own guild.
+- Member can read only own CP through `get_my_cp()`.
+- Member cannot directly read `member_cp`, `cp_snapshots`, or `cp_update_windows`.
+- Member can submit own CP while the applicable guild window is open.
+- Submit is denied for closed, future, expired, wrong-guild, and missing-window cases.
+- Negative CP is rejected.
+- `inactive`, `on_break`, `suspended`, `left`, and `kicked` submit attempts are denied.
+- Multiple submissions update latest CP and create audit history.
+- `member_cp_self_submitted` audit rows are created.
+- CP old/new metadata is redacted for audit users without `view_cp` and visible for scoped users with `view_cp`.
+- Existing admin CP RPC behavior still passes.
+
+Not run:
+- `npm.cmd run build` was not needed because no frontend source changed.
+- Staging/production rollout and browser validation are pending future milestones.
+
 ## Milestone 16H Member-Facing UI Production Smoke
 
 Milestone 16H production smoke passed after deploying commit `53c7907 style: clean up member-facing UI`.

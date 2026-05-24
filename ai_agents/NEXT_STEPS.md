@@ -2,29 +2,29 @@
 
 ## Current Recommendation
 
-Milestone 16H production rollout is complete. The member-facing compact UI/copy pass is live in production.
+Milestone 19B backend implementation is complete and locally validated. CP Update Window / Member CP Self-Submit now has local database support, but no frontend UI and no staging/production rollout yet.
 
-Recorded Milestone 16H status:
-- Deployed commit `53c7907 style: clean up member-facing UI`.
-- Production app loaded at `https://anteiku-guild-manager.vercel.app`.
-- Login/Register panels are compact and translated.
-- Forgot Password remains visible.
-- Owner login and AdminPanel access worked.
-- Controlled production Member login worked.
-- Member Dashboard/Profile/GvG are compact and translated.
-- EN/FR/DE language switching works and persists after reload.
-- Mobile/narrow viewport had no horizontal overflow.
-- Member has no Admin navigation or AdminPanel access.
-- No other-member CP exposure was found.
-- No raw translation keys or console errors were captured.
-- No SQL, Supabase/RLS/RPC, service behavior, Vercel env, production data, CP/GvG/audit/role/permission/member-status behavior changed.
+Recorded Milestone 19B status:
+- New migration: `20260524000100_cp_update_window_self_submit.sql`.
+- Added guild-scoped `cp_update_windows` with one open window per guild.
+- Added safe RPCs for own-window status, own-CP read, member self-submit, and staff open/close.
+- Member self-submit is restricted to `active`, `trial`, and `pending_transfer`.
+- `inactive` and `on_break` can read own CP but cannot submit.
+- `suspended`, `left`, and `kicked` remain hard-blocked.
+- Members still cannot directly read/write `member_cp`, read `cp_snapshots`, or read window rows directly.
+- `member_cp_self_submitted` audit metadata redacts CP old/new values for viewers without scoped `view_cp`.
+- `npx.cmd supabase db reset` passed locally.
+- `supabase/tests/local_validation_anteiku.sql` passed, including Milestone 19B result 32 PASS / 0 FAIL / 0 SKIP.
+- No React/frontend UI was implemented.
+- Staging and production were not touched.
 
-Recommended next milestone options:
-- CP Update Window / Member CP Self-Submit planning.
-- Weekly CP Snapshot/Growth Reports planning.
-- Member Status history UI planning.
-- Announcements or onboarding/invite-code planning.
-- French/German wording review by native speakers.
+Recommended next milestone:
+- Milestone 19C frontend planning for Profile `Your CP` self-submit UI and AdminPanel CP Update Window controls.
+
+Later milestone options:
+- Milestone 19D staging rollout/validation after frontend implementation.
+- Milestone 19E production rollout gate after staging passes.
+- Weekly CP Snapshot/Growth Reports planning after CP Update Window is deployed.
 
 ## Previous Recommendation - Milestone 18F
 

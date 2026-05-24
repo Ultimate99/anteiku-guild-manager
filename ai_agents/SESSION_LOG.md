@@ -1,5 +1,20 @@
 # Session Log
 
+## 2026-05-24 - Milestone 19B CP Update Window Backend Implemented
+
+- Implemented Milestone 19B as a backend/database-only CP Update Window and Member CP Self-Submit foundation.
+- Added migration `20260524000100_cp_update_window_self_submit.sql`.
+- Added guild-scoped `cp_update_windows` with one-open-window-per-guild enforcement.
+- Added RPCs `get_active_cp_update_window_for_me()`, `get_my_cp()`, `submit_my_cp_update(integer)`, `open_cp_update_window(...)`, and `close_cp_update_window(uuid)`.
+- Kept member CP privacy RPC-only: members can read only own CP and submit only own CP.
+- Kept members blocked from direct `member_cp`, `cp_snapshots`, and `cp_update_windows` table access.
+- Added audit actions `member_cp_self_submitted`, `cp_update_window_opened`, and `cp_update_window_closed`.
+- Extended `get_audit_logs(...)` redaction so CP old/new metadata from member self-submit rows is hidden unless the viewer has scoped `view_cp`.
+- Updated `supabase/tests/local_validation_anteiku.sql` with Milestone 19B checks.
+- `npx.cmd supabase db reset` passed.
+- Local validation passed, including Milestone 19B result 32 PASS / 0 FAIL / 0 SKIP.
+- No frontend UI, React components, staging, production, Vercel, deployment, or commit action was performed.
+
 ## 2026-05-24 - Milestone 16H Member-Facing UI Production Rollout Complete
 
 - Completed Milestone 16H production rollout for the member-facing compact UI/copy pass.

@@ -1,5 +1,28 @@
 # Role Permissions
 
+## Milestone 19B CP Update Window Permissions
+
+Milestone 19B reuses the existing CP update authority model for CP Update Window management.
+
+Can open/close CP Update Windows:
+- Owner globally.
+- Leader/Vice in their guild scope.
+- Admin only with scoped `update_cp`.
+
+Cannot open/close CP Update Windows:
+- Admin without scoped `update_cp`.
+- Members.
+- Pending/rejected users.
+- Hard-blocked roster/membership states.
+
+Member CP self-submit eligibility:
+- `active`, `trial`, and `pending_transfer` members can submit their own CP during an applicable open window.
+- `inactive` and `on_break` members cannot submit CP by default.
+- `suspended`, `left`, and `kicked` users remain blocked.
+
+Important boundary:
+- These permissions do not grant members CP roster, leaderboard, snapshot, or other-member CP visibility.
+
 ## Milestone 15A Member Status Rules
 
 Roster status is live in production as of Milestone 15E. It is a lifecycle concept, not a replacement for approval or hard membership security.

@@ -2230,4 +2230,583 @@ select count(*) filter (where status = 'PASS') as milestone15a_total_pass,
        count(*) filter (where status = 'SKIP') as milestone15a_total_skip
 from milestone15a_member_status_results;
 
+-- Milestone 19B: CP Update Window / Member CP Self-Submit backend validation.
+-- This validates guild-scoped CP windows, own-CP RPC access, member self-submit
+-- eligibility, and audit CP metadata redaction.
+create temp table if not exists milestone19b_cp_window_results (
+  section text not null,
+  test_name text not null,
+  status text not null check (status in ('PASS', 'FAIL', 'SKIP')),
+  details text
+) on commit drop;
+
+do $$
+declare
+  anteiku_id constant uuid := '00000000-0000-0000-0000-000000000101';
+  anteiku_re_id constant uuid := '00000000-0000-0000-0000-000000000102';
+  owner_id constant uuid := '10000000-0000-0000-0000-000000000001';
+  admin_no_cp_id constant uuid := '10000000-0000-0000-0000-000000000004';
+  admin_cp_id constant uuid := '10000000-0000-0000-0000-000000000005';
+  member_id constant uuid := '10000000-0000-0000-0000-000000000006';
+  wrong_guild_id constant uuid := '10000000-0000-0000-0000-000000000009';
+  member_membership_id uuid;
+  open_window_id uuid;
+  window_state record;
+  cp_state record;
+  submit_state record;
+  audit_metadata jsonb;
+  audit_redacted boolean;
+  direct_count integer;
+  result_count integer;
+begin
+  update public.guild_memberships
+  set membership_status = 'active',
+      roster_status = 'active',
+      is_primary = true
+  where profile_id in (owner_id, admin_no_cp_id, admin_cp_id, member_id)
+    and guild_id = anteiku_id;
+
+  update public.guild_memberships
+  set membership_status = 'active',
+      roster_status = 'active',
+      is_primary = true
+  where profile_id = wrong_guild_id
+    and guild_id = anteiku_re_id;
+
+  delete from public.cp_update_windows;
+
+  select id into member_membership_id
+  from public.guild_memberships
+  where profile_id = member_id
+    and guild_id = anteiku_id;
+
+  insert into public.admin_permissions (membership_id, permission_key, granted_by)
+  select gm.id, 'view_audit_logs', owner_id
+  from public.guild_memberships gm
+  where gm.profile_id in (admin_no_cp_id, admin_cp_id)
+    and gm.guild_id = anteiku_id
+  on conflict (membership_id, permission_key) do nothing;
+
+  if to_regclass('public.cp_update_windows') is not null then
+    insert into milestone19b_cp_window_results values ('schema', 'cp_update_windows_exists', 'PASS', 'cp_update_windows table exists.');
+  else
+    insert into milestone19b_cp_window_results values ('schema', 'cp_update_windows_exists', 'FAIL', 'cp_update_windows table missing.');
+  end if;
+
+  if exists (
+    select 1
+    from pg_class
+    where oid = 'public.cp_update_windows'::regclass
+      and relrowsecurity = true
+  ) then
+    insert into milestone19b_cp_window_results values ('rls', 'cp_update_windows_rls_enabled', 'PASS', 'RLS is enabled.');
+  else
+    insert into milestone19b_cp_window_results values ('rls', 'cp_update_windows_rls_enabled', 'FAIL', 'RLS is not enabled.');
+  end if;
+
+  if not has_table_privilege('authenticated', 'public.cp_update_windows', 'select')
+     and not has_table_privilege('authenticated', 'public.cp_update_windows', 'insert')
+     and not has_table_privilege('authenticated', 'public.cp_update_windows', 'update')
+     and not has_table_privilege('authenticated', 'public.cp_update_windows', 'delete') then
+    insert into milestone19b_cp_window_results values ('rls', 'cp_update_windows_no_direct_client_grants', 'PASS', 'authenticated has no direct table grants.');
+  else
+    insert into milestone19b_cp_window_results values ('rls', 'cp_update_windows_no_direct_client_grants', 'FAIL', 'authenticated has direct table grants.');
+  end if;
+
+  if to_regprocedure('public.get_active_cp_update_window_for_me()') is not null
+     and to_regprocedure('public.get_my_cp()') is not null
+     and to_regprocedure('public.submit_my_cp_update(integer)') is not null
+     and to_regprocedure('public.open_cp_update_window(uuid,timestamp with time zone,timestamp with time zone,text)') is not null
+     and to_regprocedure('public.close_cp_update_window(uuid)') is not null then
+    insert into milestone19b_cp_window_results values ('schema', 'cp_window_rpcs_exist', 'PASS', 'All CP window/self-submit RPCs exist.');
+  else
+    insert into milestone19b_cp_window_results values ('schema', 'cp_window_rpcs_exist', 'FAIL', 'One or more CP window/self-submit RPCs are missing.');
+  end if;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    execute 'set local role authenticated';
+    select count(*) into direct_count from public.cp_update_windows;
+    execute 'reset role';
+
+    if direct_count = 0 then
+      insert into milestone19b_cp_window_results values ('rls', 'member_direct_cp_update_windows_denied', 'PASS', 'Direct window read returned no rows.');
+    else
+      insert into milestone19b_cp_window_results values ('rls', 'member_direct_cp_update_windows_denied', 'FAIL', 'Direct window read returned rows.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('rls', 'member_direct_cp_update_windows_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    execute 'set local role authenticated';
+    select count(*) into direct_count from public.member_cp;
+    execute 'reset role';
+
+    if direct_count = 0 then
+      insert into milestone19b_cp_window_results values ('rls', 'member_direct_member_cp_still_denied', 'PASS', 'Direct member_cp read returned no rows.');
+    else
+      insert into milestone19b_cp_window_results values ('rls', 'member_direct_member_cp_still_denied', 'FAIL', 'Direct member_cp read returned rows.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('rls', 'member_direct_member_cp_still_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    execute 'set local role authenticated';
+    select count(*) into direct_count from public.cp_snapshots;
+    execute 'reset role';
+
+    if direct_count = 0 then
+      insert into milestone19b_cp_window_results values ('rls', 'member_direct_cp_snapshots_still_denied', 'PASS', 'Direct cp_snapshots read returned no rows.');
+    else
+      insert into milestone19b_cp_window_results values ('rls', 'member_direct_cp_snapshots_still_denied', 'FAIL', 'Direct cp_snapshots read returned rows.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('rls', 'member_direct_cp_snapshots_still_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    execute 'set local role authenticated';
+    perform public.open_cp_update_window(anteiku_id, null, null, 'member should fail');
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('rpc', 'member_cannot_open_window', 'FAIL', 'Member opened CP update window.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('rpc', 'member_cannot_open_window', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_no_cp_id::text, true);
+    execute 'set local role authenticated';
+    perform public.open_cp_update_window(anteiku_id, null, null, 'admin no update_cp should fail');
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('rpc', 'admin_without_update_cp_cannot_open_window', 'FAIL', 'Admin without update_cp opened CP update window.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('rpc', 'admin_without_update_cp_cannot_open_window', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    execute 'set local role authenticated';
+    select * into window_state
+    from public.open_cp_update_window(anteiku_id, null, null, 'owner local validation');
+    execute 'reset role';
+    open_window_id := window_state.window_id;
+
+    if open_window_id is not null then
+      insert into milestone19b_cp_window_results values ('rpc', 'owner_can_open_window', 'PASS', 'Owner opened CP update window.');
+    else
+      insert into milestone19b_cp_window_results values ('rpc', 'owner_can_open_window', 'FAIL', 'Owner open returned no window id.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('rpc', 'owner_can_open_window', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    execute 'set local role authenticated';
+    perform public.open_cp_update_window(anteiku_id, null, null, 'duplicate should fail');
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('schema', 'one_open_window_per_guild_enforced', 'FAIL', 'Duplicate open CP window succeeded.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('schema', 'one_open_window_per_guild_enforced', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    execute 'set local role authenticated';
+    select * into window_state
+    from public.get_active_cp_update_window_for_me();
+    execute 'reset role';
+
+    if window_state.window_id = open_window_id
+       and window_state.guild_id = anteiku_id
+       and window_state.can_submit = true
+       and window_state.reason = 'open' then
+      insert into milestone19b_cp_window_results values ('rpc', 'member_reads_own_guild_open_window', 'PASS', 'Member saw own guild open window with can_submit true.');
+    else
+      insert into milestone19b_cp_window_results values ('rpc', 'member_reads_own_guild_open_window', 'FAIL', coalesce(row_to_json(window_state)::text, 'No window state returned.'));
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('rpc', 'member_reads_own_guild_open_window', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', wrong_guild_id::text, true);
+    execute 'set local role authenticated';
+    select * into window_state
+    from public.get_active_cp_update_window_for_me();
+    execute 'reset role';
+
+    if window_state.guild_id = anteiku_re_id
+       and window_state.window_id is null
+       and window_state.can_submit = false then
+      insert into milestone19b_cp_window_results values ('rpc', 'wrong_guild_user_does_not_see_other_window', 'PASS', 'Wrong-guild member saw only own-guild closed state.');
+    else
+      insert into milestone19b_cp_window_results values ('rpc', 'wrong_guild_user_does_not_see_other_window', 'FAIL', coalesce(row_to_json(window_state)::text, 'No window state returned.'));
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('rpc', 'wrong_guild_user_does_not_see_other_window', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    execute 'set local role authenticated';
+    select * into cp_state
+    from public.get_my_cp();
+    execute 'reset role';
+
+    if cp_state.guild_id = anteiku_id and cp_state.cp_value = 700000 then
+      insert into milestone19b_cp_window_results values ('rpc', 'member_reads_only_own_cp', 'PASS', 'Member read own CP only.');
+    else
+      insert into milestone19b_cp_window_results values ('rpc', 'member_reads_only_own_cp', 'FAIL', coalesce(row_to_json(cp_state)::text, 'No CP state returned.'));
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('rpc', 'member_reads_only_own_cp', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    execute 'set local role authenticated';
+    select * into submit_state
+    from public.submit_my_cp_update(710000);
+    execute 'reset role';
+
+    if submit_state.cp_value = 710000 and submit_state.window_id = open_window_id then
+      insert into milestone19b_cp_window_results values ('rpc', 'member_submits_own_cp_when_open', 'PASS', 'Member submitted own CP while window was open.');
+    else
+      insert into milestone19b_cp_window_results values ('rpc', 'member_submits_own_cp_when_open', 'FAIL', coalesce(row_to_json(submit_state)::text, 'No submit result returned.'));
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('rpc', 'member_submits_own_cp_when_open', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    execute 'set local role authenticated';
+    perform public.submit_my_cp_update(720000);
+    execute 'reset role';
+
+    select cp_value into result_count
+    from public.member_cp
+    where profile_id = member_id
+      and guild_id = anteiku_id
+      and updated_by = member_id;
+
+    select count(*) into direct_count
+    from public.audit_logs
+    where action = 'member_cp_self_submitted'
+      and actor_profile_id = member_id
+      and target_profile_id = member_id
+      and metadata ? 'cp_old'
+      and metadata ? 'cp_new'
+      and metadata ? 'window_id'
+      and metadata ->> 'source' = 'member_self_submit';
+
+    if result_count = 720000 and direct_count >= 2 then
+      insert into milestone19b_cp_window_results values ('rpc', 'multiple_submissions_latest_wins_and_audits', 'PASS', 'Latest CP won and each submission wrote audit history.');
+    else
+      insert into milestone19b_cp_window_results values ('rpc', 'multiple_submissions_latest_wins_and_audits', 'FAIL', 'Latest CP or audit count did not match expectations.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('rpc', 'multiple_submissions_latest_wins_and_audits', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_no_cp_id::text, true);
+    execute 'set local role authenticated';
+    select metadata, metadata_redacted into audit_metadata, audit_redacted
+    from public.get_audit_logs(anteiku_id, 'member_cp_self_submitted', null, null, null, null, 100, null)
+    limit 1;
+    execute 'reset role';
+
+    if audit_redacted = true
+       and audit_metadata ? 'cp_metadata_redacted'
+       and not (audit_metadata ? 'cp_old')
+       and not (audit_metadata ? 'cp_new') then
+      insert into milestone19b_cp_window_results values ('audit', 'self_submit_cp_metadata_redacted_without_view_cp', 'PASS', 'CP self-submit metadata redacted without view_cp.');
+    else
+      insert into milestone19b_cp_window_results values ('audit', 'self_submit_cp_metadata_redacted_without_view_cp', 'FAIL', coalesce(audit_metadata::text, 'No audit metadata.'));
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('audit', 'self_submit_cp_metadata_redacted_without_view_cp', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_cp_id::text, true);
+    execute 'set local role authenticated';
+    select metadata, metadata_redacted into audit_metadata, audit_redacted
+    from public.get_audit_logs(anteiku_id, 'member_cp_self_submitted', null, null, null, null, 100, null)
+    limit 1;
+    execute 'reset role';
+
+    if coalesce(audit_redacted, false) = false
+       and audit_metadata ? 'cp_old'
+       and audit_metadata ? 'cp_new' then
+      insert into milestone19b_cp_window_results values ('audit', 'self_submit_cp_metadata_visible_with_view_cp', 'PASS', 'CP self-submit metadata visible with scoped view_cp.');
+    else
+      insert into milestone19b_cp_window_results values ('audit', 'self_submit_cp_metadata_visible_with_view_cp', 'FAIL', coalesce(audit_metadata::text, 'No audit metadata.'));
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('audit', 'self_submit_cp_metadata_visible_with_view_cp', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_no_cp_id::text, true);
+    execute 'set local role authenticated';
+    perform public.close_cp_update_window(open_window_id);
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('rpc', 'admin_without_update_cp_cannot_close_window', 'FAIL', 'Admin without update_cp closed CP update window.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('rpc', 'admin_without_update_cp_cannot_close_window', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    execute 'set local role authenticated';
+    perform public.close_cp_update_window(open_window_id);
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('rpc', 'owner_can_close_window', 'PASS', 'Owner closed CP update window.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('rpc', 'owner_can_close_window', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    execute 'set local role authenticated';
+    perform public.submit_my_cp_update(730000);
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('rpc', 'member_submit_denied_when_closed', 'FAIL', 'Member submitted after window close.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('rpc', 'member_submit_denied_when_closed', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    execute 'set local role authenticated';
+    select * into window_state
+    from public.open_cp_update_window(anteiku_id, now() + interval '1 hour', now() + interval '2 hours', null);
+    execute 'reset role';
+    open_window_id := window_state.window_id;
+
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    execute 'set local role authenticated';
+    select * into window_state
+    from public.get_active_cp_update_window_for_me();
+    begin
+      perform public.submit_my_cp_update(730000);
+      execute 'reset role';
+      insert into milestone19b_cp_window_results values ('rpc', 'member_submit_denied_before_opens_at', 'FAIL', 'Member submitted before opens_at.');
+    exception when others then
+      execute 'reset role';
+      if window_state.can_submit = false and window_state.reason = 'window_not_open_yet' then
+        insert into milestone19b_cp_window_results values ('rpc', 'member_submit_denied_before_opens_at', 'PASS', sqlerrm);
+      else
+        insert into milestone19b_cp_window_results values ('rpc', 'member_submit_denied_before_opens_at', 'FAIL', coalesce(row_to_json(window_state)::text, sqlerrm));
+      end if;
+    end;
+
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    execute 'set local role authenticated';
+    perform public.close_cp_update_window(open_window_id);
+    execute 'reset role';
+  exception when others then
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('rpc', 'member_submit_denied_before_opens_at_setup', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    execute 'set local role authenticated';
+    select * into window_state
+    from public.open_cp_update_window(anteiku_id, null, now() + interval '2 hours', null);
+    execute 'reset role';
+    open_window_id := window_state.window_id;
+
+    update public.cp_update_windows
+    set closes_at = now() - interval '1 minute'
+    where id = open_window_id;
+
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    execute 'set local role authenticated';
+    select * into window_state
+    from public.get_active_cp_update_window_for_me();
+    begin
+      perform public.submit_my_cp_update(730000);
+      execute 'reset role';
+      insert into milestone19b_cp_window_results values ('rpc', 'member_submit_denied_after_closes_at', 'FAIL', 'Member submitted after closes_at.');
+    exception when others then
+      execute 'reset role';
+      if window_state.can_submit = false and window_state.reason = 'window_closed' then
+        insert into milestone19b_cp_window_results values ('rpc', 'member_submit_denied_after_closes_at', 'PASS', sqlerrm);
+      else
+        insert into milestone19b_cp_window_results values ('rpc', 'member_submit_denied_after_closes_at', 'FAIL', coalesce(row_to_json(window_state)::text, sqlerrm));
+      end if;
+    end;
+
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    execute 'set local role authenticated';
+    perform public.close_cp_update_window(open_window_id);
+    execute 'reset role';
+  exception when others then
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('rpc', 'member_submit_denied_after_closes_at_setup', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    execute 'set local role authenticated';
+    select * into window_state
+    from public.open_cp_update_window(anteiku_id, null, null, null);
+    execute 'reset role';
+    open_window_id := window_state.window_id;
+
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    execute 'set local role authenticated';
+    perform public.submit_my_cp_update(-1);
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('rpc', 'negative_cp_rejected', 'FAIL', 'Negative CP submission succeeded.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('rpc', 'negative_cp_rejected', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', wrong_guild_id::text, true);
+    execute 'set local role authenticated';
+    perform public.submit_my_cp_update(730000);
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('rpc', 'wrong_guild_submit_denied', 'FAIL', 'Wrong-guild member submitted against another guild window.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('rpc', 'wrong_guild_submit_denied', 'PASS', sqlerrm);
+  end;
+
+  for window_state in
+    select unnest(array['inactive', 'on_break']) as status_name
+  loop
+    begin
+      perform set_config('request.jwt.claim.sub', owner_id::text, true);
+      execute 'set local role authenticated';
+      perform public.update_member_roster_status(member_membership_id, window_state.status_name, 'cp window eligibility validation');
+      execute 'reset role';
+
+      perform set_config('request.jwt.claim.sub', member_id::text, true);
+      execute 'set local role authenticated';
+      perform public.submit_my_cp_update(730000);
+      execute 'reset role';
+      insert into milestone19b_cp_window_results values ('eligibility', window_state.status_name || '_submit_denied', 'FAIL', window_state.status_name || ' submitted CP.');
+    exception when others then
+      execute 'reset role';
+      insert into milestone19b_cp_window_results values ('eligibility', window_state.status_name || '_submit_denied', 'PASS', sqlerrm);
+    end;
+
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    execute 'set local role authenticated';
+    perform public.update_member_roster_status(member_membership_id, 'active', 'restore after CP eligibility validation');
+    execute 'reset role';
+  end loop;
+
+  for window_state in
+    select unnest(array['suspended', 'left', 'kicked']) as status_name
+  loop
+    begin
+      perform set_config('request.jwt.claim.sub', owner_id::text, true);
+      execute 'set local role authenticated';
+      perform public.update_member_roster_status(member_membership_id, window_state.status_name, 'cp hard-block validation');
+      execute 'reset role';
+
+      perform set_config('request.jwt.claim.sub', member_id::text, true);
+      execute 'set local role authenticated';
+      perform public.submit_my_cp_update(730000);
+      execute 'reset role';
+      insert into milestone19b_cp_window_results values ('eligibility', window_state.status_name || '_submit_denied', 'FAIL', window_state.status_name || ' submitted CP.');
+    exception when others then
+      execute 'reset role';
+      insert into milestone19b_cp_window_results values ('eligibility', window_state.status_name || '_submit_denied', 'PASS', sqlerrm);
+    end;
+
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    execute 'set local role authenticated';
+    perform public.update_member_roster_status(member_membership_id, 'active', 'restore after CP hard-block validation');
+    execute 'reset role';
+  end loop;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    execute 'set local role authenticated';
+    perform public.close_cp_update_window(open_window_id);
+    execute 'reset role';
+  exception when others then
+    execute 'reset role';
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_cp_id::text, true);
+    execute 'set local role authenticated';
+    select * into window_state
+    from public.open_cp_update_window(anteiku_id, null, null, 'admin with update_cp validation');
+    perform public.close_cp_update_window(window_state.window_id);
+    execute 'reset role';
+
+    insert into milestone19b_cp_window_results values ('rpc', 'admin_with_update_cp_can_open_close_window', 'PASS', 'Admin with update_cp opened and closed CP update window.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('rpc', 'admin_with_update_cp_can_open_close_window', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_cp_id::text, true);
+    execute 'set local role authenticated';
+    perform public.update_member_cp(member_id, 740000, 'existing admin CP RPC validation');
+    execute 'reset role';
+
+    if exists (
+      select 1
+      from public.member_cp
+      where profile_id = member_id
+        and cp_value = 740000
+        and updated_by = admin_cp_id
+    ) then
+      insert into milestone19b_cp_window_results values ('regression', 'existing_admin_update_member_cp_still_works', 'PASS', 'Existing admin CP update RPC still works.');
+    else
+      insert into milestone19b_cp_window_results values ('regression', 'existing_admin_update_member_cp_still_works', 'FAIL', 'Existing admin CP update did not update expected row.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone19b_cp_window_results values ('regression', 'existing_admin_update_member_cp_still_works', 'FAIL', sqlerrm);
+  end;
+end;
+$$;
+
+select section, test_name, status, details
+from milestone19b_cp_window_results
+order by section, test_name;
+
+select count(*) filter (where status = 'PASS') as milestone19b_total_pass,
+       count(*) filter (where status = 'FAIL') as milestone19b_total_fail,
+       count(*) filter (where status = 'SKIP') as milestone19b_total_skip
+from milestone19b_cp_window_results;
+
 rollback;

@@ -1,5 +1,14 @@
 # Database Schema
 
+## Current Backend Status
+
+Milestone 19B adds local-only backend support for CP Update Window / Member CP Self-Submit. It is implemented and locally validated, but has not been applied to staging or production.
+
+New local migration:
+- `supabase/migrations/20260524000100_cp_update_window_self_submit.sql`
+
+Do not deploy frontend CP Update Window UI to any remote environment until the migration has been applied and verified in that environment.
+
 ## Production Deployment Status
 
 Production Supabase is live and migrated through Milestone 15E. The Member Status migration `20260523000100_member_roster_status_system.sql` is applied and verified in production.
@@ -16,8 +25,11 @@ Current local migration order:
 8. `20260515000200_cp_rpc_hardening.sql`
 9. `20260515000300_audit_log_read_hardening.sql`
 10. `20260523000100_member_roster_status_system.sql`
+11. `20260524000100_cp_update_window_self_submit.sql` - local only; not applied to staging or production yet.
 
 Migration `20260523000100_member_roster_status_system.sql` is implemented, locally validated, staging validated, and production applied/verified.
+
+Migration `20260524000100_cp_update_window_self_submit.sql` is implemented and locally validated only.
 
 Production Member Status verification:
 - Existing production memberships were backfilled to `roster_status = active`.
@@ -33,6 +45,55 @@ Operational note: Supabase CLI is currently linked to production `mzflfyxxkascrf
 Do not run `supabase db reset` or `supabase/tests/local_validation_anteiku.sql` against production.
 
 `supabase/config.toml` references missing `./seed.sql`; do not use `db push --include-seed` until that hazard is resolved. Core guild and permission seed data currently lives in migration `20260514000400_seed_core_data.sql`.
+
+## Milestone 19B CP Update Window Backend
+
+Migration:
+- `supabase/migrations/20260524000100_cp_update_window_self_submit.sql`
+
+New table:
+- `public.cp_update_windows`
+
+Columns:
+- `id uuid primary key default gen_random_uuid()`
+- `guild_id uuid not null references public.guilds(id)`
+- `status text not null default 'open'`, limited to `open` or `closed`
+- `opens_at timestamptz null`
+- `closes_at timestamptz null`
+- `note text null`
+- `created_by uuid not null references public.profiles(id)`
+- `closed_by uuid null references public.profiles(id)`
+- `created_at timestamptz not null default now()`
+- `updated_at timestamptz not null default now()`
+
+Indexes and constraints:
+- One open CP Update Window per guild through partial unique index on `guild_id where status = 'open'`.
+- Guild/status/time indexes for active-window lookups.
+- Time-order and note-length checks.
+
+RPCs:
+- `get_active_cp_update_window_for_me()`
+- `get_my_cp()`
+- `submit_my_cp_update(p_cp_value integer)`
+- `open_cp_update_window(p_guild_id uuid, p_opens_at timestamptz default null, p_closes_at timestamptz default null, p_note text default null)`
+- `close_cp_update_window(p_window_id uuid)`
+
+Member CP behavior:
+- Members can read only their own current CP through `get_my_cp()`.
+- Members can submit only their own CP through `submit_my_cp_update(...)`.
+- Members still cannot directly read or update `member_cp`.
+- Members still cannot read `cp_snapshots`.
+- Multiple member submissions while a valid window is open are allowed; latest CP wins and each submission writes audit history.
+
+Roster eligibility:
+- `active`, `trial`, and `pending_transfer` can submit during an applicable open window.
+- `inactive` and `on_break` can read own CP but cannot submit.
+- `suspended`, `left`, and `kicked` remain hard-blocked through membership/security state.
+
+Audit:
+- Member self-submit writes `member_cp_self_submitted` with `cp_old`, `cp_new`, `window_id`, and source metadata.
+- Window open/close writes `cp_update_window_opened` and `cp_update_window_closed`.
+- `get_audit_logs(...)` redacts CP metadata from self-submit rows for viewers without scoped `view_cp`.
 
 ## Milestone 15A Member Roster Status System
 
