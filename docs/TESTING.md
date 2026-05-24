@@ -1,5 +1,32 @@
 # Testing
 
+## Milestone 21B Rank Badge Summary Local Validation
+
+Milestone 21B backend/database validation passed locally.
+
+Migration:
+- Local migration `20260524000400_cp_rank_badge_summary.sql` adds `get_my_cp_rank_summary()`.
+- No frontend UI was implemented.
+- Staging and production do not have this migration yet.
+
+Validation:
+- `npx.cmd supabase db reset` passed.
+- Full local validation script passed through Docker `psql`.
+- Milestone 21B focused validation result: 15 PASS / 0 FAIL / 0 SKIP.
+- Existing CP Ranking and CP Update Window validation blocks still passed.
+
+Focused checks:
+- Rank 1/2/3, Elite Five, Top Ten, High Rank, and Ranked Member tier mappings passed.
+- Unranked/no-CP users return `is_ranked = false` and `unranked` keys.
+- `inactive` users return the unranked/default state.
+- Hard-blocked users are denied.
+- Response shape contains no CP values or private fields.
+- No other-user rank lookup parameter exists.
+- Direct `member_cp` and `cp_snapshots` access remains blocked.
+
+Build:
+- `npm.cmd run build` was not run because 21B changed only database migration/tests/docs and no frontend code.
+
 ## Milestone 20F CP Leaderboard Production Validation
 
 Milestone 20F production rollout and smoke validation passed.

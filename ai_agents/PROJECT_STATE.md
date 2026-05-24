@@ -1,5 +1,47 @@
 # Project State
 
+## Milestone 21B Rank Badge Summary Backend Implemented
+
+Milestone 21B is implemented and locally validated as backend/database-only support for safe rank badge/profile border visuals.
+
+Implemented locally:
+- Added migration `20260524000400_cp_rank_badge_summary.sql`.
+- Added member-safe RPC `get_my_cp_rank_summary()`.
+- The RPC returns only `global_rank`, `guild_rank`, `rank_tier`, `visual_key`, and `is_ranked`.
+- The RPC does not return CP values, updated timestamps, growth/history/snapshot data, usernames, profile ids, other-member data, or private metadata.
+
+Rank tier behavior:
+- `rank_one` / `rank_1`: global rank 1.
+- `rank_two` / `rank_2`: global rank 2.
+- `rank_three` / `rank_3`: global rank 3.
+- `elite_five` / `elite_5`: global ranks 4-5.
+- `top_ten` / `top_10`: global ranks 6-10.
+- `high_rank`: global ranks 11-25.
+- `ranked_member`: global rank 26+.
+- `unranked`: no CP row or excluded from ranking eligibility.
+
+Security/scope:
+- Uses `auth.uid()` and accepts no profile id parameter.
+- Uses the same ranking eligibility as the member-safe leaderboard: approved profile, active primary membership, and roster status `active`, `trial`, or `pending_transfer`.
+- `inactive` and `on_break` return the unranked/default state.
+- Hard-blocked users without active approved membership are denied by the same membership gate.
+- Direct `member_cp` and `cp_snapshots` access remains blocked.
+- Existing `get_member_cp_rankings`, `get_admin_cp_rankings`, CP Update Window, admin CP roster/update, audit, GvG, role, permission, and member-status behavior was not changed.
+
+Validation:
+- Local `npx.cmd supabase db reset` passed.
+- Local validation script passed through Docker `psql`.
+- Milestone 21B focused validation result: 15 PASS / 0 FAIL / 0 SKIP.
+- Earlier Milestone 20B, 19B, and 19B.1 CP validation blocks still passed.
+- `npm.cmd run build` was not run because 21B changed only database migration/tests/docs and no frontend code.
+
+Rollout boundary:
+- `20260524000400_cp_rank_badge_summary.sql` is local-only. Staging and production do not have it yet.
+- Do not deploy future rank badge/profile border frontend to any remote target until that target DB has this migration applied and verified.
+
+Recommended next step:
+- Milestone 21C frontend planning/implementation for Profile/Dashboard badge UI, followed by staging migration rollout and validation before production.
+
 ## Milestone 20F CP Leaderboard Production Rollout Complete
 
 Milestone 20F is complete. CP Leaderboard / CP Ranking is live in production at `https://anteiku-guild-manager.vercel.app`.
@@ -34,7 +76,7 @@ Security/scope:
 - Supabase CLI is currently linked to production project `mzflfyxxkascrfpteexz`; explicitly relink before future staging/local Supabase commands.
 
 Recommended next step:
-- Milestone 20F docs/handoff commit checkpoint, then plan Weekly CP Snapshot/Growth Reports or another approved feature track.
+- Completed later by Milestone 21A/21B rank badge planning and backend implementation.
 
 ## Milestone 20E CP Leaderboard Staging Validation Passed
 
@@ -1508,15 +1550,15 @@ Validated results:
 
 ## Current Milestone
 
-Milestone 20F CP Leaderboard production rollout is complete. The CP Ranking migration is applied and verified in production, the frontend is deployed, member rank-only leaderboard smoke passed, Owner AdminPanel CP Ranking smoke passed, and CP values remain hidden from members. Recommended next step: Milestone 20F docs/handoff commit checkpoint, then plan Weekly CP Snapshot/Growth Reports or another approved feature track.
+Milestone 21B Rank Badge / Profile Border backend is implemented and locally validated. The new local-only RPC `get_my_cp_rank_summary()` returns safe own rank/tier keys for future Profile/Dashboard visuals without exposing CP values or other-member data. Recommended next step: Milestone 21C frontend planning/implementation for Profile/Dashboard badge UI, then staging migration rollout and validation.
 
-Current CP privacy rule: members can see their own CP through safe backend/RPC flow and can see rank order through `get_member_cp_rankings`, but exact CP values remain hidden from member leaderboard API/UI. Members must not see other members' CP values, CP snapshots, CP history, or private CP metadata. Members must not directly select or update `member_cp` and must not directly read `cp_snapshots`.
+Current CP privacy rule: members can see their own CP through safe backend/RPC flow, can see rank order through `get_member_cp_rankings`, and can receive their own rank/tier summary through `get_my_cp_rank_summary`, but exact CP values remain hidden from member leaderboard/rank-summary APIs and UI. Members must not see other members' CP values, CP snapshots, CP history, or private CP metadata. Members must not directly select or update `member_cp` and must not directly read `cp_snapshots`.
 
 ## Current Status
 
 The app is a React + Vite frontend backed by local Supabase migrations/RLS/RPCs. Milestones 10, 11A, and 11B are complete and validated. Milestone 12 is complete as a documentation-only production readiness pass.
 
-Current capabilities include local Supabase auth/session restore, registration through `register_profile`, pending/rejected/suspended gates, approval/rejection queue, own IGN editing, admin member profile management, role/guild management through RPCs, Admin permission checkbox management, protected CP management, CP Update Window / Member CP Self-Submit, member-safe rank-only CP Ranking, permission-protected AdminPanel CP Ranking, GvG event management and voting, and read-only audit log viewing through `get_audit_logs`.
+Current capabilities include local Supabase auth/session restore, registration through `register_profile`, pending/rejected/suspended gates, approval/rejection queue, own IGN editing, admin member profile management, role/guild management through RPCs, Admin permission checkbox management, protected CP management, CP Update Window / Member CP Self-Submit, member-safe rank-only CP Ranking, safe own CP rank summary for future badge visuals, permission-protected AdminPanel CP Ranking, GvG event management and voting, and read-only audit log viewing through `get_audit_logs`.
 
 Production Supabase is set up through migrations and Owner bootstrap. Vercel deployment is live at `https://anteiku-guild-manager.vercel.app`, production Auth Site URL/redirect URL setup is complete, and production browser/network smoke validation has passed with documented deferred items for production GvG data creation and CP redaction browser coverage.
 

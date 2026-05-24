@@ -1,5 +1,34 @@
 # Supabase RLS
 
+## Milestone 21B Rank Badge Summary RPC
+
+Milestone 21B is implemented and locally validated. `20260524000400_cp_rank_badge_summary.sql` is local-only and is not applied to staging or production yet.
+
+New RPC:
+- `get_my_cp_rank_summary()`
+
+Member-safe behavior:
+- Uses `auth.uid()` and accepts no profile id parameter.
+- Requires an approved profile with active primary membership.
+- Returns only the caller's own `global_rank`, `guild_rank`, `rank_tier`, `visual_key`, and `is_ranked`.
+- Does not return CP values, updated timestamps, growth/history/snapshot data, updated-by metadata, usernames, profile ids, other-member data, or private metadata.
+- `inactive` and `on_break` callers with active approved membership receive the unranked/default state instead of CP data.
+- Hard-blocked users without active approved membership are denied by the same membership gate.
+
+Roster/ranking rules:
+- Rank summary uses the same eligible row set as `get_member_cp_rankings`: approved active primary memberships with roster status `active`, `trial`, or `pending_transfer`.
+- Ranking excludes `inactive`, `on_break`, `suspended`, `left`, and `kicked`.
+- Ranks use deterministic `row_number()` order by `cp_value desc`, then IGN/profile tie-breaker.
+
+Direct table access:
+- No direct `member_cp` or `cp_snapshots` grants/policies were broadened.
+- Existing CP Ranking, CP Update Window, admin CP roster/update, audit, GvG, role, permission, and member-status behavior is preserved.
+
+Validation:
+- Local Supabase reset passed.
+- Local validation script passed through Docker `psql`.
+- Milestone 21B focused validation result: 15 PASS / 0 FAIL / 0 SKIP.
+
 ## Milestone 20B CP Ranking RPCs
 
 Milestone 20B is implemented and locally validated. `20260524000300_cp_rankings.sql` is applied and verified in staging as of Milestone 20E and production as of Milestone 20F.
@@ -74,7 +103,7 @@ Validation:
 
 ## Production Deployment Reminder
 
-Production is live through Milestone 20F. CP Leaderboard / CP Ranking is applied, deployed, and smoke-validated in production.
+Production is live through Milestone 20F. CP Leaderboard / CP Ranking is applied, deployed, and smoke-validated in production. Milestone 21B rank badge summary is local-only until a separately approved staging/production rollout.
 
 Future production setup must:
 - Apply migrations in documented timestamp order.

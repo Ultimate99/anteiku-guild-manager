@@ -3481,4 +3481,432 @@ select count(*) filter (where status = 'PASS') as milestone20b_total_pass,
        count(*) filter (where status = 'SKIP') as milestone20b_total_skip
 from milestone20b_cp_rankings_results;
 
+-- Milestone 21B: Rank Badge / Profile Border own-rank summary validation.
+-- This validates a member-safe own-rank summary RPC without exposing CP values
+-- or private leaderboard metadata.
+create temp table if not exists milestone21b_rank_badge_results (
+  section text not null,
+  test_name text not null,
+  status text not null check (status in ('PASS', 'FAIL', 'SKIP')),
+  details text
+) on commit drop;
+
+do $$
+declare
+  anteiku_id constant uuid := '00000000-0000-0000-0000-000000000101';
+  owner_id constant uuid := '10000000-0000-0000-0000-000000000001';
+  leader_id constant uuid := '10000000-0000-0000-0000-000000000002';
+  vice_id constant uuid := '10000000-0000-0000-0000-000000000003';
+  admin_cp_id constant uuid := '10000000-0000-0000-0000-000000000005';
+  member_id constant uuid := '10000000-0000-0000-0000-000000000006';
+  trial_rank_id constant uuid := '10000000-0000-0000-0000-000000000020';
+  inactive_rank_id constant uuid := '10000000-0000-0000-0000-000000000022';
+  suspended_rank_id constant uuid := '10000000-0000-0000-0000-000000000024';
+  filler_high_rank_id uuid := '10000000-0000-0000-0000-00000000020b';
+  filler_ranked_member_id uuid := '10000000-0000-0000-0000-00000000021b';
+  unranked_id uuid := '10000000-0000-0000-0000-00000000030b';
+  rank_summary record;
+  summary_signature text;
+  forbidden_summary_columns integer;
+  direct_count integer;
+  idx integer;
+  filler_id uuid;
+begin
+  if to_regprocedure('public.get_my_cp_rank_summary()') is not null then
+    insert into milestone21b_rank_badge_results values ('schema', 'rank_summary_rpc_exists', 'PASS', 'get_my_cp_rank_summary() exists.');
+  else
+    insert into milestone21b_rank_badge_results values ('schema', 'rank_summary_rpc_exists', 'FAIL', 'get_my_cp_rank_summary() is missing.');
+  end if;
+
+  select pg_get_function_result('public.get_my_cp_rank_summary()'::regprocedure)
+  into summary_signature;
+
+  select count(*) into forbidden_summary_columns
+  from regexp_matches(
+    lower(summary_signature),
+    '(cp_value|old_cp|cp_new|growth|updated_at|updated_by|profile_id|username|snapshot|metadata|ign|guild_name|guild_slug)',
+    'g'
+  );
+
+  if forbidden_summary_columns = 0 then
+    insert into milestone21b_rank_badge_results values ('schema', 'rank_summary_shape_has_no_private_fields', 'PASS', summary_signature);
+  else
+    insert into milestone21b_rank_badge_results values ('schema', 'rank_summary_shape_has_no_private_fields', 'FAIL', summary_signature);
+  end if;
+
+  insert into auth.users (
+    instance_id,
+    id,
+    aud,
+    role,
+    email,
+    encrypted_password,
+    email_confirmed_at,
+    raw_app_meta_data,
+    raw_user_meta_data,
+    created_at,
+    updated_at
+  )
+  values
+    ('00000000-0000-0000-0000-000000000000', filler_high_rank_id, 'authenticated', 'authenticated', 'rank-badge-high.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+    ('00000000-0000-0000-0000-000000000000', filler_ranked_member_id, 'authenticated', 'authenticated', 'rank-badge-ranked.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+    ('00000000-0000-0000-0000-000000000000', unranked_id, 'authenticated', 'authenticated', 'rank-badge-unranked.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now())
+  on conflict (id) do nothing;
+
+  insert into public.profiles (id, username, profile_slug, ign, approval_status, approved_at)
+  values
+    (filler_high_rank_id, 'rank_badge_high', 'rank_badge_high', 'Rank Badge High', 'approved', now()),
+    (filler_ranked_member_id, 'rank_badge_ranked', 'rank_badge_ranked', 'Rank Badge Ranked', 'approved', now()),
+    (unranked_id, 'rank_badge_unranked', 'rank_badge_unranked', 'Rank Badge Unranked', 'approved', now())
+  on conflict (id) do update
+  set ign = excluded.ign,
+      approval_status = excluded.approval_status,
+      approved_at = excluded.approved_at;
+
+  insert into public.guild_memberships (profile_id, guild_id, role, membership_status, roster_status, is_primary, assigned_by)
+  values
+    (filler_high_rank_id, anteiku_id, 'member', 'active', 'active', true, owner_id),
+    (filler_ranked_member_id, anteiku_id, 'member', 'active', 'active', true, owner_id),
+    (unranked_id, anteiku_id, 'member', 'active', 'active', true, owner_id)
+  on conflict (profile_id, guild_id) do update
+  set role = excluded.role,
+      membership_status = excluded.membership_status,
+      roster_status = excluded.roster_status,
+      is_primary = excluded.is_primary,
+      assigned_by = excluded.assigned_by;
+
+  for idx in 1..20 loop
+    filler_id := ('10000000-0000-0000-0000-' || lpad(to_hex(8448 + idx), 12, '0'))::uuid;
+
+    insert into auth.users (
+      instance_id,
+      id,
+      aud,
+      role,
+      email,
+      encrypted_password,
+      email_confirmed_at,
+      raw_app_meta_data,
+      raw_user_meta_data,
+      created_at,
+      updated_at
+    )
+    values (
+      '00000000-0000-0000-0000-000000000000',
+      filler_id,
+      'authenticated',
+      'authenticated',
+      'rank-badge-filler-' || idx || '.local@example.test',
+      'local-only',
+      now(),
+      '{"provider":"email","providers":["email"]}'::jsonb,
+      '{}'::jsonb,
+      now(),
+      now()
+    )
+    on conflict (id) do nothing;
+
+    insert into public.profiles (id, username, profile_slug, ign, approval_status, approved_at)
+    values (
+      filler_id,
+      'rank_badge_filler_' || idx,
+      'rank_badge_filler_' || idx,
+      'Rank Badge Filler ' || lpad(idx::text, 2, '0'),
+      'approved',
+      now()
+    )
+    on conflict (id) do update
+    set ign = excluded.ign,
+        approval_status = excluded.approval_status,
+        approved_at = excluded.approved_at;
+
+    insert into public.guild_memberships (profile_id, guild_id, role, membership_status, roster_status, is_primary, assigned_by)
+    values (filler_id, anteiku_id, 'member', 'active', 'active', true, owner_id)
+    on conflict (profile_id, guild_id) do update
+    set role = excluded.role,
+        membership_status = excluded.membership_status,
+        roster_status = excluded.roster_status,
+        is_primary = excluded.is_primary,
+        assigned_by = excluded.assigned_by;
+
+    insert into public.member_cp (profile_id, guild_id, cp_value, updated_by, updated_at)
+    values (filler_id, anteiku_id, 690000 - (idx * 1000), owner_id, now())
+    on conflict (profile_id) do update
+    set guild_id = excluded.guild_id,
+        cp_value = excluded.cp_value,
+        updated_by = excluded.updated_by,
+        updated_at = excluded.updated_at;
+  end loop;
+
+  insert into public.member_cp (profile_id, guild_id, cp_value, updated_by, updated_at)
+  values
+    (filler_high_rank_id, anteiku_id, 683500, owner_id, now()),
+    (filler_ranked_member_id, anteiku_id, 1000, owner_id, now())
+  on conflict (profile_id) do update
+  set guild_id = excluded.guild_id,
+      cp_value = excluded.cp_value,
+      updated_by = excluded.updated_by,
+      updated_at = excluded.updated_at;
+
+  begin
+    perform set_config('request.jwt.claim.sub', leader_id::text, true);
+    execute 'set local role authenticated';
+    select * into rank_summary from public.get_my_cp_rank_summary();
+    execute 'reset role';
+
+    if rank_summary.global_rank = 1
+       and rank_summary.guild_rank = 1
+       and rank_summary.rank_tier = 'rank_one'
+       and rank_summary.visual_key = 'rank_1'
+       and rank_summary.is_ranked = true then
+      insert into milestone21b_rank_badge_results values ('rpc', 'rank_1_summary', 'PASS', row_to_json(rank_summary)::text);
+    else
+      insert into milestone21b_rank_badge_results values ('rpc', 'rank_1_summary', 'FAIL', coalesce(row_to_json(rank_summary)::text, 'No summary.'));
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone21b_rank_badge_results values ('rpc', 'rank_1_summary', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', vice_id::text, true);
+    execute 'set local role authenticated';
+    select * into rank_summary from public.get_my_cp_rank_summary();
+    execute 'reset role';
+
+    if rank_summary.global_rank = 2
+       and rank_summary.rank_tier = 'rank_two'
+       and rank_summary.visual_key = 'rank_2'
+       and rank_summary.is_ranked = true then
+      insert into milestone21b_rank_badge_results values ('rpc', 'rank_2_summary', 'PASS', row_to_json(rank_summary)::text);
+    else
+      insert into milestone21b_rank_badge_results values ('rpc', 'rank_2_summary', 'FAIL', coalesce(row_to_json(rank_summary)::text, 'No summary.'));
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone21b_rank_badge_results values ('rpc', 'rank_2_summary', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_cp_id::text, true);
+    execute 'set local role authenticated';
+    select * into rank_summary from public.get_my_cp_rank_summary();
+    execute 'reset role';
+
+    if rank_summary.global_rank = 3
+       and rank_summary.rank_tier = 'rank_three'
+       and rank_summary.visual_key = 'rank_3'
+       and rank_summary.is_ranked = true then
+      insert into milestone21b_rank_badge_results values ('rpc', 'rank_3_summary', 'PASS', row_to_json(rank_summary)::text);
+    else
+      insert into milestone21b_rank_badge_results values ('rpc', 'rank_3_summary', 'FAIL', coalesce(row_to_json(rank_summary)::text, 'No summary.'));
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone21b_rank_badge_results values ('rpc', 'rank_3_summary', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', trial_rank_id::text, true);
+    execute 'set local role authenticated';
+    select * into rank_summary from public.get_my_cp_rank_summary();
+    execute 'reset role';
+
+    if rank_summary.global_rank = 4
+       and rank_summary.rank_tier = 'elite_five'
+       and rank_summary.visual_key = 'elite_5'
+       and rank_summary.is_ranked = true then
+      insert into milestone21b_rank_badge_results values ('rpc', 'elite_five_summary', 'PASS', row_to_json(rank_summary)::text);
+    else
+      insert into milestone21b_rank_badge_results values ('rpc', 'elite_five_summary', 'FAIL', coalesce(row_to_json(rank_summary)::text, 'No summary.'));
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone21b_rank_badge_results values ('rpc', 'elite_five_summary', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    execute 'set local role authenticated';
+    select * into rank_summary from public.get_my_cp_rank_summary();
+    execute 'reset role';
+
+    if rank_summary.global_rank = 6
+       and rank_summary.rank_tier = 'top_ten'
+       and rank_summary.visual_key = 'top_10'
+       and rank_summary.is_ranked = true then
+      insert into milestone21b_rank_badge_results values ('rpc', 'top_ten_summary', 'PASS', row_to_json(rank_summary)::text);
+    else
+      insert into milestone21b_rank_badge_results values ('rpc', 'top_ten_summary', 'FAIL', coalesce(row_to_json(rank_summary)::text, 'No summary.'));
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone21b_rank_badge_results values ('rpc', 'top_ten_summary', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', filler_high_rank_id::text, true);
+    execute 'set local role authenticated';
+    select * into rank_summary from public.get_my_cp_rank_summary();
+    execute 'reset role';
+
+    if rank_summary.global_rank between 11 and 25
+       and rank_summary.rank_tier = 'high_rank'
+       and rank_summary.visual_key = 'high_rank'
+       and rank_summary.is_ranked = true then
+      insert into milestone21b_rank_badge_results values ('rpc', 'high_rank_summary', 'PASS', row_to_json(rank_summary)::text);
+    else
+      insert into milestone21b_rank_badge_results values ('rpc', 'high_rank_summary', 'FAIL', coalesce(row_to_json(rank_summary)::text, 'No summary.'));
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone21b_rank_badge_results values ('rpc', 'high_rank_summary', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', filler_ranked_member_id::text, true);
+    execute 'set local role authenticated';
+    select * into rank_summary from public.get_my_cp_rank_summary();
+    execute 'reset role';
+
+    if rank_summary.global_rank >= 26
+       and rank_summary.rank_tier = 'ranked_member'
+       and rank_summary.visual_key = 'ranked_member'
+       and rank_summary.is_ranked = true then
+      insert into milestone21b_rank_badge_results values ('rpc', 'rank_26_plus_summary', 'PASS', row_to_json(rank_summary)::text);
+    else
+      insert into milestone21b_rank_badge_results values ('rpc', 'rank_26_plus_summary', 'FAIL', coalesce(row_to_json(rank_summary)::text, 'No summary.'));
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone21b_rank_badge_results values ('rpc', 'rank_26_plus_summary', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', unranked_id::text, true);
+    execute 'set local role authenticated';
+    select * into rank_summary from public.get_my_cp_rank_summary();
+    execute 'reset role';
+
+    if rank_summary.global_rank is null
+       and rank_summary.guild_rank is null
+       and rank_summary.rank_tier = 'unranked'
+       and rank_summary.visual_key = 'unranked'
+       and rank_summary.is_ranked = false then
+      insert into milestone21b_rank_badge_results values ('rpc', 'unranked_member_summary', 'PASS', row_to_json(rank_summary)::text);
+    else
+      insert into milestone21b_rank_badge_results values ('rpc', 'unranked_member_summary', 'FAIL', coalesce(row_to_json(rank_summary)::text, 'No summary.'));
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone21b_rank_badge_results values ('rpc', 'unranked_member_summary', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', inactive_rank_id::text, true);
+    execute 'set local role authenticated';
+    select * into rank_summary from public.get_my_cp_rank_summary();
+    execute 'reset role';
+
+    if rank_summary.global_rank is null
+       and rank_summary.guild_rank is null
+       and rank_summary.rank_tier = 'unranked'
+       and rank_summary.visual_key = 'unranked'
+       and rank_summary.is_ranked = false then
+      insert into milestone21b_rank_badge_results values ('rpc', 'inactive_excluded_summary', 'PASS', row_to_json(rank_summary)::text);
+    else
+      insert into milestone21b_rank_badge_results values ('rpc', 'inactive_excluded_summary', 'FAIL', coalesce(row_to_json(rank_summary)::text, 'No summary.'));
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone21b_rank_badge_results values ('rpc', 'inactive_excluded_summary', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', suspended_rank_id::text, true);
+    execute 'set local role authenticated';
+    perform public.get_my_cp_rank_summary();
+    execute 'reset role';
+    insert into milestone21b_rank_badge_results values ('rpc', 'hard_blocked_user_denied_summary', 'FAIL', 'Suspended user read rank summary.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone21b_rank_badge_results values ('rpc', 'hard_blocked_user_denied_summary', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    execute 'set local role authenticated';
+    select count(*) into direct_count from public.get_my_cp_rank_summary() s
+    where to_jsonb(s) ?| array[
+      'cp_value',
+      'old_cp',
+      'cp_new',
+      'growth',
+      'updated_at',
+      'updated_by',
+      'profile_id',
+      'username',
+      'snapshot',
+      'metadata',
+      'ign',
+      'guild_name',
+      'guild_slug'
+    ];
+    execute 'reset role';
+
+    if direct_count = 0 then
+      insert into milestone21b_rank_badge_results values ('security', 'summary_response_contains_no_private_fields', 'PASS', 'Summary response contained only rank/tier fields.');
+    else
+      insert into milestone21b_rank_badge_results values ('security', 'summary_response_contains_no_private_fields', 'FAIL', 'Summary response contained private fields.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone21b_rank_badge_results values ('security', 'summary_response_contains_no_private_fields', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    execute 'set local role authenticated';
+    select count(*) into direct_count from public.member_cp;
+    execute 'reset role';
+
+    if direct_count = 0 then
+      insert into milestone21b_rank_badge_results values ('rls', 'member_direct_member_cp_still_denied', 'PASS', 'Direct member_cp read returned no rows.');
+    else
+      insert into milestone21b_rank_badge_results values ('rls', 'member_direct_member_cp_still_denied', 'FAIL', 'Direct member_cp read returned rows.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone21b_rank_badge_results values ('rls', 'member_direct_member_cp_still_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    execute 'set local role authenticated';
+    select count(*) into direct_count from public.cp_snapshots;
+    execute 'reset role';
+
+    if direct_count = 0 then
+      insert into milestone21b_rank_badge_results values ('rls', 'member_direct_cp_snapshots_still_denied', 'PASS', 'Direct cp_snapshots read returned no rows.');
+    else
+      insert into milestone21b_rank_badge_results values ('rls', 'member_direct_cp_snapshots_still_denied', 'FAIL', 'Direct cp_snapshots read returned rows.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone21b_rank_badge_results values ('rls', 'member_direct_cp_snapshots_still_denied', 'PASS', sqlerrm);
+  end;
+end;
+$$;
+
+select section, test_name, status, details
+from milestone21b_rank_badge_results
+order by section, test_name;
+
+select count(*) filter (where status = 'PASS') as milestone21b_total_pass,
+       count(*) filter (where status = 'FAIL') as milestone21b_total_fail,
+       count(*) filter (where status = 'SKIP') as milestone21b_total_skip
+from milestone21b_rank_badge_results;
+
 rollback;

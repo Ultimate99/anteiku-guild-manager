@@ -1,12 +1,35 @@
 # Supabase RLS
 
-The local Supabase RLS/RPC implementation has been validated through Milestone 20B, and the Milestone 11B frontend audit viewer has been live-browser validated against the safe audit RPC.
+The local Supabase RLS/RPC implementation has been validated through Milestone 21B, and the Milestone 11B frontend audit viewer has been live-browser validated against the safe audit RPC.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
 
+## Milestone 21B Rank Badge Summary RPC
+
+Milestone 21B is backend/database-only and locally validated. Staging and production rollout are pending.
+
+New RPC:
+- `get_my_cp_rank_summary()`
+
+Member-safe behavior:
+- Uses `auth.uid()` and accepts no profile id parameter.
+- Requires approved profile with active primary membership.
+- Returns only the caller's own `global_rank`, `guild_rank`, `rank_tier`, `visual_key`, and `is_ranked`.
+- Does not return CP values, updated timestamps, growth/history/snapshot data, usernames, profile ids, other-member rows, or private metadata.
+- `inactive` and `on_break` users with active approved membership receive the `unranked` default state.
+- Hard-blocked users remain denied by existing access gates.
+
+Roster/ranking rules:
+- Rank summary uses the same eligible row set as the member-safe leaderboard: approved active primary memberships with roster status `active`, `trial`, or `pending_transfer`.
+- Ranking excludes `inactive`, `on_break`, `suspended`, `left`, and `kicked`.
+- Ranks use deterministic `row_number()` ordering by `cp_value desc`, then IGN/profile tie-breaker.
+
+Validation:
+- Milestone 21B local validation passed with 15 PASS / 0 FAIL / 0 SKIP.
+
 ## Milestone 20B CP Ranking RPCs
 
-Milestone 20B is backend/database-only and locally validated. Staging and production rollout are pending.
+Milestone 20B is backend/database-only and locally validated. Staging and production rollout passed through Milestones 20E and 20F.
 
 New RPCs:
 - `get_member_cp_rankings(p_scope text default 'guild')`

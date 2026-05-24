@@ -2,7 +2,25 @@
 
 ## Current Recommendation
 
-Milestone 20F CP Leaderboard production rollout is complete. The next recommended milestone is a docs/handoff commit checkpoint, then planning for Weekly CP Snapshot/Growth Reports or another approved feature track.
+Milestone 21B Rank Badge / Profile Border backend is implemented and locally validated. The next recommended milestone is Milestone 21C frontend Profile/Dashboard badge UI, followed by staging migration rollout and validation before production.
+
+Recorded Milestone 21B backend status:
+- New local migration: `20260524000400_cp_rank_badge_summary.sql`.
+- Added `get_my_cp_rank_summary()`.
+- Return shape is limited to `global_rank`, `guild_rank`, `rank_tier`, `visual_key`, and `is_ranked`.
+- Rank tier keys are stable SQL keys for frontend translation later: `rank_one`, `rank_two`, `rank_three`, `elite_five`, `top_ten`, `high_rank`, `ranked_member`, and `unranked`.
+- Visual keys are `rank_1`, `rank_2`, `rank_3`, `elite_5`, `top_10`, `high_rank`, `ranked_member`, and `unranked`.
+- The RPC uses `auth.uid()` and accepts no profile id parameter.
+- It does not return CP values, timestamps, growth/history/snapshot data, updated-by metadata, usernames, profile ids, other-member data, or private metadata.
+- `inactive` and `on_break` users return the `unranked` default state; hard-blocked users remain denied by existing active-membership gates.
+- Direct `member_cp` and `cp_snapshots` access remains blocked.
+- Local validation passed: `npx.cmd supabase db reset`; `supabase/tests/local_validation_anteiku.sql` through Docker `psql`; Milestone 21B result 15 PASS / 0 FAIL / 0 SKIP.
+- `npm.cmd run build` was not run because 21B changed only database migration/tests/docs and no frontend code.
+
+Rollout boundary:
+- `20260524000400_cp_rank_badge_summary.sql` is local-only.
+- Staging and production do not have the Rank Badge Summary migration yet.
+- Do not deploy future rank badge/profile border frontend UI to a remote target until that target DB has `20260524000400_cp_rank_badge_summary.sql` applied and verified.
 
 Recorded Milestone 20F production status:
 - Production project `mzflfyxxkascrfpteexz` received only `20260524000300_cp_rankings.sql`.
@@ -40,8 +58,7 @@ Recorded Milestone 20D frontend status:
 - Static checks found no direct `member_cp`, `cp_snapshots`, or `cp_update_windows` table calls.
 
 Rollout boundary:
-- Staging and production do not have `20260524000300_cp_rankings.sql`.
-- Do not deploy the 20C/20D frontend to a remote target until that target DB has the 20B CP Ranking migration applied and verified.
+- This older 20D boundary was resolved in Milestone 20E/20F; staging and production now have `20260524000300_cp_rankings.sql` applied and verified.
 
 Recorded Milestone 20C frontend status:
 - Added `src/services/cpLeaderboardService.js`.
@@ -58,8 +75,7 @@ Recorded Milestone 20C frontend status:
 - Local browser smoke covered the unauthenticated shell only; authenticated leaderboard validation awaits staging DB migration and staging users.
 
 Rollout boundary:
-- Staging and production do not have `20260524000300_cp_rankings.sql`.
-- Do not deploy the 20C frontend to a remote target until that target DB has the 20B CP Ranking migration applied and verified.
+- This older 20C boundary was resolved in Milestone 20E/20F; staging and production now have `20260524000300_cp_rankings.sql` applied and verified.
 
 Recorded Milestone 20B backend status:
 - New local migration: `20260524000300_cp_rankings.sql`.
@@ -78,9 +94,7 @@ Recorded Milestone 20B backend status:
 - `npm.cmd run build` was not run because 20B changed only database migration/tests/docs and no frontend code.
 
 Rollout boundary:
-- `20260524000300_cp_rankings.sql` is local-only.
-- Staging and production do not have the CP Ranking migration yet.
-- Do not deploy frontend CP leaderboard UI to a remote target until that target DB has `20260524000300_cp_rankings.sql` applied and verified.
+- This older Milestone 20B boundary was resolved in Milestone 20E/20F; staging and production now have `20260524000300_cp_rankings.sql` applied and verified.
 
 Recorded Milestone 19E production status:
 - CP Update Window / Member CP Self-Submit is live in production after production DB migration verification, frontend deployment, and read-only Owner/member smoke validation.

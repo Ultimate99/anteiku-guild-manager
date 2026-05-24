@@ -1,5 +1,24 @@
 # Session Log
 
+## 2026-05-24 - Milestone 21B Rank Badge Summary Backend Implemented
+
+- Implemented backend/database-only Rank Badge / Profile Border support.
+- Created migration `supabase/migrations/20260524000400_cp_rank_badge_summary.sql`.
+- Added `get_my_cp_rank_summary()`.
+- RPC returns only `global_rank`, `guild_rank`, `rank_tier`, `visual_key`, and `is_ranked`.
+- RPC does not return CP values, updated timestamps, growth/history/snapshot data, updated-by metadata, usernames, profile ids, other-member data, or private metadata.
+- Tier keys: `rank_one`, `rank_two`, `rank_three`, `elite_five`, `top_ten`, `high_rank`, `ranked_member`, and `unranked`.
+- Visual keys: `rank_1`, `rank_2`, `rank_3`, `elite_5`, `top_10`, `high_rank`, `ranked_member`, and `unranked`.
+- Uses `auth.uid()` only and accepts no target profile id parameter.
+- Uses the same eligible row set as member-safe rankings: approved active primary memberships with roster status `active`, `trial`, or `pending_transfer`.
+- `inactive` and `on_break` return the unranked/default state; hard-blocked users remain denied by existing access gates.
+- Updated local validation SQL with Milestone 21B checks for tiers, unranked state, private-field absence, no other-user parameter, and direct CP table denial.
+- `npx.cmd supabase db reset` passed locally.
+- Full local validation passed through Docker `psql`; Milestone 21B result was 15 PASS / 0 FAIL / 0 SKIP.
+- Existing Milestone 20B, 19B, and 19B.1 CP validation blocks still passed.
+- `npm.cmd run build` was not run because no frontend/source UI code changed.
+- No React components, source services, staging, production, Vercel, deployment, or commit action was performed.
+
 ## 2026-05-24 - Milestone 20F CP Leaderboard Production Rollout Complete
 
 - Completed production rollout for CP Leaderboard / CP Ranking.

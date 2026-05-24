@@ -2,16 +2,16 @@
 
 ## Current Backend Status
 
-Milestone 20B adds local-only backend support for member-safe CP rankings and admin CP rankings. It is implemented and locally validated, but has not been applied to staging or production.
+Milestone 21B adds local-only backend support for safe own CP rank badge/profile border summaries. It is implemented and locally validated, but has not been applied to staging or production.
 
 New local migration:
-- `supabase/migrations/20260524000300_cp_rankings.sql`
+- `supabase/migrations/20260524000400_cp_rank_badge_summary.sql`
 
-Do not deploy frontend CP leaderboard UI to any remote environment until this migration has been applied and verified in that environment.
+Do not deploy future rank badge/profile border frontend UI to any remote environment until this migration has been applied and verified in that environment.
 
 ## Production Deployment Status
 
-Production Supabase is live and migrated through Milestone 19E. Member Status and CP Update Window / Member CP Self-Submit are applied, verified, and live in production.
+Production Supabase is live and migrated through Milestone 20F. Member Status, CP Update Window / Member CP Self-Submit, and CP Leaderboard are applied, verified, and live in production.
 
 Current local migration order:
 
@@ -27,13 +27,16 @@ Current local migration order:
 10. `20260523000100_member_roster_status_system.sql`
 11. `20260524000100_cp_update_window_self_submit.sql`
 12. `20260524000200_cp_update_window_staff_read.sql`
-13. `20260524000300_cp_rankings.sql` - local only; not applied to staging or production yet.
+13. `20260524000300_cp_rankings.sql`
+14. `20260524000400_cp_rank_badge_summary.sql` - local only; not applied to staging or production yet.
 
 Migration `20260523000100_member_roster_status_system.sql` is implemented, locally validated, staging validated, and production applied/verified.
 
 Migrations `20260524000100_cp_update_window_self_submit.sql` and `20260524000200_cp_update_window_staff_read.sql` are implemented, locally validated, staging validated, and production applied/verified.
 
-Migration `20260524000300_cp_rankings.sql` is implemented and locally validated only.
+Migration `20260524000300_cp_rankings.sql` is implemented, locally validated, staging validated, and production applied/verified.
+
+Migration `20260524000400_cp_rank_badge_summary.sql` is implemented and locally validated only.
 
 Production Member Status verification:
 - Existing production memberships were backfilled to `roster_status = active`.
@@ -84,6 +87,41 @@ Validation:
 - Local Supabase reset passed.
 - Local validation script passed through Docker `psql`.
 - Milestone 20B focused validation result: 14 PASS / 0 FAIL / 0 SKIP.
+
+## Milestone 21B CP Rank Badge Summary RPC
+
+Migration:
+- `supabase/migrations/20260524000400_cp_rank_badge_summary.sql`
+
+New RPC:
+- `get_my_cp_rank_summary()`
+
+Purpose:
+- Supports future Profile/Dashboard rank badge and profile border visuals without exposing CP values.
+- Returns only the caller's own global/guild rank position and stable tier/visual keys.
+
+Return shape:
+- `global_rank integer`
+- `guild_rank integer`
+- `rank_tier text`
+- `visual_key text`
+- `is_ranked boolean`
+
+Privacy:
+- Does not return `cp_value`, updated timestamps, growth/history/snapshot data, usernames, profile ids, other-member rows, or private metadata.
+- Accepts no target profile id; the caller is resolved only through `auth.uid()`.
+- Direct `member_cp` and `cp_snapshots` access remains blocked.
+
+Ranking and tier rules:
+- Uses the same eligible row set as the member-safe leaderboard: approved profile, active primary membership, and roster status `active`, `trial`, or `pending_transfer`.
+- Excludes `inactive`, `on_break`, `suspended`, `left`, `kicked`, pending memberships, and rejected memberships.
+- Uses deterministic `row_number()` order by `cp_value desc`, then IGN/profile tie-breaker.
+- Tiers: `rank_one`, `rank_two`, `rank_three`, `elite_five`, `top_ten`, `high_rank`, `ranked_member`, and `unranked`.
+
+Validation:
+- Local Supabase reset passed.
+- Local validation script passed through Docker `psql`.
+- Milestone 21B focused validation result: 15 PASS / 0 FAIL / 0 SKIP.
 
 ## Milestone 19B CP Update Window Backend
 

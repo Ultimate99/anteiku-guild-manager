@@ -1,6 +1,6 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and validated through Milestone 20B locally. Remote production is live through Milestone 20F, including the CP Ranking migration and frontend rollout.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and validated through Milestone 21B locally. Remote production is live through Milestone 20F, including the CP Ranking migration and frontend rollout.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
@@ -19,12 +19,15 @@ Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION
 11. `20260524000100_cp_update_window_self_submit.sql`
 12. `20260524000200_cp_update_window_staff_read.sql`
 13. `20260524000300_cp_rankings.sql`
+14. `20260524000400_cp_rank_badge_summary.sql` - local only; not applied to staging or production yet.
 
 Migration `20260523000100_member_roster_status_system.sql` is locally validated, staging validated, and production applied/verified as of Milestone 15E.
 
 Migrations `20260524000100_cp_update_window_self_submit.sql` and `20260524000200_cp_update_window_staff_read.sql` are locally validated, staging validated, and production applied/verified.
 
 Migration `20260524000300_cp_rankings.sql` is locally validated, staging validated, and production applied/verified.
+
+Migration `20260524000400_cp_rank_badge_summary.sql` is locally validated only.
 
 Production Member Status rollout:
 - Existing production memberships were backfilled to `roster_status = active`.
@@ -65,6 +68,41 @@ Ranking rules:
 Security:
 - No direct grants are added for `member_cp` or `cp_snapshots`.
 - Existing CP Update Window and admin CP roster/update behavior is preserved.
+
+## Milestone 21B CP Rank Badge Summary Backend
+
+New migration:
+- `supabase/migrations/20260524000400_cp_rank_badge_summary.sql`
+
+Adds:
+- `get_my_cp_rank_summary()`
+
+Behavior:
+- Returns only the signed-in user's own rank summary for future Profile/Dashboard badge visuals.
+- Return shape is `global_rank`, `guild_rank`, `rank_tier`, `visual_key`, and `is_ranked`.
+- Does not return CP values, updated timestamps, growth/history/snapshot data, profile ids, usernames, other-member rows, or private metadata.
+- Uses `auth.uid()` and accepts no target profile id parameter.
+
+Tier rules:
+- Global rank 1: `rank_one` / `rank_1`.
+- Global rank 2: `rank_two` / `rank_2`.
+- Global rank 3: `rank_three` / `rank_3`.
+- Global ranks 4-5: `elite_five` / `elite_5`.
+- Global ranks 6-10: `top_ten` / `top_10`.
+- Global ranks 11-25: `high_rank`.
+- Global rank 26+: `ranked_member`.
+- No CP row or excluded roster state: `unranked`.
+
+Security:
+- Uses the same eligible row set as the member-safe CP leaderboard: approved active primary memberships with roster status `active`, `trial`, or `pending_transfer`.
+- `inactive` and `on_break` receive the unranked/default state.
+- Hard-blocked users remain denied by existing active approved membership gates.
+- Direct `member_cp` and `cp_snapshots` access remains blocked.
+
+Validation:
+- Local Supabase reset passed.
+- Local validation script passed through Docker `psql`.
+- Milestone 21B focused validation result: 15 PASS / 0 FAIL / 0 SKIP.
 
 ## Milestone 19B CP Update Window Backend
 

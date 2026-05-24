@@ -1,5 +1,38 @@
 # Testing And Validation
 
+## Milestone 21B Rank Badge Summary Backend Validation
+
+Milestone 21B backend/database validation passed locally.
+
+Migration:
+- Added local migration `20260524000400_cp_rank_badge_summary.sql`.
+- Added `get_my_cp_rank_summary()`.
+- No frontend/source UI files were changed.
+- No staging or production migration was applied.
+
+Local validation:
+- `npx.cmd supabase db reset` passed.
+- Full local validation script passed through Docker `psql`.
+- Milestone 21B focused validation result: 15 PASS / 0 FAIL / 0 SKIP.
+- Earlier CP validation blocks still passed, including Milestone 20B CP Ranking, Milestone 19B CP Update Window, and Milestone 19B.1 staff window read checks.
+
+Focused checks:
+- Ranked members receive own `global_rank`, `guild_rank`, `rank_tier`, `visual_key`, and `is_ranked`.
+- Rank 1, 2, 3, 4-5, 6-10, 11-25, and 26+ tier mappings were covered.
+- Unranked/no-CP users receive `is_ranked = false` with `unranked` keys.
+- `inactive` users are excluded from rank tiers and receive the unranked default state.
+- Hard-blocked users are denied by the active approved membership gate.
+- Response shape contains no CP values or private fields.
+- There is no target profile id parameter, so members cannot request another user's rank summary.
+- Direct `member_cp` and `cp_snapshots` reads remain blocked.
+
+Build:
+- `npm.cmd run build` was not run because 21B changed only database migration/tests/docs and no frontend code.
+
+Rollout boundary:
+- `20260524000400_cp_rank_badge_summary.sql` is local-only.
+- Future Profile/Dashboard badge UI must not be deployed to a remote target until that target DB has this migration applied and verified.
+
 ## Milestone 20F CP Leaderboard Production Rollout
 
 Milestone 20F production rollout and smoke validation passed.

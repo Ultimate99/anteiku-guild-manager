@@ -41,6 +41,21 @@
 - `src/components/admin/AdminToolsSection.jsx`: Planned/future admin tools section.
 - `src/styles/app.css`: Plain mobile-first dark styling.
 
+## Milestone 21B Rank Badge Summary Backend
+
+Production status:
+- Local-only as of Milestone 21B.
+- Do not deploy future rank badge/profile border frontend to any remote target until `20260524000400_cp_rank_badge_summary.sql` is applied and verified there.
+
+- `supabase/migrations/20260524000400_cp_rank_badge_summary.sql`
+  - Adds member-safe own-rank summary RPC `get_my_cp_rank_summary()`.
+  - Returns only `global_rank`, `guild_rank`, `rank_tier`, `visual_key`, and `is_ranked`.
+  - Uses `auth.uid()` and accepts no target profile id parameter.
+  - Does not return CP values, timestamps, growth/history/snapshot data, usernames, profile ids, other-member data, or private metadata.
+  - Uses the same eligible row set as member-safe CP rankings and returns `unranked` for excluded active statuses such as `inactive` and `on_break`.
+- `supabase/tests/local_validation_anteiku.sql`
+  - Adds Milestone 21B validation for rank tiers, unranked/no-CP behavior, inactive exclusion, hard-block denial, private-field absence, no other-user parameter, and direct CP table denial.
+
 ## Milestone 20B CP Leaderboard Backend
 
 Production status:
