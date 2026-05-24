@@ -28,6 +28,13 @@ export const navigationItems = [
     eyebrowKey: 'app.eyebrow.member',
   },
   {
+    id: 'leaderboard',
+    label: 'Ranking',
+    labelKey: 'nav.leaderboard',
+    eyebrow: 'Rank',
+    eyebrowKey: 'app.eyebrow.rank',
+  },
+  {
     id: 'gvg',
     label: 'GvG',
     labelKey: 'nav.gvg',

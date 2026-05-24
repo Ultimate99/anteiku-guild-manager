@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-05-24 - Milestone 20C Member CP Leaderboard Frontend Implemented
+
+- Added frontend-only member CP Ranking page.
+- Created `src/services/cpLeaderboardService.js` using only `get_member_cp_rankings`.
+- Created `src/pages/Leaderboard.jsx`.
+- Added member navigation/routing for CP Ranking.
+- Added My Guild and Global tabs.
+- My Guild shows rank and IGN.
+- Global shows rank, IGN, and guild label.
+- Added current-user row highlighting.
+- Added top-rank, Elite 5, and Top 10 rank decoration.
+- Added EN/FR/DE i18n labels and compact mobile styling.
+- Confirmed the member leaderboard path does not call `get_admin_cp_rankings`, `get_cp_leaderboard`, `get_current_cp_roster`, or direct CP tables.
+- `npm.cmd run build` passed.
+- Local unauthenticated browser smoke passed.
+- Authenticated staging browser validation remains pending until staging receives `20260524000300_cp_rankings.sql`.
+- No SQL migrations, Supabase/RLS/RPC logic, AdminPanel CP behavior, CP Update Window behavior, GvG, audit, role/permission/member-status behavior, staging, production, Vercel, deployment, or commit action changed.
+
 ## 2026-05-24 - Milestone 20B CP Leaderboard Backend Implemented
 
 - Added local backend/database support for CP Leaderboards.

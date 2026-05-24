@@ -44,6 +44,7 @@ export const en = {
       roster: 'Roster',
       guild: 'Guild',
       member: 'Member',
+      rank: 'Rank',
       vote: 'Vote',
       restricted: 'Restricted',
     },
@@ -51,6 +52,7 @@ export const en = {
   nav: {
     home: 'Home',
     profile: 'Profile',
+    leaderboard: 'Ranking',
     gvg: 'GvG',
     admin: 'Admin',
   },
@@ -267,6 +269,20 @@ export const en = {
     notEligible: 'Not expected for GvG.',
     noEventAvailable: 'Voting not open.',
     absenceTooLong: 'Absence reason cannot exceed 500 characters.',
+  },
+  leaderboard: {
+    title: 'CP Ranking',
+    myGuild: 'My Guild',
+    global: 'Global',
+    rank: 'Rank',
+    guild: 'Guild',
+    noRankings: 'No rankings yet.',
+    cpHidden: 'CP hidden for members',
+    currentUser: 'You',
+    loadError: 'Rankings could not be loaded.',
+    topRank: 'Top rank',
+    eliteFive: 'Elite 5',
+    topTen: 'Top 10',
   },
   admin: {
     shell: {

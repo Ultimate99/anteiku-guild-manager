@@ -1,5 +1,27 @@
 # Testing
 
+## Milestone 20C Member CP Leaderboard Frontend Validation
+
+Milestone 20C frontend implementation passed build and source/security-path validation.
+
+Build:
+- `npm.cmd run build` passed.
+
+Browser smoke:
+- Local app loaded at `http://127.0.0.1:5173/`.
+- Unauthenticated shell/auth screen rendered after the change.
+
+Static/source checks:
+- Member leaderboard service uses only `get_member_cp_rankings`.
+- Member leaderboard does not call `get_admin_cp_rankings`, `get_cp_leaderboard`, or `get_current_cp_roster`.
+- No direct frontend `.from('member_cp')`, `.from('cp_snapshots')`, or `.from('cp_update_windows')` calls were added.
+- Leaderboard UI does not render or expect CP values, profile ids, usernames, updated timestamps, snapshots, growth, history, or private metadata.
+- Existing AdminPanel CP roster/update/window behavior was not changed.
+
+Validation boundary:
+- Authenticated browser validation is pending until staging receives `20260524000300_cp_rankings.sql`.
+- Do not deploy this frontend to staging or production until that target DB has the CP Ranking migration applied and verified.
+
 ## Milestone 20B CP Leaderboard Backend Validation
 
 Milestone 20B backend/database validation passed locally.

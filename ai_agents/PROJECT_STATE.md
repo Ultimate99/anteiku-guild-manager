@@ -1,5 +1,44 @@
 # Project State
 
+## Milestone 20C Member CP Leaderboard Frontend Implemented
+
+Milestone 20C is implemented locally as a frontend-only member-facing CP Ranking page.
+
+Implemented locally:
+- Added `src/services/cpLeaderboardService.js`.
+- Added `src/pages/Leaderboard.jsx`.
+- Added a member nav item for CP Ranking.
+- Wired the page into the existing app page-id router.
+- Added EN/FR/DE i18n labels for the leaderboard surface.
+- Added compact mobile-first rank list styling with top-rank/Elite 5/Top 10 decorations.
+
+Member leaderboard behavior:
+- Uses only `get_member_cp_rankings(p_scope)`.
+- Supports `guild` and `global` scopes through `My Guild` and `Global` tabs.
+- My Guild shows rank and IGN only.
+- Global shows rank, IGN, and guild label.
+- Current user rows are highlighted when `is_current_user` is returned.
+- Empty/loading/error states are compact and translated.
+- No CP values, CP growth, CP history, snapshots, admin notes, profile ids, usernames, timestamps, or private metadata are rendered.
+
+Security/source validation:
+- `cpLeaderboardService.js` calls only `get_member_cp_rankings`.
+- The member leaderboard does not call `get_admin_cp_rankings`, `get_cp_leaderboard`, or `get_current_cp_roster`.
+- No direct frontend `member_cp`, `cp_snapshots`, or `cp_update_windows` table calls were added.
+- Existing AdminPanel CP roster/update/window behavior was not changed.
+- Existing CP Update Window, GvG, audit, role, permission, and member-status behavior was not changed.
+
+Validation:
+- `npm.cmd run build` passed.
+- Local browser smoke loaded the app at `http://127.0.0.1:5173/` and verified the unauthenticated shell still renders.
+- Authenticated leaderboard browser validation was not completed because staging/production do not have `20260524000300_cp_rankings.sql` yet and no usable local auth browser account was available.
+
+Rollout boundary:
+- Do not deploy this frontend to any remote environment until that environment has `20260524000300_cp_rankings.sql` applied and verified.
+
+Recommended next step:
+- Milestone 20D AdminPanel CP leaderboard upgrade, or Milestone 20E staging migration rollout and member leaderboard validation if the member-only slice should validate first.
+
 ## Milestone 20B CP Leaderboard Backend Implemented
 
 Milestone 20B is implemented and locally validated as backend/database-only support for member-safe CP rankings and admin CP rankings.

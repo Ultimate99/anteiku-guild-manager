@@ -9,6 +9,7 @@ import { LoginRegister } from './pages/LoginRegister.jsx';
 import { SetNewPassword } from './pages/SetNewPassword.jsx';
 import { PendingApproval } from './pages/PendingApproval.jsx';
 import { Profile } from './pages/Profile.jsx';
+import { Leaderboard } from './pages/Leaderboard.jsx';
 import { Gvg } from './pages/Gvg.jsx';
 import { AdminPanel } from './pages/AdminPanel.jsx';
 import { RejectedStatus } from './pages/RejectedStatus.jsx';
@@ -21,6 +22,7 @@ const pageComponents = {
   pending: PendingApproval,
   dashboard: Dashboard,
   profile: Profile,
+  leaderboard: Leaderboard,
   gvg: Gvg,
   admin: AdminPanel,
 };

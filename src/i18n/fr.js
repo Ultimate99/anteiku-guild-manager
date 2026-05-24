@@ -44,6 +44,7 @@ export const fr = {
       roster: 'Roster',
       guild: 'Guilde',
       member: 'Membre',
+      rank: 'Rang',
       vote: 'Vote',
       restricted: 'Restreint',
     },
@@ -51,6 +52,7 @@ export const fr = {
   nav: {
     home: 'Accueil',
     profile: 'Profil',
+    leaderboard: 'Classement',
     gvg: 'GvG',
     admin: 'Admin',
   },
@@ -268,6 +270,20 @@ export const fr = {
     notEligible: 'Non attendu en GvG.',
     noEventAvailable: 'Vote fermé.',
     absenceTooLong: "La raison d'absence ne peut pas dépasser 500 caractères.",
+  },
+  leaderboard: {
+    title: 'Classement CP',
+    myGuild: 'Ma guilde',
+    global: 'Global',
+    rank: 'Rang',
+    guild: 'Guilde',
+    noRankings: 'Aucun classement.',
+    cpHidden: 'CP masqué pour les membres',
+    currentUser: 'Vous',
+    loadError: 'Impossible de charger le classement.',
+    topRank: 'Premier rang',
+    eliteFive: 'Elite 5',
+    topTen: 'Top 10',
   },
   admin: {
     shell: {

@@ -44,6 +44,7 @@ export const de = {
       roster: 'Roster',
       guild: 'Gilde',
       member: 'Mitglied',
+      rank: 'Rang',
       vote: 'Abstimmung',
       restricted: 'Eingeschränkt',
     },
@@ -51,6 +52,7 @@ export const de = {
   nav: {
     home: 'Home',
     profile: 'Profil',
+    leaderboard: 'Rangliste',
     gvg: 'GvG',
     admin: 'Admin',
   },
@@ -268,6 +270,20 @@ export const de = {
     notEligible: 'Nicht für GvG erwartet.',
     noEventAvailable: 'Voting nicht offen.',
     absenceTooLong: 'Abwesenheitsgrund darf höchstens 500 Zeichen haben.',
+  },
+  leaderboard: {
+    title: 'CP-Rangliste',
+    myGuild: 'Meine Gilde',
+    global: 'Global',
+    rank: 'Rang',
+    guild: 'Gilde',
+    noRankings: 'Noch keine Ränge.',
+    cpHidden: 'CP für Mitglieder verborgen',
+    currentUser: 'Du',
+    loadError: 'Rangliste konnte nicht geladen werden.',
+    topRank: 'Top-Rang',
+    eliteFive: 'Elite 5',
+    topTen: 'Top 10',
   },
   admin: {
     shell: {

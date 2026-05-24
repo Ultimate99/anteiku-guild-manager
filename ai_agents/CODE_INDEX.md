@@ -52,6 +52,24 @@
 - `supabase/tests/local_validation_anteiku.sql`
   - Adds Milestone 20B validation for member-safe response shape, rank ordering, roster inclusion/exclusion, current-user highlighting, admin permission checks, Owner-only global admin rankings, and direct CP table denial.
 
+## Milestone 20C Member CP Leaderboard Frontend
+
+- `src/services/cpLeaderboardService.js`
+  - Adds `loadMemberCpRankings(scope)` for the member-safe `get_member_cp_rankings` RPC.
+  - Normalizes scope to `guild` or `global`.
+  - Guards against unexpected CP/private fields in member ranking responses.
+  - Does not call admin CP ranking, CP roster, CP leaderboard, or direct CP tables.
+- `src/pages/Leaderboard.jsx`
+  - Adds member-facing CP Ranking page with My Guild and Global tabs.
+  - Shows rank, IGN, optional guild label on Global, and current-user highlight.
+  - Does not render CP values, CP history, growth, snapshots, profile ids, usernames, timestamps, or private metadata.
+- `src/data/navigation.js` and `src/App.jsx`
+  - Add the member Leaderboard/Ranking navigation item and route.
+- `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`
+  - Add member leaderboard labels.
+- `src/styles/app.css`
+  - Adds compact leaderboard tabs, rows, rank markers, current-user highlight, and top-rank/Elite 5/Top 10 decoration.
+
 ## Milestone 18B Language Pack Foundation
 
 - `src/context/LanguageContext.jsx`

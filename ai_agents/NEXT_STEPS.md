@@ -2,7 +2,25 @@
 
 ## Current Recommendation
 
-Milestone 20B CP Leaderboard backend is implemented and locally validated. The next recommended milestone is Milestone 20C: member leaderboard frontend planning/implementation, followed by a staging migration rollout and staging validation before any production deployment.
+Milestone 20C member-facing CP Leaderboard frontend is implemented and build/source validated. The next recommended milestone is Milestone 20D AdminPanel CP leaderboard upgrade if the full leaderboard feature should be finished before staging, or Milestone 20E staging migration rollout/validation if the member-only slice should be validated first.
+
+Recorded Milestone 20C frontend status:
+- Added `src/services/cpLeaderboardService.js`.
+- Added `src/pages/Leaderboard.jsx`.
+- Added member nav/routing for CP Ranking.
+- Added EN/FR/DE i18n labels and compact mobile styling.
+- Member leaderboard uses only `get_member_cp_rankings(p_scope)`.
+- It does not call `get_admin_cp_rankings`, `get_cp_leaderboard`, `get_current_cp_roster`, or direct CP tables.
+- My Guild tab shows rank and IGN.
+- Global tab shows rank, IGN, and guild label.
+- Current user row highlights when returned.
+- CP values, CP growth/history/snapshots, updated timestamps, profile ids, usernames, admin notes, and private metadata are not rendered.
+- `npm.cmd run build` passed.
+- Local browser smoke covered the unauthenticated shell only; authenticated leaderboard validation awaits staging DB migration and staging users.
+
+Rollout boundary:
+- Staging and production do not have `20260524000300_cp_rankings.sql`.
+- Do not deploy the 20C frontend to a remote target until that target DB has the 20B CP Ranking migration applied and verified.
 
 Recorded Milestone 20B backend status:
 - New local migration: `20260524000300_cp_rankings.sql`.
