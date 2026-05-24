@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-05-25 - Milestone 22B Cosmetics Backend Implemented
+
+- Added backend/database-only support for preset avatars, unlocked/equipped frames, and future cosmetic rewards.
+- Created migration `20260525000100_cosmetics_catalog_unlocks.sql`.
+- Added `cosmetic_catalog`, `profile_cosmetic_unlocks`, and `profile_equipped_cosmetics`.
+- Seeded free avatar keys `default_avatar_FREE`, `kaneki_mask_FREE`, and `anteiku_logo_FREE`.
+- Seeded free frame key `default_frame_FREE` and locked frame key `elite_five_frame`.
+- Captured the `_FREE` naming convention: `_FREE` catalog keys map to `unlock_type = 'free'`, while catalog `unlock_type` remains the runtime source of truth.
+- Added RPCs `get_available_avatars()`, `get_my_cosmetics()`, `equip_my_avatar(text)`, `equip_my_frame(text)`, and `admin_grant_cosmetic(uuid, text, text)`.
+- Hardened `update_my_profile(p_ign, p_avatar_key)` so arbitrary avatar keys are rejected.
+- `equip_my_avatar(...)` syncs `profiles.avatar_key` for backward compatibility.
+- Added RLS policies for active catalog reads and caller-owned unlock/equipped reads; direct client writes are not granted.
+- Added cosmetic audit actions for avatar equip, frame equip, and admin grant.
+- Updated local validation SQL with Milestone 22B coverage.
+- Local Supabase reset passed.
+- Full local validation passed through Docker `psql`, including Milestone 22B result 19 PASS / 0 FAIL / 0 SKIP.
+- `npm.cmd run build` was not run because no frontend/source UI code changed.
+- Staging and production were not touched.
+- Future cosmetics picker frontend must wait until the target DB has `20260525000100_cosmetics_catalog_unlocks.sql` applied and verified.
+
 ## 2026-05-24 - Milestone 21E Rank Badge / Profile Border Production Rollout Complete
 
 - Applied Rank Badge Summary migration `20260524000400_cp_rank_badge_summary.sql` to production after dry-run review showed only that migration pending.

@@ -1,8 +1,44 @@
 # Supabase RLS
 
-The local Supabase RLS/RPC implementation has been validated through Milestone 21B, and production is applied/verified through Milestone 21E.
+The local Supabase RLS/RPC implementation has been validated through Milestone 22B, and production is applied/verified through Milestone 21E.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
+
+## Milestone 22B Cosmetics RLS/RPC
+
+Milestone 22B is implemented and locally validated only. Staging and production do not have `20260525000100_cosmetics_catalog_unlocks.sql` yet.
+
+New tables:
+- `cosmetic_catalog`
+- `profile_cosmetic_unlocks`
+- `profile_equipped_cosmetics`
+
+RLS/grants:
+- RLS is enabled on all cosmetics tables.
+- Active catalog rows are readable by authenticated approved users with active primary membership.
+- Unlock/equipped rows are readable only by the owning profile.
+- Direct client writes are not granted.
+
+RPC behavior:
+- `get_available_avatars()` returns active avatar catalog rows.
+- `get_my_cosmetics()` returns caller-owned equipped keys and caller-scoped frame unlock status.
+- `equip_my_avatar(text)` updates only `auth.uid()` and validates active avatar catalog keys.
+- `equip_my_frame(text)` updates only `auth.uid()` and requires a free frame or caller-owned unlock.
+- `admin_grant_cosmetic(uuid, text, text)` requires existing member-management authority in the target member's active primary guild.
+
+Legacy hardening:
+- `update_my_profile(p_ign, p_avatar_key)` rejects arbitrary non-empty avatar keys.
+- Valid avatar keys must exist in `cosmetic_catalog` with type `avatar` and `is_active = true`.
+
+Security boundary:
+- Database stores cosmetic keys and static asset paths only.
+- Asset paths are constrained to `/cosmetics/avatars/` or `/cosmetics/frames/`.
+- `_FREE` suffixes are an asset/import convention and are mapped to `unlock_type = 'free'`.
+- Runtime equip checks use catalog `unlock_type` as source of truth.
+- No player uploads, arbitrary image URLs, Supabase Storage, service-role usage, or CP/GvG/audit/role/permission/member-status changes were added.
+
+Validation:
+- Milestone 22B local validation passed with 19 PASS / 0 FAIL / 0 SKIP.
 
 ## Milestone 21E Rank Badge Summary RPC
 

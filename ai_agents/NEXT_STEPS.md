@@ -2,7 +2,27 @@
 
 ## Current Recommendation
 
-Milestone 21E Rank Badge / Profile Border production rollout is complete. The next recommended milestone is Milestone 22A Character Icons / Avatar Picker planning, unless the user prioritizes another member prestige/polish pass.
+Milestone 22B Cosmetics backend is implemented and locally validated. The next recommended milestone is Milestone 22C asset scaffold/upload check + frontend cosmetics picker planning.
+
+Recorded Milestone 22B backend status:
+- New local migration: `20260525000100_cosmetics_catalog_unlocks.sql`.
+- Added `cosmetic_catalog`, `profile_cosmetic_unlocks`, and `profile_equipped_cosmetics`.
+- Seeded free avatar keys `default_avatar_FREE`, `kaneki_mask_FREE`, and `anteiku_logo_FREE`.
+- Seeded free frame key `default_frame_FREE` and locked frame key `elite_five_frame`.
+- `_FREE` cosmetic keys are mapped to `unlock_type = 'free'`; catalog `unlock_type` is the runtime source of truth.
+- Added RPCs `get_available_avatars()`, `get_my_cosmetics()`, `equip_my_avatar(text)`, `equip_my_frame(text)`, and `admin_grant_cosmetic(uuid, text, text)`.
+- Hardened `update_my_profile(p_ign, p_avatar_key)` so arbitrary avatar keys are rejected; valid active catalog avatar keys still work.
+- Equip RPCs use `auth.uid()` only and accept no target profile id.
+- Frame equip requires a free frame or caller-owned unlock row.
+- Admin grants use existing member-management authority for the target member's active primary guild.
+- Local validation passed: `npx.cmd supabase db reset`; `supabase/tests/local_validation_anteiku.sql` through Docker `psql`; Milestone 22B result 19 PASS / 0 FAIL / 0 SKIP.
+- `npm.cmd run build` was not run because 22B changed only backend migrations/tests/docs.
+
+Rollout boundary:
+- Staging and production do not have `20260525000100_cosmetics_catalog_unlocks.sql` yet.
+- Do not deploy future cosmetics picker frontend to any target until that target DB has the cosmetics migration applied and verified.
+- Matching static assets should be confirmed under `public/cosmetics/avatars/` and `public/cosmetics/frames/` before frontend picker rollout.
+- Supabase CLI was linked to production before this local-only milestone; relink deliberately before any future remote Supabase command.
 
 Recorded Milestone 21E production status:
 - Production project `mzflfyxxkascrfpteexz` received only `20260524000400_cp_rank_badge_summary.sql` after a clean dry-run.

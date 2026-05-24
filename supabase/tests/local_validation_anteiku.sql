@@ -3909,4 +3909,324 @@ select count(*) filter (where status = 'PASS') as milestone21b_total_pass,
        count(*) filter (where status = 'SKIP') as milestone21b_total_skip
 from milestone21b_rank_badge_results;
 
+-- Milestone 22B: Cosmetics catalog, unlocks, and equip RPC validation.
+
+create temp table if not exists milestone22b_cosmetics_results (
+  section text not null,
+  test_name text not null,
+  status text not null,
+  details text
+) on commit drop;
+
+do $$
+declare
+  owner_id constant uuid := '10000000-0000-0000-0000-000000000001';
+  member_id constant uuid := '10000000-0000-0000-0000-000000000006';
+  wrong_guild_id constant uuid := '10000000-0000-0000-0000-000000000009';
+  avatar_count integer;
+  frame_count integer;
+  rpc_count integer;
+  direct_count integer;
+  audit_count integer;
+  cosmetics_payload jsonb;
+  equip_payload jsonb;
+  updated_profile public.profiles%rowtype;
+begin
+  select count(*) into rpc_count
+  from pg_proc p
+  join pg_namespace n on n.oid = p.pronamespace
+  where n.nspname = 'public'
+    and p.proname in (
+      'get_available_avatars',
+      'get_my_cosmetics',
+      'equip_my_avatar',
+      'equip_my_frame',
+      'admin_grant_cosmetic'
+    );
+
+  if to_regclass('public.cosmetic_catalog') is not null
+     and to_regclass('public.profile_cosmetic_unlocks') is not null
+     and to_regclass('public.profile_equipped_cosmetics') is not null
+     and rpc_count = 5 then
+    insert into milestone22b_cosmetics_results values ('schema', 'cosmetics_tables_and_rpcs_exist', 'PASS', 'Cosmetics tables and RPCs exist.');
+  else
+    insert into milestone22b_cosmetics_results values ('schema', 'cosmetics_tables_and_rpcs_exist', 'FAIL', 'Missing cosmetics table or RPC.');
+  end if;
+
+  if exists (
+    select 1
+    from pg_class c
+    join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'public'
+      and c.relname in ('cosmetic_catalog', 'profile_cosmetic_unlocks', 'profile_equipped_cosmetics')
+    group by n.nspname
+    having bool_and(c.relrowsecurity)
+       and count(*) = 3
+  ) then
+    insert into milestone22b_cosmetics_results values ('schema', 'cosmetics_rls_enabled', 'PASS', 'RLS enabled on all cosmetics tables.');
+  else
+    insert into milestone22b_cosmetics_results values ('schema', 'cosmetics_rls_enabled', 'FAIL', 'RLS missing on one or more cosmetics tables.');
+  end if;
+
+  select count(*) filter (where type = 'avatar'),
+         count(*) filter (where type = 'frame')
+  into avatar_count, frame_count
+  from public.cosmetic_catalog
+  where key in (
+    'default_avatar_FREE',
+    'kaneki_mask_FREE',
+    'anteiku_logo_FREE',
+    'default_frame_FREE',
+    'elite_five_frame'
+  );
+
+  if avatar_count >= 3 and frame_count >= 2 then
+    insert into milestone22b_cosmetics_results values ('seed', 'catalog_seeded', 'PASS', 'Default/sample avatars and frames are seeded.');
+  else
+    insert into milestone22b_cosmetics_results values ('seed', 'catalog_seeded', 'FAIL', 'Expected seeded avatar/frame rows are missing.');
+  end if;
+
+  if not exists (
+    select 1
+    from public.cosmetic_catalog c
+    where c.key ~ '_FREE$'
+      and c.unlock_type <> 'free'
+  )
+  and exists (
+    select 1
+    from public.cosmetic_catalog c
+    where c.key = 'elite_five_frame'
+      and c.unlock_type <> 'free'
+  ) then
+    insert into milestone22b_cosmetics_results values ('seed', 'free_suffix_maps_to_free_unlock_type', 'PASS', '_FREE cosmetics are free and locked sample frame is not free.');
+  else
+    insert into milestone22b_cosmetics_results values ('seed', 'free_suffix_maps_to_free_unlock_type', 'FAIL', '_FREE or locked-frame unlock_type mapping is incorrect.');
+  end if;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    select count(*) into avatar_count
+    from public.get_available_avatars();
+
+    if avatar_count >= 3 then
+      insert into milestone22b_cosmetics_results values ('rpc', 'member_reads_available_avatars', 'PASS', avatar_count::text || ' avatars returned.');
+    else
+      insert into milestone22b_cosmetics_results values ('rpc', 'member_reads_available_avatars', 'FAIL', avatar_count::text || ' avatars returned.');
+    end if;
+  exception when others then
+    insert into milestone22b_cosmetics_results values ('rpc', 'member_reads_available_avatars', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    cosmetics_payload := public.get_my_cosmetics();
+
+    if cosmetics_payload #>> '{equipped,avatar_key}' = 'default_avatar_FREE'
+       and cosmetics_payload #>> '{equipped,frame_key}' = 'default_frame_FREE'
+       and exists (
+         select 1
+         from jsonb_array_elements(cosmetics_payload -> 'frames') f
+         where f ->> 'key' = 'default_frame_FREE'
+           and (f ->> 'is_unlocked')::boolean = true
+       )
+       and exists (
+         select 1
+         from jsonb_array_elements(cosmetics_payload -> 'frames') f
+         where f ->> 'key' = 'elite_five_frame'
+           and (f ->> 'is_unlocked')::boolean = false
+       ) then
+      insert into milestone22b_cosmetics_results values ('rpc', 'member_reads_own_cosmetics', 'PASS', cosmetics_payload::text);
+    else
+      insert into milestone22b_cosmetics_results values ('rpc', 'member_reads_own_cosmetics', 'FAIL', cosmetics_payload::text);
+    end if;
+  exception when others then
+    insert into milestone22b_cosmetics_results values ('rpc', 'member_reads_own_cosmetics', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    equip_payload := public.equip_my_avatar('kaneki_mask_FREE');
+
+    if equip_payload ->> 'avatar_key' = 'kaneki_mask_FREE'
+       and exists (
+         select 1
+         from public.profiles p
+         where p.id = member_id
+           and p.avatar_key = 'kaneki_mask_FREE'
+       ) then
+      insert into milestone22b_cosmetics_results values ('rpc', 'member_equips_valid_avatar', 'PASS', equip_payload::text);
+    else
+      insert into milestone22b_cosmetics_results values ('rpc', 'member_equips_valid_avatar', 'FAIL', coalesce(equip_payload::text, 'No equip payload.'));
+    end if;
+  exception when others then
+    insert into milestone22b_cosmetics_results values ('rpc', 'member_equips_valid_avatar', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.equip_my_avatar('avatar_not_real');
+    insert into milestone22b_cosmetics_results values ('rpc', 'invalid_avatar_denied', 'FAIL', 'Invalid avatar was equipped.');
+  exception when others then
+    insert into milestone22b_cosmetics_results values ('rpc', 'invalid_avatar_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    equip_payload := public.equip_my_frame('default_frame_FREE');
+
+    if equip_payload ->> 'frame_key' = 'default_frame_FREE' then
+      insert into milestone22b_cosmetics_results values ('rpc', 'member_equips_default_frame', 'PASS', equip_payload::text);
+    else
+      insert into milestone22b_cosmetics_results values ('rpc', 'member_equips_default_frame', 'FAIL', coalesce(equip_payload::text, 'No equip payload.'));
+    end if;
+  exception when others then
+    insert into milestone22b_cosmetics_results values ('rpc', 'member_equips_default_frame', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    delete from public.profile_cosmetic_unlocks
+    where profile_id = member_id
+      and cosmetic_key = 'elite_five_frame';
+
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.equip_my_frame('elite_five_frame');
+    insert into milestone22b_cosmetics_results values ('rpc', 'locked_frame_without_unlock_denied', 'FAIL', 'Locked frame was equipped without unlock.');
+  exception when others then
+    insert into milestone22b_cosmetics_results values ('rpc', 'locked_frame_without_unlock_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    cosmetics_payload := public.admin_grant_cosmetic(member_id, 'elite_five_frame', 'local validation');
+
+    if cosmetics_payload ->> 'cosmetic_key' = 'elite_five_frame'
+       and exists (
+         select 1
+         from public.profile_cosmetic_unlocks pcu
+         where pcu.profile_id = member_id
+           and pcu.cosmetic_key = 'elite_five_frame'
+       ) then
+      insert into milestone22b_cosmetics_results values ('rpc', 'owner_grants_locked_frame', 'PASS', cosmetics_payload::text);
+    else
+      insert into milestone22b_cosmetics_results values ('rpc', 'owner_grants_locked_frame', 'FAIL', coalesce(cosmetics_payload::text, 'No grant payload.'));
+    end if;
+  exception when others then
+    insert into milestone22b_cosmetics_results values ('rpc', 'owner_grants_locked_frame', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    equip_payload := public.equip_my_frame('elite_five_frame');
+
+    if equip_payload ->> 'frame_key' = 'elite_five_frame' then
+      insert into milestone22b_cosmetics_results values ('rpc', 'member_equips_granted_frame', 'PASS', equip_payload::text);
+    else
+      insert into milestone22b_cosmetics_results values ('rpc', 'member_equips_granted_frame', 'FAIL', coalesce(equip_payload::text, 'No equip payload.'));
+    end if;
+  exception when others then
+    insert into milestone22b_cosmetics_results values ('rpc', 'member_equips_granted_frame', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.admin_grant_cosmetic(member_id, 'elite_five_frame', null);
+    insert into milestone22b_cosmetics_results values ('rpc', 'member_cannot_grant_self_cosmetics', 'FAIL', 'Member granted cosmetics.');
+  exception when others then
+    insert into milestone22b_cosmetics_results values ('rpc', 'member_cannot_grant_self_cosmetics', 'PASS', sqlerrm);
+  end;
+
+  select count(*) into direct_count
+  from pg_proc p
+  join pg_namespace n on n.oid = p.pronamespace
+  where n.nspname = 'public'
+    and p.proname in ('equip_my_avatar', 'equip_my_frame')
+    and pg_get_function_arguments(p.oid) ilike '%profile%';
+
+  if direct_count = 0 then
+    insert into milestone22b_cosmetics_results values ('security', 'equip_rpcs_have_no_target_profile_argument', 'PASS', 'Equip RPCs can only affect auth.uid().');
+  else
+    insert into milestone22b_cosmetics_results values ('security', 'equip_rpcs_have_no_target_profile_argument', 'FAIL', 'Equip RPC accepts a profile target argument.');
+  end if;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.update_my_profile('Member Cosmetic IGN', 'not_a_real_avatar');
+    insert into milestone22b_cosmetics_results values ('security', 'update_my_profile_rejects_arbitrary_avatar', 'FAIL', 'Arbitrary avatar_key was accepted.');
+  exception when others then
+    insert into milestone22b_cosmetics_results values ('security', 'update_my_profile_rejects_arbitrary_avatar', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    select * into updated_profile
+    from public.update_my_profile('Member Cosmetic IGN', 'default_avatar_FREE');
+
+    if updated_profile.ign = 'Member Cosmetic IGN'
+       and updated_profile.avatar_key = 'default_avatar_FREE' then
+      insert into milestone22b_cosmetics_results values ('rpc', 'profile_ign_update_still_works', 'PASS', row_to_json(updated_profile)::text);
+    else
+      insert into milestone22b_cosmetics_results values ('rpc', 'profile_ign_update_still_works', 'FAIL', coalesce(row_to_json(updated_profile)::text, 'No updated profile.'));
+    end if;
+  exception when others then
+    insert into milestone22b_cosmetics_results values ('rpc', 'profile_ign_update_still_works', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    execute 'set local role authenticated';
+    insert into public.profile_cosmetic_unlocks (profile_id, cosmetic_key)
+    values (member_id, 'elite_five_frame')
+    on conflict do nothing;
+    execute 'reset role';
+    insert into milestone22b_cosmetics_results values ('rls', 'member_direct_unlock_write_denied', 'FAIL', 'Direct unlock insert succeeded.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone22b_cosmetics_results values ('rls', 'member_direct_unlock_write_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    execute 'set local role authenticated';
+    select count(*) into direct_count
+    from public.profile_cosmetic_unlocks
+    where profile_id = wrong_guild_id;
+    execute 'reset role';
+
+    if direct_count = 0 then
+      insert into milestone22b_cosmetics_results values ('rls', 'member_cannot_read_other_unlocks', 'PASS', 'Other member unlocks were hidden.');
+    else
+      insert into milestone22b_cosmetics_results values ('rls', 'member_cannot_read_other_unlocks', 'FAIL', 'Other member unlocks were visible.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone22b_cosmetics_results values ('rls', 'member_cannot_read_other_unlocks', 'PASS', sqlerrm);
+  end;
+
+  select count(*) into audit_count
+  from public.audit_logs al
+  where al.action in (
+    'cosmetic_avatar_equipped',
+    'cosmetic_frame_equipped',
+    'cosmetic_granted'
+  );
+
+  if audit_count >= 3 then
+    insert into milestone22b_cosmetics_results values ('audit', 'cosmetic_audit_rows_written', 'PASS', audit_count::text || ' cosmetic audit rows found.');
+  else
+    insert into milestone22b_cosmetics_results values ('audit', 'cosmetic_audit_rows_written', 'FAIL', audit_count::text || ' cosmetic audit rows found.');
+  end if;
+end;
+$$;
+
+select section, test_name, status, details
+from milestone22b_cosmetics_results
+order by section, test_name;
+
+select count(*) filter (where status = 'PASS') as milestone22b_total_pass,
+       count(*) filter (where status = 'FAIL') as milestone22b_total_fail,
+       count(*) filter (where status = 'SKIP') as milestone22b_total_skip
+from milestone22b_cosmetics_results;
+
 rollback;

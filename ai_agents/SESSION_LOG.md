@@ -1,5 +1,26 @@
 # Session Log
 
+## 2026-05-25 - Milestone 22B Cosmetics Backend Implemented
+
+- Implemented backend/database-only cosmetics support.
+- Created migration `supabase/migrations/20260525000100_cosmetics_catalog_unlocks.sql`.
+- Added `cosmetic_catalog`, `profile_cosmetic_unlocks`, and `profile_equipped_cosmetics`.
+- Seeded `default_avatar_FREE`, `kaneki_mask_FREE`, `anteiku_logo_FREE`, `default_frame_FREE`, and `elite_five_frame`.
+- Applied the `_FREE` naming convention so free/default cosmetic keys map to `unlock_type = 'free'`, while catalog `unlock_type` remains the runtime source of truth.
+- Added RPCs `get_available_avatars()`, `get_my_cosmetics()`, `equip_my_avatar(text)`, `equip_my_frame(text)`, and `admin_grant_cosmetic(uuid, text, text)`.
+- Hardened `update_my_profile(p_ign, p_avatar_key)` so arbitrary avatar keys are rejected and active catalog avatars remain valid.
+- `equip_my_avatar(...)` syncs `profiles.avatar_key` for backward compatibility.
+- RLS is enabled on all cosmetics tables; direct client writes are not granted.
+- Member equip RPCs use `auth.uid()` only and accept no target profile id.
+- Admin grants require existing scoped member-management authority.
+- Added Milestone 22B validation coverage to `supabase/tests/local_validation_anteiku.sql`.
+- `npx.cmd supabase db reset` passed locally.
+- Full local validation passed through Docker `psql`; Milestone 22B result was 19 PASS / 0 FAIL / 0 SKIP.
+- `npm.cmd run build` was not run because no frontend/source UI code changed.
+- Staging and production were not touched.
+- A pre-existing untracked `public/cosmetics/` folder was left untouched because 22B is backend-only.
+- Supabase CLI was linked to production before this local-only milestone; relink deliberately before future remote Supabase work.
+
 ## 2026-05-24 - Milestone 21E Rank Badge Production Rollout Complete
 
 - Completed production rollout for Rank Badge / Profile Border.

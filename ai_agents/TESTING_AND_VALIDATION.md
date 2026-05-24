@@ -1,5 +1,49 @@
 # Testing And Validation
 
+## Milestone 22B Cosmetics Backend Local Validation
+
+Milestone 22B backend/database validation passed locally.
+
+Migration:
+- Added local migration `20260525000100_cosmetics_catalog_unlocks.sql`.
+- Added `cosmetic_catalog`, `profile_cosmetic_unlocks`, and `profile_equipped_cosmetics`.
+- Added cosmetics RPCs and hardened `update_my_profile(p_ign, p_avatar_key)`.
+- No frontend UI was implemented.
+- Staging and production were not touched.
+
+Local validation:
+- `npx.cmd supabase db reset` passed.
+- Full local validation script passed through Docker `psql`.
+- Milestone 22B focused validation result: 19 PASS / 0 FAIL / 0 SKIP.
+
+Focused checks:
+- Catalog tables and RPCs exist.
+- RLS is enabled on cosmetics tables.
+- Seeded default/sample avatars and frames exist.
+- `_FREE` catalog keys map to `unlock_type = 'free'`, and the locked sample frame is not free.
+- Member can read active available avatars.
+- Member can read own equipped cosmetics and frame unlock status.
+- Member can equip a valid avatar.
+- Invalid avatar keys are denied.
+- Member can equip default frame.
+- Locked frame is denied without unlock.
+- Owner can grant locked frame.
+- Member can equip granted locked frame.
+- Member cannot grant self cosmetics.
+- Equip RPCs have no target profile argument.
+- `update_my_profile(...)` rejects arbitrary avatar keys.
+- Existing IGN update still works with a valid catalog avatar key.
+- Direct unlock writes are denied.
+- Members cannot read another user's unlocks.
+- Cosmetic audit rows are written.
+
+Build:
+- `npm.cmd run build` was not run because 22B changed only database migrations/tests/docs and no frontend code.
+
+Rollout boundary:
+- Staging and production do not have `20260525000100_cosmetics_catalog_unlocks.sql` yet.
+- Future cosmetics picker frontend must wait until the target DB has this migration applied and verified.
+
 ## Milestone 21E Rank Badge Production Rollout Validation
 
 Milestone 21E production rollout and smoke validation passed.

@@ -43,6 +43,25 @@
 - `src/components/admin/AdminToolsSection.jsx`: Planned/future admin tools section.
 - `src/styles/app.css`: Plain mobile-first dark styling.
 
+## Milestone 22B Cosmetics Backend
+
+Local-only status:
+- Implemented and locally validated.
+- Staging and production do not have `20260525000100_cosmetics_catalog_unlocks.sql` yet.
+- No frontend picker has been implemented.
+
+- `supabase/migrations/20260525000100_cosmetics_catalog_unlocks.sql`
+  - Adds `cosmetic_catalog`, `profile_cosmetic_unlocks`, and `profile_equipped_cosmetics`.
+  - Seeds `default_avatar_FREE`, `kaneki_mask_FREE`, `anteiku_logo_FREE`, `default_frame_FREE`, and `elite_five_frame`.
+  - Enforces the `_FREE` naming convention by requiring `_FREE` catalog keys to use `unlock_type = 'free'`; runtime equip checks still use catalog `unlock_type` as source of truth.
+  - Adds RLS policies for active catalog reads and caller-owned unlock/equipped reads.
+  - Revokes direct client writes to cosmetics tables.
+  - Adds RPCs `get_available_avatars()`, `get_my_cosmetics()`, `equip_my_avatar(text)`, `equip_my_frame(text)`, and `admin_grant_cosmetic(uuid, text, text)`.
+  - Hardens `update_my_profile(p_ign, p_avatar_key)` so non-empty avatar keys must match active catalog avatars.
+  - Writes cosmetic audit actions: `cosmetic_avatar_equipped`, `cosmetic_frame_equipped`, and `cosmetic_granted`.
+- `supabase/tests/local_validation_anteiku.sql`
+  - Adds Milestone 22B validation for seeded catalog, RLS, safe member reads, valid/invalid equips, locked-frame grant/equip flow, self-grant denial, no target profile equip argument, legacy avatar hardening, direct-write denial, other-user unlock privacy, and audit rows.
+
 ## Milestone 21B Rank Badge Summary Backend
 
 Production status:
