@@ -1,5 +1,42 @@
 # Project State
 
+## Milestone 20E CP Leaderboard Staging Validation Passed
+
+Milestone 20E staging rollout and validation passed for the CP Leaderboard package.
+
+Staging rollout:
+- Staging project `ckyihuxkioeibzpgwenc` was already linked.
+- Dry-run showed only `20260524000300_cp_rankings.sql` pending.
+- Applied only `20260524000300_cp_rankings.sql` to staging.
+- Remote migration list confirmed `20260524000300` applied.
+- Production project `mzflfyxxkascrfpteexz` was not touched.
+
+Validation:
+- `get_member_cp_rankings` and `get_admin_cp_rankings` exist in staging.
+- Authenticated execute grants exist for both RPCs.
+- Member ranking responses return only rank/IGN/guild labels/current-user flag.
+- Owner admin rankings return CP values through `get_admin_cp_rankings`.
+- Non-Owner global admin rankings are denied.
+- Pending user ranking access is denied.
+- Admin without CP permissions has no CP/CP Ranking UI and admin ranking RPC is denied.
+- Active Owner count remains 1.
+
+Browser validation:
+- `staging_member` saw My Guild and Global member ranking tabs with no CP values or private CP fields.
+- Owner saw AdminPanel `CP` tab with roster/window controls only.
+- Owner saw separate AdminPanel `CP Ranking` tab with Guild and Global rankings, CP values, and rank decoration.
+- `staging_admin_noperms` saw only safe Tools access and no CP/CP Ranking tab.
+- No console warnings/errors were captured on validated paths.
+- Mobile/narrow layout had no horizontal overflow.
+
+Scope confirmation:
+- No production data, production Supabase, production Vercel env, or production deployment was touched.
+- No SQL migrations were edited or created during 20E.
+- `.env.local` was restored to local Supabase after validation.
+
+Recommended next step:
+- Milestone 20F production rollout planning/execution gate for CP Leaderboard.
+
 ## Milestone 20D AdminPanel CP Leaderboard Upgrade Implemented
 
 Milestone 20D is implemented locally as a frontend-only AdminPanel CP leaderboard upgrade.
@@ -7,7 +44,8 @@ Milestone 20D is implemented locally as a frontend-only AdminPanel CP leaderboar
 Implemented locally:
 - Updated `src/services/adminCpService.js` with normalized `get_admin_cp_rankings` rows for AdminPanel use.
 - Updated `src/pages/AdminPanel.jsx` to load admin CP rankings through `get_admin_cp_rankings`.
-- Updated `src/components/admin/AdminCpSection.jsx` with Guild / Global leaderboard tabs.
+- Added `src/components/admin/AdminCpLeaderboardSection.jsx` with Guild / Global leaderboard tabs.
+- Added a separate AdminPanel `CP Ranking` tab so the CP roster/window tab stays focused.
 - Added compact decorated admin rank rows showing rank, IGN, username, guild, CP value, and last updated.
 - Added Owner-only frontend visibility for the Global admin leaderboard tab; backend RPC authorization remains the authority.
 - Added EN/FR/DE i18n labels for admin leaderboard scope, rank, guild, last-updated, empty, and permission/error states.

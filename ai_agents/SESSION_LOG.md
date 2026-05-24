@@ -1,10 +1,30 @@
 # Session Log
 
+## 2026-05-24 - Milestone 20E CP Leaderboard Staging Rollout and Validation
+
+- Completed staging-only CP Leaderboard rollout and validation.
+- Confirmed Supabase CLI linked to staging project `ckyihuxkioeibzpgwenc`.
+- Confirmed production project `mzflfyxxkascrfpteexz` was not linked or used.
+- Staging dry-run showed only `20260524000300_cp_rankings.sql` pending.
+- Applied only `20260524000300_cp_rankings.sql` to staging.
+- Remote migration list confirmed `20260524000300` applied.
+- Verified ranking RPCs exist and authenticated execute grants are present.
+- Verified member ranking shape contains no CP/private fields.
+- Verified Owner admin ranking returns CP values and non-Owner global admin ranking is denied.
+- Verified pending ranking access and Admin-without-CP ranking access are denied.
+- Browser-validated `staging_member` My Guild and Global member rankings with no CP values.
+- Browser-validated Owner AdminPanel CP roster/window controls and separate `CP Ranking` tab with Guild/Global admin rankings.
+- Browser-validated `staging_admin_noperms` restricted state with no CP/CP Ranking access.
+- Fixed a staging validation UI finding by moving AdminPanel CP leaderboard out of the bottom of the CP tab into its own `CP Ranking` AdminPanel tab.
+- `npm.cmd run build` passed after the UI placement fix.
+- `.env.local` was restored to local Supabase after validation.
+- No production, Vercel env, deployment, commit, SQL migration edit, or new migration action was performed.
+
 ## 2026-05-24 - Milestone 20D AdminPanel CP Leaderboard Upgrade Implemented
 
 - Implemented frontend-only AdminPanel CP leaderboard upgrade.
 - Updated AdminPanel CP loading to use `get_admin_cp_rankings`.
-- Added Guild / Global tabs to the AdminPanel CP leaderboard.
+- Added separate AdminPanel `CP Ranking` tab with Guild / Global tabs.
 - Guild tab uses the selected CP guild scope.
 - Global tab is visible only to Owner in the frontend; backend RPC authorization remains the authority.
 - Added compact decorated admin rank rows with rank, IGN, username, guild, CP value, and last updated.

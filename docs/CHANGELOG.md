@@ -1,10 +1,27 @@
 # Changelog
 
+## 2026-05-24 - Milestone 20E CP Leaderboard Staging Validation Passed
+
+- Applied CP Leaderboard migration `20260524000300_cp_rankings.sql` to staging only.
+- Dry-run showed only the expected CP Ranking migration pending.
+- Verified staging ranking RPCs and authenticated execute grants.
+- Verified member ranking responses contain no CP/private fields.
+- Verified Owner admin rankings return CP values through `get_admin_cp_rankings`.
+- Verified non-Owner global admin rankings are denied.
+- Verified pending user and Admin-without-CP ranking access are denied.
+- Browser-validated member My Guild and Global rankings with no CP value exposure.
+- Browser-validated Owner AdminPanel CP roster/window controls and separate `CP Ranking` tab.
+- Browser-validated restricted Admin state with no CP or CP Ranking access.
+- Moved AdminPanel CP leaderboard into a separate `CP Ranking` tab after validation feedback.
+- `npm.cmd run build` passed after the UI placement fix.
+- Restored `.env.local` to local Supabase.
+- No production, Vercel env, deployment, commit, SQL edit, or new migration action was performed.
+
 ## 2026-05-24 - Milestone 20D AdminPanel CP Leaderboard Upgrade Implemented
 
 - Added frontend-only AdminPanel CP leaderboard upgrade.
 - AdminPanel CP leaderboard now uses `get_admin_cp_rankings`.
-- Added Guild and Global tabs inside AdminPanel CP.
+- Added separate AdminPanel `CP Ranking` tab with Guild and Global tabs.
 - Guild tab uses the selected CP guild scope and shows CP values through the permission-checked admin RPC.
 - Global tab is visible only to Owner in the frontend; backend RPC authorization remains authoritative.
 - Added compact decorated admin rank rows with rank, IGN, username, guild, CP value, and last updated.

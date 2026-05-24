@@ -298,6 +298,7 @@ export const de = {
       approvals: 'Freigaben',
       members: 'Mitglieder',
       cp: 'CP',
+      cpLeaderboard: 'CP-Rang',
       gvg: 'GvG',
       audit: 'Audit',
       permissions: 'Rechte',

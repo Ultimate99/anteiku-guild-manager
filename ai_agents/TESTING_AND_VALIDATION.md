@@ -1,5 +1,39 @@
 # Testing And Validation
 
+## Milestone 20E CP Leaderboard Staging Validation
+
+Milestone 20E staging rollout and validation passed.
+
+Migration:
+- Staging was linked to project `ckyihuxkioeibzpgwenc`.
+- Dry-run showed only `20260524000300_cp_rankings.sql` pending.
+- Applied only `20260524000300_cp_rankings.sql`.
+- Remote migration list confirmed `20260524000300` applied.
+- Production project `mzflfyxxkascrfpteexz` was not used.
+
+Staging DB/API validation:
+- `get_member_cp_rankings(text)` exists and returns no CP fields.
+- `get_admin_cp_rankings(uuid,text)` exists and returns CP fields only on authorized admin paths.
+- Authenticated execute grants exist for both ranking RPCs.
+- Member response shape was `rank`, `ign`, `guild_name`, `guild_slug`, and `is_current_user`.
+- Member calls to admin ranking RPC were denied.
+- Pending user ranking access was denied.
+- Admin without CP permission was denied.
+- Owner global admin ranking returned CP fields.
+- Non-Owner global admin ranking was denied.
+- Active Owner count remained 1.
+
+Browser validation:
+- `staging_member` validated My Guild and Global member ranking tabs with no CP values/private CP fields.
+- Owner validated AdminPanel CP roster/window controls after the leaderboard was split out.
+- Owner validated the separate AdminPanel `CP Ranking` tab with Guild and Global rankings, CP values, and rank decoration.
+- `staging_admin_noperms` saw only Tools and no CP/CP Ranking access.
+- No console warnings/errors were captured on validated paths.
+- Mobile/narrow layout had no horizontal overflow.
+
+Cleanup:
+- `.env.local` was restored to local Supabase after validation.
+
 ## Milestone 20D AdminPanel CP Leaderboard Frontend Validation
 
 Milestone 20D frontend implementation passed build and source/security-path validation.

@@ -2,11 +2,21 @@
 
 ## Current Recommendation
 
-Milestone 20D AdminPanel CP Leaderboard upgrade is implemented and build/source validated. The next recommended milestone is Milestone 20E staging migration rollout and browser validation for the complete CP Leaderboard package.
+Milestone 20E CP Leaderboard staging rollout and validation passed. The next recommended milestone is Milestone 20F production rollout planning/execution for the complete CP Leaderboard package.
+
+Recorded Milestone 20E staging status:
+- Staging project `ckyihuxkioeibzpgwenc` received only `20260524000300_cp_rankings.sql`.
+- Production project `mzflfyxxkascrfpteexz` was not touched.
+- Staging DB verification passed for ranking RPC existence, authenticated execute grants, member-safe return shape, Owner/admin CP fields, non-Owner global denial, and active Owner count 1.
+- `staging_member` browser validation passed for My Guild and Global member rankings with no CP values or private CP fields.
+- Owner browser validation passed for AdminPanel CP roster/window controls and the separate `CP Ranking` tab with Guild/Global admin rankings and CP values.
+- `staging_admin_noperms` saw only Tools and no CP/CP Ranking access.
+- Pending ranking access was denied through API validation.
+- `.env.local` was restored to local Supabase after validation.
 
 Recorded Milestone 20D frontend status:
 - AdminPanel CP leaderboard now uses `get_admin_cp_rankings`.
-- Added Guild / Global leaderboard tabs inside the AdminPanel CP section.
+- Added a separate AdminPanel `CP Ranking` tab with Guild / Global leaderboard tabs.
 - Guild tab uses the selected CP guild scope and shows CP values through the permission-checked admin RPC.
 - Global tab is shown only for Owner in the frontend; backend Owner-only authorization remains the real gate.
 - Admin leaderboard rows show rank, IGN, username, guild, CP value, and last updated.

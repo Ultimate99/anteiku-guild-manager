@@ -298,6 +298,7 @@ export const fr = {
       approvals: 'Approbations',
       members: 'Membres',
       cp: 'CP',
+      cpLeaderboard: 'Classement CP',
       gvg: 'GvG',
       audit: 'Audit',
       permissions: 'Permissions',

@@ -79,9 +79,10 @@
   - Loads AdminPanel CP leaderboard data through `get_admin_cp_rankings`.
   - Tracks Guild/Global leaderboard scope and clean leaderboard errors.
   - Keeps Global admin leaderboard frontend visibility Owner-only; backend RPC authorization remains authoritative.
+- `src/components/admin/AdminCpLeaderboardSection.jsx`
+  - Renders the separate AdminPanel `CP Ranking` tab content.
+  - Shows Guild / Global tabs and compact decorated admin ranking rows with CP values for authorized staff.
 - `src/components/admin/AdminCpSection.jsx`
-  - Adds Guild / Global tabs in the AdminPanel CP leaderboard section.
-  - Renders compact decorated rows with rank, IGN, username, guild, CP value, and last updated.
   - Preserves CP roster, manual CP update, and CP Update Window controls.
 - `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`
   - Add admin CP leaderboard scope, rank, guild, last-updated, empty, and permission/error labels.

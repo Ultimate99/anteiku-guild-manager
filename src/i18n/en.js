@@ -297,6 +297,7 @@ export const en = {
       approvals: 'Approvals',
       members: 'Members',
       cp: 'CP',
+      cpLeaderboard: 'CP Ranking',
       gvg: 'GvG',
       audit: 'Audit Logs',
       permissions: 'Permissions',

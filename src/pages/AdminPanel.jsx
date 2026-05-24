@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { AdminApprovalsSection } from '../components/admin/AdminApprovalsSection.jsx';
+import { AdminCpLeaderboardSection } from '../components/admin/AdminCpLeaderboardSection.jsx';
 import { AdminAuditSection } from '../components/admin/AdminAuditSection.jsx';
 import { AdminCpSection } from '../components/admin/AdminCpSection.jsx';
 import { AdminGvgSection } from '../components/admin/AdminGvgSection.jsx';
@@ -88,6 +89,7 @@ const ADMIN_TABS = [
   { id: 'approvals', label: 'Approvals', labelKey: 'admin.tabs.approvals' },
   { id: 'members', label: 'Members', labelKey: 'admin.tabs.members' },
   { id: 'cp', label: 'CP', labelKey: 'admin.tabs.cp' },
+  { id: 'cpLeaderboard', label: 'CP Ranking', labelKey: 'admin.tabs.cpLeaderboard' },
   { id: 'gvg', label: 'GvG', labelKey: 'admin.tabs.gvg' },
   { id: 'audit', label: 'Audit Logs', labelKey: 'admin.tabs.audit' },
   { id: 'permissions', label: 'Permissions', labelKey: 'admin.tabs.permissions' },
@@ -583,6 +585,9 @@ export function AdminPanel() {
       if (tab.id === 'cp') {
         return canViewCpSection;
       }
+      if (tab.id === 'cpLeaderboard') {
+        return canViewCpSection;
+      }
       if (tab.id === 'gvg') {
         return canManageGvgEvents;
       }
@@ -613,6 +618,7 @@ export function AdminPanel() {
     (activeTab === 'approvals' && approvalLoading) ||
     (activeTab === 'members' && memberLoading) ||
     (activeTab === 'cp' && cpLoading) ||
+    (activeTab === 'cpLeaderboard' && cpLoading) ||
     (activeTab === 'gvg' && gvgLoading) ||
     (activeTab === 'audit' && auditLoading) ||
     (activeTab === 'permissions' && adminPermissionLoading);
@@ -723,6 +729,8 @@ export function AdminPanel() {
       await loadMembersSection({ clearMessage });
     } else if (tabId === 'cp') {
       await loadCpSection({ clearMessage });
+    } else if (tabId === 'cpLeaderboard') {
+      await loadCpSection({ clearMessage, loadedTabId: 'cpLeaderboard' });
     } else if (tabId === 'gvg') {
       await loadGvgSection({ clearMessage });
     } else if (tabId === 'audit') {
@@ -837,7 +845,7 @@ export function AdminPanel() {
     setCpWindow(nextCpWindow);
   }
 
-  async function loadCpSection({ clearMessage = true } = {}) {
+  async function loadCpSection({ clearMessage = true, loadedTabId = 'cp' } = {}) {
     if (!canViewCpSection) {
       setCpGuildOptions([]);
       setSelectedCpGuildId('');
@@ -847,7 +855,7 @@ export function AdminPanel() {
       setCpLeaderboardError('');
       setCpDrafts({});
       setCpWindow(null);
-      markTabLoaded('cp');
+      markTabLoaded(loadedTabId);
       return;
     }
 
@@ -881,7 +889,7 @@ export function AdminPanel() {
       setCpWindow(null);
       setAdminError(cpError.message);
     } finally {
-      markTabLoaded('cp');
+      markTabLoaded(loadedTabId);
       setCpLoading(false);
     }
   }
@@ -1336,7 +1344,7 @@ export function AdminPanel() {
 
     try {
       await loadCpDataForGuild(selectedCpGuildId, { leaderboardScope: nextScope });
-      markTabLoaded('cp');
+      markTabLoaded('cpLeaderboard');
     } catch (cpError) {
       setCpLeaderboard([]);
       setCpLeaderboardError(cpError.message || t('admin.cp.loadRankingsError'));
@@ -1657,25 +1665,38 @@ export function AdminPanel() {
           cpGuildOptions={cpGuildOptions}
           selectedCpGuild={selectedCpGuild}
           filteredCpRoster={filteredCpRoster}
-          cpLeaderboard={cpLeaderboard}
-          cpLeaderboardScope={cpLeaderboardScope}
-          cpLeaderboardError={cpLeaderboardError}
           cpDrafts={cpDrafts}
           cpWindow={cpWindow}
           cpWindowNote={cpWindowNote}
           activeAction={activeAction}
           canUpdateCpValues={canUpdateCpValues}
-          canViewGlobalCpLeaderboard={canViewGlobalCpLeaderboard}
           onRefresh={() => loadTabData('cp', { force: true })}
           onSearchChange={setCpSearch}
           onSelectedGuildChange={handleSelectCpGuild}
-          onLeaderboardScopeChange={handleSelectCpLeaderboardScope}
           onUpdateCpDraft={updateCpDraft}
           onResetCpDraft={resetCpDraft}
           onUpdateCp={handleUpdateCp}
           onWindowNoteChange={setCpWindowNote}
           onOpenWindow={handleOpenCpWindow}
           onCloseWindow={handleCloseCpWindow}
+          formatDate={formatAdminDate}
+          formatCpValue={formatCpValue}
+          t={t}
+        />
+      );
+    }
+
+    if (activeTab === 'cpLeaderboard' && canViewCpSection) {
+      return (
+        <AdminCpLeaderboardSection
+          cpLoading={cpLoading}
+          selectedCpGuild={selectedCpGuild}
+          cpLeaderboard={cpLeaderboard}
+          cpLeaderboardScope={cpLeaderboardScope}
+          cpLeaderboardError={cpLeaderboardError}
+          canViewGlobalCpLeaderboard={canViewGlobalCpLeaderboard}
+          onRefresh={() => loadTabData('cpLeaderboard', { force: true })}
+          onLeaderboardScopeChange={handleSelectCpLeaderboardScope}
           formatDate={formatAdminDate}
           formatCpValue={formatCpValue}
           t={t}
