@@ -2,7 +2,19 @@
 
 ## Current Recommendation
 
-Milestone 20E CP Leaderboard staging rollout and validation passed. The next recommended milestone is Milestone 20F production rollout planning/execution for the complete CP Leaderboard package.
+Milestone 20F CP Leaderboard production rollout is complete. The next recommended milestone is a docs/handoff commit checkpoint, then planning for Weekly CP Snapshot/Growth Reports or another approved feature track.
+
+Recorded Milestone 20F production status:
+- Production project `mzflfyxxkascrfpteexz` received only `20260524000300_cp_rankings.sql`.
+- Production DB verification passed for `get_member_cp_rankings`, `get_admin_cp_rankings`, authenticated execute grants, member-safe return shape, Owner admin CP fields, non-Owner global admin denial, direct CP table denial, and active Owner count 1.
+- Commit `7ccf8c9 feat: add CP ranking UI` was pushed and deployed to production.
+- Member `Ranking` page loaded My Guild and Global rankings with rank + IGN only.
+- Member Global rankings showed guild labels and no CP values/private CP fields.
+- Owner AdminPanel `CP` tab still loaded roster/window controls.
+- Owner AdminPanel separate `CP Ranking` tab loaded Guild and Global rankings with CP values.
+- No console errors were captured on checked production member/admin paths.
+- No production CP/member data was mutated.
+- Supabase CLI is currently linked to production `mzflfyxxkascrfpteexz`; relink deliberately before future staging/local Supabase commands.
 
 Recorded Milestone 20E staging status:
 - Staging project `ckyihuxkioeibzpgwenc` received only `20260524000300_cp_rankings.sql`.

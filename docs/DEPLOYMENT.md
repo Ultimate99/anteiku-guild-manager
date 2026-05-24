@@ -37,6 +37,20 @@ Milestone 19E deployed CP Update Window / Member CP Self-Submit to production.
 - Controlled production CP mutation smoke was not performed; do not open/close production CP windows or submit production test CP without explicit approval.
 - Supabase CLI is currently linked to production project `mzflfyxxkascrfpteexz`; relink deliberately before future staging/local Supabase commands.
 
+## Production CP Leaderboard
+
+Milestone 20F deployed CP Leaderboard / CP Ranking to production.
+
+- Commit deployed: `7ccf8c9 feat: add CP ranking UI`.
+- Production migration applied and verified:
+  - `20260524000300_cp_rankings.sql`
+- Production DB verification passed for `get_member_cp_rankings`, `get_admin_cp_rankings`, authenticated execute grants, member-safe return shape, Owner admin CP fields, non-Owner global admin denial, direct CP table denial, and active Owner count.
+- Member leaderboard is rank-only: rank, IGN, optional guild label, and current-user highlight.
+- Member API/UI does not expose CP values, growth/history/snapshot data, profile ids, usernames, updated timestamps, or private CP metadata.
+- AdminPanel has a separate `CP Ranking` tab using the permission-checked admin ranking RPC.
+- Existing CP roster/update/window controls remain in the `CP` tab.
+- Supabase CLI is currently linked to production project `mzflfyxxkascrfpteexz`; relink deliberately before future staging/local Supabase commands.
+
 ## Production Supabase Project
 
 Production Supabase project is created and separate from local development.
@@ -114,6 +128,9 @@ Additional migration status:
 - `20260524000100_cp_update_window_self_submit.sql` and `20260524000200_cp_update_window_staff_read.sql` are applied and verified in staging as of Milestone 19D.
 - `20260524000100_cp_update_window_self_submit.sql` and `20260524000200_cp_update_window_staff_read.sql` are applied and verified in production as of Milestone 19E.
 - CP Update Window frontend deployment to production completed after production DB verification.
+- `20260524000300_cp_rankings.sql` is applied and verified in staging as of Milestone 20E.
+- `20260524000300_cp_rankings.sql` is applied and verified in production as of Milestone 20F.
+- CP Leaderboard frontend deployment to production completed after production DB verification.
 
 After applying migrations, production verification passed:
 
@@ -128,6 +145,7 @@ After applying migrations, production verification passed:
 - `supabase_migrations.schema_migrations` reflects the expected migration timestamps.
 - Member Status production verification passed for `roster_status`, `member_status_history`, RLS/policies/grants, `update_member_roster_status(...)`, backfilled memberships, and active Owner count.
 - CP Update Window production verification passed for `cp_update_windows`, RLS, one-open-window unique index, safe RPCs/grants, audit redaction support, direct client grant absence, and active Owner count.
+- CP Leaderboard production verification passed for ranking RPCs/grants, member-safe return shape, Owner admin CP fields, non-Owner global admin denial, direct CP table denial, and active Owner count.
 
 Do not use `db push --include-seed` until the missing `supabase/seed.sql` hazard in `supabase/config.toml` is resolved. The required core seed data is currently handled by migration `20260514000400_seed_core_data.sql`.
 

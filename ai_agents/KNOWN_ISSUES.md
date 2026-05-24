@@ -24,6 +24,7 @@
 - Milestone 18F Language Pack production rollout is complete. English, French, and German are live in production, including full AdminPanel translation.
 - Milestone 19E CP Update Window / Member CP Self-Submit production rollout is complete. Production has both CP Update Window migrations applied, frontend deployment complete, and read-only production smoke passed.
 - No controlled production CP mutation smoke was performed during Milestone 19E; do not open/close a production CP window or submit production CP test values without explicit approval.
+- Milestone 20F CP Leaderboard production rollout is complete. Production has `20260524000300_cp_rankings.sql` applied, member rank-only leaderboard is live, AdminPanel CP Ranking is permission-protected, and production smoke passed.
 - Staging test data remains intentionally; do not cleanup/delete it unless separately approved.
 - Vercel Preview env has not been configured for staging yet.
 
@@ -46,6 +47,7 @@
 - Supabase CLI is currently linked to production `mzflfyxxkascrfpteexz`; future staging/local work must explicitly relink before Supabase commands.
 - Optional production roster-status mutation smoke must use the controlled production test member only, require explicit approval, and restore to `active`.
 - Optional production CP Update Window mutation smoke must use a controlled production test member only, require explicit approval, and document whether test CP/window data is restored or retained.
+- Member CP Leaderboard rank order intentionally reveals relative CP strength, but exact CP values remain hidden from member API responses and UI.
 - Recovery gate copy was not fully re-tested during Milestone 18F because no live recovery session was triggered; recovery behavior itself was already production-validated in Milestone 17C.
 
 ## Product Gaps

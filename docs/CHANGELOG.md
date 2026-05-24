@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-05-24 - Milestone 20F CP Leaderboard Production Rollout Complete
+
+- Applied CP Leaderboard migration `20260524000300_cp_rankings.sql` to production after a clean retry dry-run.
+- Verified production ranking RPCs and authenticated execute grants.
+- Verified member ranking responses contain no CP/private fields.
+- Verified Owner admin rankings return CP values through `get_admin_cp_rankings`.
+- Verified non-Owner global admin rankings are denied.
+- Verified direct `member_cp` and `cp_snapshots` reads remain blocked for normal authenticated users.
+- Pushed and deployed commit `7ccf8c9 feat: add CP ranking UI`.
+- Production Member smoke passed for My Guild and Global rankings with no CP value exposure.
+- Production Owner smoke passed for existing AdminPanel `CP` tab controls and separate `CP Ranking` tab with Guild/Global admin rankings.
+- No production CP/member data, Vercel env vars, service role keys, source files, SQL migrations, staging project, `db reset`, or `--include-seed` action was changed during rollout.
+- Supabase CLI remains linked to production and must be relinked before future staging/local Supabase commands.
+
 ## 2026-05-24 - Milestone 20E CP Leaderboard Staging Validation Passed
 
 - Applied CP Leaderboard migration `20260524000300_cp_rankings.sql` to staging only.
@@ -70,7 +84,7 @@
 - Local Supabase reset passed.
 - Local validation passed through Docker `psql`, including Milestone 20B result 14 PASS / 0 FAIL / 0 SKIP.
 - No frontend UI, staging, production, Vercel, deployment, or commit action was performed.
-- `20260524000300_cp_rankings.sql` remains local-only until a separate staging/production rollout gate.
+- `20260524000300_cp_rankings.sql` was local-only at this checkpoint; it was later applied to staging in Milestone 20E and production in Milestone 20F.
 
 ## 2026-05-24 - Milestone 19E CP Update Window Production Rollout Complete
 

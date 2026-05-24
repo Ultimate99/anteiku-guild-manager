@@ -1,6 +1,6 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and validated through Milestone 20B locally. Remote production is live through Milestone 19E; the Milestone 20B CP Ranking migration is local-only until a later rollout gate.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and validated through Milestone 20B locally. Remote production is live through Milestone 20F, including the CP Ranking migration and frontend rollout.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
@@ -18,13 +18,13 @@ Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION
 10. `20260523000100_member_roster_status_system.sql`
 11. `20260524000100_cp_update_window_self_submit.sql`
 12. `20260524000200_cp_update_window_staff_read.sql`
-13. `20260524000300_cp_rankings.sql` - local only; not applied to staging or production yet.
+13. `20260524000300_cp_rankings.sql`
 
 Migration `20260523000100_member_roster_status_system.sql` is locally validated, staging validated, and production applied/verified as of Milestone 15E.
 
 Migrations `20260524000100_cp_update_window_self_submit.sql` and `20260524000200_cp_update_window_staff_read.sql` are locally validated, staging validated, and production applied/verified.
 
-Migration `20260524000300_cp_rankings.sql` is locally validated only.
+Migration `20260524000300_cp_rankings.sql` is locally validated, staging validated, and production applied/verified.
 
 Production Member Status rollout:
 - Existing production memberships were backfilled to `roster_status = active`.

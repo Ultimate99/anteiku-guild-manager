@@ -1,5 +1,39 @@
 # Testing
 
+## Milestone 20F CP Leaderboard Production Validation
+
+Milestone 20F production rollout and smoke validation passed.
+
+Migration:
+- Production dry-run initially hit a transient Supabase temp-db auth/circuit-breaker error, then retry succeeded.
+- Successful dry-run showed only `20260524000300_cp_rankings.sql`.
+- Applied only `20260524000300_cp_rankings.sql` to production project `mzflfyxxkascrfpteexz`.
+- Remote migration list confirmed `20260524000300` applied.
+
+Validation:
+- Ranking RPCs exist and authenticated execute grants are present.
+- Member ranking response shape has no CP fields.
+- Owner admin rankings return CP values.
+- Non-Owner global admin ranking is denied.
+- Direct `member_cp` and `cp_snapshots` reads remain blocked for normal authenticated users.
+- Active Owner count remains 1.
+
+Production smoke:
+- Member `Ranking` page loaded My Guild and Global tabs.
+- Member UI showed rank + IGN only, with guild labels on Global.
+- No CP values, growth/history/snapshot data, profile ids, usernames, updated timestamps, or private metadata were visible to Member.
+- Member had no Admin navigation.
+- Owner AdminPanel opened.
+- Existing `CP` tab still rendered roster and CP Update Window controls.
+- Separate `CP Ranking` tab rendered Guild and Global rankings with CP values for Owner.
+- No console errors were captured on checked paths.
+
+Source/security checks:
+- Member leaderboard uses `get_member_cp_rankings` only.
+- Member leaderboard does not call `get_admin_cp_rankings`, `get_cp_leaderboard`, or `get_current_cp_roster`.
+- Admin CP Ranking uses `get_admin_cp_rankings`.
+- No direct frontend `.from('member_cp')`, `.from('cp_snapshots')`, or `.from('cp_update_windows')` calls were found.
+
 ## Milestone 20E CP Leaderboard Staging Validation
 
 Milestone 20E staging rollout and validation passed.

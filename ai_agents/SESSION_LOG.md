@@ -1,5 +1,21 @@
 # Session Log
 
+## 2026-05-24 - Milestone 20F CP Leaderboard Production Rollout Complete
+
+- Completed production rollout for CP Leaderboard / CP Ranking.
+- Confirmed clean working tree and latest commit `7ccf8c9 feat: add CP ranking UI`.
+- Relinked Supabase CLI to production project `mzflfyxxkascrfpteexz`; staging project `ckyihuxkioeibzpgwenc` was not used.
+- Production dry-run initially hit a transient Supabase temp-db auth/circuit-breaker error; retry succeeded and showed only `20260524000300_cp_rankings.sql`.
+- Applied only `20260524000300_cp_rankings.sql` to production.
+- Verified production ranking RPC existence, authenticated execute grants, member-safe return shape, Owner admin CP fields, non-Owner global admin denial, direct CP table denial, and active Owner count `1`.
+- Pushed `main`; Vercel deployed commit `7ccf8c9`.
+- Production Member smoke passed for the `Ranking` page, My Guild and Global tabs, rank + IGN only, Global guild labels, no CP values/private CP fields, and no Admin navigation.
+- Production Owner smoke passed for AdminPanel, existing `CP` tab roster/window controls, separate `CP Ranking` tab, Guild and Global admin rankings with CP values, and rank decoration.
+- Captured console errors were empty for checked member/admin paths.
+- Static source checks found member leaderboard uses only `get_member_cp_rankings`, Admin CP Ranking uses `get_admin_cp_rankings`, and no direct frontend `member_cp`, `cp_snapshots`, or `cp_update_windows` table calls exist.
+- No production CP/member data, Vercel env vars, source files, SQL migrations, service role keys, staging project, `db reset`, or `--include-seed` action was used.
+- Supabase CLI remains linked to production and must be relinked before future staging/local Supabase commands.
+
 ## 2026-05-24 - Milestone 20E CP Leaderboard Staging Rollout and Validation
 
 - Completed staging-only CP Leaderboard rollout and validation.

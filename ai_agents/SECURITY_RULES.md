@@ -1,8 +1,31 @@
 # Security Rules
 
+## Milestone 20F CP Leaderboard Production Rules
+
+Milestone 20F is live in production.
+
+Member ranking rules:
+- Members may see CP rank order for `guild` and `global` scopes.
+- Member-visible rank order intentionally reveals relative CP strength.
+- Member ranking API responses must never include CP values, profile ids, usernames, updated timestamps, snapshots, growth, history, audit metadata, or private CP fields.
+- Member UI must show rank, IGN, optional guild label, and current-user highlight only.
+- Member leaderboard frontend must use `get_member_cp_rankings(...)` only.
+
+Admin ranking rules:
+- AdminPanel CP Ranking must use `get_admin_cp_rankings(...)`.
+- Guild rankings require existing scoped `view_cp` authority.
+- Global admin rankings are Owner-only in v1.
+- Admin without CP permission and normal Members must not receive CP values.
+
+Operational rules:
+- Do not query `member_cp` or `cp_snapshots` directly from frontend code.
+- Do not send CP values to member clients and hide them in UI; member API responses must omit CP values.
+- Existing CP Update Window, CP roster/update, audit, GvG, role, permission, and member-status behavior must remain unchanged.
+- Supabase CLI is currently linked to production `mzflfyxxkascrfpteexz`; relink deliberately before future staging/local Supabase commands.
+
 ## Milestone 20B CP Leaderboard Security Rules
 
-Milestone 20B adds local-only backend support for member-safe CP rank order and admin CP rankings. The migration has not been applied to staging or production yet.
+Milestone 20B added backend support for member-safe CP rank order and admin CP rankings. The migration is now applied in staging and production through Milestones 20E and 20F.
 
 Member ranking rules:
 - Members may see CP rank order for `guild` and `global` scopes.
@@ -28,9 +51,8 @@ CP table privacy:
 - Frontend leaderboard UI must use the member-safe ranking RPC and must not call admin CP ranking/roster APIs for member pages.
 - Never send CP values to member frontend and hide them in UI; member API responses must omit them.
 
-Rollout boundary:
-- `20260524000300_cp_rankings.sql` is local-only until a separate staging/production rollout gate.
-- Do not deploy CP leaderboard frontend to a target DB that has not applied and verified the migration.
+Rollout status:
+- `20260524000300_cp_rankings.sql` is applied and verified in staging and production.
 
 ## Milestone 19E CP Update Window Security Rules
 

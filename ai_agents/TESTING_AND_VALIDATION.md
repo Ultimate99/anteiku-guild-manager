@@ -1,5 +1,56 @@
 # Testing And Validation
 
+## Milestone 20F CP Leaderboard Production Rollout
+
+Milestone 20F production rollout and smoke validation passed.
+
+Preflight:
+- Working tree was clean before production rollout.
+- Latest commit was `7ccf8c9 feat: add CP ranking UI`.
+- Supabase CLI was relinked to production project `mzflfyxxkascrfpteexz`.
+- Staging project `ckyihuxkioeibzpgwenc` was not used.
+
+Migration:
+- Production dry-run initially hit a transient Supabase temp-db auth/circuit-breaker error, then retry succeeded.
+- Successful dry-run showed only `20260524000300_cp_rankings.sql`.
+- Applied only `20260524000300_cp_rankings.sql` to production.
+- Post-push migration list confirmed `20260524000300` applied remotely.
+
+Production DB/API validation:
+- `get_member_cp_rankings(text)` exists and returns no CP fields.
+- `get_admin_cp_rankings(uuid,text)` exists and returns CP fields only on authorized admin paths.
+- Authenticated execute grants exist for both ranking RPCs.
+- Member response shape is `rank`, `ign`, `guild_name`, `guild_slug`, and `is_current_user`.
+- Owner global admin ranking returned CP fields.
+- Non-Owner global admin ranking was denied.
+- Direct `member_cp` and `cp_snapshots` reads under authenticated member context returned no rows.
+- Active Owner count remained 1.
+- Pending ranking denial was not safely testable because no pending production user was available.
+
+Frontend deployment:
+- `git push origin main` deployed commit `7ccf8c9 feat: add CP ranking UI`.
+- Production bundle contained the expected CP ranking frontend RPC paths after Vercel deployment.
+
+Production browser smoke:
+- Controlled production Member loaded the `Ranking` page.
+- My Guild and Global tabs loaded.
+- Member rows showed rank + IGN only.
+- Global rows showed guild labels.
+- No CP values, CP growth/history/snapshot data, profile ids, usernames, updated timestamps, or private metadata were visible to Member.
+- Member had no Admin navigation.
+- Owner opened AdminPanel.
+- Existing `CP` tab still rendered CP roster and CP Update Window controls.
+- Separate `CP Ranking` tab rendered Guild and Global rankings with CP values for Owner.
+- Rank decorations rendered on member and admin rankings.
+- No console errors were captured on checked paths.
+
+Source/security validation:
+- Member leaderboard uses `get_member_cp_rankings` only.
+- Member leaderboard does not call `get_admin_cp_rankings`, `get_cp_leaderboard`, or `get_current_cp_roster`.
+- Admin CP Ranking uses `get_admin_cp_rankings`.
+- No direct frontend `.from('member_cp')`, `.from('cp_snapshots')`, or `.from('cp_update_windows')` calls were found.
+- Existing CP roster/update/window behavior was unchanged.
+
 ## Milestone 20E CP Leaderboard Staging Validation
 
 Milestone 20E staging rollout and validation passed.

@@ -1,5 +1,41 @@
 # Project State
 
+## Milestone 20F CP Leaderboard Production Rollout Complete
+
+Milestone 20F is complete. CP Leaderboard / CP Ranking is live in production at `https://anteiku-guild-manager.vercel.app`.
+
+Production rollout:
+- Production project `mzflfyxxkascrfpteexz` was explicitly linked before migration work.
+- Dry-run showed only `20260524000300_cp_rankings.sql` pending.
+- Applied only `20260524000300_cp_rankings.sql` to production.
+- Remote migration list confirmed `20260524000300` applied.
+- Production DB verification passed for ranking RPC existence, authenticated execute grants, member-safe return shape, Owner admin CP fields, non-Owner global admin denial, direct CP table denial, and active Owner count `1`.
+- Commit `7ccf8c9 feat: add CP ranking UI` was pushed to `main` and deployed by Vercel.
+
+Production smoke:
+- Controlled production Member saw the member `Ranking` page.
+- Member My Guild and Global rankings loaded.
+- Member rows showed rank + IGN only; Global rows showed guild labels.
+- No CP values, CP growth/history/snapshot fields, profile ids, usernames, updated timestamps, or private metadata were visible to Member.
+- Member had no Admin navigation.
+- Owner opened AdminPanel.
+- Existing AdminPanel `CP` tab still loaded CP roster and CP Update Window controls.
+- Separate AdminPanel `CP Ranking` tab loaded Guild and Global rankings with CP values for Owner.
+- Rank decorations rendered on member and admin ranking rows.
+- No console errors were captured on the checked production paths.
+
+Security/scope:
+- Member leaderboard uses `get_member_cp_rankings` only.
+- Admin CP Ranking uses `get_admin_cp_rankings`.
+- No direct frontend `member_cp`, `cp_snapshots`, or `cp_update_windows` table calls were found.
+- Existing CP roster/update/window behavior was unchanged.
+- No production CP/member data was mutated during rollout.
+- No service role keys, Vercel env changes, staging changes, `db reset`, `--include-seed`, source edits, or SQL edits were performed during 20F.
+- Supabase CLI is currently linked to production project `mzflfyxxkascrfpteexz`; explicitly relink before future staging/local Supabase commands.
+
+Recommended next step:
+- Milestone 20F docs/handoff commit checkpoint, then plan Weekly CP Snapshot/Growth Reports or another approved feature track.
+
 ## Milestone 20E CP Leaderboard Staging Validation Passed
 
 Milestone 20E staging rollout and validation passed for the CP Leaderboard package.
@@ -35,7 +71,7 @@ Scope confirmation:
 - `.env.local` was restored to local Supabase after validation.
 
 Recommended next step:
-- Milestone 20F production rollout planning/execution gate for CP Leaderboard.
+- Completed later in Milestone 20F production rollout.
 
 ## Milestone 20D AdminPanel CP Leaderboard Upgrade Implemented
 
@@ -1472,15 +1508,15 @@ Validated results:
 
 ## Current Milestone
 
-Milestone 19E CP Update Window production rollout is complete. The CP Update Window backend/RLS/RPC migrations are applied and verified in production, the frontend is deployed, Owner/member production smoke passed, and no controlled production CP mutation smoke was performed. Recommended next step: Milestone 19E docs/handoff commit checkpoint, then select the next approved feature or validation milestone.
+Milestone 20F CP Leaderboard production rollout is complete. The CP Ranking migration is applied and verified in production, the frontend is deployed, member rank-only leaderboard smoke passed, Owner AdminPanel CP Ranking smoke passed, and CP values remain hidden from members. Recommended next step: Milestone 20F docs/handoff commit checkpoint, then plan Weekly CP Snapshot/Growth Reports or another approved feature track.
 
-Future CP-focused milestone candidate recorded: CP Update Window / Member CP Self-Submit. Corrected CP privacy rule going forward: members can see their own CP through safe backend/RPC flow, but must not see other members' CP, CP roster, CP leaderboard, CP snapshots, or other members' CP history. Members must not directly select or update `member_cp` and must not directly read `cp_snapshots`.
+Current CP privacy rule: members can see their own CP through safe backend/RPC flow and can see rank order through `get_member_cp_rankings`, but exact CP values remain hidden from member leaderboard API/UI. Members must not see other members' CP values, CP snapshots, CP history, or private CP metadata. Members must not directly select or update `member_cp` and must not directly read `cp_snapshots`.
 
 ## Current Status
 
 The app is a React + Vite frontend backed by local Supabase migrations/RLS/RPCs. Milestones 10, 11A, and 11B are complete and validated. Milestone 12 is complete as a documentation-only production readiness pass.
 
-Current capabilities include local Supabase auth/session restore, registration through `register_profile`, pending/rejected/suspended gates, approval/rejection queue, own IGN editing, admin member profile management, role/guild management through RPCs, Admin permission checkbox management, protected CP management/leaderboard, GvG event management and voting, and read-only audit log viewing through `get_audit_logs`.
+Current capabilities include local Supabase auth/session restore, registration through `register_profile`, pending/rejected/suspended gates, approval/rejection queue, own IGN editing, admin member profile management, role/guild management through RPCs, Admin permission checkbox management, protected CP management, CP Update Window / Member CP Self-Submit, member-safe rank-only CP Ranking, permission-protected AdminPanel CP Ranking, GvG event management and voting, and read-only audit log viewing through `get_audit_logs`.
 
 Production Supabase is set up through migrations and Owner bootstrap. Vercel deployment is live at `https://anteiku-guild-manager.vercel.app`, production Auth Site URL/redirect URL setup is complete, and production browser/network smoke validation has passed with documented deferred items for production GvG data creation and CP redaction browser coverage.
 
@@ -1535,7 +1571,6 @@ Milestone 14D recorded the staging/preview plan for future non-production valida
 - Avatar editing
 - Username/profile slug editing for normal users
 - Reapply UI
-- CP Update Window staging rollout/browser validation and production rollout
 - Weekly CP snapshot/growth report UI
 - Guild/subguild management UI
 

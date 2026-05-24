@@ -43,6 +43,11 @@
 
 ## Milestone 20B CP Leaderboard Backend
 
+Production status:
+- Applied and verified in staging through Milestone 20E and production through Milestone 20F.
+- Production migration: `20260524000300_cp_rankings.sql`.
+- Production smoke confirmed member rank-only leaderboard and Owner-only/global admin CP values through the permission-checked RPC.
+
 - `supabase/migrations/20260524000300_cp_rankings.sql`
   - Adds member-safe CP ranking RPC `get_member_cp_rankings(p_scope text default 'guild')`.
   - Adds admin CP ranking RPC `get_admin_cp_rankings(p_guild_id uuid default null, p_scope text default 'guild')`.
@@ -53,6 +58,10 @@
   - Adds Milestone 20B validation for member-safe response shape, rank ordering, roster inclusion/exclusion, current-user highlighting, admin permission checks, Owner-only global admin rankings, and direct CP table denial.
 
 ## Milestone 20C Member CP Leaderboard Frontend
+
+Production status:
+- Deployed to production through Milestone 20F with commit `7ccf8c9 feat: add CP ranking UI`.
+- Production Member smoke confirmed My Guild and Global rankings show rank + IGN only, with guild labels on Global and no CP/private fields.
 
 - `src/services/cpLeaderboardService.js`
   - Adds `loadMemberCpRankings(scope)` for the member-safe `get_member_cp_rankings` RPC.
@@ -71,6 +80,10 @@
   - Adds compact leaderboard tabs, rows, rank markers, current-user highlight, and top-rank/Elite 5/Top 10 decoration.
 
 ## Milestone 20D AdminPanel CP Leaderboard Upgrade
+
+Production status:
+- Deployed to production through Milestone 20F with commit `7ccf8c9 feat: add CP ranking UI`.
+- Production Owner smoke confirmed the separate AdminPanel `CP Ranking` tab loads Guild and Global rankings with CP values while the existing `CP` tab still renders roster/window controls.
 
 - `src/services/adminCpService.js`
   - Adds normalized `loadAdminCpRankings({ guildId, scope })` mapping for `get_admin_cp_rankings`.

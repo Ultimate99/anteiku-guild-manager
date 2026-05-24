@@ -2,7 +2,7 @@
 
 ## Milestone 20B CP Ranking RPCs
 
-Milestone 20B is implemented and locally validated only. Staging and production do not have `20260524000300_cp_rankings.sql` yet.
+Milestone 20B is implemented and locally validated. `20260524000300_cp_rankings.sql` is applied and verified in staging as of Milestone 20E and production as of Milestone 20F.
 
 New RPCs:
 - `get_member_cp_rankings(p_scope text default 'guild')`
@@ -74,7 +74,7 @@ Validation:
 
 ## Production Deployment Reminder
 
-Production is live through Milestone 19E. Treat `20260524000300_cp_rankings.sql` as local-only until a separate staging/production rollout gate is approved.
+Production is live through Milestone 20F. CP Leaderboard / CP Ranking is applied, deployed, and smoke-validated in production.
 
 Future production setup must:
 - Apply migrations in documented timestamp order.
