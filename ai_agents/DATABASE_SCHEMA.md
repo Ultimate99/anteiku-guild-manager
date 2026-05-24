@@ -114,16 +114,18 @@ Catalog columns:
 - `updated_at timestamptz not null default now()`
 
 Seeded catalog:
-- `default_avatar_FREE` -> `/cosmetics/avatars/default_avatar_FREE.png`
-- `kaneki_mask_FREE` -> `/cosmetics/avatars/kaneki_mask_FREE.png`
-- `anteiku_logo_FREE` -> `/cosmetics/avatars/anteiku_logo_FREE.png`
-- `default_frame_FREE` -> `/cosmetics/frames/default_frame_FREE.png`
-- `elite_five_frame` -> `/cosmetics/frames/elite_five_frame.png`
+- 54 avatar rows from `public/cosmetics/avatars/*.png`; all avatars use `unlock_type = 'free'`.
+- 10 frame rows from `public/cosmetics/frames/*.png`.
+- Default avatar: `1079_head` -> `/cosmetics/avatars/1079_head.png`.
+- Default frame: `TXK_frame_reOpen_EN_FREE` -> `/cosmetics/frames/TXK_frame_reOpen_EN_FREE.png`.
+- Free frames: frame keys ending `_FREE`, mapped to `unlock_type = 'free'`.
+- Locked/earned frames: non-`_FREE` frame keys, mapped to `unlock_type = 'manual'`.
 
 Free naming convention:
 - Cosmetic keys ending `_FREE` are an asset/import convention and must map to `unlock_type = 'free'`.
 - Catalog `unlock_type` remains the runtime source of truth for equip checks.
 - Frames are equippable when `unlock_type = 'free'` or the caller has a matching unlock row.
+- Runtime security does not inspect filenames; the catalog row is the authority.
 
 RPCs:
 - `get_available_avatars()`
@@ -149,6 +151,7 @@ Validation:
 - Local Supabase reset passed.
 - Local validation script passed through Docker `psql`.
 - Milestone 22B focused validation result: 19 PASS / 0 FAIL / 0 SKIP.
+- Local asset-path verification checked 64 catalog rows with 0 missing files and 0 unlock mapping problems.
 
 ## Milestone 21B CP Rank Badge Summary RPC
 

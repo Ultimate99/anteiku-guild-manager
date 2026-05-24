@@ -34,11 +34,14 @@ Security boundary:
 - Database stores cosmetic keys and static asset paths only.
 - Asset paths are constrained to `/cosmetics/avatars/` or `/cosmetics/frames/`.
 - `_FREE` suffixes are an asset/import convention and are mapped to `unlock_type = 'free'`.
+- Current seed rows match actual local assets: 54 free avatars and 10 frames.
+- Current non-`_FREE` frames use `unlock_type = 'manual'` and require unlock rows.
 - Runtime equip checks use catalog `unlock_type` as source of truth.
 - No player uploads, arbitrary image URLs, Supabase Storage, service-role usage, or CP/GvG/audit/role/permission/member-status changes were added.
 
 Validation:
 - Milestone 22B local validation passed with 19 PASS / 0 FAIL / 0 SKIP.
+- Catalog asset-path verification checked 64 rows with 0 missing files and 0 unlock mapping problems.
 
 ## Milestone 21E Rank Badge Summary RPC
 

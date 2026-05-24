@@ -10,6 +10,8 @@ Cosmetic catalog rules:
 - Asset paths must stay under `/cosmetics/avatars/` or `/cosmetics/frames/`.
 - No player uploads, arbitrary image URLs, or Supabase Storage are allowed in v1.
 - `_FREE` suffixes are an asset/import convention for free/default cosmetics.
+- All current avatar catalog rows are free for approved players.
+- Current non-`_FREE` frame rows use `unlock_type = 'manual'` and require an unlock row.
 - Catalog `unlock_type = 'free'` is the runtime source of truth; do not rely on filename parsing alone.
 
 Member equip rules:

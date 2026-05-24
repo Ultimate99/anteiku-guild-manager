@@ -52,7 +52,9 @@ Local-only status:
 
 - `supabase/migrations/20260525000100_cosmetics_catalog_unlocks.sql`
   - Adds `cosmetic_catalog`, `profile_cosmetic_unlocks`, and `profile_equipped_cosmetics`.
-  - Seeds `default_avatar_FREE`, `kaneki_mask_FREE`, `anteiku_logo_FREE`, `default_frame_FREE`, and `elite_five_frame`.
+  - Seeds 54 actual avatar asset rows and 10 actual frame asset rows from `public/cosmetics/`.
+  - Uses `1079_head` as the default avatar and `TXK_frame_reOpen_EN_FREE` as the default frame.
+  - Maps non-`_FREE` frames to `unlock_type = 'manual'`.
   - Enforces the `_FREE` naming convention by requiring `_FREE` catalog keys to use `unlock_type = 'free'`; runtime equip checks still use catalog `unlock_type` as source of truth.
   - Adds RLS policies for active catalog reads and caller-owned unlock/equipped reads.
   - Revokes direct client writes to cosmetics tables.

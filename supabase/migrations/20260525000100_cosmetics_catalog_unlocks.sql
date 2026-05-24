@@ -34,7 +34,7 @@ create table if not exists public.cosmetic_catalog (
     rarity in ('common', 'uncommon', 'rare', 'epic', 'legendary', 'special')
   ),
   constraint cosmetic_catalog_unlock_type_chk check (
-    unlock_type in ('free', 'admin_grant', 'rank', 'event', 'gvg', 'founder')
+    unlock_type in ('free', 'manual', 'admin_grant', 'rank', 'event', 'gvg', 'founder')
   ),
   constraint cosmetic_catalog_free_suffix_unlock_chk check (
     key !~ '_FREE$'
@@ -86,6 +86,99 @@ before update on public.profile_equipped_cosmetics
 for each row
 execute function public.set_updated_at();
 
+with seeded_cosmetics as (
+  select
+    replace(file_name, '.png', '') as key,
+    'avatar'::text as type,
+    format('cosmetics.avatar.%s', replace(file_name, '.png', '')) as label_key,
+    format('/cosmetics/avatars/%s', file_name) as asset_path,
+    'common'::text as rarity,
+    'free'::text as unlock_type,
+    true as is_active,
+    sort_order
+  from (
+    values
+      ('1079_head.png', 10),
+      ('1001_head.png', 20),
+      ('1002_head.png', 30),
+      ('1003_head.png', 40),
+      ('1004_head.png', 50),
+      ('1005_head.png', 60),
+      ('1006_head.png', 70),
+      ('1007_head.png', 80),
+      ('1008_head.png', 90),
+      ('1009_head.png', 100),
+      ('1010_head.png', 110),
+      ('1011_head.png', 120),
+      ('1012_head.png', 130),
+      ('1013_head.png', 140),
+      ('1014_head.png', 150),
+      ('1015_head.png', 160),
+      ('1016_head.png', 170),
+      ('1017_head.png', 180),
+      ('1018_head.png', 190),
+      ('1019_head.png', 200),
+      ('1020_head.png', 210),
+      ('1021_head.png', 220),
+      ('1023_head.png', 230),
+      ('1024_head.png', 240),
+      ('1025_head.png', 250),
+      ('1027_head.png', 260),
+      ('1030_head.png', 270),
+      ('1031_head.png', 280),
+      ('1036_head.png', 290),
+      ('1037_head.png', 300),
+      ('1055_head.png', 310),
+      ('1073_head.png', 320),
+      ('1074_head.png', 330),
+      ('1075_head.png', 340),
+      ('1076_head.png', 350),
+      ('1077_head.png', 360),
+      ('1078_head.png', 370),
+      ('1080_head.png', 380),
+      ('1081_head.png', 390),
+      ('1083_head.png', 400),
+      ('1084_head.png', 410),
+      ('1087_head.png', 420),
+      ('1088_head.png', 430),
+      ('1145_head.png', 440),
+      ('1146_head.png', 450),
+      ('1147_head.png', 460),
+      ('1148_head.png', 470),
+      ('1149_head.png', 480),
+      ('1158_head.png', 490),
+      ('1160_head.png', 500),
+      ('1161_head.png', 510),
+      ('1164_head.png', 520),
+      ('1165_head.png', 530),
+      ('1168_head.png', 540)
+  ) as avatar_files(file_name, sort_order)
+
+  union all
+
+  select
+    replace(file_name, '.png', '') as key,
+    'frame'::text as type,
+    format('cosmetics.frame.%s', replace(file_name, '.png', '')) as label_key,
+    format('/cosmetics/frames/%s', file_name) as asset_path,
+    rarity,
+    unlock_type,
+    true as is_active,
+    sort_order
+  from (
+    values
+      ('TXK_frame_reOpen_EN_FREE.png', 'common'::text, 'free'::text, 10),
+      ('TXK_C1121_lock_FREE.png', 'common'::text, 'free'::text, 20),
+      ('TXK_C1164_lock_FREE.png', 'common'::text, 'free'::text, 30),
+      ('TXK_C1168_lock_FREE.png', 'common'::text, 'free'::text, 40),
+      ('TXK_C1001_lock.png', 'rare'::text, 'manual'::text, 100),
+      ('TXK_C1007_lock.png', 'rare'::text, 'manual'::text, 110),
+      ('TXK_C1135_lock.png', 'rare'::text, 'manual'::text, 120),
+      ('TXK_C1138_lock.png', 'rare'::text, 'manual'::text, 130),
+      ('TXK_C1147_lock.png', 'rare'::text, 'manual'::text, 140),
+      ('TXK_C1160_lock.png', 'rare'::text, 'manual'::text, 150)
+  ) as frame_files(file_name, rarity, unlock_type, sort_order)
+)
 insert into public.cosmetic_catalog (
   key,
   type,
@@ -96,57 +189,16 @@ insert into public.cosmetic_catalog (
   is_active,
   sort_order
 )
-values
-  (
-    'default_avatar_FREE',
-    'avatar',
-    'cosmetics.avatar.default',
-    '/cosmetics/avatars/default_avatar_FREE.png',
-    'common',
-    'free',
-    true,
-    10
-  ),
-  (
-    'kaneki_mask_FREE',
-    'avatar',
-    'cosmetics.avatar.kanekiMask',
-    '/cosmetics/avatars/kaneki_mask_FREE.png',
-    'common',
-    'free',
-    true,
-    20
-  ),
-  (
-    'anteiku_logo_FREE',
-    'avatar',
-    'cosmetics.avatar.anteikuLogo',
-    '/cosmetics/avatars/anteiku_logo_FREE.png',
-    'common',
-    'free',
-    true,
-    30
-  ),
-  (
-    'default_frame_FREE',
-    'frame',
-    'cosmetics.frame.default',
-    '/cosmetics/frames/default_frame_FREE.png',
-    'common',
-    'free',
-    true,
-    10
-  ),
-  (
-    'elite_five_frame',
-    'frame',
-    'cosmetics.frame.eliteFive',
-    '/cosmetics/frames/elite_five_frame.png',
-    'rare',
-    'admin_grant',
-    true,
-    20
-  )
+select
+  key,
+  type,
+  label_key,
+  asset_path,
+  rarity,
+  unlock_type,
+  is_active,
+  sort_order
+from seeded_cosmetics
 on conflict (key) do update
 set
   type = excluded.type,
@@ -232,8 +284,8 @@ begin
   )
   values (
     p_profile_id,
-    'default_avatar_FREE',
-    'default_frame_FREE'
+    '1079_head',
+    'TXK_frame_reOpen_EN_FREE'
   )
   on conflict (profile_id) do nothing;
 

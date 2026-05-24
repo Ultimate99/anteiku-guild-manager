@@ -1,14 +1,17 @@
 # Project State
 
-## Milestone 22B Cosmetics Backend Implemented Locally
+## Milestone 22B.1 Cosmetics Catalog Aligned Locally
 
-Milestone 22B is implemented and locally validated as backend/database-only support for preset avatars, unlocked/equipped frames, and future cosmetic rewards.
+Milestone 22B/22B.1 is implemented and locally validated as backend/database-only support for preset avatars, unlocked/equipped frames, and future cosmetic rewards.
 
 Implemented locally:
 - Added migration `20260525000100_cosmetics_catalog_unlocks.sql`.
 - Added `cosmetic_catalog`, `profile_cosmetic_unlocks`, and `profile_equipped_cosmetics`.
-- Seeded Git/Vercel static-asset keys for three free avatars, one free default frame, and one locked frame.
+- Aligned the catalog seed with actual Git/Vercel static assets: 54 avatar PNGs and 10 frame PNGs under `public/cosmetics/`.
+- Default avatar: `1079_head` -> `/cosmetics/avatars/1079_head.png`.
+- Default frame: `TXK_frame_reOpen_EN_FREE` -> `/cosmetics/frames/TXK_frame_reOpen_EN_FREE.png`.
 - Added the `_FREE` naming convention: `_FREE` catalog keys must use `unlock_type = 'free'`; runtime equip checks still use explicit catalog `unlock_type`.
+- Non-`_FREE` frames use `unlock_type = 'manual'` and require an unlock row before equip.
 - Added RPCs `get_available_avatars()`, `get_my_cosmetics()`, `equip_my_avatar(text)`, `equip_my_frame(text)`, and `admin_grant_cosmetic(uuid, text, text)`.
 - Hardened `update_my_profile(p_ign, p_avatar_key)` so `avatar_key` can no longer store arbitrary keys; non-empty avatar keys must match an active catalog avatar.
 - `equip_my_avatar(...)` syncs `profiles.avatar_key` for backward compatibility while the new equipped-cosmetics table becomes the cosmetics source for future UI.
@@ -24,6 +27,7 @@ Validation:
 - Local `npx.cmd supabase db reset` passed.
 - Full local validation script passed through Docker `psql`.
 - Milestone 22B focused validation result: 19 PASS / 0 FAIL / 0 SKIP.
+- Catalog asset-path verification checked 64 rows with 0 missing files and 0 unlock mapping problems.
 - `npm.cmd run build` was not run because 22B changed only database migrations/tests/docs and no frontend code.
 
 Rollout boundary:
@@ -32,11 +36,11 @@ Rollout boundary:
 - Supabase CLI was linked to production before this local-only milestone; future staging/local remote work must relink deliberately before any remote Supabase command.
 
 Asset note:
-- Static asset paths are seeded now, but frontend picker rollout should confirm the matching files exist under `public/cosmetics/avatars/` and `public/cosmetics/frames/`.
+- Static asset paths now match files under `public/cosmetics/avatars/` and `public/cosmetics/frames/`.
 - A pre-existing untracked `public/cosmetics/` folder was left untouched during this backend-only task.
 
 Recommended next step:
-- Milestone 22C asset scaffold/upload check + frontend cosmetics picker planning.
+- Milestone 22C frontend cosmetics picker planning/implementation.
 
 ## Milestone 21E Rank Badge / Profile Border Production Rollout Complete
 

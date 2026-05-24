@@ -1,11 +1,23 @@
 # Session Log
 
+## 2026-05-25 - Milestone 22B.1 Cosmetics Catalog Asset Alignment
+
+- Aligned `cosmetic_catalog` seed data with actual files in `public/cosmetics/avatars/` and `public/cosmetics/frames/`.
+- Seeded 54 avatar rows; all avatars use `unlock_type = 'free'`.
+- Seeded 10 frame rows; `_FREE` frames use `unlock_type = 'free'` and non-`_FREE` frames use `unlock_type = 'manual'`.
+- Selected `1079_head` as the default avatar because no `default_avatar_FREE.png` file exists.
+- Selected `TXK_frame_reOpen_EN_FREE` as the default frame because no `default_frame_FREE.png` file exists.
+- Verified 64 catalog asset paths against local files: 0 missing files, 0 unlock mapping problems.
+- `npx.cmd supabase db reset` passed locally.
+- Full local validation passed through Docker `psql`; Milestone 22B result remained 19 PASS / 0 FAIL / 0 SKIP.
+- Staging and production were not touched.
+
 ## 2026-05-25 - Milestone 22B Cosmetics Backend Implemented
 
 - Implemented backend/database-only cosmetics support.
 - Created migration `supabase/migrations/20260525000100_cosmetics_catalog_unlocks.sql`.
 - Added `cosmetic_catalog`, `profile_cosmetic_unlocks`, and `profile_equipped_cosmetics`.
-- Seeded `default_avatar_FREE`, `kaneki_mask_FREE`, `anteiku_logo_FREE`, `default_frame_FREE`, and `elite_five_frame`.
+- Seeded cosmetics from Git/Vercel static asset paths under `public/cosmetics/`.
 - Applied the `_FREE` naming convention so free/default cosmetic keys map to `unlock_type = 'free'`, while catalog `unlock_type` remains the runtime source of truth.
 - Added RPCs `get_available_avatars()`, `get_my_cosmetics()`, `equip_my_avatar(text)`, `equip_my_frame(text)`, and `admin_grant_cosmetic(uuid, text, text)`.
 - Hardened `update_my_profile(p_ign, p_avatar_key)` so arbitrary avatar keys are rejected and active catalog avatars remain valid.

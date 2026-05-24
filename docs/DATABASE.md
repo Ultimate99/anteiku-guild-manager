@@ -58,8 +58,11 @@ Adds:
 - `admin_grant_cosmetic(p_profile_id uuid, p_cosmetic_key text, p_reason text default null)`
 
 Seeded cosmetics:
-- Avatars: `default_avatar_FREE`, `kaneki_mask_FREE`, `anteiku_logo_FREE`
-- Frames: `default_frame_FREE`, `elite_five_frame`
+- Avatars: 54 rows from `public/cosmetics/avatars/*.png`, all `unlock_type = 'free'`.
+- Frames: 10 rows from `public/cosmetics/frames/*.png`.
+- Default avatar: `1079_head`.
+- Default frame: `TXK_frame_reOpen_EN_FREE`.
+- `_FREE` frames use `unlock_type = 'free'`; non-`_FREE` frames use `unlock_type = 'manual'`.
 
 Asset storage:
 - Database stores keys and static asset paths only.
@@ -67,6 +70,7 @@ Asset storage:
 - No uploads, arbitrary URLs, or Supabase Storage are introduced.
 - Cosmetic keys ending `_FREE` are an asset/import convention and must map to `unlock_type = 'free'`.
 - Runtime access uses catalog `unlock_type` as the source of truth, not filename parsing alone.
+- Catalog asset paths were verified against local files: 64 rows checked, 0 missing files.
 
 Security:
 - RLS is enabled on all cosmetics tables.
@@ -80,6 +84,7 @@ Validation:
 - Local Supabase reset passed.
 - Local validation script passed through Docker `psql`.
 - Milestone 22B focused validation result: 19 PASS / 0 FAIL / 0 SKIP.
+- Catalog unlock mapping verification passed with 0 mapping problems.
 
 Rollout boundary:
 - Staging and production do not have this migration yet.

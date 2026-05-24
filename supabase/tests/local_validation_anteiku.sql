@@ -3971,19 +3971,37 @@ begin
   select count(*) filter (where type = 'avatar'),
          count(*) filter (where type = 'frame')
   into avatar_count, frame_count
-  from public.cosmetic_catalog
-  where key in (
-    'default_avatar_FREE',
-    'kaneki_mask_FREE',
-    'anteiku_logo_FREE',
-    'default_frame_FREE',
-    'elite_five_frame'
-  );
+  from public.cosmetic_catalog;
 
-  if avatar_count >= 3 and frame_count >= 2 then
-    insert into milestone22b_cosmetics_results values ('seed', 'catalog_seeded', 'PASS', 'Default/sample avatars and frames are seeded.');
+  if avatar_count = 54
+     and frame_count = 10
+     and exists (
+       select 1
+       from public.cosmetic_catalog
+       where key = '1079_head'
+         and type = 'avatar'
+         and asset_path = '/cosmetics/avatars/1079_head.png'
+         and unlock_type = 'free'
+     )
+     and exists (
+       select 1
+       from public.cosmetic_catalog
+       where key = 'TXK_frame_reOpen_EN_FREE'
+         and type = 'frame'
+         and asset_path = '/cosmetics/frames/TXK_frame_reOpen_EN_FREE.png'
+         and unlock_type = 'free'
+     )
+     and exists (
+       select 1
+       from public.cosmetic_catalog
+       where key = 'TXK_C1001_lock'
+         and type = 'frame'
+         and asset_path = '/cosmetics/frames/TXK_C1001_lock.png'
+         and unlock_type = 'manual'
+     ) then
+    insert into milestone22b_cosmetics_results values ('seed', 'catalog_seeded', 'PASS', avatar_count::text || ' avatars and ' || frame_count::text || ' frames are seeded from actual asset filenames.');
   else
-    insert into milestone22b_cosmetics_results values ('seed', 'catalog_seeded', 'FAIL', 'Expected seeded avatar/frame rows are missing.');
+    insert into milestone22b_cosmetics_results values ('seed', 'catalog_seeded', 'FAIL', avatar_count::text || ' avatars and ' || frame_count::text || ' frames found, or expected default/locked keys are missing.');
   end if;
 
   if not exists (
@@ -3992,15 +4010,28 @@ begin
     where c.key ~ '_FREE$'
       and c.unlock_type <> 'free'
   )
+  and not exists (
+    select 1
+    from public.cosmetic_catalog c
+    where c.type = 'avatar'
+      and c.unlock_type <> 'free'
+  )
+  and not exists (
+    select 1
+    from public.cosmetic_catalog c
+    where c.type = 'frame'
+      and c.key !~ '_FREE$'
+      and c.unlock_type <> 'manual'
+  )
   and exists (
     select 1
     from public.cosmetic_catalog c
-    where c.key = 'elite_five_frame'
-      and c.unlock_type <> 'free'
+    where c.key = 'TXK_C1001_lock'
+      and c.unlock_type = 'manual'
   ) then
-    insert into milestone22b_cosmetics_results values ('seed', 'free_suffix_maps_to_free_unlock_type', 'PASS', '_FREE cosmetics are free and locked sample frame is not free.');
+    insert into milestone22b_cosmetics_results values ('seed', 'free_suffix_maps_to_free_unlock_type', 'PASS', 'All avatars are free, _FREE frames are free, and non-_FREE frames are manual unlocks.');
   else
-    insert into milestone22b_cosmetics_results values ('seed', 'free_suffix_maps_to_free_unlock_type', 'FAIL', '_FREE or locked-frame unlock_type mapping is incorrect.');
+    insert into milestone22b_cosmetics_results values ('seed', 'free_suffix_maps_to_free_unlock_type', 'FAIL', 'Avatar, _FREE frame, or manual locked-frame unlock_type mapping is incorrect.');
   end if;
 
   begin
@@ -4008,7 +4039,7 @@ begin
     select count(*) into avatar_count
     from public.get_available_avatars();
 
-    if avatar_count >= 3 then
+    if avatar_count = 54 then
       insert into milestone22b_cosmetics_results values ('rpc', 'member_reads_available_avatars', 'PASS', avatar_count::text || ' avatars returned.');
     else
       insert into milestone22b_cosmetics_results values ('rpc', 'member_reads_available_avatars', 'FAIL', avatar_count::text || ' avatars returned.');
@@ -4021,18 +4052,18 @@ begin
     perform set_config('request.jwt.claim.sub', member_id::text, true);
     cosmetics_payload := public.get_my_cosmetics();
 
-    if cosmetics_payload #>> '{equipped,avatar_key}' = 'default_avatar_FREE'
-       and cosmetics_payload #>> '{equipped,frame_key}' = 'default_frame_FREE'
+    if cosmetics_payload #>> '{equipped,avatar_key}' = '1079_head'
+       and cosmetics_payload #>> '{equipped,frame_key}' = 'TXK_frame_reOpen_EN_FREE'
        and exists (
          select 1
          from jsonb_array_elements(cosmetics_payload -> 'frames') f
-         where f ->> 'key' = 'default_frame_FREE'
+         where f ->> 'key' = 'TXK_frame_reOpen_EN_FREE'
            and (f ->> 'is_unlocked')::boolean = true
        )
        and exists (
          select 1
          from jsonb_array_elements(cosmetics_payload -> 'frames') f
-         where f ->> 'key' = 'elite_five_frame'
+         where f ->> 'key' = 'TXK_C1001_lock'
            and (f ->> 'is_unlocked')::boolean = false
        ) then
       insert into milestone22b_cosmetics_results values ('rpc', 'member_reads_own_cosmetics', 'PASS', cosmetics_payload::text);
@@ -4045,14 +4076,14 @@ begin
 
   begin
     perform set_config('request.jwt.claim.sub', member_id::text, true);
-    equip_payload := public.equip_my_avatar('kaneki_mask_FREE');
+    equip_payload := public.equip_my_avatar('1080_head');
 
-    if equip_payload ->> 'avatar_key' = 'kaneki_mask_FREE'
+    if equip_payload ->> 'avatar_key' = '1080_head'
        and exists (
          select 1
          from public.profiles p
          where p.id = member_id
-           and p.avatar_key = 'kaneki_mask_FREE'
+           and p.avatar_key = '1080_head'
        ) then
       insert into milestone22b_cosmetics_results values ('rpc', 'member_equips_valid_avatar', 'PASS', equip_payload::text);
     else
@@ -4072,9 +4103,9 @@ begin
 
   begin
     perform set_config('request.jwt.claim.sub', member_id::text, true);
-    equip_payload := public.equip_my_frame('default_frame_FREE');
+    equip_payload := public.equip_my_frame('TXK_frame_reOpen_EN_FREE');
 
-    if equip_payload ->> 'frame_key' = 'default_frame_FREE' then
+    if equip_payload ->> 'frame_key' = 'TXK_frame_reOpen_EN_FREE' then
       insert into milestone22b_cosmetics_results values ('rpc', 'member_equips_default_frame', 'PASS', equip_payload::text);
     else
       insert into milestone22b_cosmetics_results values ('rpc', 'member_equips_default_frame', 'FAIL', coalesce(equip_payload::text, 'No equip payload.'));
@@ -4086,10 +4117,10 @@ begin
   begin
     delete from public.profile_cosmetic_unlocks
     where profile_id = member_id
-      and cosmetic_key = 'elite_five_frame';
+      and cosmetic_key = 'TXK_C1001_lock';
 
     perform set_config('request.jwt.claim.sub', member_id::text, true);
-    perform public.equip_my_frame('elite_five_frame');
+    perform public.equip_my_frame('TXK_C1001_lock');
     insert into milestone22b_cosmetics_results values ('rpc', 'locked_frame_without_unlock_denied', 'FAIL', 'Locked frame was equipped without unlock.');
   exception when others then
     insert into milestone22b_cosmetics_results values ('rpc', 'locked_frame_without_unlock_denied', 'PASS', sqlerrm);
@@ -4097,14 +4128,14 @@ begin
 
   begin
     perform set_config('request.jwt.claim.sub', owner_id::text, true);
-    cosmetics_payload := public.admin_grant_cosmetic(member_id, 'elite_five_frame', 'local validation');
+    cosmetics_payload := public.admin_grant_cosmetic(member_id, 'TXK_C1001_lock', 'local validation');
 
-    if cosmetics_payload ->> 'cosmetic_key' = 'elite_five_frame'
+    if cosmetics_payload ->> 'cosmetic_key' = 'TXK_C1001_lock'
        and exists (
          select 1
          from public.profile_cosmetic_unlocks pcu
          where pcu.profile_id = member_id
-           and pcu.cosmetic_key = 'elite_five_frame'
+           and pcu.cosmetic_key = 'TXK_C1001_lock'
        ) then
       insert into milestone22b_cosmetics_results values ('rpc', 'owner_grants_locked_frame', 'PASS', cosmetics_payload::text);
     else
@@ -4116,9 +4147,9 @@ begin
 
   begin
     perform set_config('request.jwt.claim.sub', member_id::text, true);
-    equip_payload := public.equip_my_frame('elite_five_frame');
+    equip_payload := public.equip_my_frame('TXK_C1001_lock');
 
-    if equip_payload ->> 'frame_key' = 'elite_five_frame' then
+    if equip_payload ->> 'frame_key' = 'TXK_C1001_lock' then
       insert into milestone22b_cosmetics_results values ('rpc', 'member_equips_granted_frame', 'PASS', equip_payload::text);
     else
       insert into milestone22b_cosmetics_results values ('rpc', 'member_equips_granted_frame', 'FAIL', coalesce(equip_payload::text, 'No equip payload.'));
@@ -4129,7 +4160,7 @@ begin
 
   begin
     perform set_config('request.jwt.claim.sub', member_id::text, true);
-    perform public.admin_grant_cosmetic(member_id, 'elite_five_frame', null);
+    perform public.admin_grant_cosmetic(member_id, 'TXK_C1001_lock', null);
     insert into milestone22b_cosmetics_results values ('rpc', 'member_cannot_grant_self_cosmetics', 'FAIL', 'Member granted cosmetics.');
   exception when others then
     insert into milestone22b_cosmetics_results values ('rpc', 'member_cannot_grant_self_cosmetics', 'PASS', sqlerrm);
@@ -4159,10 +4190,10 @@ begin
   begin
     perform set_config('request.jwt.claim.sub', member_id::text, true);
     select * into updated_profile
-    from public.update_my_profile('Member Cosmetic IGN', 'default_avatar_FREE');
+    from public.update_my_profile('Member Cosmetic IGN', '1079_head');
 
     if updated_profile.ign = 'Member Cosmetic IGN'
-       and updated_profile.avatar_key = 'default_avatar_FREE' then
+       and updated_profile.avatar_key = '1079_head' then
       insert into milestone22b_cosmetics_results values ('rpc', 'profile_ign_update_still_works', 'PASS', row_to_json(updated_profile)::text);
     else
       insert into milestone22b_cosmetics_results values ('rpc', 'profile_ign_update_still_works', 'FAIL', coalesce(row_to_json(updated_profile)::text, 'No updated profile.'));
@@ -4176,7 +4207,7 @@ begin
     perform set_config('request.jwt.claim.role', 'authenticated', true);
     execute 'set local role authenticated';
     insert into public.profile_cosmetic_unlocks (profile_id, cosmetic_key)
-    values (member_id, 'elite_five_frame')
+    values (member_id, 'TXK_C1001_lock')
     on conflict do nothing;
     execute 'reset role';
     insert into milestone22b_cosmetics_results values ('rls', 'member_direct_unlock_write_denied', 'FAIL', 'Direct unlock insert succeeded.');

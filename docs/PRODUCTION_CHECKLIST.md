@@ -32,6 +32,8 @@ Current production checkpoint:
 - AdminPanel `CP Ranking` is permission-protected and Owner Global ranking was smoke-tested.
 - Milestone 21E Rank Badge / Profile Border is live and production-smoke validated.
 - Rank badge/profile border uses only `get_my_cp_rank_summary()` and does not expose CP values or private CP metadata.
+- Milestone 22B/22B.1 Cosmetics backend is local-only; production does not have `20260525000100_cosmetics_catalog_unlocks.sql` yet.
+- Do not deploy cosmetics picker frontend until production has the cosmetics migration applied and verified.
 - Vercel Preview env has not been configured for staging yet.
 
 Controlled guild onboarding checkpoint:

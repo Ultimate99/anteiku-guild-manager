@@ -19,8 +19,10 @@ Local validation:
 Focused checks:
 - Catalog tables and RPCs exist.
 - RLS is enabled on cosmetics tables.
-- Seeded default/sample avatars and frames exist.
-- `_FREE` catalog keys map to `unlock_type = 'free'`, and the locked sample frame is not free.
+- Seeded 54 actual avatar assets and 10 actual frame assets.
+- Default avatar `1079_head` and default frame `TXK_frame_reOpen_EN_FREE` exist.
+- `_FREE` catalog keys map to `unlock_type = 'free'`, and non-`_FREE` frames map to `unlock_type = 'manual'`.
+- Catalog asset paths match local files: 64 rows checked, 0 missing files.
 - Member can read active available avatars.
 - Member can read own equipped cosmetics and frame unlock status.
 - Member can equip a valid avatar.
