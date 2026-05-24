@@ -72,12 +72,12 @@ export function SetNewPassword() {
 
   return (
     <div className="stack recovery-stack">
-      <section className="panel recovery-panel">
+      <section className="panel recovery-panel member-compact-panel">
         <h3>{t('recovery.title')}</h3>
         <p>{t('recovery.body')}</p>
       </section>
 
-      <form className="panel form-panel recovery-form" onSubmit={handleSubmit}>
+      <form className="panel form-panel recovery-form compact-form-panel" onSubmit={handleSubmit}>
         <label>
           {t('recovery.newPassword')}
           <input

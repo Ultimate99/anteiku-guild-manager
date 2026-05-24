@@ -59,6 +59,25 @@
 - `src/pages/AdminPanel.jsx`
   - Translates basic Admin tab labels only; full AdminPanel section translation remains future work.
 
+## Milestone 16F Member-Facing UI Compact Pass
+
+- `src/pages/LoginRegister.jsx`
+  - Uses compact auth panel/form classes while preserving sign-in, registration, forgot-password, and approval-request behavior.
+- `src/pages/SetNewPassword.jsx`
+  - Uses compact recovery panel/form classes while preserving the recovery gate and password update behavior.
+- `src/pages/PendingApproval.jsx`, `src/pages/RejectedStatus.jsx`, `src/pages/SuspendedStatus.jsx`, `src/pages/RosterRestrictedStatus.jsx`
+  - Use compact gate panel styling while preserving lockout/sign-out behavior.
+- `src/pages/Dashboard.jsx`
+  - Shows compact member home summary focused on guild, role, roster status, GvG state, and current member identity.
+- `src/pages/Profile.jsx`
+  - Uses compact profile/detail panels while preserving own-IGN editing and safe profile display.
+- `src/pages/Gvg.jsx`
+  - Uses compact GvG hero/empty/vote panels while preserving event loading, eligibility, vote submission, and absence-reason behavior.
+- `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`
+  - Shorten member-facing Dashboard/Profile/GvG/gate copy in all supported languages.
+- `src/styles/app.css`
+  - Adds compact member-facing panel, metric, profile, detail, recovery, and GvG vote styles.
+
 ## Documentation
 
 - `README.md`: Current project overview, milestone status, setup/deployment links, and security summary.

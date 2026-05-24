@@ -9,7 +9,7 @@ export function PendingApproval() {
 
   return (
     <div className="stack">
-      <section className="panel hero-panel">
+      <section className="panel hero-panel gate-panel member-compact-panel">
         <StatusBadge tone="warning">{t('gate.pending.badge')}</StatusBadge>
         <h3>{t('gate.pending.title')}</h3>
         <p>{t('gate.pending.body')}</p>

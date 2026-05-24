@@ -177,14 +177,19 @@ export function Gvg() {
 
   return (
     <div className="stack">
-      <section className="panel hero-panel">
+      <section className="panel hero-panel gvg-hero-panel member-compact-panel">
         <div className="status-badge-row">
           <StatusBadge tone={selectedEvent ? 'success' : 'warning'}>{t('gvg.voteBadge')}</StatusBadge>
           <StatusBadge tone={rosterStatusTone(rosterStatus)}>{t(`roster.status.${rosterStatus}.label`)}</StatusBadge>
         </div>
         <h3>{t('gvg.readinessTitle')}</h3>
         <p>{t('gvg.readinessBody')}</p>
-        <button type="button" className="secondary-action" onClick={() => loadGvgData()} disabled={loading || saving || !canUseGvg}>
+        <button
+          type="button"
+          className="secondary-action compact-action"
+          onClick={() => loadGvgData()}
+          disabled={loading || saving || !canUseGvg}
+        >
           {loading ? t('gvg.refreshing') : t('gvg.refresh')}
         </button>
       </section>
@@ -193,7 +198,7 @@ export function Gvg() {
       {message ? <p className="notice-line">{message}</p> : null}
 
       {!canUseGvg ? (
-        <section className="panel restricted-panel">
+        <section className="panel restricted-panel gate-panel member-compact-panel">
           <StatusBadge tone={rosterStatusTone(rosterStatus)}>{t(`roster.status.${rosterStatus}.label`)}</StatusBadge>
           <h3>{isRosterBlocked ? t('gvg.accessUnavailable') : t('gvg.notExpected')}</h3>
           <p>{t(`roster.status.${rosterStatus}.summary`)}</p>
@@ -203,7 +208,7 @@ export function Gvg() {
       {canUseGvg && loading ? <p className="muted-line">{t('gvg.loadingActive')}</p> : null}
 
       {canUseGvg && !loading && events.length === 0 ? (
-        <section className="panel hero-panel">
+        <section className="panel hero-panel gvg-empty-panel member-compact-panel">
           <StatusBadge tone="warning">{t('gvg.awaitingEvent')}</StatusBadge>
           <h3>{t('gvg.noActiveEvent')}</h3>
           <p>{t('gvg.votingOpens')}</p>
@@ -211,7 +216,7 @@ export function Gvg() {
       ) : null}
 
       {canUseGvg && events.length > 0 ? (
-        <section className="panel vote-panel" aria-label={t('gvg.votingLabel')}>
+        <section className="panel vote-panel compact-vote-panel" aria-label={t('gvg.votingLabel')}>
           {events.length > 1 ? (
             <label>
               {t('gvg.activeEvent')}

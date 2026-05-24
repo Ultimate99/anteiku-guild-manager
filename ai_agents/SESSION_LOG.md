@@ -1,5 +1,21 @@
 # Session Log
 
+## 2026-05-24 - Milestone 16F Member-Facing UI Compact Pass Implemented
+
+- Implemented Milestone 16F as a frontend-only member-facing UI/copy compact pass.
+- Added compact member-facing panel classes for auth, recovery, gate, Dashboard/Home, Profile, and GvG surfaces.
+- Tightened app shell, page heading, form, panel, metric, profile, and GvG vote spacing.
+- Dashboard/Home now shows compact guild/role/roster/GvG status plus member summary.
+- Profile keeps IGN edit behavior and shortens locked-field copy.
+- GvG copy is shorter while preserving event loading, eligibility, and vote behavior.
+- Pending/rejected/suspended/restricted copy is shorter while preserving lockout meaning.
+- Updated EN/FR/DE i18n dictionaries for changed member-facing copy.
+- `npm.cmd run build` passed.
+- Static checks found no Supabase migration or service changes and no new direct protected table calls.
+- Local browser smoke passed for Login/Register/Forgot Password in EN/FR/DE with no raw translation keys, no console errors, and no horizontal overflow.
+- Authenticated staging/member validation remains pending as Milestone 16G.
+- No SQL, Supabase/RLS/RPC, auth behavior, CP, GvG voting, audit, role/guild/permission, member-status behavior, deployment, or commit action was performed.
+
 ## 2026-05-24 - Milestone 18F Language Pack Production Rollout Complete
 
 - Completed Milestone 18F production rollout for the frontend-only language pack.

@@ -146,7 +146,7 @@ export function LoginRegister() {
 
   return (
     <div className="stack">
-      <section className="panel hero-panel">
+      <section className="panel hero-panel member-compact-panel auth-hero-panel">
         <StatusBadge tone={isSupabaseConfigured ? 'success' : 'danger'}>
           {isSupabaseConfigured ? t('common.ready') : t('common.setupNeeded')}
         </StatusBadge>
@@ -169,7 +169,7 @@ export function LoginRegister() {
         </div>
       ) : null}
 
-      <form className="panel form-panel" onSubmit={handleSubmit}>
+      <form className="panel form-panel compact-form-panel" onSubmit={handleSubmit}>
         {!isCompletingProfile ? (
           <>
             <label>

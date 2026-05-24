@@ -18,7 +18,7 @@ export function RosterRestrictedStatus() {
 
   return (
     <div className="stack">
-      <section className="panel hero-panel restricted-panel">
+      <section className="panel hero-panel restricted-panel gate-panel member-compact-panel">
         <StatusBadge tone={rosterStatusTone(rosterStatus)}>{t(`roster.status.${rosterStatus}.label`)}</StatusBadge>
         <h3>{t(`roster.restricted.${rosterStatus}.title`)}</h3>
         <p>{t(`roster.restricted.${rosterStatus}.body`)}</p>

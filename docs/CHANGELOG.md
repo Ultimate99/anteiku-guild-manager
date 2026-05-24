@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-05-24 - Milestone 16F Member-Facing UI Compact Pass Implemented
+
+- Implemented a frontend-only member-facing UI/copy compact pass.
+- Tightened Login/Register, Forgot Password, Set New Password, Pending, Rejected, Suspended, Roster Restricted, Dashboard/Home, Profile, and GvG surfaces.
+- Dashboard/Home now prioritizes guild, role, roster status, GvG state, and compact member summary.
+- Profile keeps IGN editing unchanged and shortens locked-field copy.
+- GvG copy is shorter while preserving voting behavior.
+- Changed member-facing copy is translated through EN/FR/DE i18n dictionaries.
+- `npm.cmd run build` passed.
+- Local browser smoke passed for Login/Register/Forgot Password in EN/FR/DE with no raw keys, no console errors, and no horizontal overflow.
+- No SQL migrations, Supabase/RLS/RPC logic, services, auth behavior, CP, GvG voting, audit, role/guild/permission, member-status behavior, deployment, or commit action changed.
+- Authenticated staging/member validation remains pending.
+
 ## 2026-05-24 - Milestone 18F Language Pack Production Rollout Complete
 
 - Deployed the English/French/German frontend language pack to production.

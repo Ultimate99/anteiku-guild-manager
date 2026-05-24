@@ -1,5 +1,39 @@
 # Project State
 
+## Milestone 16F Member-Facing UI Compact Pass Implemented
+
+Milestone 16F is implemented locally as a frontend-only member-facing UI/copy compact pass.
+
+Implemented:
+- Added compact member-facing panel variants for auth, recovery, pending/rejected/suspended/restricted gates, Dashboard/Home, Profile, and GvG.
+- Tightened mobile spacing in the app shell, page heading, panels, forms, metric cards, profile details, and GvG vote panel.
+- Dashboard/Home now prioritizes guild, role, roster status, GvG state, and a compact member summary.
+- Profile keeps IGN editing unchanged while shortening locked-field copy to the equivalent of `Only IGN is editable.`
+- GvG copy is shorter: `GvG`, `Awaiting GvG`, `Voting not open.`, and `Not expected for GvG.`
+- Pending/rejected/suspended/restricted messages are shorter while preserving lockout meaning.
+- Changed copy is wired through the existing EN/FR/DE i18n dictionaries.
+
+Validation:
+- `npm.cmd run build` passed.
+- Static source checks found no `supabase/` or `src/services/` changes.
+- Static source checks found no new direct protected table calls in the frontend diff.
+- Local browser smoke passed for Login/Register/Forgot Password in EN/FR/DE.
+- Local browser smoke found no raw translation keys, no captured console errors, and no horizontal overflow on checked auth surfaces.
+
+Validation boundary:
+- Local app was pointed at local Supabase, so authenticated member/staging validation was not run in this implementation pass.
+- A fake `#type=recovery` URL without a live Supabase recovery session did not show the Set New Password screen; this matches the recovery-session dependency. Recovery behavior itself was production-validated in Milestone 17C.
+
+Scope confirmation:
+- No SQL migrations were edited or created.
+- No Supabase/RLS/RPC logic was changed.
+- No service behavior was changed.
+- No auth behavior, CP logic, GvG voting logic, audit behavior, role/guild/permission behavior, or member-status rules were changed.
+- No deployment or commit was performed.
+
+Recommended next step:
+- Milestone 16G authenticated staging validation for the member-facing compact UI pass, including member, pending, restricted/roster status if testable, GvG eligibility, no AdminPanel for members, no CP leakage, and EN/FR/DE mobile checks.
+
 ## Milestone 18F Language Pack Production Rollout Complete
 
 Milestone 18F is complete. The English/French/German language pack is live in production at `https://anteiku-guild-manager.vercel.app`.

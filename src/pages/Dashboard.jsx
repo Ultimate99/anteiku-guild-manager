@@ -17,7 +17,7 @@ export function Dashboard() {
 
   return (
     <div className="stack">
-      <section className="panel hero-panel">
+      <section className="panel hero-panel member-home-panel member-compact-panel">
         <div className="status-badge-row">
           <StatusBadge tone="success">{t(`approvalStatus.${profile?.approval_status ?? 'approved'}`)}</StatusBadge>
           <StatusBadge tone={rosterStatusTone(rosterStatus)}>{t(`roster.status.${rosterStatus}.label`)}</StatusBadge>
@@ -27,7 +27,7 @@ export function Dashboard() {
         {rosterStatus !== 'active' ? <p className="muted-copy">{t(`roster.status.${rosterStatus}.summary`)}</p> : null}
       </section>
 
-      <section className="metric-grid" aria-label={t('dashboard.overview')}>
+      <section className="metric-grid compact-metric-grid" aria-label={t('dashboard.overview')}>
         <article className="metric-card">
           <span>{t('dashboard.gvgStatus')}</span>
           <strong>{gvgStatus}</strong>
@@ -41,15 +41,12 @@ export function Dashboard() {
           <strong>{guildName}</strong>
         </article>
       </section>
-
-      <section className="guild-list" aria-label={t('dashboard.coreGuilds')}>
-        <article className="guild-row">
-          <div>
-            <h4>{profile?.ign ?? t('dashboard.memberFallback')}</h4>
-            <p>@{profile?.username ?? t('common.unknown')}</p>
-          </div>
-          <StatusBadge tone={rosterStatusTone(rosterStatus)}>{t(`roster.status.${rosterStatus}.label`)}</StatusBadge>
-        </article>
+      <section className="panel member-id-panel" aria-label={t('dashboard.memberSummary')}>
+        <div>
+          <h4>{profile?.ign ?? t('dashboard.memberFallback')}</h4>
+          <p>@{profile?.username ?? t('common.unknown')}</p>
+        </div>
+        <StatusBadge tone={rosterStatusTone(rosterStatus)}>{t(`roster.status.${rosterStatus}.label`)}</StatusBadge>
       </section>
     </div>
   );

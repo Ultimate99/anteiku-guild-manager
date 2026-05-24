@@ -1,5 +1,35 @@
 # Testing And Validation
 
+## Milestone 16F Member-Facing Compact UI Validation
+
+Milestone 16F is implemented locally as a frontend-only member-facing UI/copy compact pass.
+
+Build:
+- `npm.cmd run build` passed.
+
+Static/source validation:
+- No Supabase migration files changed.
+- No `src/services/` files changed.
+- No SQL, Supabase/RLS/RPC, auth behavior, CP, GvG voting, audit, role/guild/permission, or member-status logic was changed.
+- No new direct protected-table paths were found in the frontend diff.
+- Changed copy is routed through existing EN/FR/DE i18n dictionaries.
+
+Local browser smoke:
+- Local app was running at `http://localhost:5173/`.
+- Local app was pointed at local Supabase.
+- Login, Register, and Forgot Password screens rendered in EN/FR/DE.
+- Language switching worked on checked auth surfaces.
+- No raw translation keys were visible.
+- No captured console errors were observed.
+- No horizontal overflow was detected in the checked narrow viewport.
+
+Validation boundary:
+- Authenticated member/staging validation was not run during 16F because the local app was pointed at local Supabase.
+- A fake `#type=recovery` URL without a live Supabase recovery session did not show the Set New Password screen; real recovery behavior was already production-validated in Milestone 17C.
+
+Pending validation:
+- Milestone 16G authenticated staging validation for member Dashboard/Profile/GvG, pending/restricted gates, member no-AdminPanel, CP non-leakage, GvG eligibility, and mobile EN/FR/DE layout.
+
 ## Milestone 18F Language Pack Production Smoke Passed
 
 Milestone 18F deployed the frontend-only language pack to production.

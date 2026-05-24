@@ -64,7 +64,7 @@ export function Profile() {
 
   return (
     <div className="stack">
-      <section className="panel profile-panel">
+      <section className="panel profile-panel compact-profile-panel">
         <div className="avatar-placeholder" aria-hidden="true">
           AG
         </div>
@@ -78,7 +78,7 @@ export function Profile() {
         </div>
       </section>
 
-      <section className="panel profile-edit-panel" aria-label={t('profile.editProfile')}>
+      <section className="panel profile-edit-panel member-compact-panel" aria-label={t('profile.editProfile')}>
         <div className="profile-edit-header">
           <div>
             <StatusBadge tone={isEditing ? 'warning' : 'success'}>
@@ -123,7 +123,7 @@ export function Profile() {
         ) : null}
       </section>
 
-      <section className="panel detail-list" aria-label={t('profile.details')}>
+      <section className="panel detail-list compact-detail-list" aria-label={t('profile.details')}>
         <div>
           <span>{t('profile.username')}</span>
           <strong>{profile?.profile_slug ?? profile?.username ?? t('common.unknown')}</strong>

@@ -9,7 +9,7 @@ export function SuspendedStatus() {
 
   return (
     <div className="stack">
-      <section className="panel hero-panel">
+      <section className="panel hero-panel gate-panel member-compact-panel">
         <StatusBadge tone="danger">{t('gate.suspended.badge')}</StatusBadge>
         <h3>{t('gate.suspended.title')}</h3>
         <p>{t('gate.suspended.body')}</p>
