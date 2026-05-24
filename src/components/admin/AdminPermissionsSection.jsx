@@ -5,6 +5,8 @@ function humanizePermissionCopy(value) {
   return String(value ?? '')
     .replaceAll('Profile slug', 'Username')
     .replaceAll('profile slug', 'username')
+    .replaceAll('Username/Username', 'Username')
+    .replaceAll('username/username', 'username')
     .replaceAll('reset_profile_slug', 'reset username');
 }
 
