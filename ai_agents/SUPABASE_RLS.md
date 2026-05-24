@@ -1,8 +1,8 @@
 # Supabase RLS
 
-## Milestone 19B CP Update Window RLS/RPC
+## Milestone 19B / 19B.1 CP Update Window RLS/RPC
 
-Milestone 19B is implemented and locally validated only. Staging and production do not have this migration yet.
+Milestone 19B and 19B.1 are implemented and locally validated only. Staging and production do not have these migrations yet.
 
 New table:
 - `public.cp_update_windows`
@@ -21,6 +21,8 @@ Member-safe RPCs:
 Staff RPCs:
 - `open_cp_update_window(...)` and `close_cp_update_window(...)` require `private.can_update_cp(actor_id, guild_id)`.
 - That preserves the existing CP authority model: Owner globally, Leader/Vice in scope, and Admin only with scoped `update_cp`.
+- `get_cp_update_window_for_guild(p_guild_id uuid)` lets authorized staff read safe selected-guild window status.
+- Staff window reads allow Owner, scoped Leader/Vice, and scoped Admin with `view_cp` or `update_cp`.
 
 Security behavior:
 - Members cannot directly read `member_cp`, `cp_snapshots`, or `cp_update_windows`.
@@ -30,10 +32,11 @@ Security behavior:
 Validation:
 - Local Supabase reset passed.
 - Local validation script passed Milestone 19B checks with 32 PASS / 0 FAIL / 0 SKIP.
+- Local validation script passed Milestone 19B.1 checks with 13 PASS / 0 FAIL / 0 SKIP.
 
 ## Production Deployment Reminder
 
-Production is live, but Milestone 19B has not been applied to staging or production. Treat `20260524000100_cp_update_window_self_submit.sql` as local-only until a separate rollout gate is approved.
+Production is live, but Milestone 19B/19B.1 has not been applied to staging or production. Treat `20260524000100_cp_update_window_self_submit.sql` and `20260524000200_cp_update_window_staff_read.sql` as local-only until a separate rollout gate is approved.
 
 Future production setup must:
 - Apply migrations in documented timestamp order.

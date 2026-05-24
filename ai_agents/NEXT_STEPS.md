@@ -2,24 +2,26 @@
 
 ## Current Recommendation
 
-Milestone 19B backend implementation is complete and locally validated. CP Update Window / Member CP Self-Submit now has local database support, but no frontend UI and no staging/production rollout yet.
+Milestone 19B.1 backend follow-up is complete and locally validated. CP Update Window / Member CP Self-Submit now has local database support plus a staff-safe selected-guild window status RPC, but no frontend UI and no staging/production rollout yet.
 
-Recorded Milestone 19B status:
+Recorded Milestone 19B/19B.1 status:
 - New migration: `20260524000100_cp_update_window_self_submit.sql`.
+- New follow-up migration: `20260524000200_cp_update_window_staff_read.sql`.
 - Added guild-scoped `cp_update_windows` with one open window per guild.
 - Added safe RPCs for own-window status, own-CP read, member self-submit, and staff open/close.
+- Added staff-safe selected-guild read RPC `get_cp_update_window_for_guild(p_guild_id uuid)`.
 - Member self-submit is restricted to `active`, `trial`, and `pending_transfer`.
 - `inactive` and `on_break` can read own CP but cannot submit.
 - `suspended`, `left`, and `kicked` remain hard-blocked.
 - Members still cannot directly read/write `member_cp`, read `cp_snapshots`, or read window rows directly.
 - `member_cp_self_submitted` audit metadata redacts CP old/new values for viewers without scoped `view_cp`.
 - `npx.cmd supabase db reset` passed locally.
-- `supabase/tests/local_validation_anteiku.sql` passed, including Milestone 19B result 32 PASS / 0 FAIL / 0 SKIP.
+- `supabase/tests/local_validation_anteiku.sql` passed, including Milestone 19B result 32 PASS / 0 FAIL / 0 SKIP and Milestone 19B.1 result 13 PASS / 0 FAIL / 0 SKIP.
 - No React/frontend UI was implemented.
 - Staging and production were not touched.
 
 Recommended next milestone:
-- Milestone 19C frontend planning for Profile `Your CP` self-submit UI and AdminPanel CP Update Window controls.
+- Milestone 19C frontend implementation for Profile `Your CP` self-submit UI and AdminPanel CP Update Window controls.
 
 Later milestone options:
 - Milestone 19D staging rollout/validation after frontend implementation.

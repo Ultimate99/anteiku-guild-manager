@@ -2,13 +2,16 @@
 
 ## Milestone 19B CP Update Window Security Rules
 
-Milestone 19B is implemented and locally validated only. It is not applied to staging or production yet.
+Milestone 19B/19B.1 is implemented and locally validated only. It is not applied to staging or production yet.
 
 CP Update Window rules:
 - CP Update Windows are guild-scoped.
 - Only one open CP Update Window can exist per guild.
 - Window writes are RPC-only through `open_cp_update_window(...)` and `close_cp_update_window(...)`.
 - Opening/closing a window requires Owner, scoped Leader/Vice, or scoped Admin with `update_cp`.
+- Staff window reads are RPC-only through `get_cp_update_window_for_guild(p_guild_id uuid)`.
+- Staff window reads require Owner, scoped Leader/Vice, or scoped Admin with `view_cp` or `update_cp`.
+- Members and wrong-guild users cannot read selected-guild window status through the staff RPC.
 - Closing a window only freezes submissions; weekly snapshots remain future work.
 
 Member self-submit rules:

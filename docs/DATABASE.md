@@ -1,6 +1,6 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and validated through Milestone 19B locally. Remote production is live through the previously deployed migrations; the Milestone 19B CP Update Window migration is local-only until a later rollout gate.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and validated through Milestone 19B.1 locally. Remote production is live through the previously deployed migrations; the Milestone 19B/19B.1 CP Update Window migrations are local-only until a later rollout gate.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
@@ -17,10 +17,11 @@ Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION
 9. `20260515000300_audit_log_read_hardening.sql`
 10. `20260523000100_member_roster_status_system.sql`
 11. `20260524000100_cp_update_window_self_submit.sql` - local only; not applied to staging or production yet.
+12. `20260524000200_cp_update_window_staff_read.sql` - local only; not applied to staging or production yet.
 
 Migration `20260523000100_member_roster_status_system.sql` is locally validated, staging validated, and production applied/verified as of Milestone 15E.
 
-Migration `20260524000100_cp_update_window_self_submit.sql` is locally validated only.
+Migrations `20260524000100_cp_update_window_self_submit.sql` and `20260524000200_cp_update_window_staff_read.sql` are locally validated only.
 
 Production Member Status rollout:
 - Existing production memberships were backfilled to `roster_status = active`.
@@ -44,6 +45,7 @@ Adds:
 - `submit_my_cp_update(p_cp_value integer)`
 - `open_cp_update_window(p_guild_id uuid, p_opens_at timestamptz default null, p_closes_at timestamptz default null, p_note text default null)`
 - `close_cp_update_window(p_window_id uuid)`
+- `get_cp_update_window_for_guild(p_guild_id uuid)` from Milestone 19B.1
 - `member_cp_self_submitted`, `cp_update_window_opened`, and `cp_update_window_closed` audit actions.
 
 Window behavior:
@@ -64,9 +66,15 @@ Audit/redaction:
 - Member self-submit audit metadata includes old/new CP but `get_audit_logs(...)` redacts those values unless the viewer has scoped `view_cp`.
 
 Rollout status:
-- Local validation passed.
+- Local validation passed for Milestone 19B and 19B.1.
 - Staging and production migration rollout are pending.
 - Frontend UI is not implemented yet.
+
+Staff selected-guild window read:
+- `get_cp_update_window_for_guild(p_guild_id uuid)` lets AdminPanel read current/recent CP Update Window status for a selected guild.
+- Owner, scoped Leader/Vice, and scoped Admin with `view_cp` or `update_cp` can read it.
+- Members, Admin without CP permission, and wrong-guild users are denied.
+- The RPC returns the open window first, then latest closed window, or no row if no window exists.
 
 ## Milestone 15A Member Status Backend
 
@@ -174,6 +182,7 @@ Local Supabase validation passed through Milestone 19B.
 The validation confirmed that migrations apply locally, seed data exists, permission catalog rules are present, CP privacy is enforced by direct table denial and RPC checks, GvG vote integrity works, approval/reapply behavior is scoped, and audit spoofing is blocked.
 Milestone 15A added 22 PASS / 0 FAIL / 0 SKIP focused checks for roster status, history privacy, status-change permissions, last active Owner protection, and GvG eligibility.
 Milestone 19B added 32 PASS / 0 FAIL / 0 SKIP focused checks for CP Update Window RLS/RPC behavior, member own-CP read/submit, roster eligibility, audit creation, and CP metadata redaction.
+Milestone 19B.1 added 13 PASS / 0 FAIL / 0 SKIP focused checks for staff selected-guild window status reads.
 ## Milestone 7 Backend Additions
 
 New migration:

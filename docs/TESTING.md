@@ -1,5 +1,31 @@
 # Testing
 
+## Milestone 19B.1 CP Update Window Staff Read Validation
+
+Milestone 19B.1 backend/database validation passed locally.
+
+Commands:
+- `npx.cmd supabase db reset`
+- `supabase/tests/local_validation_anteiku.sql`
+
+Focused 19B.1 result:
+- 13 PASS / 0 FAIL / 0 SKIP.
+
+Validated:
+- `get_cp_update_window_for_guild(uuid)` exists.
+- Normal authenticated users still cannot directly read `cp_update_windows`.
+- Owner can read selected-guild open window status.
+- Leader/Vice can read scoped guild window status.
+- Leader wrong-guild read is denied.
+- Admin with CP permission can read scoped guild window status.
+- Admin with `view_cp` can read scoped guild window status.
+- Admin without CP permission is denied.
+- Member is denied.
+- Wrong-guild user is denied.
+- Open window is returned first.
+- Latest closed window is returned when no open window exists.
+- No row is returned for a guild with no CP windows.
+
 ## Milestone 19B CP Update Window Backend Validation
 
 Milestone 19B backend/database validation passed locally.

@@ -1,5 +1,33 @@
 # Project State
 
+## Milestone 19B.1 CP Update Window Staff Read RPC Implemented
+
+Milestone 19B.1 is implemented and locally validated as a backend-only follow-up for AdminPanel CP Update Window status.
+
+Implemented locally:
+- Added migration `20260524000200_cp_update_window_staff_read.sql`.
+- Added `get_cp_update_window_for_guild(p_guild_id uuid)`.
+- The RPC returns safe selected-guild window status for authorized staff only.
+- It returns an open window first when present, otherwise the latest closed window, otherwise no row.
+- Returned fields include window id, guild id, status, opens/closes timestamps, note, created/updated timestamps, safe creator/closer labels, and server time.
+- No direct `cp_update_windows` table grants or policies were added.
+
+Validation:
+- `npx.cmd supabase db reset` passed locally.
+- `supabase/tests/local_validation_anteiku.sql` passed.
+- Milestone 19B.1 focused validation result: 13 PASS / 0 FAIL / 0 SKIP.
+- Existing Milestone 19B validation still passed: 32 PASS / 0 FAIL / 0 SKIP.
+
+Scope confirmation:
+- Backend/database only.
+- No frontend UI is implemented yet.
+- No React components were edited.
+- No staging or production project was touched.
+- No deployment, Vercel configuration, or commit was performed.
+
+Recommended next step:
+- Milestone 19C frontend implementation using the now-complete 19B/19B.1 backend RPC set.
+
 ## Milestone 19B CP Update Window Backend Implemented
 
 Milestone 19B is implemented and locally validated as backend/database-only support for CP Update Window / Member CP Self-Submit.

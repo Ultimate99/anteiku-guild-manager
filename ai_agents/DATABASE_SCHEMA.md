@@ -2,10 +2,11 @@
 
 ## Current Backend Status
 
-Milestone 19B adds local-only backend support for CP Update Window / Member CP Self-Submit. It is implemented and locally validated, but has not been applied to staging or production.
+Milestone 19B/19B.1 adds local-only backend support for CP Update Window / Member CP Self-Submit. It is implemented and locally validated, but has not been applied to staging or production.
 
 New local migration:
 - `supabase/migrations/20260524000100_cp_update_window_self_submit.sql`
+- `supabase/migrations/20260524000200_cp_update_window_staff_read.sql`
 
 Do not deploy frontend CP Update Window UI to any remote environment until the migration has been applied and verified in that environment.
 
@@ -26,10 +27,11 @@ Current local migration order:
 9. `20260515000300_audit_log_read_hardening.sql`
 10. `20260523000100_member_roster_status_system.sql`
 11. `20260524000100_cp_update_window_self_submit.sql` - local only; not applied to staging or production yet.
+12. `20260524000200_cp_update_window_staff_read.sql` - local only; not applied to staging or production yet.
 
 Migration `20260523000100_member_roster_status_system.sql` is implemented, locally validated, staging validated, and production applied/verified.
 
-Migration `20260524000100_cp_update_window_self_submit.sql` is implemented and locally validated only.
+Migrations `20260524000100_cp_update_window_self_submit.sql` and `20260524000200_cp_update_window_staff_read.sql` are implemented and locally validated only.
 
 Production Member Status verification:
 - Existing production memberships were backfilled to `roster_status = active`.
@@ -77,6 +79,7 @@ RPCs:
 - `submit_my_cp_update(p_cp_value integer)`
 - `open_cp_update_window(p_guild_id uuid, p_opens_at timestamptz default null, p_closes_at timestamptz default null, p_note text default null)`
 - `close_cp_update_window(p_window_id uuid)`
+- `get_cp_update_window_for_guild(p_guild_id uuid)` from Milestone 19B.1
 
 Member CP behavior:
 - Members can read only their own current CP through `get_my_cp()`.
@@ -94,6 +97,44 @@ Audit:
 - Member self-submit writes `member_cp_self_submitted` with `cp_old`, `cp_new`, `window_id`, and source metadata.
 - Window open/close writes `cp_update_window_opened` and `cp_update_window_closed`.
 - `get_audit_logs(...)` redacts CP metadata from self-submit rows for viewers without scoped `view_cp`.
+
+## Milestone 19B.1 Staff CP Window Read RPC
+
+Migration:
+- `supabase/migrations/20260524000200_cp_update_window_staff_read.sql`
+
+RPC:
+- `get_cp_update_window_for_guild(p_guild_id uuid)`
+
+Purpose:
+- Lets AdminPanel safely display the CP Update Window status for the selected guild after refresh.
+- The member-focused `get_active_cp_update_window_for_me()` remains scoped to the caller's own guild.
+
+Permission model:
+- Owner can read any active guild window status.
+- Leader/Vice can read scoped guild window status.
+- Admin can read scoped guild window status with `view_cp` or `update_cp`.
+- Member and wrong-guild users are denied.
+
+Return shape:
+- `id`
+- `guild_id`
+- `status`
+- `opens_at`
+- `closes_at`
+- `note`
+- `created_at`
+- `updated_at`
+- `created_by_username`
+- `created_by_ign`
+- `closed_by_username`
+- `closed_by_ign`
+- `server_now`
+
+Ordering:
+- Returns the open window first if one exists.
+- If no open window exists, returns the latest closed window.
+- If the guild has no CP windows, returns no row.
 
 ## Milestone 15A Member Roster Status System
 

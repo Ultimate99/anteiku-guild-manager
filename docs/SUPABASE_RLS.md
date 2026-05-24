@@ -1,12 +1,12 @@
 # Supabase RLS
 
-The local Supabase RLS/RPC implementation has been validated through Milestone 19B, and the Milestone 11B frontend audit viewer has been live-browser validated against the safe audit RPC.
+The local Supabase RLS/RPC implementation has been validated through Milestone 19B.1, and the Milestone 11B frontend audit viewer has been live-browser validated against the safe audit RPC.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
 
-## Milestone 19B CP Update Window RLS/RPC
+## Milestone 19B / 19B.1 CP Update Window RLS/RPC
 
-Milestone 19B is backend/database-only and locally validated. Staging and production rollout are pending.
+Milestone 19B/19B.1 is backend/database-only and locally validated. Staging and production rollout are pending.
 
 New table:
 - `cp_update_windows`
@@ -22,6 +22,7 @@ RPCs:
 - `get_my_cp()` returns only the caller's own CP.
 - `submit_my_cp_update(integer)` updates only the caller's own CP after approval, active membership, roster eligibility, guild scope, CP value, and open-window checks.
 - `open_cp_update_window(...)` and `close_cp_update_window(uuid)` require `private.can_update_cp`.
+- `get_cp_update_window_for_guild(uuid)` returns safe selected-guild window status for Owner, scoped Leader/Vice, or scoped Admin with `view_cp` or `update_cp`.
 
 Audit:
 - `member_cp_self_submitted` audit metadata includes CP old/new values.
@@ -29,6 +30,7 @@ Audit:
 
 Validation:
 - Milestone 19B local validation passed with 32 PASS / 0 FAIL / 0 SKIP.
+- Milestone 19B.1 local validation passed with 13 PASS / 0 FAIL / 0 SKIP.
 
 ## Milestone 15A Member Status RLS/RPC
 
@@ -127,7 +129,7 @@ CP metadata redaction:
 
 Base local validation result: 29 PASS / 0 FAIL / 0 SKIP.
 
-Latest focused local validation includes Milestone 19B CP Update Window checks: 32 PASS / 0 FAIL / 0 SKIP.
+Latest focused local validation includes Milestone 19B CP Update Window checks: 32 PASS / 0 FAIL / 0 SKIP, plus Milestone 19B.1 staff read checks: 13 PASS / 0 FAIL / 0 SKIP.
 
 Validated:
 

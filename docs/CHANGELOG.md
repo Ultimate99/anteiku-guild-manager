@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-05-24 - Milestone 19B.1 CP Update Window Staff Read RPC Implemented
+
+- Added backend-only staff read support for CP Update Window status.
+- Created migration `20260524000200_cp_update_window_staff_read.sql`.
+- Added `get_cp_update_window_for_guild(p_guild_id uuid)`.
+- The RPC returns open window first, otherwise latest closed window, otherwise no row.
+- Authorized staff are Owner, scoped Leader/Vice, or scoped Admin with `view_cp` or `update_cp`.
+- Member, wrong-guild user, and Admin without CP permission are denied.
+- No direct `cp_update_windows` table grants or frontend access were added.
+- Local Supabase reset passed.
+- Local validation passed, including Milestone 19B.1 result 13 PASS / 0 FAIL / 0 SKIP and existing Milestone 19B result 32 PASS / 0 FAIL / 0 SKIP.
+- No frontend UI, staging, production, Vercel, deployment, or commit action was performed.
+
 ## 2026-05-24 - Milestone 19B CP Update Window Backend Implemented
 
 - Added local backend/database support for CP Update Window / Member CP Self-Submit.
