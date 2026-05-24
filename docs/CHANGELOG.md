@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-05-24 - Milestone 17D Registration Copy Update Implemented
+
+- Updated registration copy for controlled guild onboarding.
+- Registration now says `Register for guild approval.`
+- Added email warning: `Use a real email. You'll need it for password reset.`
+- Changed registration submit copy to `Request approval`.
+- Changed no-session signup fallback to support both email-confirmation-on and email-confirmation-off modes.
+- Changed pending screen title to `Awaiting approval.`
+- Documented staging-first validation for disabling email confirmation.
+- `npm.cmd run build` passed.
+- Production email confirmation remains enabled until a separate production Auth setting gate is approved.
+- No SQL migrations, Supabase/RLS/RPC logic, Supabase Auth settings, Vercel env, CP, GvG, audit, role/permission/member-status, approval, or membership behavior changed.
+
 ## 2026-05-24 - Milestone 17C Password Recovery Production Rollout Complete
 
 - Deployed Password Recovery Required Reset Flow to production.

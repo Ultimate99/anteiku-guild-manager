@@ -1,5 +1,39 @@
 # Project State
 
+## Milestone 17D Registration Copy Update Implemented
+
+Milestone 17D frontend copy/auth UX preparation is implemented locally for controlled guild onboarding without assuming email confirmation.
+
+Implemented:
+- Registration hero copy now says `Register for guild approval.`
+- Registration email field now warns: `Use a real email. You'll need it for password reset.`
+- Registration submit button now says `Request approval`.
+- The no-session signup fallback now uses mode-tolerant copy: `If a confirmation email was sent, confirm it first. Your account still needs guild approval.`
+- Pending screen title now says `Awaiting approval.`
+
+Validation:
+- `npm.cmd run build` passed.
+- Static checks found no Supabase migration changes.
+- Static checks found no service file changes and no new protected-table paths.
+- `ai_agents/INDEX.json` parses.
+
+Policy recorded:
+- Production email confirmation remains enabled until a separately approved production Auth setting change.
+- Staging should be used first to validate disabling email confirmation.
+- Admin approval remains mandatory and pending users remain blocked.
+- Password recovery remains enabled and was production-validated in Milestone 17C.
+
+Scope confirmation:
+- No SQL migrations were edited or created.
+- No Supabase/RLS/RPC logic was changed.
+- No Supabase Auth settings were changed.
+- No Vercel env vars were changed.
+- No profile approval, membership status, roster status, role/guild/permission, CP, GvG, audit, or member-status behavior was changed.
+- No deployment or commit was performed.
+
+Recommended next step:
+- Manually disable email confirmation in staging only, then validate controlled staging signup/pending/approval/recovery before any production Auth setting change.
+
 ## Milestone 17C Password Recovery Production Rollout Complete
 
 Milestone 17C is complete. The Password Recovery Required Reset Flow is live in production at `https://anteiku-guild-manager.vercel.app`.

@@ -9,7 +9,7 @@ export function PendingApproval() {
     <div className="stack">
       <section className="panel hero-panel">
         <StatusBadge tone="warning">Pending</StatusBadge>
-        <h3>Approval required</h3>
+        <h3>Awaiting approval.</h3>
         <p>A guild admin must approve this account before member access opens.</p>
         {profile?.username ? <p className="muted-line">@{profile.username}</p> : null}
         {error ? <p className="error-line">{error}</p> : null}

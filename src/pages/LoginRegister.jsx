@@ -133,7 +133,7 @@ export function LoginRegister() {
           {isSupabaseConfigured ? 'Ready' : 'Setup needed'}
         </StatusBadge>
         <h3>Enter the guild</h3>
-        <p>Sign in or register for approval.</p>
+        <p>Register for guild approval.</p>
       </section>
 
       {!isCompletingProfile ? (
@@ -163,6 +163,7 @@ export function LoginRegister() {
                 onChange={(event) => updateField('email', event.target.value)}
                 required
               />
+              {mode === 'register' ? <small>Use a real email. You'll need it for password reset.</small> : null}
             </label>
             {!isPasswordResetMode ? (
               <label>
@@ -246,7 +247,7 @@ export function LoginRegister() {
               ? 'Send reset link'
               : mode === 'sign-in' && !isCompletingProfile
               ? 'Sign in'
-              : 'Register for approval'}
+              : 'Request approval'}
         </button>
       </form>
     </div>

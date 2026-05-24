@@ -1,5 +1,29 @@
 # Testing
 
+## Milestone 17D Registration Copy And Onboarding Prep
+
+Milestone 17D prepares the frontend copy for controlled guild onboarding without assuming email confirmation.
+
+Build/source validation:
+- `npm.cmd run build` passed.
+- No SQL migrations changed.
+- No Supabase/RLS/RPC behavior changed.
+- No Supabase Auth settings changed during this copy pass.
+- No service files changed.
+- No CP, GvG, audit, role/guild/permission, member-status, approval, or membership behavior changed.
+
+Staging validation plan:
+- Disable email confirmation in staging Supabase project `ckyihuxkioeibzpgwenc` only.
+- Keep production email confirmation enabled.
+- Register a new controlled staging user.
+- Confirm the user lands pending without email confirmation.
+- Confirm pending user cannot access member/admin areas.
+- Confirm Owner sees the approval request.
+- Confirm Owner can approve the user.
+- Confirm approved user can access member area.
+- Confirm forgot password still sends recovery email.
+- Confirm recovery link still forces `Set new password`.
+
 ## Milestone 17C Password Recovery Production Validation
 
 Milestone 17C production rollout validation passed.

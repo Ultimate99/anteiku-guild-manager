@@ -23,7 +23,20 @@ Current production checkpoint:
 - Milestone 15E Member Status production rollout is complete.
 - Production has `20260523000100_member_roster_status_system.sql` applied and verified.
 - Member Status frontend is deployed and smoke-tested in production.
+- Milestone 17C Password Recovery Required Reset Flow is live and production-validated.
+- Milestone 17D registration copy is prepared for admin-approval-based onboarding.
 - Vercel Preview env has not been configured for staging yet.
+
+Controlled guild onboarding checkpoint:
+
+- [x] Password recovery is fixed and production-validated.
+- [x] Registration copy is prepared for admin-approval-based onboarding in Milestone 17D.
+- [ ] Disable email confirmation in staging only.
+- [ ] Validate staging signup creates pending users without email confirmation.
+- [ ] Validate pending users remain blocked.
+- [ ] Validate Owner approval and approved member access.
+- [ ] Validate password recovery still works after staging email confirmation is disabled.
+- [ ] Keep production email confirmation enabled until a separate production gate is approved.
 
 ## Milestone 14A Production Hardening Policy
 

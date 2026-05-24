@@ -284,7 +284,7 @@ export function AuthProvider({ children }) {
 
       if (!data.session || !data.user) {
         setSession(null);
-        setNotice('Check your email to confirm the account, then sign in to finish registration.');
+        setNotice('If a confirmation email was sent, confirm it first. Your account still needs guild approval.');
         return {
           needsEmailConfirmation: true,
         };

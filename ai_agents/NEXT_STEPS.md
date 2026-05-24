@@ -2,27 +2,24 @@
 
 ## Current Recommendation
 
-Milestone 17C Password Recovery production rollout is complete. The required reset gate is live in production and was validated with the controlled production test member.
+Milestone 17D Registration Copy Update is implemented locally. The app copy is ready for controlled guild onboarding where admin approval, not email confirmation, is the real access gate.
 
-Recorded Milestone 17A/17B/17C status:
-- Frontend/auth UX only.
-- Password recovery links now set a required recovery state through Supabase `PASSWORD_RECOVERY` handling and recovery URL fallback detection.
-- A sessionStorage recovery marker prevents refresh from bypassing the required reset screen.
-- `Set new password` renders before normal pending/member/admin navigation while recovery is active.
-- Forgot-password UI sends reset emails with neutral success copy.
-- Password update uses Supabase `updateUser({ password })` only.
+Recorded Milestone 17D status:
+- Frontend copy/auth UX update only.
+- Registration says `Register for guild approval.`
+- Registration email field warns users to use a real email for password reset.
+- Registration submit button says `Request approval`.
+- No-session signup fallback now works for both email-confirmation-on and email-confirmation-off modes.
+- Pending screen says `Awaiting approval.`
 - `npm.cmd run build` passed.
-- Local browser smoke confirmed `Forgot password?`, recovery-gated `Set new password`, no normal navigation during recovery, and sign-out recovery cleanup.
-- Staging real recovery email-link validation passed.
-- Production rollout deployed commit `23dd956 fix: require password reset after recovery link`.
-- Production smoke and controlled production test-member recovery validation passed.
-- No passwords, recovery tokens, or secrets were stored in docs/source.
-- Static source checks found no SQL/Supabase migration changes and no protected-table path changes.
-- No profile approval, membership status, roster status, role/guild/permission, CP, GvG, audit, Supabase Auth setting, or Vercel env behavior was changed.
+- Production email confirmation has not been changed.
+- Admin approval remains mandatory, pending users remain blocked, and password recovery remains enabled.
 
 Recommended next milestone:
-- Milestone 17D / 16F: Disable email confirmation + registration copy update planning for controlled guild onboarding.
-- Keep this as a planning gate first; do not change Supabase Auth settings until the onboarding policy and rollback plan are approved.
+- Milestone 17E: staging-only Auth setting change and validation.
+- Manually disable email confirmation in staging Supabase project `ckyihuxkioeibzpgwenc`.
+- Validate controlled staging signup, pending lockout, Owner approval, member access, and password recovery.
+- Production Auth settings must remain unchanged until a separate production gate is approved.
 
 Later milestone options:
 - Member-facing UI cleanup planning.

@@ -1,5 +1,19 @@
 # Session Log
 
+## 2026-05-24 - Milestone 17D Registration Copy Update Implemented
+
+- Implemented Milestone 17D as a frontend copy/auth UX preparation pass for controlled guild onboarding.
+- Updated registration hero copy to `Register for guild approval.`
+- Added registration email warning: `Use a real email. You'll need it for password reset.`
+- Changed registration submit button to `Request approval`.
+- Changed the no-session signup fallback to `If a confirmation email was sent, confirm it first. Your account still needs guild approval.`
+- Changed pending screen title to `Awaiting approval.`
+- Recorded that production email confirmation remains enabled until a separately approved Auth setting change.
+- Recorded staging-first validation instructions for disabling email confirmation in project `ckyihuxkioeibzpgwenc`.
+- `npm.cmd run build` passed.
+- Static checks found no Supabase migration changes, no service file changes, and no new protected-table paths.
+- No SQL, Supabase/RLS/RPC, Supabase Auth setting, Vercel env, role/guild/permission, CP, GvG, audit, member-status, approval, membership, deployment, or commit action was performed.
+
 ## 2026-05-24 - Milestone 17C Password Recovery Production Rollout Complete
 
 - Milestone 17C production rollout completed for the Password Recovery Required Reset Flow.

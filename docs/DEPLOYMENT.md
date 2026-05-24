@@ -39,6 +39,14 @@ Password recovery status:
 - Production recovery validation passed with the controlled production test member.
 - Do not disable email confirmation or change Auth settings until the controlled guild onboarding plan is separately approved.
 
+Controlled guild onboarding plan:
+
+- Milestone 17D updates app copy for admin-approval-based onboarding.
+- Production email confirmation remains enabled until a separate production Auth setting gate is approved.
+- Validate disabling email confirmation in staging project `ckyihuxkioeibzpgwenc` first.
+- When email confirmation is disabled, admin approval remains mandatory and pending users remain blocked.
+- Registration copy should tell users to use a real email because password recovery depends on it.
+
 ## Migration Workflow
 
 Milestone 13A completed this workflow using the local Supabase CLI dev tooling:

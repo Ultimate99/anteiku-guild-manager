@@ -1,5 +1,34 @@
 # Testing And Validation
 
+## Milestone 17D Registration Copy Build/Source Validation
+
+Milestone 17D prepares registration copy for controlled guild onboarding without assuming email confirmation.
+
+Validation scope:
+- Frontend copy/auth UX only.
+- No production Auth settings changed.
+- No SQL migrations changed.
+- No Supabase/RLS/RPC behavior changed.
+- No service files changed.
+- No role/guild/permission, CP, GvG, audit, member-status, approval, or membership behavior changed.
+- `ai_agents/INDEX.json` parses.
+
+Validation targets:
+- `npm.cmd run build` passed.
+- Registration copy says `Register for guild approval.`
+- Registration email warning says users need a real email for password reset.
+- Registration submit button says `Request approval`.
+- No-session signup fallback mentions confirmation only conditionally and still says guild approval is required.
+- Pending screen says `Awaiting approval.`
+
+Staging validation still required:
+- Disable email confirmation in staging project `ckyihuxkioeibzpgwenc` only.
+- Register a new controlled staging user without email confirmation.
+- Confirm the user lands pending and cannot access member/admin areas.
+- Confirm Owner sees and can approve the request.
+- Confirm approved user can access member area.
+- Confirm forgot password still sends recovery email and recovery link still forces `Set new password`.
+
 ## Milestone 17C Password Recovery Production Validation Passed
 
 Milestone 17C production rollout and recovery validation passed.

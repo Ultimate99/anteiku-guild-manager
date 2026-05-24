@@ -1,5 +1,25 @@
 # Security Rules
 
+## Milestone 17D Controlled Guild Onboarding Rules
+
+Milestone 17D prepares the app copy for disabling email confirmation later, but production email confirmation remains enabled until a separately approved Auth setting change.
+
+Onboarding rules:
+- Admin approval remains the real access gate.
+- Registered users must remain pending until approved by authorized staff.
+- Pending users must not access member/admin areas.
+- Users should register with a real email because password recovery depends on it.
+- Password recovery must remain enabled.
+- Disabling email confirmation does not grant app access by itself.
+- Staff must review the approval queue carefully during bulk onboarding.
+- Fake or typo emails can create pending accounts; reject unknown or suspicious registrations.
+
+Validation before production Auth changes:
+- Disable email confirmation in staging only first.
+- Confirm new staging signups land pending without email confirmation.
+- Confirm pending lockout, Owner approval, approved access, and password recovery still work.
+- Do not change production Auth settings until staging validation passes and a production gate is approved.
+
 ## Milestone 15A Member Status Security Rules
 
 Member Status is live in production as of Milestone 15E and remains separate from auth/approval and hard membership state.
