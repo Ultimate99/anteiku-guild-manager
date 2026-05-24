@@ -1,6 +1,5 @@
 import React from 'react';
 import { AppNav } from '../components/AppNav.jsx';
-import { isSupabaseConfigured, supabaseEnvironmentLabel } from '../config/supabaseClient.js';
 import { useAuth } from '../hooks/useAuth.js';
 
 export function AppShell({ activeItem, activePage, children, navigationItems, onNavigate }) {
@@ -17,16 +16,13 @@ export function AppShell({ activeItem, activePage, children, navigationItems, on
             <h1>Guild Manager</h1>
           </div>
         </div>
-        <div className="topbar-actions">
-          <div className="connection-pill" data-ready={isSupabaseConfigured}>
-            {supabaseEnvironmentLabel}
-          </div>
-          {showShellSignOut ? (
+        {showShellSignOut ? (
+          <div className="topbar-actions">
             <button type="button" className="shell-signout" onClick={signOut}>
               Sign out
             </button>
-          ) : null}
-        </div>
+          </div>
+        ) : null}
       </header>
 
       <section className="page-heading" aria-labelledby="page-title">

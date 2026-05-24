@@ -1,5 +1,33 @@
 # Project State
 
+## Milestone 16D.1 AdminPanel Compact Member Cards And Copy Cleanup Implemented
+
+Milestone 16D.1 is implemented locally as a frontend-only UI/copy cleanup pass. It makes the AdminPanel Members tab more practical for guilds with 30-40 members by turning the default roster view into compact rows and moving heavier edit controls behind a per-member `Manage` disclosure.
+
+Implemented:
+- Replaced tall always-open member cards with compact roster rows showing IGN, username, role badge, roster status badge, guild, membership status, profile status, and updated timestamp.
+- Kept IGN editing, username reset, roster status updates, role changes, guild transfer, hard-block status reason input, and confirmations accessible inside `Manage`.
+- Removed the product-facing environment pill text such as `Supabase configured` from the app chrome.
+- Shortened auth, dashboard, GvG, pending, and rejected-state copy to app-facing language.
+- Preserved the previous `Reset username/username` fix in Permissions display copy.
+
+Validation:
+- `npm.cmd run build` passed.
+- Static source checks found no service, Supabase migration, or Supabase test changes.
+- Technical-term search found no remaining product-facing UI strings for `Supabase configured`, `RPC`, `RLS`, `backend`, `policies`, `scaffold`, or `milestone`; remaining matches are internal identifiers/config code only.
+- Authenticated staging browser validation passed for `staging_owner`: AdminPanel Members rendered compact rows, a member `Manage` section expanded, and IGN/username/status/role/guild controls remained accessible.
+- Staging browser validation also confirmed CP, GvG, Audit Logs, Permissions, and Tools still render and no console warnings/errors were captured.
+- `.env.local` was restored to local Supabase settings after staging validation, and Vite was restarted locally.
+
+Scope confirmation:
+- No SQL migrations were edited or created.
+- No Supabase/RLS/RPC logic was changed.
+- No service behavior was changed.
+- No production deployment, Vercel env change, or commit action was performed.
+
+Recommended next milestone:
+- Commit checkpoint for Milestone 16D.1 when approved, then an explicit production UI rollout request if desired.
+
 ## Milestone 16C Authenticated AdminPanel Browser Validation Passed
 
 Milestone 16C passed authenticated browser validation against staging through the local frontend temporarily pointed at `ckyihuxkioeibzpgwenc` / `Anteiku Guild Manager Staging`. Milestone 16B can now be treated as implemented, build/source validated, and authenticated-browser validated.

@@ -2,26 +2,26 @@
 
 ## Current Recommendation
 
-Milestone 16B AdminPanel UI cleanup is implemented locally and Milestone 16C authenticated staging browser validation passed. The cleanup is ready for a commit checkpoint before any rollout/deployment decision.
+Milestone 16D.1 AdminPanel compact member cards and technical text cleanup is implemented locally, build-passed, and staging-browser validated. It is ready for a commit checkpoint before any deployment decision.
 
-Recorded Milestone 16B/16C status:
+Recorded Milestone 16D.1 status:
 - Frontend UI/copy cleanup only.
-- AdminPanel shell copy is shorter and operational.
-- Approvals, Members, CP, GvG, Audit Logs, Permissions, and Tools copy was tightened.
-- Compact AdminPanel styles were added for cards, empty states, metadata rows, control blocks, tabs, and mobile spacing.
-- User-facing "Profile slug" text was rephrased to "Username" where surfaced in the UI.
-- Restricted-admin shell copy now describes only available sections instead of naming unavailable tools.
+- AdminPanel Members now uses compact roster rows by default.
+- Per-member edit/status/role/guild controls moved behind a `Manage` disclosure.
+- The visible app chrome no longer shows `Supabase configured`.
+- Auth, dashboard, GvG, pending, and rejected-state copy was shortened.
+- User-facing "Profile slug" text remains rephrased to "Username"; the previous `Reset username/username` copy issue remains fixed.
 - Destructive confirmations, hard-block status confirmation/reason flow, CP redaction notice, permission-denial meaning, transfer reset warning, and existing tab/security gates were preserved.
 - `npm.cmd run build` passed.
-- Static source checks found no service changes, no Supabase migration/test changes, no new direct protected CP/audit/history table calls, and no unsafe GvG writes.
-- Authenticated staging validation passed for Owner AdminPanel tabs, restricted admin access, normal Member denial, pending lockout, audit no-CP redaction, audit+CP visibility, wrong-guild scoping, and mobile AdminPanel layout.
-- Staging test credentials were used transiently for validation and were not stored in docs/source.
-- `.env.local` was restored to local Supabase settings after validation.
+- Static source checks found no service changes and no Supabase migration/test changes.
+- Technical-term search found no remaining product-facing UI strings for `Supabase configured`, `RPC`, `RLS`, `backend`, `policies`, `scaffold`, or `milestone`; remaining matches are internal code identifiers/config only.
+- Authenticated staging validation passed for Owner Members compact rows, expanded Manage controls, CP/GvG/Audit/Permissions/Tools rendering, and no console warnings/errors.
+- `.env.local` was restored to local Supabase settings after staging validation and Vite was restarted.
 
 Recommended next milestone:
-- Commit checkpoint for Milestone 16B/16C when approved.
-- Milestone 16D member-facing UI cleanup planning.
-- Deployment planning only after an explicit rollout request.
+- Commit checkpoint for Milestone 16D.1 when approved.
+- Production UI rollout only after an explicit approval.
+- Later: member-facing UI cleanup planning.
 
 Later milestone options:
 - Milestone 16D member-facing UI cleanup.

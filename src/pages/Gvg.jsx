@@ -183,10 +183,7 @@ export function Gvg() {
           <StatusBadge tone={rosterStatusTone(rosterStatus)}>{formatRosterStatus(rosterStatus)}</StatusBadge>
         </div>
         <h3>GvG readiness vote</h3>
-        <p>
-          Vote once for the active event. Changing from Present to Absent updates the same vote
-          record; it does not create a duplicate.
-        </p>
+        <p>Mark your availability for the active event.</p>
         <button type="button" className="secondary-action" onClick={() => loadGvgData()} disabled={loading || saving || !canUseGvg}>
           {loading ? 'Refreshing...' : 'Refresh GvG'}
         </button>
@@ -209,7 +206,7 @@ export function Gvg() {
         <section className="panel hero-panel">
           <StatusBadge tone="warning">Awaiting event</StatusBadge>
           <h3>No active GvG event</h3>
-          <p>When leadership opens a GvG event for your guild, your vote controls will appear here.</p>
+          <p>Voting opens when leadership starts an event.</p>
         </section>
       ) : null}
 

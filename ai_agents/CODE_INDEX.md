@@ -2,7 +2,7 @@
 
 - `src/main.jsx`: React root.
 - `src/App.jsx`: Local page state, auth/approval gates, and roster hard-block gate routing.
-- `src/layouts/AppShell.jsx`: Header, content frame, and bottom navigation container.
+- `src/layouts/AppShell.jsx`: Header, content frame, sign-out action, and bottom navigation container.
 - `src/components/AppNav.jsx`: Mobile-first page navigation.
 - `src/components/StatusBadge.jsx`: Small status label component.
 - `src/config/supabaseClient.js`: Supabase env check and client placeholder.
@@ -26,7 +26,7 @@
 - `src/pages/AdminPanel.jsx`: Restricted AdminPanel coordinator for admin permission loading, visible tab calculation, active tab state, lazy section loading, and section action handlers.
 - `src/components/admin/AdminTabs.jsx`: Mobile-first AdminPanel tab bar.
 - `src/components/admin/AdminApprovalsSection.jsx`: Registration approval/rejection queue section.
-- `src/components/admin/AdminMembersSection.jsx`: Approved primary member management section with roster status badges/filter/status-change controls.
+- `src/components/admin/AdminMembersSection.jsx`: Approved primary member management section with compact roster rows, roster status badges/filter, and expandable Manage controls for status/IGN/username/role/guild actions.
 - `src/components/admin/AdminCpSection.jsx`: Admin-only CP roster/update/leaderboard section.
 - `src/components/admin/AdminGvgSection.jsx`: GvG event management/results section.
 - `src/components/admin/AdminAuditSection.jsx`: Read-only audit log viewer section.

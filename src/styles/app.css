@@ -532,6 +532,106 @@ textarea {
   gap: 14px;
 }
 
+.compact-roster-list {
+  gap: 7px;
+}
+
+.compact-member-card {
+  gap: 8px;
+  padding: 10px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+}
+
+.member-row-main {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.member-identity {
+  min-width: 0;
+}
+
+.member-identity h4 {
+  font-size: 0.96rem;
+  line-height: 1.12;
+  overflow-wrap: anywhere;
+}
+
+.member-identity p {
+  margin-top: 2px;
+  color: #aaaab3;
+  font-size: 0.78rem;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.member-row-badges {
+  gap: 5px;
+}
+
+.member-row-badges .status-badge {
+  padding: 4px 7px;
+  font-size: 0.66rem;
+}
+
+.member-row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  color: #b9b9c1;
+  font-size: 0.74rem;
+  line-height: 1.2;
+}
+
+.member-row-meta span {
+  max-width: 100%;
+  padding: 4px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  overflow-wrap: anywhere;
+}
+
+.member-manage-details {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 6px;
+}
+
+.member-manage-details summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #191920;
+  color: #f4c4ca;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  cursor: pointer;
+  list-style: none;
+}
+
+.member-manage-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.member-manage-details summary::after {
+  content: "+";
+  margin-left: 8px;
+  color: #fff;
+}
+
+.member-manage-details[open] summary::after {
+  content: "-";
+}
+
+.member-manage-body {
+  display: grid;
+  gap: 10px;
+  padding-top: 10px;
+}
+
 .member-filter-grid,
 .member-edit-grid,
 .member-admin-actions,
@@ -983,6 +1083,15 @@ textarea {
   .gvg-results-grid,
   .audit-filter-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .member-row-main {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+
+  .member-row-badges {
+    justify-content: flex-end;
   }
 
   .audit-metadata-list {

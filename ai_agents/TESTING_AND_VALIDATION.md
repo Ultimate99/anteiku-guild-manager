@@ -1,5 +1,32 @@
 # Testing And Validation
 
+## Milestone 16D.1 AdminPanel Compact Roster Validation Passed
+
+Milestone 16D.1 local implementation and staging browser validation passed.
+
+Build:
+- `npm.cmd run build` passed.
+
+Static/source validation:
+- No service files changed.
+- No Supabase migration files changed.
+- No Supabase test files changed.
+- No SQL, Supabase/RLS/RPC, CP, GvG, audit, role/guild, permission, or member-status behavior was changed.
+- Technical-term search found no product-facing UI strings for `Supabase configured`, `RPC`, `RLS`, `backend`, `policies`, `scaffold`, or `milestone`; remaining matches are internal identifiers/config code only.
+
+Authenticated staging browser validation:
+- Local frontend was temporarily pointed at staging project `ckyihuxkioeibzpgwenc`.
+- `staging_owner` opened AdminPanel and the Members tab.
+- Members tab rendered compact roster rows instead of always-open large cards.
+- A member `Manage` disclosure expanded successfully.
+- Expanded controls still showed IGN editing, username reset, roster status controls, reason input, role management, and guild transfer.
+- CP, GvG, Audit Logs, Permissions, and Tools tabs still rendered.
+- No captured console warnings/errors were reported during the validation path.
+- `.env.local` was restored to local Supabase and Vite was restarted after validation.
+
+Scope:
+- No production, deployment, Vercel env, Supabase command, SQL, service behavior, or commit action was performed.
+
 ## Milestone 16C Authenticated AdminPanel Browser Validation Passed
 
 Milestone 16C authenticated browser validation passed against staging through the local frontend temporarily pointed at `ckyihuxkioeibzpgwenc` / `Anteiku Guild Manager Staging`.

@@ -1,5 +1,21 @@
 # Session Log
 
+## 2026-05-24 - Milestone 16D.1 AdminPanel Compact Roster Implemented
+
+- Implemented Milestone 16D.1 as a frontend-only AdminPanel compact roster and copy cleanup pass.
+- Changed AdminPanel Members from tall always-open cards to compact roster rows with per-member `Manage` disclosure controls.
+- Preserved access to IGN editing, username reset, roster status changes, hard-block reason/confirmation flow, role management, and guild transfer.
+- Removed the visible environment/status pill copy from the app chrome, including `Supabase configured`.
+- Shortened auth, dashboard, GvG, pending, and rejected-state copy.
+- Preserved the Permissions display fix so `Reset username/username` formats cleanly.
+- `npm.cmd run build` passed.
+- Static checks found no service changes and no Supabase migration/test changes.
+- Technical-term search found no remaining product-facing UI strings for `Supabase configured`, `RPC`, `RLS`, `backend`, `policies`, `scaffold`, or `milestone`; remaining matches are internal code/config identifiers only.
+- Staging browser validation passed with `staging_owner`: compact Members rows rendered, one Manage section expanded, controls remained accessible, CP/GvG/Audit/Permissions/Tools rendered, and no console warnings/errors were captured.
+- `.env.local` was restored to local Supabase and Vite was restarted after validation.
+- No production, deployment, Vercel env, Supabase command, SQL, service behavior, or commit action was performed.
+- Recommended next step: commit checkpoint for 16D.1 when approved, then explicit production rollout planning/execution if desired.
+
 ## 2026-05-24 - Milestone 16C Authenticated AdminPanel Validation Passed
 
 - Milestone 16C authenticated browser validation passed against staging through the local frontend.

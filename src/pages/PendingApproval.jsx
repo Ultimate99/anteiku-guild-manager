@@ -8,12 +8,9 @@ export function PendingApproval() {
   return (
     <div className="stack">
       <section className="panel hero-panel">
-        <StatusBadge tone="warning">Pending users are locked out</StatusBadge>
+        <StatusBadge tone="warning">Pending</StatusBadge>
         <h3>Approval required</h3>
-        <p>
-          Registered users must remain pending until an authorized guild admin approves them.
-          This scaffold does not expose member, CP, or admin data to pending users.
-        </p>
+        <p>A guild admin must approve this account before member access opens.</p>
         {profile?.username ? <p className="muted-line">@{profile.username}</p> : null}
         {error ? <p className="error-line">{error}</p> : null}
         <button type="button" className="primary-action" onClick={refreshProfile} disabled={profileLoading}>

@@ -119,13 +119,10 @@ export function LoginRegister() {
     <div className="stack">
       <section className="panel hero-panel">
         <StatusBadge tone={isSupabaseConfigured ? 'success' : 'danger'}>
-          {isSupabaseConfigured ? 'Local auth ready' : 'Env missing'}
+          {isSupabaseConfigured ? 'Ready' : 'Setup needed'}
         </StatusBadge>
-        <h3>Enter the organization gate</h3>
-        <p>
-          Sign in with local Supabase, or register a pending profile for approval. Registration
-          uses the database RPC and never inserts profile or membership rows directly.
-        </p>
+        <h3>Enter the guild</h3>
+        <p>Sign in or register for approval.</p>
       </section>
 
       {!isCompletingProfile ? (

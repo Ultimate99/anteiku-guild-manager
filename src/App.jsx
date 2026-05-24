@@ -60,7 +60,7 @@ function LoadingPanel() {
     <div className="stack">
       <section className="panel hero-panel">
         <h3>Restoring session</h3>
-        <p>Checking local Supabase auth state and safe profile status.</p>
+        <p>One moment.</p>
       </section>
     </div>
   );

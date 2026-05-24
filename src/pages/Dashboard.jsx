@@ -23,10 +23,7 @@ export function Dashboard() {
           <StatusBadge tone={rosterStatusTone(rosterStatus)}>{formatRosterStatus(rosterStatus)}</StatusBadge>
         </div>
         <h3>{guildName} command floor</h3>
-        <p>
-          Mobile-first guild overview using safe profile and membership fields from Supabase.
-          Sensitive statistics stay out of the member dashboard.
-        </p>
+        <p>Guild status at a glance.</p>
         {rosterStatus !== 'active' ? <p className="muted-copy">{getRosterStatusSummary(rosterStatus)}</p> : null}
       </section>
 
@@ -48,7 +45,7 @@ export function Dashboard() {
       <section className="guild-list" aria-label="Core guilds">
         <article className="guild-row">
           <div>
-          <h4>{profile?.ign ?? 'Member'}</h4>
+            <h4>{profile?.ign ?? 'Member'}</h4>
             <p>@{profile?.username ?? 'unknown'}</p>
           </div>
           <StatusBadge tone={rosterStatusTone(rosterStatus)}>{formatRosterStatus(rosterStatus)}</StatusBadge>

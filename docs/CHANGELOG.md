@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-05-24 - Milestone 16D.1 AdminPanel Compact Roster Implemented
+
+- Implemented frontend-only AdminPanel compact member cards and technical text cleanup.
+- Changed Members tab from tall always-open cards to compact roster rows.
+- Added per-member `Manage` disclosure areas for IGN editing, username reset, roster status, role, and guild-transfer controls.
+- Preserved hard-block status reason/confirmation flow and transfer warnings.
+- Removed visible environment/status pill copy such as `Supabase configured`.
+- Shortened auth, dashboard, GvG, pending, and rejected-state copy.
+- Preserved the Permissions copy fix for `Reset username/username`.
+- `npm.cmd run build` passed.
+- Static checks found no service, SQL migration, Supabase test, protected table, or unsafe GvG write changes.
+- Authenticated staging browser validation passed for Owner Members compact rows, expanded Manage controls, and CP/GvG/Audit/Permissions/Tools rendering.
+- `.env.local` was restored to local Supabase and Vite was restarted after validation.
+- No production, deployment, Vercel env, SQL, Supabase/RLS/RPC, service behavior, or commit action was performed.
+
 ## 2026-05-24 - Milestone 16C Authenticated AdminPanel Validation Passed
 
 - Authenticated AdminPanel/UI validation passed against staging through the local frontend.

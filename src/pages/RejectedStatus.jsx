@@ -10,10 +10,7 @@ export function RejectedStatus() {
       <section className="panel hero-panel">
         <StatusBadge tone="danger">Rejected</StatusBadge>
         <h3>Registration rejected</h3>
-        <p>
-          This account is not approved for guild access. A reapply flow is planned, but it is not
-          connected in this milestone.
-        </p>
+        <p>This account is not approved for guild access.</p>
         {profile?.username ? <p className="muted-line">@{profile.username}</p> : null}
         <button type="button" className="secondary-action" onClick={signOut}>
           Sign out

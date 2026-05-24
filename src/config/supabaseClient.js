@@ -8,10 +8,10 @@ export const isLocalSupabase =
   Boolean(supabaseUrl) && (supabaseUrl.includes('localhost') || supabaseUrl.includes('127.0.0.1'));
 
 export const supabaseEnvironmentLabel = !isSupabaseConfigured
-  ? 'Supabase not configured'
+  ? 'App setup needed'
   : isLocalSupabase
-    ? 'Local Supabase'
-    : 'Supabase configured';
+    ? 'Local'
+    : 'Online';
 
 export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseAnonKey)
