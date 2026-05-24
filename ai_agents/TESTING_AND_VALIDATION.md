@@ -1,5 +1,62 @@
 # Testing And Validation
 
+## Milestone 19E CP Update Window Production Rollout Validation
+
+Milestone 19E production rollout and read-only smoke validation passed.
+
+Preflight:
+- Working tree was clean before rollout.
+- Latest commit before rollout was `6a3a181 feat: add CP update window self-submit`.
+- Supabase CLI was relinked to production project `mzflfyxxkascrfpteexz`.
+- Staging project `ckyihuxkioeibzpgwenc` was not used.
+
+Migration:
+- Production dry-run showed only:
+  - `20260524000100_cp_update_window_self_submit.sql`
+  - `20260524000200_cp_update_window_staff_read.sql`
+- Both migrations were applied to production.
+- Post-push migration list showed both migrations applied remotely.
+
+Production DB verification:
+- `cp_update_windows` exists.
+- RLS is enabled on `cp_update_windows`.
+- Direct anon/authenticated table grants were absent.
+- One-open-window-per-guild unique index exists.
+- Safe RPCs exist and have authenticated execute grants:
+  - `get_active_cp_update_window_for_me`
+  - `get_my_cp`
+  - `submit_my_cp_update`
+  - `open_cp_update_window`
+  - `close_cp_update_window`
+  - `get_cp_update_window_for_guild`
+- `get_audit_logs(...)` includes redaction handling for `member_cp_self_submitted`.
+- Production active Owner count remained `1`.
+
+Frontend deployment:
+- `git push origin main` deployed commit `6a3a181 feat: add CP update window self-submit`.
+- Production bundle contained the CP Update Window frontend RPC paths after Vercel deployment.
+
+Production smoke:
+- Production app loaded at `https://anteiku-guild-manager.vercel.app`.
+- Owner sign-in worked.
+- Owner AdminPanel CP tab loaded.
+- CP Update Window block rendered for selected guild and showed `Closed`.
+- Member sign-in worked.
+- Member Profile showed `Your CP`.
+- Member Profile loaded own CP only; no other-member CP, CP roster, or CP leaderboard was exposed.
+- With no production CP window open, submit controls were not exposed and the closed-window message rendered.
+- Member had no Admin navigation.
+- No captured console errors were observed on the checked Owner/member paths.
+
+Source/security validation:
+- No direct frontend `.from('member_cp')`, `.from('cp_snapshots')`, or `.from('cp_update_windows')` calls were found.
+- Profile and `cpWindowService` do not call `get_current_cp_roster` or `get_cp_leaderboard`.
+- Admin CP Window controls use only the approved CP window RPCs.
+
+Not performed:
+- Controlled production CP mutation smoke was not performed by design. No production CP window was opened/closed and no production CP value was submitted.
+- Any future mutation smoke requires explicit approval and a controlled production test member.
+
 ## Milestone 19C CP Update Window Frontend Build/Source Validation
 
 Milestone 19C frontend implementation passed local build and source/security-path validation.

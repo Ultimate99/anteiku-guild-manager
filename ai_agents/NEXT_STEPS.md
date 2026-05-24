@@ -2,19 +2,7 @@
 
 ## Current Recommendation
 
-Milestone 19C frontend implementation is complete locally and build/source validated. CP Update Window / Member CP Self-Submit now has backend support plus local frontend UI, but staging and production do not have the required CP Update Window migrations yet.
-
-Recorded Milestone 19C status:
-- New frontend service: `src/services/cpWindowService.js`.
-- Service wrappers use RPCs only: `get_my_cp`, `get_active_cp_update_window_for_me`, `submit_my_cp_update`, `get_cp_update_window_for_guild`, `open_cp_update_window`, and `close_cp_update_window`.
-- Profile now shows a compact `Your CP` panel that reads only the signed-in member's own CP and lets eligible members submit CP only through `submit_my_cp_update`.
-- AdminPanel CP tab now shows CP Update Window status for the selected guild and exposes open/close controls to existing CP-authorized staff UI.
-- New UI copy is translated through EN/FR/DE i18n dictionaries.
-- `npm.cmd run build` passed.
-- Static checks found no direct `member_cp`, `cp_snapshots`, or `cp_update_windows` frontend table calls.
-- Static checks confirmed Profile and `cpWindowService` do not call admin CP roster/leaderboard RPCs.
-- Local unauthenticated browser smoke passed with no captured console errors.
-- SQL/migration files were not changed in 19C.
+Milestone 19E CP Update Window production rollout is complete. CP Update Window / Member CP Self-Submit is live in production after production DB migration verification, frontend deployment, and read-only Owner/member smoke validation.
 
 Recorded Milestone 19B/19B.1 backend status:
 - New migration: `20260524000100_cp_update_window_self_submit.sql`.
@@ -29,14 +17,29 @@ Recorded Milestone 19B/19B.1 backend status:
 - `member_cp_self_submitted` audit metadata redacts CP old/new values for viewers without scoped `view_cp`.
 - `npx.cmd supabase db reset` passed locally.
 - `supabase/tests/local_validation_anteiku.sql` passed, including Milestone 19B result 32 PASS / 0 FAIL / 0 SKIP and Milestone 19B.1 result 13 PASS / 0 FAIL / 0 SKIP.
-- Staging and production were not touched.
+- Staging rollout and validation passed in Milestone 19D.
+- Production rollout and read-only smoke passed in Milestone 19E.
+
+Recorded Milestone 19C/19D/19E frontend and rollout status:
+- New frontend service: `src/services/cpWindowService.js`.
+- Service wrappers use RPCs only: `get_my_cp`, `get_active_cp_update_window_for_me`, `submit_my_cp_update`, `get_cp_update_window_for_guild`, `open_cp_update_window`, and `close_cp_update_window`.
+- Profile shows a compact `Your CP` panel that reads only the signed-in member's own CP and lets eligible members submit CP only through `submit_my_cp_update`.
+- AdminPanel CP tab shows CP Update Window status for the selected guild and exposes open/close controls to existing CP-authorized staff UI.
+- Staging browser validation passed for Owner open/close, Member self-submit, audit redaction, audit+CP visibility, and Admin-without-permissions denial.
+- Production received only `20260524000100` and `20260524000200` during Milestone 19E.
+- Production DB verification passed for `cp_update_windows`, RLS, one-open-window unique index, safe RPCs/grants, direct grant absence, audit redaction support, and active Owner count.
+- Frontend commit `6a3a181 feat: add CP update window self-submit` was pushed and deployed.
+- Production smoke passed for Owner AdminPanel CP tab/window status and Member Profile `Your CP` closed-window state.
+- No controlled production CP mutation smoke was performed by design.
 
 Recommended next milestone:
-- Milestone 19D staging migration rollout and staging browser validation.
+- Docs/handoff commit checkpoint for Milestone 19E.
 
 Later milestone options:
-- Milestone 19E production rollout gate after staging passes.
+- Optional controlled production CP mutation smoke with explicit approval.
 - Weekly CP Snapshot/Growth Reports planning after CP Update Window is deployed.
+- Member status history UI planning.
+- Announcements, invite codes, or onboarding tools.
 
 ## Previous Recommendation - Milestone 18F
 

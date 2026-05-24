@@ -1,5 +1,28 @@
 # Testing
 
+## Milestone 19E CP Update Window Production Smoke
+
+Milestone 19E production rollout passed after applying both CP Update Window migrations and deploying commit `6a3a181 feat: add CP update window self-submit`.
+
+Migration validation:
+- Production dry-run showed only `20260524000100_cp_update_window_self_submit.sql` and `20260524000200_cp_update_window_staff_read.sql`.
+- Both migrations were applied to production.
+- Production DB verification passed for `cp_update_windows`, RLS, one-open-window unique index, safe RPCs/grants, direct client grant absence, audit redaction support, and active Owner count.
+
+Production smoke:
+- App loaded at `https://anteiku-guild-manager.vercel.app`.
+- Owner could sign in and open AdminPanel CP.
+- CP Update Window block rendered and selected-guild status loaded as `Closed`.
+- Member could sign in and open Profile.
+- `Your CP` card rendered and showed only the signed-in member's own CP.
+- With no CP window open, member submit controls were not exposed and the closed-window message rendered.
+- Member had no Admin navigation and no CP roster/leaderboard access.
+- No captured console errors were observed on the checked paths.
+
+Not performed:
+- Controlled production CP mutation smoke was not performed by design.
+- Future mutation smoke requires explicit approval and a controlled production test member.
+
 ## Milestone 19C CP Update Window Frontend Validation
 
 Milestone 19C frontend implementation passed build and source/security-path validation locally.

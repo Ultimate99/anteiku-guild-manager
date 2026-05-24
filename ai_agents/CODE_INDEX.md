@@ -86,6 +86,12 @@ Production status:
 
 ## Milestone 19C CP Update Window Frontend
 
+Production status:
+- Browser-validated in staging through Milestone 19D and deployed to production through Milestone 19E.
+- Production commit: `6a3a181 feat: add CP update window self-submit`.
+- Production smoke passed for Owner AdminPanel CP tab/window status and Member Profile `Your CP` closed-window state.
+- Controlled production CP mutation smoke was not performed by design.
+
 - `src/services/cpWindowService.js`
   - Adds RPC-only wrappers for `get_my_cp`, `get_active_cp_update_window_for_me`, `submit_my_cp_update`, `get_cp_update_window_for_guild`, `open_cp_update_window`, and `close_cp_update_window`.
   - Does not query `member_cp`, `cp_snapshots`, or `cp_update_windows` directly.

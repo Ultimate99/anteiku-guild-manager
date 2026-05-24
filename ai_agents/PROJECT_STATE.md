@@ -1,5 +1,38 @@
 # Project State
 
+## Milestone 19E CP Update Window Production Rollout Complete
+
+Milestone 19E is complete. CP Update Window / Member CP Self-Submit is live in production at `https://anteiku-guild-manager.vercel.app`.
+
+Production rollout:
+- Production project `mzflfyxxkascrfpteexz` was explicitly linked before migration work.
+- Dry-run showed only the expected pending migrations:
+  - `20260524000100_cp_update_window_self_submit.sql`
+  - `20260524000200_cp_update_window_staff_read.sql`
+- Both migrations were applied to production and verified remotely.
+- Production DB verification passed for `cp_update_windows`, RLS, one-open-window unique index, safe RPC existence/grants, audit redaction support, direct client grant absence, and active Owner count.
+- Frontend commit `6a3a181 feat: add CP update window self-submit` was pushed to `main` and deployed by Vercel.
+
+Production smoke:
+- Owner sign-in worked.
+- AdminPanel CP tab loaded.
+- CP Update Window block rendered for the selected guild and showed `Closed`.
+- Member sign-in worked.
+- Profile showed the `Your CP` card with own CP only.
+- With no production CP window open, member submit controls were not exposed and the closed-window message rendered.
+- Member had no Admin navigation and no CP roster/leaderboard access.
+- No captured console errors were observed during the checked Owner/member paths.
+
+Security/scope:
+- No controlled production mutation smoke was performed by design; no production CP window was opened/closed and no production CP value was submitted.
+- Optional future mutation smoke must use a controlled production test member only, require explicit approval, and document whether test data is restored or retained.
+- No production CP/member data was intentionally mutated beyond schema migration and frontend deployment.
+- No service role keys, Vercel env changes, `db reset`, `--include-seed`, staging changes, or source/SQL edits were performed during the production rollout.
+- Supabase CLI is currently linked to production project `mzflfyxxkascrfpteexz`; explicitly relink before future staging/local Supabase commands.
+
+Recommended next step:
+- Docs/handoff commit checkpoint for Milestone 19E, then choose the next approved milestone. Good candidates are optional controlled production CP mutation smoke, Weekly CP Snapshot/Growth Reports planning, member status history UI planning, or invite/onboarding tools.
+
 ## Milestone 19C CP Update Window Frontend Implemented
 
 Milestone 19C is implemented locally as a frontend-only Profile/AdminPanel integration for the Milestone 19B/19B.1 CP Update Window backend.
@@ -1282,7 +1315,7 @@ Validated results:
 
 ## Current Milestone
 
-Milestone 19C CP Update Window frontend is implemented locally, build/source validated, and awaiting staging validation. The Profile page now has a safe `Your CP` self-submit UI and AdminPanel CP has window open/close controls, but staging and production do not yet have the required 19B/19B.1 migrations. Recommended next step: Milestone 19D staging migration rollout and staging browser validation before any production rollout.
+Milestone 19E CP Update Window production rollout is complete. The CP Update Window backend/RLS/RPC migrations are applied and verified in production, the frontend is deployed, Owner/member production smoke passed, and no controlled production CP mutation smoke was performed. Recommended next step: Milestone 19E docs/handoff commit checkpoint, then select the next approved feature or validation milestone.
 
 Future CP-focused milestone candidate recorded: CP Update Window / Member CP Self-Submit. Corrected CP privacy rule going forward: members can see their own CP through safe backend/RPC flow, but must not see other members' CP, CP roster, CP leaderboard, CP snapshots, or other members' CP history. Members must not directly select or update `member_cp` and must not directly read `cp_snapshots`.
 

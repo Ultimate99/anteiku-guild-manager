@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-05-24 - Milestone 19E CP Update Window Production Rollout Complete
+
+- Applied CP Update Window migrations to production after a clean dry-run:
+  - `20260524000100_cp_update_window_self_submit.sql`
+  - `20260524000200_cp_update_window_staff_read.sql`
+- Verified production `cp_update_windows`, RLS, one-open-window unique index, safe RPCs/grants, direct grant absence, audit redaction support, and active Owner count.
+- Deployed frontend commit `6a3a181 feat: add CP update window self-submit`.
+- Production Owner smoke passed for AdminPanel CP and CP Update Window status.
+- Production Member smoke passed for Profile `Your CP`, own-CP-only display, closed-window state, no Admin navigation, and no CP roster/leaderboard exposure.
+- No controlled production CP mutation smoke was performed by design.
+- No staging, Vercel env, service role, `db reset`, `--include-seed`, source edit, or SQL edit action was performed during rollout.
+- Supabase CLI remains linked to production and must be relinked before future staging/local Supabase commands.
+
 ## 2026-05-24 - Milestone 19C CP Update Window Frontend Implemented
 
 - Added frontend-only CP Update Window / Member CP Self-Submit UI.

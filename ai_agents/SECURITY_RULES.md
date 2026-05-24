@@ -1,8 +1,8 @@
 # Security Rules
 
-## Milestone 19B CP Update Window Security Rules
+## Milestone 19E CP Update Window Security Rules
 
-Milestone 19B/19B.1 is implemented and locally validated only. It is not applied to staging or production yet.
+Milestone 19B/19B.1 backend, Milestone 19C frontend, Milestone 19D staging validation, and Milestone 19E production rollout are complete. CP Update Window / Member CP Self-Submit is live in production.
 
 CP Update Window rules:
 - CP Update Windows are guild-scoped.
@@ -33,6 +33,11 @@ Audit/redaction:
 - Member submissions write `member_cp_self_submitted`.
 - Audit metadata includes `cp_old`, `cp_new`, `window_id`, and source.
 - `get_audit_logs(...)` redacts CP metadata for audit viewers without scoped `view_cp`.
+
+Production operation rules:
+- Milestone 19E production smoke was read-only; no production CP window was opened/closed and no production CP value was submitted.
+- Optional production CP mutation smoke requires explicit approval, a controlled production test member, and a documented restore/retention decision.
+- Supabase CLI is currently linked to production `mzflfyxxkascrfpteexz`; relink deliberately before future staging/local Supabase commands.
 
 ## Milestone 17D Controlled Guild Onboarding Rules
 

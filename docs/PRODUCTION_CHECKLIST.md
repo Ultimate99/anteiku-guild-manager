@@ -6,7 +6,7 @@ Current production checkpoint:
 - Production project ref: `mzflfyxxkascrfpteexz`.
 - Project name: `Anteiku Guild Manager Production`.
 - Region: Central EU / Frankfurt.
-- All 10 approved migrations are applied remotely, including `20260523000100_member_roster_status_system.sql`.
+- All 12 approved migrations are applied remotely, including `20260523000100_member_roster_status_system.sql`, `20260524000100_cp_update_window_self_submit.sql`, and `20260524000200_cp_update_window_staff_read.sql`.
 - Production schema/RLS/seed verification passed.
 - Manual Owner bootstrap completed for `ultimatesrb` / `UltimateSRB` in `Anteiku`.
 - Exactly one active Owner membership exists.
@@ -25,6 +25,8 @@ Current production checkpoint:
 - Member Status frontend is deployed and smoke-tested in production.
 - Milestone 17C Password Recovery Required Reset Flow is live and production-validated.
 - Milestone 17D registration copy is prepared for admin-approval-based onboarding.
+- Milestone 19E CP Update Window / Member CP Self-Submit is live and production read-only-smoke validated.
+- Controlled production CP mutation smoke was not performed and requires explicit approval before any production CP window/test submit action.
 - Vercel Preview env has not been configured for staging yet.
 
 Controlled guild onboarding checkpoint:

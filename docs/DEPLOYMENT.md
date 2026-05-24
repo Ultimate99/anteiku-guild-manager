@@ -24,6 +24,19 @@ Milestone 18F deployed the frontend-only language pack to production.
 - This rollout did not require SQL, Supabase, RLS/RPC, Vercel env, or production data changes.
 - Future improvement: French/German admin wording review by native speakers.
 
+## Production CP Update Window
+
+Milestone 19E deployed CP Update Window / Member CP Self-Submit to production.
+
+- Commit deployed: `6a3a181 feat: add CP update window self-submit`.
+- Production migrations applied and verified:
+  - `20260524000100_cp_update_window_self_submit.sql`
+  - `20260524000200_cp_update_window_staff_read.sql`
+- Production DB verification passed for `cp_update_windows`, RLS, one-open-window unique index, safe RPCs/grants, direct grant absence, audit redaction handling, and active Owner count.
+- Production smoke passed for Owner AdminPanel CP window status and Member Profile `Your CP` closed-window state.
+- Controlled production CP mutation smoke was not performed; do not open/close production CP windows or submit production test CP without explicit approval.
+- Supabase CLI is currently linked to production project `mzflfyxxkascrfpteexz`; relink deliberately before future staging/local Supabase commands.
+
 ## Production Supabase Project
 
 Production Supabase project is created and separate from local development.
@@ -98,6 +111,9 @@ Additional migration status:
 - `20260523000100_member_roster_status_system.sql` is applied and verified in staging as of Milestone 15D.
 - `20260523000100_member_roster_status_system.sql` is applied and verified in production as of Milestone 15E.
 - Member Status frontend deployment to production completed after production DB verification.
+- `20260524000100_cp_update_window_self_submit.sql` and `20260524000200_cp_update_window_staff_read.sql` are applied and verified in staging as of Milestone 19D.
+- `20260524000100_cp_update_window_self_submit.sql` and `20260524000200_cp_update_window_staff_read.sql` are applied and verified in production as of Milestone 19E.
+- CP Update Window frontend deployment to production completed after production DB verification.
 
 After applying migrations, production verification passed:
 
@@ -111,6 +127,7 @@ After applying migrations, production verification passed:
 - Permission catalog rows exist.
 - `supabase_migrations.schema_migrations` reflects the expected migration timestamps.
 - Member Status production verification passed for `roster_status`, `member_status_history`, RLS/policies/grants, `update_member_roster_status(...)`, backfilled memberships, and active Owner count.
+- CP Update Window production verification passed for `cp_update_windows`, RLS, one-open-window unique index, safe RPCs/grants, audit redaction support, direct client grant absence, and active Owner count.
 
 Do not use `db push --include-seed` until the missing `supabase/seed.sql` hazard in `supabase/config.toml` is resolved. The required core seed data is currently handled by migration `20260514000400_seed_core_data.sql`.
 
