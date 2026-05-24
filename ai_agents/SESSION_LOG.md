@@ -1,5 +1,41 @@
 # Session Log
 
+## 2026-05-24 - Milestone 16C Authenticated AdminPanel Validation Passed
+
+- Milestone 16C authenticated browser validation passed against staging through the local frontend.
+- Staging project: `ckyihuxkioeibzpgwenc` / `Anteiku Guild Manager Staging`.
+- `staging_owner` opened AdminPanel and validated Approvals, Members, CP, GvG, Audit Logs, Permissions, Tools, Members badges/filter/status controls, and mobile AdminPanel layout.
+- `staging_admin_noperms` saw only safe Tools access and no restricted admin sections.
+- `staging_member` had no AdminPanel access, saw no admin UI, and saw no other-member CP exposure.
+- `staging_pending` remained locked to the pending approval screen.
+- `staging_audit_nocp` could access Audit Logs, did not see CP tools, and saw `Sensitive CP metadata hidden.` without CP values or raw CP metadata keys.
+- `staging_audit_cp` could access Audit Logs and permitted CP visibility, including backend-returned `New CP 1,234,567`.
+- `staging_wrongguild` remained scoped to Anteiku:Rose and did not see/vote on the Anteiku GvG smoke event.
+- Fixed UI copy found during validation: rephrased user-facing "Profile slug" text to "Username".
+- Fixed restricted AdminPanel shell copy so limited admins see neutral available-section copy instead of unavailable tool names.
+- `npm.cmd run build` passed after validation fixes.
+- Source/security-path checks found no service changes, no Supabase migration/test changes, no new direct protected CP/audit/history table calls, and no unsafe GvG writes.
+- `.env.local` was restored to local Supabase settings after validation.
+- Vite was restarted locally after restoring `.env.local`.
+- Staging test credentials were used transiently for validation and were not stored in docs/source.
+- No production, Vercel env, deployment, SQL, Supabase/RLS/RPC, service, or commit action was performed.
+- Recommended next step: commit checkpoint for Milestone 16B/16C when approved, then Milestone 16D member-facing UI cleanup planning or rollout planning.
+
+## 2026-05-24 - Milestone 16B AdminPanel UI Cleanup Implemented
+
+- Implemented Milestone 16B as a frontend-only AdminPanel UI/copy cleanup.
+- Shortened AdminPanel shell copy and removed implementation-facing wording from the AdminPanel UI.
+- Tightened Approvals, Members, CP, GvG, Audit Logs, Permissions, and Tools copy.
+- Added compact AdminPanel styles for cards, empty states, metadata rows, controls, tab spacing, and narrow mobile layout.
+- Preserved existing services, RPC call paths, permission gates, CP visibility, GvG flow, audit access, role/guild behavior, and member-status behavior.
+- Preserved destructive confirmations, hard-block roster status reason/confirmation flow, CP redaction notice, transfer reset warning, and permission-denial meaning.
+- `npm.cmd run build` passed.
+- Static checks found no service changes, no Supabase migration/test changes, no new direct protected CP/audit/history table calls, and no unsafe GvG writes.
+- Local browser smoke opened `http://localhost:5173/` and found no captured console warnings/errors on the unauthenticated page.
+- Authenticated AdminPanel browser validation remains pending because the local app/browser state was unauthenticated.
+- No deployment or commit was performed.
+- Recommended next step: Milestone 16C authenticated AdminPanel browser validation before rollout.
+
 ## 2026-05-24 - Milestone 15E Member Status Production Rollout Complete
 
 - Milestone 15E production rollout completed.

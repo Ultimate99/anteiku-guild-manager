@@ -38,12 +38,12 @@ export function AdminMembersSection({
   statusTone,
 }) {
   return (
-    <section className="member-management" aria-label="Member management">
-      <div className="panel member-management-tools">
-        <div className="section-heading-row">
+    <section className="member-management admin-section" aria-label="Member management">
+      <div className="panel member-management-tools admin-section-tools">
+        <div className="section-heading-row admin-section-heading">
           <div>
             <StatusBadge tone="success">Members</StatusBadge>
-            <h3>Active roster</h3>
+            <h3>Roster</h3>
           </div>
           <button type="button" className="secondary-action compact-action" onClick={onRefresh} disabled={memberLoading}>
             {memberLoading ? 'Loading...' : 'Refresh'}
@@ -88,10 +88,9 @@ export function AdminMembersSection({
       {memberLoading ? <p className="muted-line">Loading roster...</p> : null}
 
       {!memberLoading && filteredMembers.length === 0 ? (
-        <section className="panel hero-panel">
+        <section className="panel compact-empty-state">
           <StatusBadge>Roster empty</StatusBadge>
-          <h3>No approved members found</h3>
-          <p>Approved primary memberships are shown here when they match the current filters.</p>
+          <h3>No members match.</h3>
         </section>
       ) : null}
 
@@ -137,8 +136,8 @@ export function AdminMembersSection({
             (rosterStatusRequiresReason && !rosterReason.trim());
 
           return (
-            <article className="panel member-card" key={item.id}>
-              <div className="approval-card-header">
+            <article className="panel member-card compact-admin-card" key={item.id}>
+              <div className="approval-card-header member-card-header">
                 <div>
                   <h4>{item.profile?.ign ?? 'Unknown IGN'}</h4>
                   <p>@{item.profile?.username ?? 'unknown'}</p>
@@ -151,7 +150,7 @@ export function AdminMembersSection({
                 </div>
               </div>
 
-              <div className="approval-meta" aria-label="Member details">
+              <div className="approval-meta compact-meta" aria-label="Member details">
                 <div>
                   <span>Guild</span>
                   <strong>{item.guild?.name ?? 'Unknown guild'}</strong>
@@ -196,7 +195,7 @@ export function AdminMembersSection({
                   {canResetSlug ? (
                     <div className="member-edit-block">
                       <label>
-                        Username / profile slug
+                        Username
                         <input
                           type="text"
                           value={draft.slug}
@@ -211,17 +210,14 @@ export function AdminMembersSection({
                   ) : null}
                 </div>
               ) : (
-                <p className="muted-line">Roster visibility only. No edit action is available for this permission set.</p>
+                <p className="muted-line compact-state-line">View only.</p>
               )}
 
               {canManageRosterStatuses ? (
-                <div className="member-admin-actions">
-                  <div className="member-edit-block roster-status-control">
+                <div className="member-admin-actions compact-admin-actions">
+                  <div className="member-edit-block roster-status-control compact-control-block">
                     <div>
                       <h4>Roster status</h4>
-                      <p className="muted-copy">
-                        Status changes use the backend RPC and keep private reasons out of this roster.
-                      </p>
                     </div>
 
                     {rosterStatusCanBeChanged ? (
@@ -248,8 +244,8 @@ export function AdminMembersSection({
                             maxLength={1000}
                             placeholder={
                               rosterStatusRequiresReason
-                                ? 'Required for suspended, left, or kicked'
-                                : 'Optional staff note, stored privately'
+                                ? 'Required reason'
+                                : 'Optional private note'
                             }
                             onChange={(event) => onUpdateDraft(item.id, 'statusReason', event.target.value)}
                             disabled={actionDisabled}
@@ -262,7 +258,7 @@ export function AdminMembersSection({
 
                         {isConfirmingRosterStatus ? (
                           <p className="member-warning">
-                            Confirm roster status change from {formatRosterStatus(currentRosterStatus)} to{' '}
+                            Confirm {formatRosterStatus(currentRosterStatus)} to{' '}
                             {formatRosterStatus(rosterStatusSelectValue)}.
                           </p>
                         ) : null}
@@ -304,23 +300,23 @@ export function AdminMembersSection({
                         </div>
                       </>
                     ) : (
-                      <p className="muted-line">Roster status changes are not available for this target.</p>
+                      <p className="muted-line compact-state-line">Status locked for this member.</p>
                     )}
                   </div>
                 </div>
               ) : null}
 
               {canManageRoles || canTransferGuilds ? (
-                <div className="member-admin-actions">
+                <div className="member-admin-actions compact-admin-actions">
                   {canManageRoles ? (
-                    <div className="member-edit-block">
+                    <div className="member-edit-block compact-control-block">
                       <div>
                         <h4>Role management</h4>
-                        <p className="muted-copy">Owner assignment is manual-only and is never available here.</p>
+                        <p className="muted-copy">Owner changes are not available here.</p>
                       </div>
 
                       {item.role === 'owner' ? (
-                        <p className="muted-line">Owner role changes are manual-only.</p>
+                        <p className="muted-line compact-state-line">Owner role changes are locked.</p>
                       ) : (
                         <>
                           <label>
@@ -381,10 +377,10 @@ export function AdminMembersSection({
                   ) : null}
 
                   {canTransferGuilds ? (
-                    <div className="member-edit-block">
+                    <div className="member-edit-block compact-control-block">
                       <div>
                         <h4>Guild transfer</h4>
-                        <p className="muted-copy">Owner-only. Moving guild resets this member's role to Member.</p>
+                        <p className="muted-copy">Resets role to Member.</p>
                       </div>
 
                       <label>

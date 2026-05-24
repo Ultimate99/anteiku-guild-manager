@@ -959,7 +959,7 @@ export function AdminPanel() {
     const nextSlug = normalizeProfileSlug(memberDrafts[item.id]?.slug ?? '');
 
     if (!isValidProfileSlug(nextSlug)) {
-      setAdminError('Username/profile slug must be 3-32 lowercase letters, numbers, hyphen, or underscore; start and end with a letter or number.');
+      setAdminError('Username must be 3-32 lowercase letters, numbers, hyphen, or underscore; start and end with a letter or number.');
       return;
     }
 
@@ -972,7 +972,7 @@ export function AdminPanel() {
         profileId: item.profile_id,
         newSlug: nextSlug,
       });
-      setActionMessage(`Reset username/profile slug for @${item.profile?.username ?? 'member'}.`);
+      setActionMessage(`Reset username for @${item.profile?.username ?? 'member'}.`);
       await loadMembersSection({ clearMessage: false });
     } catch (memberError) {
       setAdminError(memberError.message);
@@ -986,7 +986,7 @@ export function AdminPanel() {
     const nextRole = allowedMemberRoles.includes(draftedRole) ? draftedRole : allowedMemberRoles[0] ?? '';
 
     if (item.role === 'owner') {
-      setAdminError('Owner role changes are manual-only and cannot be made through this UI.');
+      setAdminError('Owner role changes are not available here.');
       return;
     }
 
@@ -1025,7 +1025,7 @@ export function AdminPanel() {
     const targetGuild = activeGuildOptions.find((guildOption) => guildOption.id === targetGuildId);
 
     if (!canTransferGuilds) {
-      setAdminError('Guild transfer is Owner-only in this version.');
+      setAdminError('Guild transfer requires Owner access.');
       return;
     }
 
@@ -1472,13 +1472,10 @@ export function AdminPanel() {
   if (!canViewAdmin) {
     return (
       <div className="stack">
-        <section className="panel hero-panel">
+        <section className="panel hero-panel compact-empty-state">
           <StatusBadge tone="danger">Restricted</StatusBadge>
           <h3>Admin access unavailable</h3>
-          <p>
-            This view is hidden for normal members. Database policies and RPC checks remain the
-            real security layer.
-          </p>
+          <p>This area is reserved for authorized guild staff.</p>
         </section>
       </div>
     );
@@ -1486,16 +1483,13 @@ export function AdminPanel() {
 
   return (
     <div className="stack">
-      <section className="panel hero-panel">
-        <StatusBadge tone={visibleTabs.length > 1 ? 'success' : 'warning'}>Admin operations</StatusBadge>
+      <section className="panel hero-panel admin-hero-panel">
+        <StatusBadge tone={visibleTabs.length > 1 ? 'success' : 'warning'}>Admin</StatusBadge>
         <h3>Guild management</h3>
-        <p>
-          Manage approved admin workflows by section. Tabs only organize the UI; database RPCs and
-          policies remain the real security layer.
-        </p>
+        <p>Select an available section.</p>
         <button
           type="button"
-          className="secondary-action"
+          className="secondary-action compact-action admin-refresh-action"
           onClick={() => loadTabData(activeTab, { force: true })}
           disabled={permissionLoading || currentTabLoading}
         >

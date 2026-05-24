@@ -1,6 +1,13 @@
 import React from 'react';
 import { StatusBadge } from '../StatusBadge.jsx';
 
+function humanizePermissionCopy(value) {
+  return String(value ?? '')
+    .replaceAll('Profile slug', 'Username')
+    .replaceAll('profile slug', 'username')
+    .replaceAll('reset_profile_slug', 'reset username');
+}
+
 export function AdminPermissionsSection({
   membership,
   adminPermissionLoading,
@@ -18,9 +25,9 @@ export function AdminPermissionsSection({
   hasPermissionDraftChanges,
 }) {
   return (
-    <section className="permission-management" aria-label="Admin permission management">
-      <div className="panel permission-management-tools">
-        <div className="section-heading-row">
+    <section className="permission-management admin-section" aria-label="Admin permission management">
+      <div className="panel permission-management-tools admin-section-tools">
+        <div className="section-heading-row admin-section-heading">
           <div>
             <StatusBadge tone="warning">Permissions</StatusBadge>
             <h3>Admin permissions</h3>
@@ -34,19 +41,14 @@ export function AdminPermissionsSection({
             {adminPermissionLoading ? 'Loading...' : 'Refresh'}
           </button>
         </div>
-
-        <p className="muted-line">
-          Permission checkboxes apply only to active Admin memberships. CP permissions are Owner-only.
-        </p>
       </div>
 
       {adminPermissionLoading ? <p className="muted-line">Loading Admin permission targets...</p> : null}
 
       {!adminPermissionLoading && adminPermissionTargets.length === 0 ? (
-        <section className="panel hero-panel">
+        <section className="panel compact-empty-state">
           <StatusBadge>Empty</StatusBadge>
-          <h3>No active Admin memberships found</h3>
-          <p>Only approved active Admin memberships in your allowed scope appear here.</p>
+          <h3>No admin targets.</h3>
         </section>
       ) : null}
 
@@ -64,7 +66,7 @@ export function AdminPermissionsSection({
           const cpPermissionLocked = ['leader', 'vice'].includes(membership?.role);
 
           return (
-            <article className="panel permission-card" key={target.id}>
+            <article className="panel permission-card compact-admin-card" key={target.id}>
               <div className="approval-card-header">
                 <div>
                   <h4>{target.profile?.ign ?? 'Unknown IGN'}</h4>
@@ -73,7 +75,7 @@ export function AdminPermissionsSection({
                 <StatusBadge tone="success">Admin</StatusBadge>
               </div>
 
-              <div className="approval-meta" aria-label="Admin permission target details">
+              <div className="approval-meta compact-meta" aria-label="Admin permission target details">
                 <div>
                   <span>Guild</span>
                   <strong>{target.guild?.name ?? 'Unknown guild'}</strong>
@@ -109,15 +111,15 @@ export function AdminPermissionsSection({
                           onChange={(event) => onUpdateDraft(target.id, permission.key, event.target.checked)}
                           disabled={actionDisabled || !canToggle}
                         />
-                        <span>
-                          {permission.label ?? permission.key}
+                      <span>
+                          {humanizePermissionCopy(permission.label ?? permission.key)}
                           {sensitive ? <em>Sensitive</em> : null}
                         </span>
                       </span>
                       <small>
                         {cpPermission && !canToggle
                           ? 'CP permissions are Owner-only.'
-                          : permission.description ?? permission.key}
+                          : humanizePermissionCopy(permission.description ?? permission.key)}
                       </small>
                     </label>
                   );

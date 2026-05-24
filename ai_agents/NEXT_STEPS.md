@@ -2,6 +2,36 @@
 
 ## Current Recommendation
 
+Milestone 16B AdminPanel UI cleanup is implemented locally and Milestone 16C authenticated staging browser validation passed. The cleanup is ready for a commit checkpoint before any rollout/deployment decision.
+
+Recorded Milestone 16B/16C status:
+- Frontend UI/copy cleanup only.
+- AdminPanel shell copy is shorter and operational.
+- Approvals, Members, CP, GvG, Audit Logs, Permissions, and Tools copy was tightened.
+- Compact AdminPanel styles were added for cards, empty states, metadata rows, control blocks, tabs, and mobile spacing.
+- User-facing "Profile slug" text was rephrased to "Username" where surfaced in the UI.
+- Restricted-admin shell copy now describes only available sections instead of naming unavailable tools.
+- Destructive confirmations, hard-block status confirmation/reason flow, CP redaction notice, permission-denial meaning, transfer reset warning, and existing tab/security gates were preserved.
+- `npm.cmd run build` passed.
+- Static source checks found no service changes, no Supabase migration/test changes, no new direct protected CP/audit/history table calls, and no unsafe GvG writes.
+- Authenticated staging validation passed for Owner AdminPanel tabs, restricted admin access, normal Member denial, pending lockout, audit no-CP redaction, audit+CP visibility, wrong-guild scoping, and mobile AdminPanel layout.
+- Staging test credentials were used transiently for validation and were not stored in docs/source.
+- `.env.local` was restored to local Supabase settings after validation.
+
+Recommended next milestone:
+- Commit checkpoint for Milestone 16B/16C when approved.
+- Milestone 16D member-facing UI cleanup planning.
+- Deployment planning only after an explicit rollout request.
+
+Later milestone options:
+- Milestone 16D member-facing UI cleanup.
+- CP Update Window planning.
+- Weekly CP Snapshot/Growth Reports planning.
+- Member status history UI planning.
+- Announcements or onboarding/invite-code planning.
+
+## Previous Recommendation - Milestone 15E
+
 Milestone 15E production rollout is complete. The Member Status System is live in production after DB migration, frontend deployment, and production smoke validation.
 
 Recorded Milestone 15E status:

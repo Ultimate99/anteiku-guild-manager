@@ -18,11 +18,11 @@ export function AdminApprovalsSection({
   statusTone,
 }) {
   return (
-    <section className="approval-list" aria-label="Registration approval queue">
-      <div className="section-heading-row">
+    <section className="approval-list admin-section" aria-label="Registration approval queue">
+      <div className="section-heading-row admin-section-heading">
         <div>
           <StatusBadge tone="warning">Registration</StatusBadge>
-          <h3>Approval queue</h3>
+          <h3>Approvals</h3>
         </div>
         <button type="button" className="secondary-action compact-action" onClick={onRefresh} disabled={approvalLoading}>
           {approvalLoading ? 'Loading...' : 'Refresh'}
@@ -32,10 +32,9 @@ export function AdminApprovalsSection({
       {approvalLoading ? <p className="muted-line">Loading approval queue...</p> : null}
 
       {!approvalLoading && queue.length === 0 ? (
-        <section className="panel hero-panel">
+        <section className="panel compact-empty-state">
           <StatusBadge>Clear</StatusBadge>
-          <h3>No pending requests</h3>
-          <p>Pending users and rejected users with reapply requests will appear here.</p>
+          <h3>No pending approvals.</h3>
         </section>
       ) : null}
 
@@ -46,7 +45,7 @@ export function AdminApprovalsSection({
         const actionDisabled = Boolean(activeAction);
 
         return (
-          <article className="panel approval-card" key={item.id}>
+          <article className="panel approval-card compact-admin-card" key={item.id}>
             <div className="approval-card-header">
               <div>
                 <h4>{item.profile?.ign ?? 'Unknown IGN'}</h4>
@@ -55,7 +54,7 @@ export function AdminApprovalsSection({
               <StatusBadge tone={statusTone(item.membership_status)}>{item.membership_status}</StatusBadge>
             </div>
 
-            <div className="approval-meta" aria-label="Approval request details">
+            <div className="approval-meta compact-meta" aria-label="Approval request details">
               <div>
                 <span>Guild</span>
                 <strong>{item.guild?.name ?? 'Unknown guild'}</strong>
@@ -103,7 +102,7 @@ export function AdminApprovalsSection({
               <textarea
                 value={rejectReasons[item.id] ?? ''}
                 maxLength={1000}
-                placeholder="Optional reason, stored through the rejection RPC"
+                placeholder="Optional note"
                 onChange={(event) => onRejectReasonChange(item.id, event.target.value)}
                 disabled={actionDisabled}
               />

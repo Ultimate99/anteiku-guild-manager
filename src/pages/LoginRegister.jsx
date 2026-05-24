@@ -170,7 +170,7 @@ export function LoginRegister() {
         {mode === 'register' || isCompletingProfile ? (
           <>
             <label>
-              Username / profile slug
+              Username
               <input
                 type="text"
                 value={form.username}

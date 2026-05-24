@@ -1,5 +1,65 @@
 # Project State
 
+## Milestone 16C Authenticated AdminPanel Browser Validation Passed
+
+Milestone 16C passed authenticated browser validation against staging through the local frontend temporarily pointed at `ckyihuxkioeibzpgwenc` / `Anteiku Guild Manager Staging`. Milestone 16B can now be treated as implemented, build/source validated, and authenticated-browser validated.
+
+Validated:
+- `staging_owner` opened AdminPanel and switched Approvals, Members, CP, GvG, Audit Logs, Permissions, and Tools.
+- Members tab badges, filters, status controls, hard-block confirmation/reason UI, and role/guild/username tools rendered.
+- CP tab loaded with shorter copy and preserved authorized CP visibility.
+- GvG tab loaded without behavior changes.
+- Audit Logs loaded, kept `Sensitive CP metadata hidden.` for a user without `view_cp`, and showed backend-returned `New CP 1,234,567` for a user with `view_cp`.
+- Permissions and Tools rendered for authorized Owner.
+- `staging_admin_noperms` saw only safe Tools access and no restricted admin sections.
+- `staging_member` had no AdminPanel access and no other-member CP exposure.
+- `staging_pending` remained locked to the pending approval screen with no member/admin navigation.
+- `staging_wrongguild` remained scoped to Anteiku:Rose and did not see/vote on Anteiku GvG data.
+- Mobile AdminPanel viewport remained readable and tappable.
+
+Validation notes:
+- The UI copy issue "Profile slug" was rephrased to user-facing "Username" where surfaced in Admin/Profile/auth/audit/permissions display text.
+- AdminPanel shell copy was adjusted so restricted admins see neutral available-section copy instead of references to unavailable tools.
+- `npm.cmd run build` passed after the UI copy fixes.
+- Source/security-path validation found no service changes, no Supabase migration/test changes, no new direct protected CP/audit/history table calls, and no unsafe GvG writes.
+- Staging test credentials were used only transiently for validation and were not stored in docs or source.
+- `.env.local` was restored to local Supabase settings after validation.
+
+Scope confirmation:
+- No SQL migrations were edited or created.
+- No Supabase/RLS/RPC/service behavior was changed.
+- No production, Vercel env, deployment, or commit action was performed.
+
+Recommended next milestone:
+- Milestone 16D member-facing UI cleanup planning, or a 16B/16C commit checkpoint before any rollout.
+
+## Milestone 16B AdminPanel UI Cleanup Implemented
+
+Milestone 16B is implemented locally and browser-validated through Milestone 16C as a frontend-only AdminPanel polish pass. It tightens AdminPanel copy, cards, empty states, metadata rows, tabs, and mobile spacing without changing services, database logic, permissions, CP, GvG, audit, role/guild, or member-status behavior.
+
+Implemented:
+- Shortened the AdminPanel shell copy to direct operational text.
+- Removed live AdminPanel implementation wording such as RPC, backend, policies, scaffold, and milestone language.
+- Tightened Approvals, Members, CP, GvG, Audit Logs, Permissions, and Tools section copy.
+- Added compact AdminPanel card, empty-state, metadata, control-block, and mobile styles.
+- Preserved destructive confirmations, hard-block member-status reason/confirmation flow, transfer reset warning, CP redaction notice, and permission-denial meaning.
+
+Validation:
+- `npm.cmd run build` passed.
+- Static source checks found no service, Supabase migration, or Supabase test changes.
+- Static source checks found no new direct frontend `member_cp`, `cp_snapshots`, `audit_logs`, or `member_status_history` calls.
+- Existing approved service paths remain unchanged: CP uses approved CP RPCs, Audit uses `get_audit_logs`, GvG uses approved GvG RPCs/safe reads, and member status updates use `update_member_roster_status`.
+- Authenticated staging browser validation passed in Milestone 16C for Owner, restricted admin, member, pending, audit no-CP, audit+CP, and wrong-guild accounts.
+
+Scope confirmation:
+- No SQL migrations were edited or created.
+- No Supabase/RLS/RPC logic was changed.
+- No services were edited.
+- No deployment or commit was performed.
+
+Recommended next milestone:
+- Milestone 16D member-facing UI cleanup planning, or a 16B/16C commit checkpoint before rollout.
+
 ## Milestone 15E Member Status Production Rollout Complete
 
 Milestone 15E is complete. The Member Status System is live in production after the production database migration, frontend deployment, and production smoke validation all passed.
@@ -890,7 +950,7 @@ Validated results:
 
 ## Current Milestone
 
-Milestone 15E Member Status production rollout is complete. The production DB has `20260523000100_member_roster_status_system.sql`, the frontend is deployed from `main`, and production smoke validation passed. Recommended next options are optional controlled production mutation smoke, CP Update Window planning, Weekly CP Snapshot/Growth Reports planning, Member status history UI planning, or announcements/onboarding/invite-code planning.
+Milestone 16B AdminPanel UI cleanup is implemented locally and Milestone 16C authenticated staging browser validation passed. Recommended next step: Milestone 16D member-facing UI cleanup planning, or a 16B/16C commit checkpoint before rollout.
 
 Future CP-focused milestone candidate recorded: CP Update Window / Member CP Self-Submit. Corrected CP privacy rule going forward: members can see their own CP through safe backend/RPC flow, but must not see other members' CP, CP roster, CP leaderboard, CP snapshots, or other members' CP history. Members must not directly select or update `member_cp` and must not directly read `cp_snapshots`.
 

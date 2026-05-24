@@ -173,3 +173,25 @@
   - Does not display private status history/reasons.
 - `src/styles/app.css`
   - Adds roster badge tones, badge rows, restricted panels, and compact status reason styling.
+
+## Milestone 16B AdminPanel UI Cleanup
+
+- `src/pages/AdminPanel.jsx`
+  - Keeps AdminPanel behavior and tab coordination unchanged.
+  - Shortens AdminPanel shell and restricted-state copy.
+- `src/components/admin/AdminApprovalsSection.jsx`
+  - Tightens approval tab heading, empty state, cards, and rejection-note copy.
+- `src/components/admin/AdminMembersSection.jsx`
+  - Tightens member cards, metadata, roster status controls, role controls, and guild transfer copy while preserving existing action handlers.
+- `src/components/admin/AdminCpSection.jsx`
+  - Tightens CP roster, empty state, read-only, and leaderboard copy.
+- `src/components/admin/AdminGvgSection.jsx`
+  - Tightens GvG event creation/results copy while preserving event lifecycle controls.
+- `src/components/admin/AdminAuditSection.jsx`
+  - Tightens audit empty/denied states while preserving CP redaction notice.
+- `src/components/admin/AdminPermissionsSection.jsx`
+  - Tightens permission target copy without changing checkbox behavior.
+- `src/components/admin/AdminToolsSection.jsx`
+  - Replaces milestone-style placeholder language with compact coming-later rows.
+- `src/styles/app.css`
+  - Adds compact AdminPanel card, empty-state, metadata, control-block, tab, and narrow-mobile styles.

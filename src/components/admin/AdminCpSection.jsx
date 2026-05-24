@@ -22,12 +22,12 @@ export function AdminCpSection({
   formatCpValue,
 }) {
   return (
-    <section className="cp-management" aria-label="CP management">
-      <div className="panel cp-management-tools">
-        <div className="section-heading-row">
+    <section className="cp-management admin-section" aria-label="CP management">
+      <div className="panel cp-management-tools admin-section-tools">
+        <div className="section-heading-row admin-section-heading">
           <div>
             <StatusBadge tone="success">CP</StatusBadge>
-            <h3>CP management</h3>
+            <h3>CP roster</h3>
           </div>
           <button type="button" className="secondary-action compact-action" onClick={onRefresh} disabled={cpLoading}>
             {cpLoading ? 'Loading...' : 'Refresh'}
@@ -65,18 +65,16 @@ export function AdminCpSection({
       {cpLoading ? <p className="muted-line">Loading CP roster...</p> : null}
 
       {!cpLoading && selectedCpGuildId && filteredCpRoster.length === 0 ? (
-        <section className="panel hero-panel">
-          <StatusBadge>CP roster empty</StatusBadge>
-          <h3>No CP rows found</h3>
-          <p>Active approved members for the selected guild will appear here, including missing CP entries.</p>
+        <section className="panel compact-empty-state">
+          <StatusBadge>Empty</StatusBadge>
+          <h3>No CP rows.</h3>
         </section>
       ) : null}
 
       {!cpLoading && !selectedCpGuildId ? (
-        <section className="panel hero-panel">
+        <section className="panel compact-empty-state">
           <StatusBadge tone="warning">No guild scope</StatusBadge>
-          <h3>CP scope unavailable</h3>
-          <p>Choose an active guild scope before loading CP data.</p>
+          <h3>Choose a guild.</h3>
         </section>
       ) : null}
 
@@ -89,7 +87,7 @@ export function AdminCpSection({
           const actionDisabled = Boolean(activeAction);
 
           return (
-            <article className="panel cp-card" key={item.profile_id}>
+            <article className="panel cp-card compact-admin-card" key={item.profile_id}>
               <div className="approval-card-header">
                 <div>
                   <h4>{item.ign ?? 'Unknown IGN'}</h4>
@@ -100,7 +98,7 @@ export function AdminCpSection({
                 </StatusBadge>
               </div>
 
-              <div className="approval-meta" aria-label="CP member details">
+              <div className="approval-meta compact-meta" aria-label="CP member details">
                 <div>
                   <span>Guild</span>
                   <strong>{selectedCpGuild?.name ?? 'Selected guild'}</strong>
@@ -149,15 +147,15 @@ export function AdminCpSection({
                   </div>
                 </div>
               ) : (
-                <p className="muted-line">Read-only CP access. Update permission is required to edit CP.</p>
+                <p className="muted-line compact-state-line">Read-only CP.</p>
               )}
             </article>
           );
         })}
       </div>
 
-      <section className="panel cp-leaderboard" aria-label="CP leaderboard">
-        <div className="section-heading-row">
+      <section className="panel cp-leaderboard compact-admin-card" aria-label="CP leaderboard">
+        <div className="section-heading-row admin-section-heading">
           <div>
             <StatusBadge tone="success">Leaderboard</StatusBadge>
             <h3>CP leaderboard</h3>

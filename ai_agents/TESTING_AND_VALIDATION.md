@@ -1,5 +1,57 @@
 # Testing And Validation
 
+## Milestone 16C Authenticated AdminPanel Browser Validation Passed
+
+Milestone 16C authenticated browser validation passed against staging through the local frontend temporarily pointed at `ckyihuxkioeibzpgwenc` / `Anteiku Guild Manager Staging`.
+
+Accounts validated:
+- `staging_owner`: AdminPanel opened; Approvals, Members, CP, GvG, Audit Logs, Permissions, and Tools tabs rendered and switched; mobile AdminPanel viewport remained readable/tappable.
+- `staging_admin_noperms`: only safe Tools access was exposed; no CP, Audit Logs, GvG management, Permissions, Approvals, or Members controls were visible.
+- `staging_member`: no AdminPanel access; no admin UI; no other-member CP exposure; Profile displays user-facing "Username" copy.
+- `staging_pending`: locked to the pending approval screen with no member/admin navigation.
+- `staging_audit_nocp`: Audit Logs access worked; CP tab/tools were not visible; CP-sensitive audit metadata showed `Sensitive CP metadata hidden.` with no CP value, `cp_old`, or `cp_new`.
+- `staging_audit_cp`: Audit Logs access worked; CP visibility was available as permitted; CP audit metadata showed backend-returned `New CP 1,234,567`.
+- `staging_wrongguild`: remained scoped to Anteiku:Rose; no Admin/CP/Audit/Members navigation; no Anteiku GvG smoke event or vote controls were visible.
+
+Fixes made during validation:
+- Rephrased user-facing "Profile slug" UI text to "Username".
+- Changed restricted AdminPanel shell copy to neutral available-section text for users with limited admin scopes.
+
+Build/source validation:
+- `npm.cmd run build` passed after validation fixes.
+- No service files changed.
+- No Supabase migration or Supabase test files changed.
+- No new direct frontend `member_cp`, `cp_snapshots`, `audit_logs`, `member_status_history`, or unsafe `gvg_votes` paths were added.
+- Existing approved service paths remain unchanged: Audit uses `get_audit_logs`, CP uses approved CP RPCs, GvG uses approved RPCs/safe reads, and roster status updates use `update_member_roster_status`.
+
+Scope:
+- `.env.local` was temporarily pointed at staging and restored to local Supabase after validation.
+- Vite was restarted locally after the `.env.local` restore.
+- Staging test credentials were used transiently and were not stored in docs/source.
+- No production, Vercel env, deployment, SQL, Supabase/RLS/RPC, service, or commit action was performed.
+
+## Milestone 16B AdminPanel UI Cleanup Build/Source Validation Passed
+
+Milestone 16B AdminPanel UI cleanup is implemented locally, build/source validated, and authenticated-browser validated through staging in Milestone 16C.
+
+Build:
+- `npm.cmd run build` passed.
+
+Static/source validation:
+- No Supabase migration files changed.
+- No Supabase test files changed.
+- No service files changed.
+- No SQL, RLS, RPC, CP, GvG, audit, role/guild, permission, or member-status behavior was changed.
+- No new direct frontend `member_cp`, `cp_snapshots`, `audit_logs`, or `member_status_history` table calls were found.
+- No unsafe direct GvG vote writes were added.
+- Existing allowed service paths remain unchanged.
+
+Browser smoke:
+- Local Vite app was reachable at `http://localhost:5173/`.
+- Page title loaded as `Anteiku Guild Manager`.
+- Captured console warnings/errors were empty on the unauthenticated local page.
+- Authenticated staging browser validation later passed in Milestone 16C.
+
 ## Milestone 15E Member Status Production Rollout Validation Passed
 
 Milestone 15E production rollout validation passed.

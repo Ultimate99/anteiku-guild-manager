@@ -87,7 +87,7 @@ export function Profile() {
               {isEditing ? 'Editing IGN' : 'Profile locked'}
             </StatusBadge>
             <h3>Member profile</h3>
-            <p>IGN can be edited. Username, profile slug, guild, role, and status are locked.</p>
+            <p>IGN can be edited. Username, guild, role, and status are locked.</p>
             {rosterStatus !== 'active' ? <p className="muted-copy">{getRosterStatusSummary(rosterStatus)}</p> : null}
           </div>
           {!isEditing ? (
@@ -127,7 +127,7 @@ export function Profile() {
 
       <section className="panel detail-list" aria-label="Profile details">
         <div>
-          <span>Profile slug</span>
+          <span>Username</span>
           <strong>{profile?.profile_slug ?? profile?.username ?? 'unknown'}</strong>
           <small>Locked for normal users after registration.</small>
         </div>

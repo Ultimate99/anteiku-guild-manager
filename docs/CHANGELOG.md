@@ -1,5 +1,35 @@
 # Changelog
 
+## 2026-05-24 - Milestone 16C Authenticated AdminPanel Validation Passed
+
+- Authenticated AdminPanel/UI validation passed against staging through the local frontend.
+- Validated Owner AdminPanel tabs, Members status UI, CP, GvG, Audit Logs, Permissions, Tools, and mobile AdminPanel layout.
+- Validated restricted admin, normal member, pending user, audit no-CP, audit+CP, and wrong-guild staging accounts.
+- Confirmed CP redaction still shows `Sensitive CP metadata hidden.` for users without `view_cp`.
+- Confirmed permitted CP audit metadata is visible for the `view_cp` audit account.
+- Rephrased user-facing "Profile slug" UI copy to "Username".
+- Adjusted limited-admin AdminPanel shell copy to avoid naming unavailable tools.
+- `npm.cmd run build` passed after validation fixes.
+- Source/security-path validation found no service, SQL migration, Supabase test, protected table, or unsafe GvG write changes.
+- `.env.local` was restored to local Supabase settings after validation.
+- Vite was restarted locally after the environment restore.
+- Staging test credentials were not stored in docs/source.
+- No production, Vercel env, deployment, SQL, Supabase/RLS/RPC, service, or commit action was performed.
+
+## 2026-05-24 - Milestone 16B AdminPanel UI Cleanup Implemented
+
+- Implemented a frontend-only AdminPanel UI/copy cleanup.
+- Shortened AdminPanel shell copy and removed implementation-facing wording from AdminPanel UI text.
+- Tightened Approvals, Members, CP, GvG, Audit Logs, Permissions, and Tools tab copy.
+- Added compact AdminPanel styling for cards, empty states, metadata rows, controls, tabs, and narrow mobile layout.
+- Preserved destructive confirmations, hard-block member-status confirmation/reason flow, CP redaction notice, transfer reset warning, and permission-denial meaning.
+- Preserved existing service/RPC paths and behavior; no SQL migrations, Supabase/RLS/RPC logic, CP, GvG, audit, role/guild, permission, or member-status behavior changed.
+- `npm.cmd run build` passed.
+- Static source checks found no service changes, no Supabase migration/test changes, no new direct protected CP/audit/history table calls, and no unsafe GvG writes.
+- Local app loaded at `http://localhost:5173/` with no captured console warnings/errors on the unauthenticated page.
+- Authenticated AdminPanel browser validation remains pending before rollout.
+- No deployment or commit was performed.
+
 ## 2026-05-24 - Milestone 15E Member Status Production Rollout Complete
 
 - Applied `20260523000100_member_roster_status_system.sql` to production only after dry-run showed it was the only pending migration.

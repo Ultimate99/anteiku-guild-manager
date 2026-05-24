@@ -1,6 +1,10 @@
 import React from 'react';
 import { StatusBadge } from '../StatusBadge.jsx';
 
+function humanizeAuditLabel(value) {
+  return String(value ?? '').replaceAll('Profile slug', 'Username').replaceAll('profile slug', 'username');
+}
+
 export function AdminAuditSection({
   membership,
   auditActionOptions,
@@ -23,9 +27,9 @@ export function AdminAuditSection({
   formatAuditEntity,
 }) {
   return (
-    <section className="audit-management" aria-label="Audit logs">
-      <div className="panel audit-management-tools">
-        <div className="section-heading-row">
+    <section className="audit-management admin-section" aria-label="Audit logs">
+      <div className="panel audit-management-tools admin-section-tools">
+        <div className="section-heading-row admin-section-heading">
           <div>
             <StatusBadge tone="warning">Audit</StatusBadge>
             <h3>Audit logs</h3>
@@ -45,7 +49,7 @@ export function AdminAuditSection({
             >
               {auditActionOptions.map((actionOption) => (
                 <option key={actionOption.value} value={actionOption.value}>
-                  {actionOption.label}
+                  {humanizeAuditLabel(actionOption.label)}
                 </option>
               ))}
             </select>
@@ -107,20 +111,18 @@ export function AdminAuditSection({
       {auditLoading && auditLogs.length === 0 ? <p className="muted-line">Loading audit logs...</p> : null}
 
       {auditNotAuthorized ? (
-        <section className="panel hero-panel audit-access-panel">
+        <section className="panel compact-empty-state audit-access-panel">
           <StatusBadge tone="danger">Restricted</StatusBadge>
-          <h3>Not authorized to view audit logs.</h3>
-          <p>The backend rejected this audit log request.</p>
+          <h3>Audit access denied.</h3>
         </section>
       ) : null}
 
       {auditError ? <p className="error-line">{auditError}</p> : null}
 
       {!auditLoading && !auditError && !auditNotAuthorized && auditLogs.length === 0 ? (
-        <section className="panel hero-panel">
+        <section className="panel compact-empty-state">
           <StatusBadge>Empty</StatusBadge>
-          <h3>No audit logs found</h3>
-          <p>Try another action, guild, date range, or limit.</p>
+          <h3>No audit logs.</h3>
         </section>
       ) : null}
 
@@ -131,16 +133,16 @@ export function AdminAuditSection({
           const entityDisplay = formatAuditEntity(row);
 
           return (
-            <article className="panel audit-card" key={row.id}>
+            <article className="panel audit-card compact-admin-card" key={row.id}>
               <div className="approval-card-header">
                 <div>
-                  <h4>{formatAuditAction(row.action)}</h4>
+                  <h4>{humanizeAuditLabel(formatAuditAction(row.action))}</h4>
                   <p>{row.action}</p>
                 </div>
                 <StatusBadge tone={row.metadata_redacted ? 'warning' : 'success'}>Read-only</StatusBadge>
               </div>
 
-              <div className="approval-meta audit-meta" aria-label="Audit log details">
+              <div className="approval-meta compact-meta audit-meta" aria-label="Audit log details">
                 <div>
                   <span>Timestamp</span>
                   <strong>{formatDate(row.created_at)}</strong>

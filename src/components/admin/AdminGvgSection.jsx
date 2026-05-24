@@ -19,12 +19,12 @@ export function AdminGvgSection({
   formatDate,
 }) {
   return (
-    <section className="gvg-management" aria-label="GvG management">
-      <div className="panel gvg-management-tools">
-        <div className="section-heading-row">
+    <section className="gvg-management admin-section" aria-label="GvG management">
+      <div className="panel gvg-management-tools admin-section-tools">
+        <div className="section-heading-row admin-section-heading">
           <div>
             <StatusBadge tone="success">GvG</StatusBadge>
-            <h3>GvG management</h3>
+            <h3>Events</h3>
           </div>
           <button
             type="button"
@@ -36,13 +36,11 @@ export function AdminGvgSection({
           </button>
         </div>
 
-        <p className="muted-line">
-          Create events, open voting, close voting, and review present/absent results for your allowed scope.
-        </p>
       </div>
 
-      <section className="panel gvg-create-panel" aria-label="Create GvG event">
+      <section className="panel gvg-create-panel compact-admin-card" aria-label="Create GvG event">
         <StatusBadge tone="warning">Create event</StatusBadge>
+        <h3>Create event</h3>
         <label>
           Event title
           <input
@@ -115,15 +113,20 @@ export function AdminGvgSection({
       {gvgLoading ? <p className="muted-line">Loading GvG events...</p> : null}
 
       {!gvgLoading && gvgEvents.length === 0 ? (
-        <section className="panel hero-panel">
+        <section className="panel compact-empty-state">
           <StatusBadge>Empty</StatusBadge>
-          <h3>No manageable GvG events</h3>
-          <p>Create a draft event, then activate it when members should vote.</p>
+          <h3>No GvG events.</h3>
         </section>
       ) : null}
 
       {gvgEvents.length > 0 ? (
-        <section className="panel gvg-results-panel" aria-label="GvG results">
+        <section className="panel gvg-results-panel compact-admin-card" aria-label="GvG results">
+          <div className="section-heading-row admin-section-heading">
+            <div>
+              <StatusBadge tone="success">Results</StatusBadge>
+              <h3>Results</h3>
+            </div>
+          </div>
           <label>
             Event
             <select
@@ -141,7 +144,7 @@ export function AdminGvgSection({
 
           {selectedGvgEvent ? (
             <>
-              <div className="approval-meta" aria-label="Selected GvG event details">
+              <div className="approval-meta compact-meta" aria-label="Selected GvG event details">
                 <div>
                   <span>Status</span>
                   <strong>{selectedGvgEvent.status}</strong>
@@ -198,7 +201,7 @@ export function AdminGvgSection({
 
               <div className="gvg-results-grid">
                 <section>
-                  <h4>Present list</h4>
+                  <h4>Present</h4>
                   {gvgSummary.present.length === 0 ? (
                     <p className="muted-line">No present votes yet.</p>
                   ) : (
@@ -212,7 +215,7 @@ export function AdminGvgSection({
                 </section>
 
                 <section>
-                  <h4>Absent list</h4>
+                  <h4>Absence log</h4>
                   {gvgSummary.absent.length === 0 ? (
                     <p className="muted-line">No absent votes yet.</p>
                   ) : (
