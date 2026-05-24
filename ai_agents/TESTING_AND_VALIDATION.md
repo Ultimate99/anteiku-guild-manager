@@ -1,5 +1,34 @@
 # Testing And Validation
 
+## Milestone 18B i18n Foundation Build/Preview Validation Passed
+
+Milestone 18B implements the frontend-only language foundation for English, French, and German.
+
+Build:
+- `npm.cmd run build` passed.
+
+Static/source validation:
+- No Supabase migration files changed.
+- No SQL, Supabase/RLS/RPC, auth behavior, CP, GvG, audit, role, permission, or member-status logic was changed.
+- No new protected-table paths were found in the touched files.
+- Translation dictionaries do not translate usernames, IGN, guild names, database permission keys, raw audit metadata values, or user-generated notes/reasons.
+
+Built-app preview validation:
+- Local preview served the built app at `http://127.0.0.1:4173/`.
+- Language switcher was visible on the unauthenticated auth screen.
+- EN/FR/DE switching updated shell/auth copy.
+- Reload persistence passed for the selected language.
+- Register mode showed translated registration copy, email warning, guild selector label, and request-approval button.
+- Recovery URL `#type=recovery` showed translated Set New Password screen and kept normal navigation hidden.
+- No missing translation-key strings were visible in checked auth/register/recovery paths.
+- Captured console errors were empty during the preview checks.
+- Language selector rendered as a compact 56px control in the checked topbar.
+
+Not fully browser-validated in 18B:
+- Authenticated Owner/member pages in all languages.
+- Pending/rejected/suspended/roster-restricted gates in live authenticated states.
+- Full AdminPanel content translation, which is intentionally out of scope for 18B.
+
 ## Milestone 17D Registration Copy Build/Source Validation
 
 Milestone 17D prepares registration copy for controlled guild onboarding without assuming email confirmation.
@@ -1310,3 +1339,20 @@ Planned validation coverage:
 - No CP access is added.
 
 Recommended validation commands are documented in `docs/TESTING.md`.
+## Milestone 18D AdminPanel Translation Validation
+
+Implementation/build validation completed locally:
+
+- `npm.cmd run build`: passed.
+- No `supabase/` files changed.
+- No `src/services/` files changed.
+- Static protected-table source check found no new direct frontend calls to `member_cp`, `cp_snapshots`, `audit_logs`, `member_status_history`, `gvg_votes`, or `guild_memberships`.
+- AdminPanel translations are display-only. Permission keys, roster status values, audit action values, membership status values, GvG status values, usernames, IGN, guild names, CP values, GvG event titles, absence reasons, and user-generated notes remain logic/raw values.
+
+Pending validation:
+
+- Authenticated staging browser validation for Owner/AdminPanel in EN/FR/DE.
+- Mobile FR/DE layout check.
+- No missing-key strings visible.
+- No console errors.
+- CP privacy, audit redaction, GvG, permissions, and member-status behavior unchanged.

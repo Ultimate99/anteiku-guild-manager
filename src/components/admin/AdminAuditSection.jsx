@@ -25,23 +25,24 @@ export function AdminAuditSection({
   formatAuditTarget,
   formatAuditGuild,
   formatAuditEntity,
+  t,
 }) {
   return (
-    <section className="audit-management admin-section" aria-label="Audit logs">
+    <section className="audit-management admin-section" aria-label={t('admin.audit.aria')}>
       <div className="panel audit-management-tools admin-section-tools">
         <div className="section-heading-row admin-section-heading">
           <div>
-            <StatusBadge tone="warning">Audit</StatusBadge>
-            <h3>Audit logs</h3>
+            <StatusBadge tone="warning">{t('admin.common.audit')}</StatusBadge>
+            <h3>{t('admin.audit.title')}</h3>
           </div>
           <button type="button" className="secondary-action compact-action" onClick={onRefresh} disabled={auditLoading}>
-            {auditLoading ? 'Loading...' : 'Refresh'}
+            {auditLoading ? t('common.loading') : t('common.refresh')}
           </button>
         </div>
 
         <div className="audit-filter-grid">
           <label>
-            Action
+            {t('admin.common.action')}
             <select
               value={auditFilters.action}
               onChange={(event) => onUpdateFilter('action', event.target.value)}
@@ -57,13 +58,15 @@ export function AdminAuditSection({
 
           {auditGuildOptions.length > 0 ? (
             <label>
-              Guild
+              {t('admin.common.guild')}
               <select
                 value={auditFilters.guildId}
                 onChange={(event) => onUpdateFilter('guildId', event.target.value)}
                 disabled={auditLoading || auditGuildOptions.length <= 1}
               >
-                <option value="all">{membership?.role === 'owner' ? 'All/global logs' : 'All allowed logs'}</option>
+                <option value="all">
+                  {membership?.role === 'owner' ? t('admin.common.allGlobalLogs') : t('admin.common.allAllowedLogs')}
+                </option>
                 {auditGuildOptions.map((guildOption) => (
                   <option key={guildOption.id} value={guildOption.id}>
                     {guildOption.name}
@@ -74,7 +77,7 @@ export function AdminAuditSection({
           ) : null}
 
           <label>
-            Date from
+            {t('admin.common.dateFrom')}
             <input
               type="date"
               value={auditFilters.dateFrom}
@@ -84,7 +87,7 @@ export function AdminAuditSection({
           </label>
 
           <label>
-            Date to
+            {t('admin.common.dateTo')}
             <input
               type="date"
               value={auditFilters.dateTo}
@@ -94,7 +97,7 @@ export function AdminAuditSection({
           </label>
 
           <label>
-            Limit
+            {t('admin.common.limit')}
             <select
               value={auditFilters.limit}
               onChange={(event) => onUpdateFilter('limit', event.target.value)}
@@ -108,12 +111,12 @@ export function AdminAuditSection({
         </div>
       </div>
 
-      {auditLoading && auditLogs.length === 0 ? <p className="muted-line">Loading audit logs...</p> : null}
+      {auditLoading && auditLogs.length === 0 ? <p className="muted-line">{t('admin.audit.loading')}</p> : null}
 
       {auditNotAuthorized ? (
         <section className="panel compact-empty-state audit-access-panel">
-          <StatusBadge tone="danger">Restricted</StatusBadge>
-          <h3>Audit access denied.</h3>
+          <StatusBadge tone="danger">{t('admin.common.restricted')}</StatusBadge>
+          <h3>{t('admin.audit.accessDenied')}</h3>
         </section>
       ) : null}
 
@@ -121,8 +124,8 @@ export function AdminAuditSection({
 
       {!auditLoading && !auditError && !auditNotAuthorized && auditLogs.length === 0 ? (
         <section className="panel compact-empty-state">
-          <StatusBadge>Empty</StatusBadge>
-          <h3>No audit logs.</h3>
+          <StatusBadge>{t('admin.common.empty')}</StatusBadge>
+          <h3>{t('admin.audit.empty')}</h3>
         </section>
       ) : null}
 
@@ -139,40 +142,40 @@ export function AdminAuditSection({
                   <h4>{humanizeAuditLabel(formatAuditAction(row.action))}</h4>
                   <p>{row.action}</p>
                 </div>
-                <StatusBadge tone={row.metadata_redacted ? 'warning' : 'success'}>Read-only</StatusBadge>
+                <StatusBadge tone={row.metadata_redacted ? 'warning' : 'success'}>{t('admin.common.readOnly')}</StatusBadge>
               </div>
 
-              <div className="approval-meta compact-meta audit-meta" aria-label="Audit log details">
+              <div className="approval-meta compact-meta audit-meta" aria-label={t('admin.audit.details')}>
                 <div>
-                  <span>Timestamp</span>
+                  <span>{t('admin.common.timestamp')}</span>
                   <strong>{formatDate(row.created_at)}</strong>
                 </div>
                 <div>
-                  <span>Actor</span>
+                  <span>{t('admin.common.actor')}</span>
                   <strong>{formatAuditActor(row)}</strong>
                 </div>
                 {targetDisplay ? (
                   <div>
-                    <span>Target</span>
+                    <span>{t('admin.common.target')}</span>
                     <strong>{targetDisplay}</strong>
                   </div>
                 ) : null}
                 <div>
-                  <span>Guild</span>
+                  <span>{t('admin.common.guild')}</span>
                   <strong>{formatAuditGuild(row)}</strong>
                 </div>
                 {entityDisplay ? (
                   <div>
-                    <span>Entity</span>
+                    <span>{t('admin.common.entity')}</span>
                     <strong>{entityDisplay}</strong>
                   </div>
                 ) : null}
               </div>
 
-              {row.metadata_redacted ? <p className="member-warning">Sensitive CP metadata hidden.</p> : null}
+              {row.metadata_redacted ? <p className="member-warning">{t('admin.audit.sensitiveCpHidden')}</p> : null}
 
               {metadataItems.length > 0 ? (
-                <div className="audit-metadata-list" aria-label="Audit metadata summary">
+                <div className="audit-metadata-list" aria-label={t('admin.audit.metadataSummary')}>
                   {metadataItems.map((item) => (
                     <div key={item.key}>
                       <span>{item.label}</span>
@@ -181,7 +184,7 @@ export function AdminAuditSection({
                   ))}
                 </div>
               ) : row.metadata_redacted ? null : (
-                <p className="muted-line">No displayable metadata.</p>
+                <p className="muted-line">{t('admin.audit.noMetadata')}</p>
               )}
             </article>
           );
@@ -196,7 +199,7 @@ export function AdminAuditSection({
             onClick={onLoadOlder}
             disabled={auditLoading || !oldestAuditCreatedAt}
           >
-            {auditLoading ? 'Loading older...' : 'Load older'}
+            {auditLoading ? t('admin.audit.loadingOlder') : t('admin.audit.loadOlder')}
           </button>
         </div>
       ) : null}

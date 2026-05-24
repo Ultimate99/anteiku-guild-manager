@@ -20,38 +20,39 @@ export function AdminCpSection({
   onUpdateCp,
   formatDate,
   formatCpValue,
+  t,
 }) {
   return (
-    <section className="cp-management admin-section" aria-label="CP management">
+    <section className="cp-management admin-section" aria-label={t('admin.cp.aria')}>
       <div className="panel cp-management-tools admin-section-tools">
         <div className="section-heading-row admin-section-heading">
           <div>
             <StatusBadge tone="success">CP</StatusBadge>
-            <h3>CP roster</h3>
+            <h3>{t('admin.cp.title')}</h3>
           </div>
           <button type="button" className="secondary-action compact-action" onClick={onRefresh} disabled={cpLoading}>
-            {cpLoading ? 'Loading...' : 'Refresh'}
+            {cpLoading ? t('common.loading') : t('common.refresh')}
           </button>
         </div>
 
         <div className="member-filter-grid">
           <label>
-            Search
+            {t('admin.common.search')}
             <input
               type="search"
               value={cpSearch}
-              placeholder="Username, IGN, guild"
+              placeholder={t('admin.common.usernameIgnGuild')}
               onChange={(event) => onSearchChange(event.target.value)}
             />
           </label>
           <label>
-            Guild
+            {t('admin.common.guild')}
             <select
               value={selectedCpGuildId}
               onChange={(event) => onSelectedGuildChange(event.target.value)}
               disabled={cpLoading || cpGuildOptions.length <= 1}
             >
-              {cpGuildOptions.length === 0 ? <option value="">No CP guild scope</option> : null}
+              {cpGuildOptions.length === 0 ? <option value="">{t('admin.cp.noGuildScope')}</option> : null}
               {cpGuildOptions.map((guild) => (
                 <option key={guild.id} value={guild.id}>
                   {guild.name}
@@ -62,19 +63,19 @@ export function AdminCpSection({
         </div>
       </div>
 
-      {cpLoading ? <p className="muted-line">Loading CP roster...</p> : null}
+      {cpLoading ? <p className="muted-line">{t('admin.cp.loading')}</p> : null}
 
       {!cpLoading && selectedCpGuildId && filteredCpRoster.length === 0 ? (
         <section className="panel compact-empty-state">
-          <StatusBadge>Empty</StatusBadge>
-          <h3>No CP rows.</h3>
+          <StatusBadge>{t('admin.common.empty')}</StatusBadge>
+          <h3>{t('admin.cp.empty')}</h3>
         </section>
       ) : null}
 
       {!cpLoading && !selectedCpGuildId ? (
         <section className="panel compact-empty-state">
-          <StatusBadge tone="warning">No guild scope</StatusBadge>
-          <h3>Choose a guild.</h3>
+          <StatusBadge tone="warning">{t('admin.cp.noGuildScope')}</StatusBadge>
+          <h3>{t('admin.common.chooseGuild')}</h3>
         </section>
       ) : null}
 
@@ -90,25 +91,25 @@ export function AdminCpSection({
             <article className="panel cp-card compact-admin-card" key={item.profile_id}>
               <div className="approval-card-header">
                 <div>
-                  <h4>{item.ign ?? 'Unknown IGN'}</h4>
-                  <p>@{item.username ?? 'unknown'}</p>
+                  <h4>{item.ign ?? t('admin.common.unknownIgn')}</h4>
+                  <p>@{item.username ?? t('common.unknown')}</p>
                 </div>
                 <StatusBadge tone={item.cp_value === null || item.cp_value === undefined ? 'warning' : 'success'}>
                   {formatCpValue(item.cp_value)}
                 </StatusBadge>
               </div>
 
-              <div className="approval-meta compact-meta" aria-label="CP member details">
+              <div className="approval-meta compact-meta" aria-label={t('admin.cp.memberDetails')}>
                 <div>
-                  <span>Guild</span>
-                  <strong>{selectedCpGuild?.name ?? 'Selected guild'}</strong>
+                  <span>{t('admin.common.guild')}</span>
+                  <strong>{selectedCpGuild?.name ?? t('admin.common.selectedGuild')}</strong>
                 </div>
                 <div>
-                  <span>Current CP</span>
+                  <span>{t('admin.cp.currentCp')}</span>
                   <strong>{formatCpValue(item.cp_value)}</strong>
                 </div>
                 <div>
-                  <span>Updated</span>
+                  <span>{t('admin.common.updated')}</span>
                   <strong>{formatDate(item.updated_at)}</strong>
                 </div>
               </div>
@@ -116,13 +117,13 @@ export function AdminCpSection({
               {canUpdateCpValues ? (
                 <div className="cp-edit-row">
                   <label>
-                    CP value
+                    {t('admin.cp.cpValue')}
                     <input
                       type="text"
                       inputMode="numeric"
                       pattern="[0-9]*"
                       value={draftValue}
-                      placeholder="Not entered"
+                      placeholder={t('admin.common.notEntered')}
                       onChange={(event) => onUpdateCpDraft(item.profile_id, event.target.value)}
                       disabled={actionDisabled}
                     />
@@ -134,7 +135,7 @@ export function AdminCpSection({
                       onClick={() => onUpdateCp(item)}
                       disabled={actionDisabled || !cpChanged}
                     >
-                      {isUpdatingCp ? 'Saving CP...' : 'Save CP'}
+                      {isUpdatingCp ? t('admin.cp.savingCp') : t('admin.cp.saveCp')}
                     </button>
                     <button
                       type="button"
@@ -142,37 +143,37 @@ export function AdminCpSection({
                       onClick={() => onResetCpDraft(item)}
                       disabled={actionDisabled || !cpChanged}
                     >
-                      Cancel
+                      {t('common.cancel')}
                     </button>
                   </div>
                 </div>
               ) : (
-                <p className="muted-line compact-state-line">Read-only CP.</p>
+                <p className="muted-line compact-state-line">{t('admin.cp.readOnly')}</p>
               )}
             </article>
           );
         })}
       </div>
 
-      <section className="panel cp-leaderboard compact-admin-card" aria-label="CP leaderboard">
+      <section className="panel cp-leaderboard compact-admin-card" aria-label={t('admin.cp.leaderboardTitle')}>
         <div className="section-heading-row admin-section-heading">
           <div>
-            <StatusBadge tone="success">Leaderboard</StatusBadge>
-            <h3>CP leaderboard</h3>
+            <StatusBadge tone="success">{t('admin.cp.leaderboard')}</StatusBadge>
+            <h3>{t('admin.cp.leaderboardTitle')}</h3>
           </div>
-          <p className="muted-copy">{selectedCpGuild?.name ?? 'Selected guild'}</p>
+          <p className="muted-copy">{selectedCpGuild?.name ?? t('admin.common.selectedGuild')}</p>
         </div>
 
         {cpLeaderboard.length === 0 ? (
-          <p className="muted-line">No ranked CP entries yet.</p>
+          <p className="muted-line">{t('admin.cp.noRanked')}</p>
         ) : (
           <div className="cp-leaderboard-list">
             {cpLeaderboard.map((item) => (
               <article className="cp-leaderboard-row" key={item.profile_id}>
                 <strong>#{item.leaderboard_rank}</strong>
                 <div>
-                  <h4>{item.ign ?? 'Unknown IGN'}</h4>
-                  <p>@{item.username ?? 'unknown'} - {selectedCpGuild?.name ?? 'Selected guild'}</p>
+                  <h4>{item.ign ?? t('admin.common.unknownIgn')}</h4>
+                  <p>@{item.username ?? t('common.unknown')} - {selectedCpGuild?.name ?? t('admin.common.selectedGuild')}</p>
                 </div>
                 <span>{formatCpValue(item.cp_value)}</span>
               </article>

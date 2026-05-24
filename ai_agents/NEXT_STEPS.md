@@ -2,24 +2,23 @@
 
 ## Current Recommendation
 
-Milestone 17D Registration Copy Update is implemented locally. The app copy is ready for controlled guild onboarding where admin approval, not email confirmation, is the real access gate.
+Milestone 18B i18n foundation is implemented locally. The app now has a frontend-only EN/FR/DE language system, a compact topbar language selector, and translations for core shell/auth/recovery/status/member-facing surfaces.
 
-Recorded Milestone 17D status:
-- Frontend copy/auth UX update only.
-- Registration says `Register for guild approval.`
-- Registration email field warns users to use a real email for password reset.
-- Registration submit button says `Request approval`.
-- No-session signup fallback now works for both email-confirmation-on and email-confirmation-off modes.
-- Pending screen says `Awaiting approval.`
+Recorded Milestone 18B status:
+- Frontend-only language-pack foundation.
+- Added `LanguageProvider`, `useLanguage()`, `t(key, params?)`, English fallback, and `agm_language` localStorage persistence.
+- Added English, French, and German dictionaries.
+- Added compact EN/FR/DE selector in the topbar, visible before and after sign-in.
+- Translated common/auth/register/password recovery/navigation/status gate surfaces.
+- Translated member-facing status labels and core GvG voting copy included in 18B scope.
+- Wired basic AdminPanel tab labels only; full AdminPanel translation is still out of scope.
 - `npm.cmd run build` passed.
-- Production email confirmation has not been changed.
-- Admin approval remains mandatory, pending users remain blocked, and password recovery remains enabled.
+- Built-app preview validation passed for language switching and reload persistence.
+- No SQL, Supabase/RLS/RPC, auth behavior, CP/GvG/audit/role/permission/member-status logic changed.
 
 Recommended next milestone:
-- Milestone 17E: staging-only Auth setting change and validation.
-- Manually disable email confirmation in staging Supabase project `ckyihuxkioeibzpgwenc`.
-- Validate controlled staging signup, pending lockout, Owner approval, member access, and password recovery.
-- Production Auth settings must remain unchanged until a separate production gate is approved.
+- Milestone 18C: authenticated/member-facing language validation and polish for Dashboard/Profile/GvG across EN/FR/DE.
+- Milestone 18D: AdminPanel full translation pass for Approvals, Members, CP, GvG management, Audit Logs, Permissions, and Tools.
 
 Later milestone options:
 - Member-facing UI cleanup planning.
@@ -435,3 +434,18 @@ Still required:
 - Admin/staff member guild changes.
 - Admin/staff role changes.
 - GvG persistence UI.
+## Current Next Step - Milestone 18E / 18D Validation
+
+Milestone 18D AdminPanel full translation is implemented locally and build/source validated.
+
+Recommended next step:
+
+1. Run authenticated staging browser validation for the translated AdminPanel:
+   - Owner opens AdminPanel.
+   - Switch EN/FR/DE.
+   - Confirm Approvals, Members, CP, GvG, Audit Logs, Permissions, and Tools translate.
+   - Confirm no raw i18n keys or console errors.
+   - Confirm mobile FR/DE layout remains usable.
+   - Confirm CP privacy, audit redaction, GvG behavior, permission behavior, and member-status behavior remain unchanged.
+2. If staging validation passes, plan production rollout for the i18n foundation plus full AdminPanel translation.
+3. Do not deploy or commit until explicitly approved.

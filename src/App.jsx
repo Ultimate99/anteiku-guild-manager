@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { AuthProvider } from './context/AuthContext.jsx';
+import { LanguageProvider, useLanguage } from './context/LanguageContext.jsx';
 import { useAuth } from './hooks/useAuth.js';
 import { AppShell } from './layouts/AppShell.jsx';
 import { navigationItems } from './data/navigation.js';
@@ -24,49 +25,26 @@ const pageComponents = {
   admin: AdminPanel,
 };
 
-const statusItems = {
-  loading: {
-    id: 'loading',
-    label: 'Loading',
-    eyebrow: 'Session',
-  },
-  auth: {
-    id: 'auth',
-    label: 'Auth',
-    eyebrow: 'Entry',
-  },
-  pending: {
-    id: 'pending',
-    label: 'Pending',
-    eyebrow: 'Gate',
-  },
-  rejected: {
-    id: 'rejected',
-    label: 'Rejected',
-    eyebrow: 'Status',
-  },
-  suspended: {
-    id: 'suspended',
-    label: 'Suspended',
-    eyebrow: 'Status',
-  },
-  recovery: {
-    id: 'recovery',
-    label: 'Password',
-    eyebrow: 'Recovery',
-  },
-};
-
 function isPrivilegedRole(role) {
   return ['owner', 'leader', 'vice', 'admin'].includes(role);
 }
 
+function translateShellItem(item, t) {
+  return {
+    ...item,
+    label: item.labelKey ? t(item.labelKey) : item.label,
+    eyebrow: item.eyebrowKey ? t(item.eyebrowKey) : item.eyebrow,
+  };
+}
+
 function LoadingPanel() {
+  const { t } = useLanguage();
+
   return (
     <div className="stack">
       <section className="panel hero-panel">
-        <h3>Restoring session</h3>
-        <p>One moment.</p>
+        <h3>{t('app.loadingTitle')}</h3>
+        <p>{t('app.loadingBody')}</p>
       </section>
     </div>
   );
@@ -74,8 +52,44 @@ function LoadingPanel() {
 
 function AppContent() {
   const { accessState, loading, membership, recoveryRequired } = useAuth();
+  const { t } = useLanguage();
   const [activePage, setActivePage] = useState('dashboard');
   const rosterStatus = membership?.roster_status ?? 'active';
+  const statusItems = useMemo(
+    () => ({
+      loading: {
+        id: 'loading',
+        label: t('app.pages.loading'),
+        eyebrow: t('app.eyebrow.session'),
+      },
+      auth: {
+        id: 'auth',
+        label: t('app.pages.auth'),
+        eyebrow: t('app.eyebrow.entry'),
+      },
+      pending: {
+        id: 'pending',
+        label: t('app.pages.pending'),
+        eyebrow: t('app.eyebrow.gate'),
+      },
+      rejected: {
+        id: 'rejected',
+        label: t('app.pages.rejected'),
+        eyebrow: t('app.eyebrow.status'),
+      },
+      suspended: {
+        id: 'suspended',
+        label: t('app.pages.suspended'),
+        eyebrow: t('app.eyebrow.status'),
+      },
+      recovery: {
+        id: 'recovery',
+        label: t('app.pages.password'),
+        eyebrow: t('app.eyebrow.recovery'),
+      },
+    }),
+    [t],
+  );
   const isHardMembershipState = ['suspended', 'left'].includes(membership?.membership_status);
   const blockedRosterStatus = isHardBlockedRosterStatus(rosterStatus)
     ? rosterStatus
@@ -87,24 +101,26 @@ function AppContent() {
   const canViewAdmin = accessState === 'approved' && !isRosterBlocked && isPrivilegedRole(membership?.role);
   const rosterBlockedItem = {
     id: `roster-${blockedRosterStatus}`,
-    label: blockedRosterStatus === 'kicked' ? 'Removed' : blockedRosterStatus,
-    eyebrow: 'Roster',
+    label: blockedRosterStatus === 'kicked' ? t('app.pages.removed') : t(`roster.status.${blockedRosterStatus}.label`),
+    eyebrow: t('app.eyebrow.roster'),
   };
 
   const approvedNavigationItems = useMemo(
     () =>
-      navigationItems.filter((item) => {
-        if (item.id === 'auth' || item.id === 'pending') {
-          return false;
-        }
+      navigationItems
+        .filter((item) => {
+          if (item.id === 'auth' || item.id === 'pending') {
+            return false;
+          }
 
-        if (item.id === 'admin') {
-          return canViewAdmin;
-        }
+          if (item.id === 'admin') {
+            return canViewAdmin;
+          }
 
-        return true;
-      }),
-    [canViewAdmin],
+          return true;
+        })
+        .map((item) => translateShellItem(item, t)),
+    [canViewAdmin, t],
   );
 
   useEffect(() => {
@@ -190,8 +206,10 @@ function AppContent() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <LanguageProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </LanguageProvider>
   );
 }

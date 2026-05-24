@@ -49,37 +49,40 @@ export function AdminMembersSection({
   formatDate,
   formatRole,
   formatRosterStatus,
+  formatMembershipStatus,
+  formatApprovalStatus,
   getAllowedRosterStatusOptions,
   rosterStatusTone,
   statusTone,
+  t,
 }) {
   return (
-    <section className="member-management admin-section" aria-label="Member management">
+    <section className="member-management admin-section" aria-label={t('admin.members.aria')}>
       <div className="panel member-management-tools admin-section-tools">
         <div className="section-heading-row admin-section-heading">
           <div>
-            <StatusBadge tone="success">Members</StatusBadge>
-            <h3>Roster</h3>
+            <StatusBadge tone="success">{t('admin.common.members')}</StatusBadge>
+            <h3>{t('admin.members.title')}</h3>
           </div>
           <button type="button" className="secondary-action compact-action" onClick={onRefresh} disabled={memberLoading}>
-            {memberLoading ? 'Loading...' : 'Refresh'}
+            {memberLoading ? t('common.loading') : t('common.refresh')}
           </button>
         </div>
 
         <div className="member-filter-grid">
           <label>
-            Search
+            {t('admin.common.search')}
             <input
               type="search"
               value={memberSearch}
-              placeholder="Username, IGN, guild"
+              placeholder={t('admin.common.usernameIgnGuild')}
               onChange={(event) => onSearchChange(event.target.value)}
             />
           </label>
           <label>
-            Guild
+            {t('admin.common.guild')}
             <select value={guildFilter} onChange={(event) => onGuildFilterChange(event.target.value)}>
-              <option value="all">All visible guilds</option>
+              <option value="all">{t('admin.common.allVisibleGuilds')}</option>
               {guildOptions.map((guild) => (
                 <option key={guild.id} value={guild.id}>
                   {guild.name}
@@ -88,9 +91,9 @@ export function AdminMembersSection({
             </select>
           </label>
           <label>
-            Roster status
+            {t('admin.common.rosterStatus')}
             <select value={memberStatusFilter} onChange={(event) => onMemberStatusFilterChange(event.target.value)}>
-              <option value="all">All roster statuses</option>
+              <option value="all">{t('admin.common.allRosterStatuses')}</option>
               {visibleRosterStatusOptions.map((statusOption) => (
                 <option key={statusOption.value} value={statusOption.value}>
                   {statusOption.label}
@@ -101,12 +104,12 @@ export function AdminMembersSection({
         </div>
       </div>
 
-      {memberLoading ? <p className="muted-line">Loading roster...</p> : null}
+      {memberLoading ? <p className="muted-line">{t('admin.members.loading')}</p> : null}
 
       {!memberLoading && filteredMembers.length === 0 ? (
         <section className="panel compact-empty-state">
-          <StatusBadge>Roster empty</StatusBadge>
-          <h3>No members match.</h3>
+          <StatusBadge>{t('admin.members.emptyBadge')}</StatusBadge>
+          <h3>{t('admin.members.empty')}</h3>
         </section>
       ) : null}
 
@@ -157,8 +160,8 @@ export function AdminMembersSection({
             <article className="panel member-card compact-admin-card compact-member-card" key={item.id}>
               <div className="member-row-main">
                 <div className="member-identity">
-                  <h4>{item.profile?.ign ?? 'Unknown IGN'}</h4>
-                  <p>@{item.profile?.username ?? 'unknown'}</p>
+                  <h4>{item.profile?.ign ?? t('admin.common.unknownIgn')}</h4>
+                  <p>@{item.profile?.username ?? t('common.unknown')}</p>
                 </div>
                 <div className="status-badge-row member-row-badges">
                   <StatusBadge tone={roleTone(item.role)}>{formatRole(item.role)}</StatusBadge>
@@ -168,16 +171,16 @@ export function AdminMembersSection({
                 </div>
               </div>
 
-              <div className="member-row-meta" aria-label="Member details">
-                <span>{item.guild?.name ?? 'Unknown guild'}</span>
-                <span>{item.membership_status}</span>
-                <span>{item.profile?.approval_status ?? 'unknown'}</span>
-                <span>Updated {formatDate(item.profile?.updated_at ?? item.updated_at)}</span>
+              <div className="member-row-meta" aria-label={t('admin.members.details')}>
+                <span>{item.guild?.name ?? t('admin.common.unknownGuild')}</span>
+                <span>{formatMembershipStatus(item.membership_status)}</span>
+                <span>{formatApprovalStatus(item.profile?.approval_status)}</span>
+                <span>{t('admin.common.updated')} {formatDate(item.profile?.updated_at ?? item.updated_at)}</span>
               </div>
 
               {hasManagementControls ? (
                 <details className="member-manage-details">
-                  <summary>Manage</summary>
+                  <summary>{t('admin.members.manage')}</summary>
                   <div className="member-manage-body">
                     {canEditIgn || canResetSlug ? (
                       <div className="member-edit-grid">
@@ -198,7 +201,7 @@ export function AdminMembersSection({
                               onClick={() => onSaveIgn(item)}
                               disabled={actionDisabled}
                             >
-                              {isEditingIgn ? 'Saving IGN...' : 'Save IGN'}
+                              {isEditingIgn ? t('admin.members.savingIgn') : t('admin.members.saveIgn')}
                             </button>
                           </div>
                         ) : null}
@@ -206,7 +209,7 @@ export function AdminMembersSection({
                         {canResetSlug ? (
                           <div className="member-edit-block">
                             <label>
-                              Username
+                              {t('admin.members.username')}
                               <input
                                 type="text"
                                 value={draft.slug}
@@ -220,7 +223,7 @@ export function AdminMembersSection({
                               onClick={() => onResetSlug(item)}
                               disabled={actionDisabled}
                             >
-                              {isResettingSlug ? 'Resetting...' : 'Reset username'}
+                              {isResettingSlug ? t('admin.members.resettingUsername') : t('admin.members.resetUsername')}
                             </button>
                           </div>
                         ) : null}
@@ -231,13 +234,13 @@ export function AdminMembersSection({
                       <div className="member-admin-actions compact-admin-actions">
                         <div className="member-edit-block roster-status-control compact-control-block">
                           <div>
-                            <h4>Roster status</h4>
+                            <h4>{t('admin.common.rosterStatus')}</h4>
                           </div>
 
                           {rosterStatusCanBeChanged ? (
                             <>
                               <label>
-                                New status
+                                {t('admin.members.newStatus')}
                                 <select
                                   value={rosterStatusSelectValue}
                                   onChange={(event) => onUpdateDraft(item.id, 'rosterStatus', event.target.value)}
@@ -252,24 +255,30 @@ export function AdminMembersSection({
                               </label>
 
                               <label>
-                                Reason
+                                {t('admin.members.reason')}
                                 <textarea
                                   value={rosterReason}
                                   maxLength={1000}
-                                  placeholder={rosterStatusRequiresReason ? 'Required reason' : 'Optional private note'}
+                                  placeholder={
+                                    rosterStatusRequiresReason
+                                      ? t('admin.members.requiredReason')
+                                      : t('admin.members.optionalPrivateNote')
+                                  }
                                   onChange={(event) => onUpdateDraft(item.id, 'statusReason', event.target.value)}
                                   disabled={actionDisabled}
                                 />
                               </label>
 
                               {rosterStatusRequiresReason && !rosterReason.trim() ? (
-                                <p className="member-warning">A private reason is required for this hard-block status.</p>
+                                <p className="member-warning">{t('admin.members.hardBlockReason')}</p>
                               ) : null}
 
                               {isConfirmingRosterStatus ? (
                                 <p className="member-warning">
-                                  Confirm {formatRosterStatus(currentRosterStatus)} to{' '}
-                                  {formatRosterStatus(rosterStatusSelectValue)}.
+                                  {t('admin.members.confirmStatusChange', {
+                                    from: formatRosterStatus(currentRosterStatus),
+                                    to: formatRosterStatus(rosterStatusSelectValue),
+                                  })}
                                 </p>
                               ) : null}
 
@@ -282,7 +291,7 @@ export function AdminMembersSection({
                                       onClick={() => onUpdateRosterStatus(item)}
                                       disabled={actionDisabled}
                                     >
-                                      {isUpdatingRosterStatus ? 'Saving status...' : 'Confirm status'}
+                                      {isUpdatingRosterStatus ? t('admin.members.savingStatus') : t('admin.members.confirmStatus')}
                                     </button>
                                     <button
                                       type="button"
@@ -290,7 +299,7 @@ export function AdminMembersSection({
                                       onClick={() => onSetConfirmAction(null)}
                                       disabled={actionDisabled}
                                     >
-                                      Cancel
+                                      {t('common.cancel')}
                                     </button>
                                   </>
                                 ) : (
@@ -304,13 +313,15 @@ export function AdminMembersSection({
                                     }
                                     disabled={rosterStatusSubmitDisabled}
                                   >
-                                    {rosterStatusRequiresReason ? 'Review status change' : 'Save status'}
+                                    {rosterStatusRequiresReason
+                                      ? t('admin.members.reviewStatusChange')
+                                      : t('admin.members.saveStatus')}
                                   </button>
                                 )}
                               </div>
                             </>
                           ) : (
-                            <p className="muted-line compact-state-line">Status locked for this member.</p>
+                            <p className="muted-line compact-state-line">{t('admin.members.statusLocked')}</p>
                           )}
                         </div>
                       </div>
@@ -321,16 +332,16 @@ export function AdminMembersSection({
                         {canManageRoles ? (
                           <div className="member-edit-block compact-control-block">
                             <div>
-                              <h4>Role management</h4>
-                              <p className="muted-copy">Owner changes are locked.</p>
+                              <h4>{t('admin.members.roleManagement')}</h4>
+                              <p className="muted-copy">{t('admin.members.ownerChangesLocked')}</p>
                             </div>
 
                             {item.role === 'owner' ? (
-                              <p className="muted-line compact-state-line">Owner role changes are locked.</p>
+                              <p className="muted-line compact-state-line">{t('admin.members.ownerRoleLocked')}</p>
                             ) : (
                               <>
                                 <label>
-                                  New role
+                                  {t('admin.members.newRole')}
                                   <select
                                     value={roleSelectValue}
                                     onChange={(event) => onUpdateDraft(item.id, 'role', event.target.value)}
@@ -346,7 +357,10 @@ export function AdminMembersSection({
 
                                 {isConfirmingRole ? (
                                   <p className="member-warning">
-                                    Confirm role change from {formatRole(item.role)} to {formatRole(roleSelectValue)}.
+                                    {t('admin.members.confirmRoleChange', {
+                                      from: formatRole(item.role),
+                                      to: formatRole(roleSelectValue),
+                                    })}
                                   </p>
                                 ) : null}
 
@@ -359,7 +373,7 @@ export function AdminMembersSection({
                                         onClick={() => onAssignRole(item)}
                                         disabled={actionDisabled}
                                       >
-                                        {isAssigningRole ? 'Saving role...' : 'Confirm role'}
+                                        {isAssigningRole ? t('admin.members.savingRole') : t('admin.members.confirmRole')}
                                       </button>
                                       <button
                                         type="button"
@@ -367,7 +381,7 @@ export function AdminMembersSection({
                                         onClick={() => onSetConfirmAction(null)}
                                         disabled={actionDisabled}
                                       >
-                                        Cancel
+                                        {t('common.cancel')}
                                       </button>
                                     </>
                                   ) : (
@@ -377,7 +391,7 @@ export function AdminMembersSection({
                                       onClick={() => onSetConfirmAction({ id: item.id, type: 'assign-role' })}
                                       disabled={actionDisabled || !roleCanBeChanged || roleSelectValue === item.role}
                                     >
-                                      Review role change
+                                      {t('admin.members.reviewRoleChange')}
                                     </button>
                                   )}
                                 </div>
@@ -389,18 +403,18 @@ export function AdminMembersSection({
                         {canTransferGuilds ? (
                           <div className="member-edit-block compact-control-block">
                             <div>
-                              <h4>Guild transfer</h4>
-                              <p className="muted-copy">Resets role to Member.</p>
+                              <h4>{t('admin.members.guildTransfer')}</h4>
+                              <p className="muted-copy">{t('admin.members.transferResetsRole')}</p>
                             </div>
 
                             <label>
-                              Target guild
+                              {t('admin.members.targetGuild')}
                               <select
                                 value={draft.targetGuildId}
                                 onChange={(event) => onUpdateDraft(item.id, 'targetGuildId', event.target.value)}
                                 disabled={actionDisabled || transferGuildOptions.length === 0}
                               >
-                                <option value="">Select active guild</option>
+                                <option value="">{t('admin.members.selectActiveGuild')}</option>
                                 {transferGuildOptions.map((guild) => (
                                   <option key={guild.id} value={guild.id}>
                                     {guild.name}
@@ -409,12 +423,14 @@ export function AdminMembersSection({
                               </select>
                             </label>
 
-                            <p className="member-warning">Moving guild resets this member's role to Member.</p>
+                            <p className="member-warning">{t('admin.members.transferWarning')}</p>
 
                             {isConfirmingTransfer ? (
                               <p className="muted-line">
-                                Confirm transfer from {item.guild?.name ?? 'current guild'} to{' '}
-                                {selectedTargetGuild?.name ?? 'selected guild'}.
+                                {t('admin.members.confirmTransfer', {
+                                  from: item.guild?.name ?? t('admin.common.currentGuild'),
+                                  to: selectedTargetGuild?.name ?? t('admin.common.selectedGuildLower'),
+                                })}
                               </p>
                             ) : null}
 
@@ -427,7 +443,9 @@ export function AdminMembersSection({
                                     onClick={() => onTransferGuild(item)}
                                     disabled={actionDisabled}
                                   >
-                                    {isTransferringGuild ? 'Transferring...' : 'Confirm transfer'}
+                                    {isTransferringGuild
+                                      ? t('admin.members.transferring')
+                                      : t('admin.members.confirmTransferAction')}
                                   </button>
                                   <button
                                     type="button"
@@ -435,7 +453,7 @@ export function AdminMembersSection({
                                     onClick={() => onSetConfirmAction(null)}
                                     disabled={actionDisabled}
                                   >
-                                    Cancel
+                                    {t('common.cancel')}
                                   </button>
                                 </>
                               ) : (
@@ -445,7 +463,7 @@ export function AdminMembersSection({
                                   onClick={() => onSetConfirmAction({ id: item.id, type: 'transfer-guild' })}
                                   disabled={actionDisabled || !draft.targetGuildId || draft.targetGuildId === item.guild_id}
                                 >
-                                  Review transfer
+                                  {t('admin.members.reviewTransfer')}
                                 </button>
                               )}
                             </div>

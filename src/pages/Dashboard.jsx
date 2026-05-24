@@ -1,54 +1,54 @@
 import React from 'react';
 import { StatusBadge } from '../components/StatusBadge.jsx';
+import { useLanguage } from '../context/LanguageContext.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import {
-  formatRosterStatus,
-  getRosterStatusSummary,
   isGvgLimitedRosterStatus,
   rosterStatusTone,
 } from '../services/adminMemberService.js';
 
 export function Dashboard() {
+  const { t } = useLanguage();
   const { guild, membership, profile } = useAuth();
-  const guildName = guild?.name ?? 'Assigned guild';
-  const roleLabel = membership?.role ?? 'member';
+  const guildName = guild?.name ?? t('guild.assigned');
+  const role = membership?.role ?? 'member';
   const rosterStatus = membership?.roster_status ?? 'active';
-  const gvgStatus = isGvgLimitedRosterStatus(rosterStatus) ? 'Not expected' : 'Awaiting event';
+  const gvgStatus = isGvgLimitedRosterStatus(rosterStatus) ? t('dashboard.notExpected') : t('dashboard.awaitingEvent');
 
   return (
     <div className="stack">
       <section className="panel hero-panel">
         <div className="status-badge-row">
-          <StatusBadge tone="success">{profile?.approval_status ?? 'approved'}</StatusBadge>
-          <StatusBadge tone={rosterStatusTone(rosterStatus)}>{formatRosterStatus(rosterStatus)}</StatusBadge>
+          <StatusBadge tone="success">{t(`approvalStatus.${profile?.approval_status ?? 'approved'}`)}</StatusBadge>
+          <StatusBadge tone={rosterStatusTone(rosterStatus)}>{t(`roster.status.${rosterStatus}.label`)}</StatusBadge>
         </div>
-        <h3>{guildName} command floor</h3>
-        <p>Guild status at a glance.</p>
-        {rosterStatus !== 'active' ? <p className="muted-copy">{getRosterStatusSummary(rosterStatus)}</p> : null}
+        <h3>{t('dashboard.title', { guildName })}</h3>
+        <p>{t('dashboard.body')}</p>
+        {rosterStatus !== 'active' ? <p className="muted-copy">{t(`roster.status.${rosterStatus}.summary`)}</p> : null}
       </section>
 
-      <section className="metric-grid" aria-label="Guild overview">
+      <section className="metric-grid" aria-label={t('dashboard.overview')}>
         <article className="metric-card">
-          <span>GvG status</span>
+          <span>{t('dashboard.gvgStatus')}</span>
           <strong>{gvgStatus}</strong>
         </article>
         <article className="metric-card">
-          <span>Role</span>
-          <strong>{roleLabel}</strong>
+          <span>{t('dashboard.role')}</span>
+          <strong>{t(`roles.${role}`)}</strong>
         </article>
         <article className="metric-card">
-          <span>Guild</span>
+          <span>{t('dashboard.guild')}</span>
           <strong>{guildName}</strong>
         </article>
       </section>
 
-      <section className="guild-list" aria-label="Core guilds">
+      <section className="guild-list" aria-label={t('dashboard.coreGuilds')}>
         <article className="guild-row">
           <div>
-            <h4>{profile?.ign ?? 'Member'}</h4>
-            <p>@{profile?.username ?? 'unknown'}</p>
+            <h4>{profile?.ign ?? t('dashboard.memberFallback')}</h4>
+            <p>@{profile?.username ?? t('common.unknown')}</p>
           </div>
-          <StatusBadge tone={rosterStatusTone(rosterStatus)}>{formatRosterStatus(rosterStatus)}</StatusBadge>
+          <StatusBadge tone={rosterStatusTone(rosterStatus)}>{t(`roster.status.${rosterStatus}.label`)}</StatusBadge>
         </article>
       </section>
     </div>

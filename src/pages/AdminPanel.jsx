@@ -8,6 +8,7 @@ import { AdminPermissionsSection } from '../components/admin/AdminPermissionsSec
 import { AdminTabs } from '../components/admin/AdminTabs.jsx';
 import { AdminToolsSection } from '../components/admin/AdminToolsSection.jsx';
 import { StatusBadge } from '../components/StatusBadge.jsx';
+import { useLanguage } from '../context/LanguageContext.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import {
   approveRegistration,
@@ -78,24 +79,27 @@ import {
   updateMemberRosterStatus,
 } from '../services/adminMemberService.js';
 
-const plannedSections = ['Guild and subguild management'];
-
 const ADMIN_TABS = [
-  { id: 'approvals', label: 'Approvals' },
-  { id: 'members', label: 'Members' },
-  { id: 'cp', label: 'CP' },
-  { id: 'gvg', label: 'GvG' },
-  { id: 'audit', label: 'Audit Logs' },
-  { id: 'permissions', label: 'Permissions' },
-  { id: 'tools', label: 'Tools' },
+  { id: 'approvals', label: 'Approvals', labelKey: 'admin.tabs.approvals' },
+  { id: 'members', label: 'Members', labelKey: 'admin.tabs.members' },
+  { id: 'cp', label: 'CP', labelKey: 'admin.tabs.cp' },
+  { id: 'gvg', label: 'GvG', labelKey: 'admin.tabs.gvg' },
+  { id: 'audit', label: 'Audit Logs', labelKey: 'admin.tabs.audit' },
+  { id: 'permissions', label: 'Permissions', labelKey: 'admin.tabs.permissions' },
+  { id: 'tools', label: 'Tools', labelKey: 'admin.tabs.tools' },
 ];
 
-function formatDate(value) {
+function translateWithFallback(t, key, fallback, params) {
+  const translated = t(key, params);
+  return translated === key ? fallback : translated;
+}
+
+function formatDate(value, language = 'en', notRecordedLabel = 'Not recorded') {
   if (!value) {
-    return 'Not recorded';
+    return notRecordedLabel;
   }
 
-  return new Intl.DateTimeFormat('en', {
+  return new Intl.DateTimeFormat(language, {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(new Date(value));
@@ -103,6 +107,43 @@ function formatDate(value) {
 
 function formatRole(role) {
   return role ? role.charAt(0).toUpperCase() + role.slice(1) : 'Member';
+}
+
+function formatLocalizedRole(t, role) {
+  return translateWithFallback(t, `roles.${role}`, formatRole(role));
+}
+
+function formatLocalizedRosterStatus(t, status) {
+  return translateWithFallback(t, `roster.status.${status}.label`, formatRosterStatus(status));
+}
+
+function formatLocalizedApprovalStatus(t, status) {
+  return translateWithFallback(t, `approvalStatus.${status}`, status ?? t('common.unknown'));
+}
+
+function formatLocalizedMembershipStatus(t, status) {
+  return translateWithFallback(t, `admin.membershipStatus.${status}`, status ?? t('common.unknown'));
+}
+
+function formatLocalizedGvgStatus(t, status) {
+  return translateWithFallback(t, `admin.gvg.status.${status}`, status ?? t('common.unknown'));
+}
+
+function humanizeAdminCopy(value) {
+  return String(value ?? '')
+    .replaceAll('Profile slug', 'Username')
+    .replaceAll('profile slug', 'username')
+    .replaceAll('Username/Username', 'Username')
+    .replaceAll('username/username', 'username')
+    .replaceAll('reset_profile_slug', 'reset username');
+}
+
+function translateRosterStatusOptions(t, options) {
+  return options.map((option) => ({
+    ...option,
+    label: formatLocalizedRosterStatus(t, option.value),
+    summary: translateWithFallback(t, `roster.status.${option.value}.summary`, option.summary),
+  }));
 }
 
 function statusTone(status) {
@@ -142,7 +183,7 @@ function buildCpDrafts(roster) {
   }, {});
 }
 
-function buildScopedCpGuildOptions({ membership, allGuilds = [] }) {
+function buildScopedCpGuildOptions({ membership, allGuilds = [], assignedGuildLabel = 'Assigned guild' }) {
   if (!membership) {
     return [];
   }
@@ -158,7 +199,7 @@ function buildScopedCpGuildOptions({ membership, allGuilds = [] }) {
   return [
     {
       id: membership.guild_id,
-      name: membership.guild?.name ?? membership.guild_name ?? 'Assigned guild',
+      name: membership.guild?.name ?? membership.guild_name ?? assignedGuildLabel,
       slug: membership.guild?.slug ?? '',
       status: 'active',
       is_core: true,
@@ -223,17 +264,26 @@ function buildGvgSummary(results) {
   );
 }
 
-function appendGuildOption(map, guild) {
+function appendGuildOption(map, guild, unknownGuildLabel = 'Unknown guild') {
   if (guild?.id && !map.has(guild.id)) {
     map.set(guild.id, {
       id: guild.id,
-      name: guild.name ?? 'Unknown guild',
+      name: guild.name ?? unknownGuildLabel,
       slug: guild.slug ?? '',
     });
   }
 }
 
-function buildAuditGuildOptions({ membership, guild, guildOptions = [], activeGuildOptions = [], cpGuildOptions = [], gvgGuildOptions = [] }) {
+function buildAuditGuildOptions({
+  membership,
+  guild,
+  guildOptions = [],
+  activeGuildOptions = [],
+  cpGuildOptions = [],
+  gvgGuildOptions = [],
+  assignedGuildLabel = 'Assigned guild',
+  unknownGuildLabel = 'Unknown guild',
+}) {
   if (!membership) {
     return [];
   }
@@ -246,18 +296,18 @@ function buildAuditGuildOptions({ membership, guild, guildOptions = [], activeGu
     return [
       {
         id: membership.guild_id,
-        name: guild?.name ?? 'Assigned guild',
+        name: guild?.name ?? assignedGuildLabel,
         slug: guild?.slug ?? '',
       },
     ];
   }
 
   const guildMap = new Map();
-  appendGuildOption(guildMap, guild);
-  guildOptions.forEach((guildOption) => appendGuildOption(guildMap, guildOption));
-  activeGuildOptions.forEach((guildOption) => appendGuildOption(guildMap, guildOption));
-  cpGuildOptions.forEach((guildOption) => appendGuildOption(guildMap, guildOption));
-  gvgGuildOptions.forEach((guildOption) => appendGuildOption(guildMap, guildOption));
+  appendGuildOption(guildMap, guild, unknownGuildLabel);
+  guildOptions.forEach((guildOption) => appendGuildOption(guildMap, guildOption, unknownGuildLabel));
+  activeGuildOptions.forEach((guildOption) => appendGuildOption(guildMap, guildOption, unknownGuildLabel));
+  cpGuildOptions.forEach((guildOption) => appendGuildOption(guildMap, guildOption, unknownGuildLabel));
+  gvgGuildOptions.forEach((guildOption) => appendGuildOption(guildMap, guildOption, unknownGuildLabel));
 
   return Array.from(guildMap.values()).sort((a, b) => a.name.localeCompare(b.name));
 }
@@ -288,16 +338,16 @@ function buildAuditRpcFilters(filters, before = null) {
   };
 }
 
-function formatAuditGuild(row) {
+function formatAuditGuild(row, t) {
   if (row.guild_name) {
     return row.guild_slug ? `${row.guild_name} (${row.guild_slug})` : row.guild_name;
   }
 
   if (row.guild_id) {
-    return `Guild ${String(row.guild_id).slice(0, 8)}`;
+    return `${t('admin.common.guild')} ${String(row.guild_id).slice(0, 8)}`;
   }
 
-  return 'Global';
+  return t('admin.common.global');
 }
 
 function formatAuditEntity(row) {
@@ -317,6 +367,7 @@ function formatAuditEntity(row) {
 }
 
 export function AdminPanel() {
+  const { language, t } = useLanguage();
   const { membership, guild } = useAuth();
   const [permissionKeys, setPermissionKeys] = useState([]);
   const [permissionLoading, setPermissionLoading] = useState(true);
@@ -388,6 +439,41 @@ export function AdminPanel() {
     () => cpGuildOptions.find((guildOption) => guildOption.id === selectedCpGuildId) ?? null,
     [cpGuildOptions, selectedCpGuildId],
   );
+  const plannedSections = useMemo(() => [t('admin.tools.guildManagement')], [t]);
+  const formatAdminDate = (value) => formatDate(value, language, t('admin.common.notRecorded'));
+  const formatAdminRole = (role) => formatLocalizedRole(t, role);
+  const formatAdminRosterStatus = (status) => formatLocalizedRosterStatus(t, status);
+  const formatAdminApprovalStatus = (status) => formatLocalizedApprovalStatus(t, status);
+  const formatAdminMembershipStatus = (status) => formatLocalizedMembershipStatus(t, status);
+  const formatAdminGvgStatus = (status) => formatLocalizedGvgStatus(t, status);
+  const visibleRosterStatusOptions = useMemo(() => translateRosterStatusOptions(t, ROSTER_STATUS_OPTIONS), [t]);
+  const translatedAuditActionOptions = useMemo(
+    () =>
+      AUDIT_ACTION_OPTIONS.map((actionOption) => ({
+        ...actionOption,
+        label: translateWithFallback(t, `admin.audit.actions.${actionOption.value}`, actionOption.label),
+      })),
+    [t],
+  );
+  const formatLocalizedAuditAction = (action) =>
+    translateWithFallback(t, `admin.audit.actions.${action}`, formatAuditAction(action));
+  const formatLocalizedAuditMetadata = (metadata, metadataRedacted) =>
+    formatAuditMetadata(metadata, metadataRedacted).map((item) => ({
+      ...item,
+      label: translateWithFallback(t, `admin.audit.metadata.${item.key}`, item.label),
+    }));
+  const formatPermissionLabel = (permission) =>
+    translateWithFallback(
+      t,
+      `admin.permissions.catalog.${permission.key}.label`,
+      humanizeAdminCopy(permission.label ?? permission.key),
+    );
+  const formatPermissionDescription = (permission) =>
+    translateWithFallback(
+      t,
+      `admin.permissions.catalog.${permission.key}.description`,
+      humanizeAdminCopy(permission.description ?? permission.key),
+    );
 
   const filteredCpRoster = useMemo(() => {
     const normalizedSearch = cpSearch.trim().toLowerCase();
@@ -410,12 +496,12 @@ export function AdminPanel() {
     const guilds = new Map();
     memberRoster.forEach((item) => {
       if (item.guild?.id) {
-        guilds.set(item.guild.id, item.guild.name ?? 'Unknown guild');
+        guilds.set(item.guild.id, item.guild.name ?? t('admin.common.unknownGuild'));
       }
     });
 
     return Array.from(guilds, ([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name));
-  }, [memberRoster]);
+  }, [memberRoster, t]);
 
   const filteredMembers = useMemo(() => {
     const normalizedSearch = memberSearch.trim().toLowerCase();
@@ -465,8 +551,10 @@ export function AdminPanel() {
         activeGuildOptions,
         cpGuildOptions,
         gvgGuildOptions,
+        assignedGuildLabel: t('admin.common.assignedGuild'),
+        unknownGuildLabel: t('admin.common.unknownGuild'),
       }),
-    [activeGuildOptions, cpGuildOptions, guild, guildOptions, gvgGuildOptions, membership],
+    [activeGuildOptions, cpGuildOptions, guild, guildOptions, gvgGuildOptions, membership, t],
   );
   const oldestAuditCreatedAt = auditLogs[auditLogs.length - 1]?.created_at ?? null;
 
@@ -495,8 +583,20 @@ export function AdminPanel() {
         return canManagePermissions;
       }
       return tab.id === 'tools';
-    });
-  }, [canManageGvgEvents, canManagePermissions, canReviewQueue, canViewAdmin, canViewAuditSection, canViewCpSection, canViewMembers]);
+    }).map((tab) => ({
+      ...tab,
+      label: tab.labelKey ? t(tab.labelKey) : tab.label,
+    }));
+  }, [
+    canManageGvgEvents,
+    canManagePermissions,
+    canReviewQueue,
+    canViewAdmin,
+    canViewAuditSection,
+    canViewCpSection,
+    canViewMembers,
+    t,
+  ]);
 
   const activeTabMeta = visibleTabs.find((tab) => tab.id === activeTab) ?? null;
   const currentTabLoading =
@@ -718,6 +818,7 @@ export function AdminPanel() {
       const nextCpGuildOptions = buildScopedCpGuildOptions({
         membership,
         allGuilds: allCpGuilds,
+        assignedGuildLabel: t('admin.common.assignedGuild'),
       });
       const nextSelectedCpGuildId =
         nextCpGuildOptions.find((guildOption) => guildOption.id === selectedCpGuildId)?.id ??
@@ -879,7 +980,7 @@ export function AdminPanel() {
     const role = selectedRoles[item.id] ?? allowedRoles[0];
 
     if (!allowedRoles.includes(role)) {
-      setAdminError('Selected approval role is not allowed for your current role.');
+      setAdminError(t('admin.errors.selectedApprovalRole'));
       return;
     }
 
@@ -893,7 +994,12 @@ export function AdminPanel() {
         guildId: item.guild_id,
         role,
       });
-      setActionMessage(`Approved @${item.profile?.username ?? 'member'} as ${formatRole(role)}.`);
+      setActionMessage(
+        t('admin.success.approvedUser', {
+          username: item.profile?.username ?? t('admin.common.unknownMember'),
+          role: formatAdminRole(role),
+        }),
+      );
       await loadApprovalsSection({ clearMessage: false });
     } catch (approvalError) {
       setAdminError(approvalError.message);
@@ -906,7 +1012,7 @@ export function AdminPanel() {
     const reason = rejectReasons[item.id]?.trim() ?? '';
 
     if (reason.length > 1000) {
-      setAdminError('Rejection reason cannot exceed 1000 characters.');
+      setAdminError(t('admin.errors.rejectionReasonTooLong'));
       return;
     }
 
@@ -919,7 +1025,11 @@ export function AdminPanel() {
         profileId: item.profile_id,
         reason,
       });
-      setActionMessage(`Rejected @${item.profile?.username ?? 'member'}.`);
+      setActionMessage(
+        t('admin.success.rejectedUser', {
+          username: item.profile?.username ?? t('admin.common.unknownMember'),
+        }),
+      );
       setRejectReasons((current) => ({ ...current, [item.id]: '' }));
       await loadApprovalsSection({ clearMessage: false });
     } catch (approvalError) {
@@ -933,7 +1043,7 @@ export function AdminPanel() {
     const nextIgn = memberDrafts[item.id]?.ign?.trim() ?? '';
 
     if (!nextIgn) {
-      setAdminError('IGN is required.');
+      setAdminError(t('admin.errors.ignRequired'));
       return;
     }
 
@@ -946,7 +1056,11 @@ export function AdminPanel() {
         profileId: item.profile_id,
         ign: nextIgn,
       });
-      setActionMessage(`Updated IGN for @${item.profile?.username ?? 'member'}.`);
+      setActionMessage(
+        t('admin.success.updatedIgn', {
+          username: item.profile?.username ?? t('admin.common.unknownMember'),
+        }),
+      );
       await loadMembersSection({ clearMessage: false });
     } catch (memberError) {
       setAdminError(memberError.message);
@@ -959,7 +1073,7 @@ export function AdminPanel() {
     const nextSlug = normalizeProfileSlug(memberDrafts[item.id]?.slug ?? '');
 
     if (!isValidProfileSlug(nextSlug)) {
-      setAdminError('Username must be 3-32 lowercase letters, numbers, hyphen, or underscore; start and end with a letter or number.');
+      setAdminError(t('admin.errors.invalidUsername'));
       return;
     }
 
@@ -972,7 +1086,11 @@ export function AdminPanel() {
         profileId: item.profile_id,
         newSlug: nextSlug,
       });
-      setActionMessage(`Reset username for @${item.profile?.username ?? 'member'}.`);
+      setActionMessage(
+        t('admin.success.resetUsername', {
+          username: item.profile?.username ?? t('admin.common.unknownMember'),
+        }),
+      );
       await loadMembersSection({ clearMessage: false });
     } catch (memberError) {
       setAdminError(memberError.message);
@@ -986,17 +1104,17 @@ export function AdminPanel() {
     const nextRole = allowedMemberRoles.includes(draftedRole) ? draftedRole : allowedMemberRoles[0] ?? '';
 
     if (item.role === 'owner') {
-      setAdminError('Owner role changes are not available here.');
+      setAdminError(t('admin.errors.ownerRoleUnavailable'));
       return;
     }
 
     if (!allowedMemberRoles.includes(nextRole)) {
-      setAdminError('Selected role is not allowed for your current role or permissions.');
+      setAdminError(t('admin.errors.selectedRoleNotAllowed'));
       return;
     }
 
     if (nextRole === item.role) {
-      setAdminError('Choose a different role before saving.');
+      setAdminError(t('admin.errors.chooseDifferentRole'));
       return;
     }
 
@@ -1010,7 +1128,12 @@ export function AdminPanel() {
         guildId: item.guild_id,
         role: nextRole,
       });
-      setActionMessage(`Updated @${item.profile?.username ?? 'member'} to ${formatRole(nextRole)}.`);
+      setActionMessage(
+        t('admin.success.updatedRole', {
+          username: item.profile?.username ?? t('admin.common.unknownMember'),
+          role: formatAdminRole(nextRole),
+        }),
+      );
       setConfirmAction(null);
       await loadMembersSection({ clearMessage: false });
     } catch (memberError) {
@@ -1025,17 +1148,17 @@ export function AdminPanel() {
     const targetGuild = activeGuildOptions.find((guildOption) => guildOption.id === targetGuildId);
 
     if (!canTransferGuilds) {
-      setAdminError('Guild transfer requires Owner access.');
+      setAdminError(t('admin.errors.ownerTransferRequired'));
       return;
     }
 
     if (!targetGuildId || targetGuildId === item.guild_id) {
-      setAdminError('Choose a different active guild before transferring.');
+      setAdminError(t('admin.errors.chooseDifferentGuild'));
       return;
     }
 
     if (!targetGuild) {
-      setAdminError('Selected target guild is not available.');
+      setAdminError(t('admin.errors.targetGuildUnavailable'));
       return;
     }
 
@@ -1050,7 +1173,10 @@ export function AdminPanel() {
         toGuildId: targetGuildId,
       });
       setActionMessage(
-        `Moved @${item.profile?.username ?? 'member'} to ${targetGuild.name ?? 'selected guild'} as Member.`,
+        t('admin.success.transferredGuild', {
+          username: item.profile?.username ?? t('admin.common.unknownMember'),
+          guild: targetGuild.name ?? t('admin.common.selectedGuildLower'),
+        }),
       );
       setConfirmAction(null);
       await loadMembersSection({ clearMessage: false });
@@ -1073,17 +1199,17 @@ export function AdminPanel() {
     const allowedStatuses = allowedStatusOptions.map((option) => option.value);
 
     if (!allowedStatuses.includes(draftedStatus)) {
-      setAdminError('Selected roster status is not allowed for your current role or permissions.');
+      setAdminError(t('admin.errors.rosterStatusNotAllowed'));
       return;
     }
 
     if (draftedStatus === currentStatus) {
-      setAdminError('Choose a different roster status before saving.');
+      setAdminError(t('admin.errors.chooseDifferentRosterStatus'));
       return;
     }
 
     if (isHardBlockedRosterStatus(draftedStatus) && !reason) {
-      setAdminError('A reason is required before setting suspended, left, or kicked.');
+      setAdminError(t('admin.errors.hardBlockReasonRequired'));
       return;
     }
 
@@ -1098,7 +1224,10 @@ export function AdminPanel() {
         reason,
       });
       setActionMessage(
-        `Updated @${item.profile?.username ?? 'member'} to ${formatRosterStatus(draftedStatus)}.`,
+        t('admin.success.updatedRosterStatus', {
+          username: item.profile?.username ?? t('admin.common.unknownMember'),
+          status: formatAdminRosterStatus(draftedStatus),
+        }),
       );
       setConfirmAction(null);
       await loadMembersSection({ clearMessage: false });
@@ -1113,7 +1242,7 @@ export function AdminPanel() {
     const rawCpValue = cpDrafts[item.profile_id]?.trim() ?? '';
 
     if (!isValidCpInput(rawCpValue)) {
-      setAdminError('CP must be a whole number greater than or equal to 0.');
+      setAdminError(t('admin.errors.invalidCp'));
       return;
     }
 
@@ -1126,7 +1255,11 @@ export function AdminPanel() {
         profileId: item.profile_id,
         cpValue: Number(rawCpValue),
       });
-      setActionMessage(`Updated CP for @${item.username ?? 'member'}.`);
+      setActionMessage(
+        t('admin.success.updatedCp', {
+          username: item.username ?? t('admin.common.unknownMember'),
+        }),
+      );
       await loadCpSection({ clearMessage: false });
     } catch (cpError) {
       setAdminError(cpError.message);
@@ -1190,7 +1323,11 @@ export function AdminPanel() {
         nextKeys,
       });
       setActionMessage(
-        `Updated permissions for @${target.profile?.username ?? 'admin'} (${result.granted} granted, ${result.revoked} revoked).`,
+        t('admin.success.updatedPermissions', {
+          username: target.profile?.username ?? t('admin.common.unknownAdmin'),
+          granted: result.granted,
+          revoked: result.revoked,
+        }),
       );
       await loadPermissionManagementSection({ clearMessage: false });
     } catch (permissionError) {
@@ -1214,12 +1351,12 @@ export function AdminPanel() {
     const scope = membership?.role === 'owner' ? gvgDraft.scope : 'guild';
 
     if (!title) {
-      setAdminError('GvG event title is required.');
+      setAdminError(t('admin.errors.gvgTitleRequired'));
       return;
     }
 
     if (scope === 'guild' && !gvgDraft.guildId) {
-      setAdminError('Choose a guild for this GvG event.');
+      setAdminError(t('admin.errors.gvgGuildRequired'));
       return;
     }
 
@@ -1236,7 +1373,7 @@ export function AdminPanel() {
         startsAt: gvgDraft.startsAt ? new Date(gvgDraft.startsAt).toISOString() : null,
         endsAt: gvgDraft.endsAt ? new Date(gvgDraft.endsAt).toISOString() : null,
       });
-      setActionMessage(`Created GvG event "${newEvent.title}". Activate it when voting should open.`);
+      setActionMessage(t('admin.success.createdGvgEvent', { title: newEvent.title }));
       setGvgDraft((current) => ({ ...current, title: '', startsAt: '', endsAt: '' }));
       await loadGvgManagementSection({ preferredEventId: newEvent.id });
       markTabLoaded('gvg');
@@ -1256,7 +1393,12 @@ export function AdminPanel() {
 
     try {
       const updatedEvent = await setGvgEventStatus({ eventId, status });
-      setActionMessage(`GvG event "${updatedEvent.title}" is now ${updatedEvent.status}.`);
+      setActionMessage(
+        t('admin.success.updatedGvgStatus', {
+          title: updatedEvent.title,
+          status: formatAdminGvgStatus(updatedEvent.status),
+        }),
+      );
       await loadGvgManagementSection({ preferredEventId: eventId });
       markTabLoaded('gvg');
     } catch (gvgError) {
@@ -1322,9 +1464,12 @@ export function AdminPanel() {
           onRejectReasonChange={updateRejectReason}
           onApprove={handleApprove}
           onReject={handleReject}
-          formatDate={formatDate}
-          formatRole={formatRole}
+          formatDate={formatAdminDate}
+          formatRole={formatAdminRole}
+          formatMembershipStatus={formatAdminMembershipStatus}
+          formatApprovalStatus={formatAdminApprovalStatus}
           statusTone={statusTone}
+          t={t}
         />
       );
     }
@@ -1348,7 +1493,7 @@ export function AdminPanel() {
           canTransferGuilds={canTransferGuilds}
           canManageRosterStatuses={canManageRosterStatuses}
           allowedMemberRoles={allowedMemberRoles}
-          visibleRosterStatusOptions={ROSTER_STATUS_OPTIONS}
+          visibleRosterStatusOptions={visibleRosterStatusOptions}
           onRefresh={() => loadTabData('members', { force: true })}
           onSearchChange={setMemberSearch}
           onGuildFilterChange={setGuildFilter}
@@ -1360,14 +1505,20 @@ export function AdminPanel() {
           onAssignRole={handleAssignMemberRole}
           onTransferGuild={handleTransferMemberGuild}
           onUpdateRosterStatus={handleUpdateMemberRosterStatus}
-          formatDate={formatDate}
-          formatRole={formatRole}
-          formatRosterStatus={formatRosterStatus}
+          formatDate={formatAdminDate}
+          formatRole={formatAdminRole}
+          formatRosterStatus={formatAdminRosterStatus}
+          formatMembershipStatus={formatAdminMembershipStatus}
+          formatApprovalStatus={formatAdminApprovalStatus}
           getAllowedRosterStatusOptions={(item) =>
-            getAllowedRosterStatusOptions({ membership, permissionKeys, targetMembership: item })
+            translateRosterStatusOptions(
+              t,
+              getAllowedRosterStatusOptions({ membership, permissionKeys, targetMembership: item }),
+            )
           }
           rosterStatusTone={rosterStatusTone}
           statusTone={statusTone}
+          t={t}
         />
       );
     }
@@ -1391,8 +1542,9 @@ export function AdminPanel() {
           onUpdateCpDraft={updateCpDraft}
           onResetCpDraft={resetCpDraft}
           onUpdateCp={handleUpdateCp}
-          formatDate={formatDate}
+          formatDate={formatAdminDate}
           formatCpValue={formatCpValue}
+          t={t}
         />
       );
     }
@@ -1414,7 +1566,9 @@ export function AdminPanel() {
           onCreateEvent={handleCreateGvgEvent}
           onSetStatus={handleSetGvgStatus}
           onSelectEvent={handleSelectGvgEvent}
-          formatDate={formatDate}
+          formatDate={formatAdminDate}
+          formatGvgStatus={formatAdminGvgStatus}
+          t={t}
         />
       );
     }
@@ -1423,7 +1577,7 @@ export function AdminPanel() {
       return (
         <AdminAuditSection
           membership={membership}
-          auditActionOptions={AUDIT_ACTION_OPTIONS}
+          auditActionOptions={translatedAuditActionOptions}
           auditLoading={auditLoading}
           auditLogs={auditLogs}
           auditFilters={auditFilters}
@@ -1434,13 +1588,14 @@ export function AdminPanel() {
           onRefresh={() => loadAuditLogPage({ append: false })}
           onLoadOlder={() => loadAuditLogPage({ append: true, before: oldestAuditCreatedAt })}
           onUpdateFilter={updateAuditFilter}
-          formatDate={formatDate}
-          formatAuditAction={formatAuditAction}
+          formatDate={formatAdminDate}
+          formatAuditAction={formatLocalizedAuditAction}
           formatAuditActor={formatAuditActor}
-          formatAuditMetadata={formatAuditMetadata}
+          formatAuditMetadata={formatLocalizedAuditMetadata}
           formatAuditTarget={formatAuditTarget}
-          formatAuditGuild={formatAuditGuild}
+          formatAuditGuild={(row) => formatAuditGuild(row, t)}
           formatAuditEntity={formatAuditEntity}
+          t={t}
         />
       );
     }
@@ -1462,20 +1617,25 @@ export function AdminPanel() {
           isSensitivePermissionKey={isSensitivePermissionKey}
           isCpPermissionKey={isCpPermissionKey}
           hasPermissionDraftChanges={hasPermissionDraftChanges}
+          formatPermissionLabel={formatPermissionLabel}
+          formatPermissionDescription={formatPermissionDescription}
+          formatMembershipStatus={formatAdminMembershipStatus}
+          formatApprovalStatus={formatAdminApprovalStatus}
+          t={t}
         />
       );
     }
 
-    return <AdminToolsSection plannedSections={plannedSections} />;
+    return <AdminToolsSection plannedSections={plannedSections} t={t} />;
   }
 
   if (!canViewAdmin) {
     return (
       <div className="stack">
         <section className="panel hero-panel compact-empty-state">
-          <StatusBadge tone="danger">Restricted</StatusBadge>
-          <h3>Admin access unavailable</h3>
-          <p>This area is reserved for authorized guild staff.</p>
+          <StatusBadge tone="danger">{t('admin.common.restricted')}</StatusBadge>
+          <h3>{t('admin.shell.accessUnavailable')}</h3>
+          <p>{t('admin.shell.accessUnavailableBody')}</p>
         </section>
       </div>
     );
@@ -1484,20 +1644,22 @@ export function AdminPanel() {
   return (
     <div className="stack">
       <section className="panel hero-panel admin-hero-panel">
-        <StatusBadge tone={visibleTabs.length > 1 ? 'success' : 'warning'}>Admin</StatusBadge>
-        <h3>Guild management</h3>
-        <p>Select an available section.</p>
+        <StatusBadge tone={visibleTabs.length > 1 ? 'success' : 'warning'}>{t('nav.admin')}</StatusBadge>
+        <h3>{t('admin.shell.title')}</h3>
+        <p>{t('admin.shell.selectSection')}</p>
         <button
           type="button"
           className="secondary-action compact-action admin-refresh-action"
           onClick={() => loadTabData(activeTab, { force: true })}
           disabled={permissionLoading || currentTabLoading}
         >
-          {permissionLoading || currentTabLoading ? 'Refreshing...' : `Refresh ${activeTabMeta?.label ?? 'current tab'}`}
+          {permissionLoading || currentTabLoading
+            ? t('common.refreshing')
+            : t('admin.shell.refreshTab', { tab: activeTabMeta?.label ?? t('admin.common.currentTab') })}
         </button>
       </section>
 
-      {permissionLoading ? <p className="muted-line">Checking admin permissions...</p> : null}
+      {permissionLoading ? <p className="muted-line">{t('admin.shell.checkingPermissions')}</p> : null}
       {adminError ? <p className="error-line">{adminError}</p> : null}
       {actionMessage ? <p className="notice-line">{actionMessage}</p> : null}
 

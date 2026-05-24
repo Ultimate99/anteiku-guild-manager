@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { StatusBadge } from '../components/StatusBadge.jsx';
 import { isSupabaseConfigured } from '../config/supabaseClient.js';
+import { useLanguage } from '../context/LanguageContext.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { getCoreGuilds } from '../services/guildService.js';
 
@@ -12,7 +13,22 @@ const initialForm = {
   requestedGuildId: '',
 };
 
+function translateAuthFeedback(message, t) {
+  const messageMap = {
+    'If the email exists, a reset link was sent.': 'auth.notices.resetSent',
+    'If a confirmation email was sent, confirm it first. Your account still needs guild approval.':
+      'auth.notices.confirmationMaybeSent',
+    'Invalid email or password.': 'auth.errors.invalidEmailOrPassword',
+    'Too many attempts. Try again later.': 'auth.errors.tooManyAttempts',
+    'Email limit reached. Try again later.': 'auth.errors.emailLimitReached',
+    'Something went wrong. Try again.': 'auth.errors.generic',
+  };
+
+  return messageMap[message] ? t(messageMap[message]) : message;
+}
+
 export function LoginRegister() {
+  const { t } = useLanguage();
   const {
     accessState,
     completeRegistration,
@@ -32,6 +48,8 @@ export function LoginRegister() {
   const [submitting, setSubmitting] = useState(false);
   const isCompletingProfile = accessState === 'needs_profile';
   const isPasswordResetMode = mode === 'forgot-password';
+  const displayNotice = notice ? translateAuthFeedback(notice, t) : '';
+  const displayError = error ? translateAuthFeedback(error, t) : '';
 
   useEffect(() => {
     if (isCompletingProfile) {
@@ -100,7 +118,7 @@ export function LoginRegister() {
       }
 
       if (!form.requestedGuildId) {
-        throw new Error('Choose a guild before registering.');
+        throw new Error(t('auth.errors.chooseGuild'));
       }
 
       if (isCompletingProfile && user) {
@@ -130,23 +148,23 @@ export function LoginRegister() {
     <div className="stack">
       <section className="panel hero-panel">
         <StatusBadge tone={isSupabaseConfigured ? 'success' : 'danger'}>
-          {isSupabaseConfigured ? 'Ready' : 'Setup needed'}
+          {isSupabaseConfigured ? t('common.ready') : t('common.setupNeeded')}
         </StatusBadge>
-        <h3>Enter the guild</h3>
-        <p>Register for guild approval.</p>
+        <h3>{t('auth.enterGuild')}</h3>
+        <p>{t('auth.registerForGuildApproval')}</p>
       </section>
 
       {!isCompletingProfile ? (
-        <div className="segmented-control" aria-label="Auth mode">
+        <div className="segmented-control" aria-label={t('auth.mode')}>
           <button
             type="button"
             data-active={mode === 'sign-in' || mode === 'forgot-password'}
             onClick={() => setMode('sign-in')}
           >
-            Sign in
+            {t('auth.signIn')}
           </button>
           <button type="button" data-active={mode === 'register'} onClick={() => setMode('register')}>
-            Register
+            {t('auth.register')}
           </button>
         </div>
       ) : null}
@@ -155,23 +173,23 @@ export function LoginRegister() {
         {!isCompletingProfile ? (
           <>
             <label>
-              Email
+              {t('auth.email')}
               <input
                 type="email"
                 value={form.email}
-                placeholder="member@example.com"
+                placeholder={t('auth.emailPlaceholder')}
                 onChange={(event) => updateField('email', event.target.value)}
                 required
               />
-              {mode === 'register' ? <small>Use a real email. You'll need it for password reset.</small> : null}
+              {mode === 'register' ? <small>{t('auth.realEmailWarning')}</small> : null}
             </label>
             {!isPasswordResetMode ? (
               <label>
-                Password
+                {t('auth.password')}
                 <input
                   type="password"
                   value={form.password}
-                  placeholder="Your password"
+                  placeholder={t('auth.passwordPlaceholder')}
                   onChange={(event) => updateField('password', event.target.value)}
                   required
                 />
@@ -179,40 +197,40 @@ export function LoginRegister() {
             ) : null}
           </>
         ) : (
-          <StatusBadge tone="warning">Complete registration</StatusBadge>
+          <StatusBadge tone="warning">{t('auth.completeRegistration')}</StatusBadge>
         )}
 
         {mode === 'register' || isCompletingProfile ? (
           <>
             <label>
-              Username
+              {t('auth.username')}
               <input
                 type="text"
                 value={form.username}
-                placeholder="locked-after-registration"
+                placeholder={t('auth.usernamePlaceholder')}
                 onChange={(event) => updateField('username', event.target.value)}
                 required
               />
             </label>
             <label>
-              IGN
+              {t('auth.ign')}
               <input
                 type="text"
                 value={form.ign}
-                placeholder="Your in-game name"
+                placeholder={t('auth.ignPlaceholder')}
                 onChange={(event) => updateField('ign', event.target.value)}
                 required
               />
             </label>
             <label>
-              Guild
+              {t('auth.guild')}
               <select
                 value={form.requestedGuildId}
                 onChange={(event) => updateField('requestedGuildId', event.target.value)}
                 required
               >
                 <option value="" disabled>
-                  Choose guild
+                  {t('auth.chooseGuild')}
                 </option>
                 {guilds.map((guild) => (
                   <option key={guild.id} value={guild.id}>
@@ -226,28 +244,28 @@ export function LoginRegister() {
 
         {!isCompletingProfile && mode === 'sign-in' ? (
           <button type="button" className="inline-text-action" onClick={() => setMode('forgot-password')}>
-            Forgot password?
+            {t('auth.forgotPassword')}
           </button>
         ) : null}
 
         {!isCompletingProfile && isPasswordResetMode ? (
           <button type="button" className="inline-text-action" onClick={() => setMode('sign-in')}>
-            Back to sign in
+            {t('auth.backToSignIn')}
           </button>
         ) : null}
 
-        {notice ? <p className="notice-line">{notice}</p> : null}
-        {error ? <p className="error-line">{error}</p> : null}
+        {displayNotice ? <p className="notice-line">{displayNotice}</p> : null}
+        {displayError ? <p className="error-line">{displayError}</p> : null}
         {guildError ? <p className="error-line">{guildError}</p> : null}
 
         <button type="submit" className="primary-action" disabled={!isSupabaseConfigured || submitting}>
           {submitting
-            ? 'Working...'
+            ? t('common.working')
             : isPasswordResetMode && !isCompletingProfile
-              ? 'Send reset link'
+              ? t('auth.sendResetLink')
               : mode === 'sign-in' && !isCompletingProfile
-              ? 'Sign in'
-              : 'Request approval'}
+                ? t('auth.signIn')
+                : t('auth.requestApproval')}
         </button>
       </form>
     </div>

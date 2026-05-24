@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { StatusBadge } from '../components/StatusBadge.jsx';
+import { useLanguage } from '../context/LanguageContext.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import {
   loadMemberActiveGvgEvents,
@@ -7,37 +8,36 @@ import {
   submitGvgVote,
 } from '../services/gvgService.js';
 import {
-  formatRosterStatus,
-  getRosterStatusSummary,
   isGvgLimitedRosterStatus,
   isHardBlockedRosterStatus,
   rosterStatusTone,
 } from '../services/adminMemberService.js';
 
-function formatDate(value) {
+function formatDate(value, language, t) {
   if (!value) {
-    return 'Not scheduled';
+    return t('gvg.notScheduled');
   }
 
-  return new Intl.DateTimeFormat('en', {
+  return new Intl.DateTimeFormat(language, {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(new Date(value));
 }
 
-function formatVoteStatus(status) {
+function formatVoteStatus(status, t) {
   if (status === 'present') {
-    return 'Present';
+    return t('gvg.present');
   }
 
   if (status === 'absent') {
-    return 'Absent';
+    return t('gvg.absent');
   }
 
-  return 'Not voted';
+  return t('gvg.notVoted');
 }
 
 export function Gvg() {
+  const { language, t } = useLanguage();
   const { membership, user } = useAuth();
   const rosterStatus = membership?.roster_status ?? 'active';
   const isRosterBlocked =
@@ -139,17 +139,17 @@ export function Gvg() {
 
   async function handleSubmitVote() {
     if (!canUseGvg) {
-      setError('This roster status is not eligible for GvG voting.');
+      setError(t('gvg.notEligible'));
       return;
     }
 
     if (!selectedEventId) {
-      setError('No active GvG event is available.');
+      setError(t('gvg.noEventAvailable'));
       return;
     }
 
     if (voteStatus === 'absent' && absenceReason.length > 500) {
-      setError('Absence reason cannot exceed 500 characters.');
+      setError(t('gvg.absenceTooLong'));
       return;
     }
 
@@ -166,7 +166,7 @@ export function Gvg() {
       setCurrentVote(savedVote);
       setVoteStatus(savedVote.vote_status);
       setAbsenceReason(savedVote.vote_status === 'absent' ? savedVote.absence_reason ?? '' : '');
-      setMessage(`Vote saved as ${formatVoteStatus(savedVote.vote_status)}.`);
+      setMessage(t('gvg.voteSaved', { status: formatVoteStatus(savedVote.vote_status, t) }));
       await loadGvgData({ clearMessage: false });
     } catch (gvgError) {
       setError(gvgError.message);
@@ -179,13 +179,13 @@ export function Gvg() {
     <div className="stack">
       <section className="panel hero-panel">
         <div className="status-badge-row">
-          <StatusBadge tone={selectedEvent ? 'success' : 'warning'}>GvG vote</StatusBadge>
-          <StatusBadge tone={rosterStatusTone(rosterStatus)}>{formatRosterStatus(rosterStatus)}</StatusBadge>
+          <StatusBadge tone={selectedEvent ? 'success' : 'warning'}>{t('gvg.voteBadge')}</StatusBadge>
+          <StatusBadge tone={rosterStatusTone(rosterStatus)}>{t(`roster.status.${rosterStatus}.label`)}</StatusBadge>
         </div>
-        <h3>GvG readiness vote</h3>
-        <p>Mark your availability for the active event.</p>
+        <h3>{t('gvg.readinessTitle')}</h3>
+        <p>{t('gvg.readinessBody')}</p>
         <button type="button" className="secondary-action" onClick={() => loadGvgData()} disabled={loading || saving || !canUseGvg}>
-          {loading ? 'Refreshing...' : 'Refresh GvG'}
+          {loading ? t('gvg.refreshing') : t('gvg.refresh')}
         </button>
       </section>
 
@@ -194,27 +194,27 @@ export function Gvg() {
 
       {!canUseGvg ? (
         <section className="panel restricted-panel">
-          <StatusBadge tone={rosterStatusTone(rosterStatus)}>{formatRosterStatus(rosterStatus)}</StatusBadge>
-          <h3>{isRosterBlocked ? 'GvG access unavailable' : 'Not expected for GvG'}</h3>
-          <p>{getRosterStatusSummary(rosterStatus)}</p>
+          <StatusBadge tone={rosterStatusTone(rosterStatus)}>{t(`roster.status.${rosterStatus}.label`)}</StatusBadge>
+          <h3>{isRosterBlocked ? t('gvg.accessUnavailable') : t('gvg.notExpected')}</h3>
+          <p>{t(`roster.status.${rosterStatus}.summary`)}</p>
         </section>
       ) : null}
 
-      {canUseGvg && loading ? <p className="muted-line">Loading active GvG event...</p> : null}
+      {canUseGvg && loading ? <p className="muted-line">{t('gvg.loadingActive')}</p> : null}
 
       {canUseGvg && !loading && events.length === 0 ? (
         <section className="panel hero-panel">
-          <StatusBadge tone="warning">Awaiting event</StatusBadge>
-          <h3>No active GvG event</h3>
-          <p>Voting opens when leadership starts an event.</p>
+          <StatusBadge tone="warning">{t('gvg.awaitingEvent')}</StatusBadge>
+          <h3>{t('gvg.noActiveEvent')}</h3>
+          <p>{t('gvg.votingOpens')}</p>
         </section>
       ) : null}
 
       {canUseGvg && events.length > 0 ? (
-        <section className="panel vote-panel" aria-label="GvG voting">
+        <section className="panel vote-panel" aria-label={t('gvg.votingLabel')}>
           {events.length > 1 ? (
             <label>
-              Active event
+              {t('gvg.activeEvent')}
               <select value={selectedEventId} onChange={(event) => handleSelectEvent(event.target.value)} disabled={loading || saving}>
                 {events.map((event) => (
                   <option key={event.id} value={event.id}>
@@ -225,22 +225,22 @@ export function Gvg() {
             </label>
           ) : null}
 
-          <div className="approval-meta" aria-label="Selected GvG event details">
+          <div className="approval-meta" aria-label={t('gvg.eventDetails')}>
             <div>
-              <span>Event</span>
-              <strong>{selectedEvent?.title ?? 'Active GvG event'}</strong>
+              <span>{t('gvg.event')}</span>
+              <strong>{selectedEvent?.title ?? t('gvg.activeEventFallback')}</strong>
             </div>
             <div>
-              <span>Scope</span>
-              <strong>{selectedEvent?.scope === 'global' ? 'Global' : selectedEvent?.guild?.name ?? 'Guild'}</strong>
+              <span>{t('gvg.scope')}</span>
+              <strong>{selectedEvent?.scope === 'global' ? t('gvg.global') : selectedEvent?.guild?.name ?? t('gvg.guild')}</strong>
             </div>
             <div>
-              <span>Starts</span>
-              <strong>{formatDate(selectedEvent?.starts_at)}</strong>
+              <span>{t('gvg.starts')}</span>
+              <strong>{formatDate(selectedEvent?.starts_at, language, t)}</strong>
             </div>
             <div>
-              <span>Your vote</span>
-              <strong>{formatVoteStatus(currentVote?.vote_status)}</strong>
+              <span>{t('gvg.yourVote')}</span>
+              <strong>{formatVoteStatus(currentVote?.vote_status, t)}</strong>
             </div>
           </div>
 
@@ -255,7 +255,7 @@ export function Gvg() {
               }}
               disabled={saving}
             >
-              I participate
+              {t('gvg.participate')}
             </button>
             <button
               type="button"
@@ -264,15 +264,15 @@ export function Gvg() {
               onClick={() => setVoteStatus('absent')}
               disabled={saving}
             >
-              Absent
+              {t('gvg.absent')}
             </button>
           </div>
 
           {voteStatus === 'absent' ? (
             <label>
-              Absence reason
+              {t('gvg.absenceReason')}
               <textarea
-                placeholder="Optional reason, visible to authorized staff"
+                placeholder={t('gvg.absenceReasonPlaceholder')}
                 value={absenceReason}
                 maxLength={500}
                 onChange={(event) => setAbsenceReason(event.target.value)}
@@ -282,7 +282,7 @@ export function Gvg() {
           ) : null}
 
           <button type="button" className="primary-action" onClick={handleSubmitVote} disabled={saving || !selectedEventId}>
-            {saving ? 'Saving vote...' : 'Save vote'}
+            {saving ? t('gvg.savingVote') : t('gvg.saveVote')}
           </button>
         </section>
       ) : null}

@@ -1,15 +1,6 @@
 import React from 'react';
 import { StatusBadge } from '../StatusBadge.jsx';
 
-function humanizePermissionCopy(value) {
-  return String(value ?? '')
-    .replaceAll('Profile slug', 'Username')
-    .replaceAll('profile slug', 'username')
-    .replaceAll('Username/Username', 'Username')
-    .replaceAll('username/username', 'username')
-    .replaceAll('reset_profile_slug', 'reset username');
-}
-
 export function AdminPermissionsSection({
   membership,
   adminPermissionLoading,
@@ -25,14 +16,19 @@ export function AdminPermissionsSection({
   isSensitivePermissionKey,
   isCpPermissionKey,
   hasPermissionDraftChanges,
+  formatPermissionLabel,
+  formatPermissionDescription,
+  formatMembershipStatus,
+  formatApprovalStatus,
+  t,
 }) {
   return (
-    <section className="permission-management admin-section" aria-label="Admin permission management">
+    <section className="permission-management admin-section" aria-label={t('admin.permissions.aria')}>
       <div className="panel permission-management-tools admin-section-tools">
         <div className="section-heading-row admin-section-heading">
           <div>
-            <StatusBadge tone="warning">Permissions</StatusBadge>
-            <h3>Admin permissions</h3>
+            <StatusBadge tone="warning">{t('admin.common.permissions')}</StatusBadge>
+            <h3>{t('admin.permissions.title')}</h3>
           </div>
           <button
             type="button"
@@ -40,17 +36,17 @@ export function AdminPermissionsSection({
             onClick={onRefresh}
             disabled={adminPermissionLoading || Boolean(activeAction)}
           >
-            {adminPermissionLoading ? 'Loading...' : 'Refresh'}
+            {adminPermissionLoading ? t('common.loading') : t('common.refresh')}
           </button>
         </div>
       </div>
 
-      {adminPermissionLoading ? <p className="muted-line">Loading Admin permission targets...</p> : null}
+      {adminPermissionLoading ? <p className="muted-line">{t('admin.permissions.loading')}</p> : null}
 
       {!adminPermissionLoading && adminPermissionTargets.length === 0 ? (
         <section className="panel compact-empty-state">
-          <StatusBadge>Empty</StatusBadge>
-          <h3>No admin targets.</h3>
+          <StatusBadge>{t('admin.common.empty')}</StatusBadge>
+          <h3>{t('admin.permissions.empty')}</h3>
         </section>
       ) : null}
 
@@ -71,28 +67,28 @@ export function AdminPermissionsSection({
             <article className="panel permission-card compact-admin-card" key={target.id}>
               <div className="approval-card-header">
                 <div>
-                  <h4>{target.profile?.ign ?? 'Unknown IGN'}</h4>
-                  <p>@{target.profile?.username ?? 'unknown'}</p>
+                  <h4>{target.profile?.ign ?? t('admin.common.unknownIgn')}</h4>
+                  <p>@{target.profile?.username ?? t('common.unknown')}</p>
                 </div>
-                <StatusBadge tone="success">Admin</StatusBadge>
+                <StatusBadge tone="success">{t('roles.admin')}</StatusBadge>
               </div>
 
-              <div className="approval-meta compact-meta" aria-label="Admin permission target details">
+              <div className="approval-meta compact-meta" aria-label={t('admin.permissions.targetDetails')}>
                 <div>
-                  <span>Guild</span>
-                  <strong>{target.guild?.name ?? 'Unknown guild'}</strong>
+                  <span>{t('admin.common.guild')}</span>
+                  <strong>{target.guild?.name ?? t('admin.common.unknownGuild')}</strong>
                 </div>
                 <div>
-                  <span>Membership</span>
-                  <strong>{target.membership_status}</strong>
+                  <span>{t('admin.common.membership')}</span>
+                  <strong>{formatMembershipStatus(target.membership_status)}</strong>
                 </div>
                 <div>
-                  <span>Profile status</span>
-                  <strong>{target.profile?.approval_status ?? 'unknown'}</strong>
+                  <span>{t('admin.common.profileStatus')}</span>
+                  <strong>{formatApprovalStatus(target.profile?.approval_status)}</strong>
                 </div>
               </div>
 
-              {cpPermissionLocked ? <p className="member-warning">CP permissions are Owner-only.</p> : null}
+              {cpPermissionLocked ? <p className="member-warning">{t('admin.permissions.cpOwnerOnly')}</p> : null}
 
               <div className="permission-checkbox-grid">
                 {permissionCatalog.map((permission) => {
@@ -114,14 +110,14 @@ export function AdminPermissionsSection({
                           disabled={actionDisabled || !canToggle}
                         />
                       <span>
-                          {humanizePermissionCopy(permission.label ?? permission.key)}
-                          {sensitive ? <em>Sensitive</em> : null}
+                          {formatPermissionLabel(permission)}
+                          {sensitive ? <em>{t('admin.permissions.sensitive')}</em> : null}
                         </span>
                       </span>
                       <small>
                         {cpPermission && !canToggle
-                          ? 'CP permissions are Owner-only.'
-                          : humanizePermissionCopy(permission.description ?? permission.key)}
+                          ? t('admin.permissions.cpOwnerOnly')
+                          : formatPermissionDescription(permission)}
                       </small>
                     </label>
                   );
@@ -135,7 +131,7 @@ export function AdminPermissionsSection({
                   onClick={() => onSavePermissions(target)}
                   disabled={actionDisabled || !hasChanges}
                 >
-                  {isSavingPermissions ? 'Saving permissions...' : 'Save permissions'}
+                  {isSavingPermissions ? t('admin.permissions.savingPermissions') : t('admin.permissions.savePermissions')}
                 </button>
                 <button
                   type="button"
@@ -143,7 +139,7 @@ export function AdminPermissionsSection({
                   onClick={() => onResetDraft(target)}
                   disabled={actionDisabled || !hasChanges}
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
               </div>
             </article>

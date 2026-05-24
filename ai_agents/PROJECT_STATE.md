@@ -1,5 +1,35 @@
 # Project State
 
+## Milestone 18B i18n Foundation Implemented
+
+Milestone 18B is implemented locally as a frontend-only language-pack MVP foundation.
+
+Implemented:
+- Added lightweight internal i18n dictionaries for English (`en`), French (`fr`), and German (`de`).
+- Added `LanguageProvider`, `useLanguage()`, `t(key, params?)`, English fallback behavior, and `agm_language` localStorage persistence.
+- Wrapped the app as `LanguageProvider > AuthProvider > AppContent` so auth/login/register and shell surfaces can translate.
+- Added a compact EN/FR/DE language selector in the topbar, visible for logged-out and logged-in users.
+- Translated core shell/navigation/auth/recovery/gate/status/member-facing status surfaces included in 18B scope.
+- AdminPanel full content remains out of scope for 18B; only basic Admin tab labels are wired for translation.
+
+Validation:
+- `npm.cmd run build` passed.
+- Built-app preview validation passed for EN/FR/DE language switching.
+- Reload persistence passed for the selected language.
+- Login/register and password recovery surfaces translated in preview.
+- No missing translation-key strings were visible in the checked auth/recovery paths.
+- Captured console errors were empty during preview validation.
+- Static checks found no Supabase migration changes and no new protected-table paths in the touched files.
+
+Scope confirmation:
+- No SQL migrations were edited or created.
+- No Supabase/RLS/RPC logic was changed.
+- No auth behavior, CP/GvG/audit/role/permission/member-status logic was changed.
+- No deployment or commit was performed.
+
+Recommended next step:
+- Milestone 18C: member-facing authenticated language validation and remaining member page translation polish, or Milestone 18D AdminPanel full translation pass.
+
 ## Milestone 17D Registration Copy Update Implemented
 
 Milestone 17D frontend copy/auth UX preparation is implemented locally for controlled guild onboarding without assuming email confirmation.
@@ -1276,3 +1306,15 @@ Milestone 7 backend implementation status:
 - No CP table, CP RPC, GvG table, or GvG RPC changes were made.
 - No frontend files were changed.
 - Local database reset/validation has not been run yet.
+## Milestone 18D AdminPanel Full Translation
+
+Milestone 18D is implemented locally as a frontend display-only translation pass.
+
+- Added full AdminPanel translation coverage for EN/FR/DE dictionaries.
+- AdminPanel shell, tab content, Approvals, Members, CP, GvG, Audit Logs, Permissions, Tools, admin empty/loading states, errors, and success messages now render through i18n display labels.
+- Permission catalog display labels/descriptions are translated through UI fallbacks while database permission keys remain unchanged.
+- Audit action and metadata display labels are translated while raw audit values, usernames, IGN, guild names, CP values, event titles, absence reasons, and user notes remain untranslated.
+- No SQL, Supabase migrations, Supabase/RLS/RPC behavior, services behavior, auth behavior, CP/GvG/audit access logic, role/guild/permission/member-status behavior, dependencies, deployment, or commit action was included.
+- `npm.cmd run build` passed.
+- Static source checks found no `supabase/` or `src/services/` changes and no new direct protected table calls in frontend source.
+- Authenticated staging browser validation for 18D is still pending.

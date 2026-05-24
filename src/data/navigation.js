@@ -2,31 +2,43 @@ export const navigationItems = [
   {
     id: 'auth',
     label: 'Auth',
+    labelKey: 'app.pages.auth',
     eyebrow: 'Entry',
+    eyebrowKey: 'app.eyebrow.entry',
   },
   {
     id: 'pending',
     label: 'Pending',
+    labelKey: 'app.pages.pending',
     eyebrow: 'Gate',
+    eyebrowKey: 'app.eyebrow.gate',
   },
   {
     id: 'dashboard',
     label: 'Home',
+    labelKey: 'nav.home',
     eyebrow: 'Guild',
+    eyebrowKey: 'app.eyebrow.guild',
   },
   {
     id: 'profile',
     label: 'Profile',
+    labelKey: 'nav.profile',
     eyebrow: 'Member',
+    eyebrowKey: 'app.eyebrow.member',
   },
   {
     id: 'gvg',
     label: 'GvG',
+    labelKey: 'nav.gvg',
     eyebrow: 'Vote',
+    eyebrowKey: 'app.eyebrow.vote',
   },
   {
     id: 'admin',
     label: 'Admin',
+    labelKey: 'nav.admin',
     eyebrow: 'Restricted',
+    eyebrowKey: 'app.eyebrow.restricted',
   },
 ];

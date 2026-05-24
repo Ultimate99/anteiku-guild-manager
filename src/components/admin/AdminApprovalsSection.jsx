@@ -15,26 +15,29 @@ export function AdminApprovalsSection({
   onReject,
   formatDate,
   formatRole,
+  formatMembershipStatus,
+  formatApprovalStatus,
   statusTone,
+  t,
 }) {
   return (
-    <section className="approval-list admin-section" aria-label="Registration approval queue">
+    <section className="approval-list admin-section" aria-label={t('admin.approvals.aria')}>
       <div className="section-heading-row admin-section-heading">
         <div>
-          <StatusBadge tone="warning">Registration</StatusBadge>
-          <h3>Approvals</h3>
+          <StatusBadge tone="warning">{t('admin.common.registration')}</StatusBadge>
+          <h3>{t('admin.approvals.title')}</h3>
         </div>
         <button type="button" className="secondary-action compact-action" onClick={onRefresh} disabled={approvalLoading}>
-          {approvalLoading ? 'Loading...' : 'Refresh'}
+          {approvalLoading ? t('common.loading') : t('common.refresh')}
         </button>
       </div>
 
-      {approvalLoading ? <p className="muted-line">Loading approval queue...</p> : null}
+      {approvalLoading ? <p className="muted-line">{t('admin.approvals.loading')}</p> : null}
 
       {!approvalLoading && queue.length === 0 ? (
         <section className="panel compact-empty-state">
-          <StatusBadge>Clear</StatusBadge>
-          <h3>No pending approvals.</h3>
+          <StatusBadge>{t('admin.common.clear')}</StatusBadge>
+          <h3>{t('admin.approvals.empty')}</h3>
         </section>
       ) : null}
 
@@ -48,28 +51,30 @@ export function AdminApprovalsSection({
           <article className="panel approval-card compact-admin-card" key={item.id}>
             <div className="approval-card-header">
               <div>
-                <h4>{item.profile?.ign ?? 'Unknown IGN'}</h4>
-                <p>@{item.profile?.username ?? 'unknown'}</p>
+                <h4>{item.profile?.ign ?? t('admin.common.unknownIgn')}</h4>
+                <p>@{item.profile?.username ?? t('common.unknown')}</p>
               </div>
-              <StatusBadge tone={statusTone(item.membership_status)}>{item.membership_status}</StatusBadge>
+              <StatusBadge tone={statusTone(item.membership_status)}>
+                {formatMembershipStatus(item.membership_status)}
+              </StatusBadge>
             </div>
 
-            <div className="approval-meta compact-meta" aria-label="Approval request details">
+            <div className="approval-meta compact-meta" aria-label={t('admin.approvals.details')}>
               <div>
-                <span>Guild</span>
-                <strong>{item.guild?.name ?? 'Unknown guild'}</strong>
+                <span>{t('admin.common.guild')}</span>
+                <strong>{item.guild?.name ?? t('admin.common.unknownGuild')}</strong>
               </div>
               <div>
-                <span>Profile status</span>
-                <strong>{item.profile?.approval_status ?? 'unknown'}</strong>
+                <span>{t('admin.common.profileStatus')}</span>
+                <strong>{formatApprovalStatus(item.profile?.approval_status)}</strong>
               </div>
               <div>
-                <span>Requested</span>
+                <span>{t('admin.common.requested')}</span>
                 <strong>{formatDate(item.created_at)}</strong>
               </div>
               {item.profile?.reapply_requested_at ? (
                 <div>
-                  <span>Reapply requested</span>
+                  <span>{t('admin.approvals.reapplyRequested')}</span>
                   <strong>{formatDate(item.profile.reapply_requested_at)}</strong>
                 </div>
               ) : null}
@@ -78,7 +83,7 @@ export function AdminApprovalsSection({
             {item.profile?.reapply_note ? <p className="muted-line">{item.profile.reapply_note}</p> : null}
 
             <label>
-              Approve as
+              {t('admin.approvals.approveAs')}
               <select value={selectedRole} onChange={(event) => onRoleChange(item.id, event.target.value)} disabled={actionDisabled}>
                 {allowedRoles.map((role) => (
                   <option key={role} value={role}>
@@ -90,19 +95,19 @@ export function AdminApprovalsSection({
 
             <div className="approval-actions">
               <button type="button" className="primary-action" onClick={() => onApprove(item)} disabled={actionDisabled}>
-                {isApproving ? 'Approving...' : 'Approve'}
+                {isApproving ? t('admin.approvals.approving') : t('admin.approvals.approve')}
               </button>
               <button type="button" className="danger-action" onClick={() => onReject(item)} disabled={actionDisabled}>
-                {isRejecting ? 'Rejecting...' : 'Reject'}
+                {isRejecting ? t('admin.approvals.rejecting') : t('admin.approvals.reject')}
               </button>
             </div>
 
             <label>
-              Rejection reason
+              {t('admin.approvals.rejectionReason')}
               <textarea
                 value={rejectReasons[item.id] ?? ''}
                 maxLength={1000}
-                placeholder="Optional note"
+                placeholder={t('admin.approvals.optionalNote')}
                 onChange={(event) => onRejectReasonChange(item.id, event.target.value)}
                 disabled={actionDisabled}
               />

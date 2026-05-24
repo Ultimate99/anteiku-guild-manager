@@ -1,5 +1,20 @@
 # Session Log
 
+## 2026-05-24 - Milestone 18B i18n Foundation Implemented
+
+- Implemented Milestone 18B as a frontend-only language-pack foundation.
+- Added English, French, and German dictionaries under `src/i18n/`.
+- Added `LanguageProvider`, `useLanguage()`, `t(key, params?)`, English fallback behavior, and `agm_language` localStorage persistence.
+- Wrapped the app with `LanguageProvider > AuthProvider > AppContent`.
+- Added a compact EN/FR/DE selector in the topbar, visible for logged-out and logged-in users.
+- Translated common shell/navigation/auth/register/forgot-password/recovery/status gate surfaces.
+- Translated member-facing roster status labels/summaries and core GvG voting copy included in 18B scope.
+- Wired basic AdminPanel tab labels only; detailed AdminPanel content remains out of scope for 18B.
+- `npm.cmd run build` passed.
+- Built-app preview validation passed for EN/FR/DE switching, reload persistence, auth/register/recovery copy, missing-key check, and captured console errors.
+- Static checks found no Supabase migration changes and no new protected-table paths in touched files.
+- No SQL, Supabase/RLS/RPC, auth behavior, CP/GvG/audit/role/permission/member-status logic, deployment, or commit action was performed.
+
 ## 2026-05-24 - Milestone 17D Registration Copy Update Implemented
 
 - Implemented Milestone 17D as a frontend copy/auth UX preparation pass for controlled guild onboarding.
@@ -784,3 +799,12 @@
 - Updated local validation script with Milestone 7 role and transfer checks.
 - No frontend files, package files, CP logic, or GvG logic were changed.
 - No commands were run and migrations were not applied.
+## 2026-05-24 - Milestone 18D AdminPanel Translation Implemented
+
+- Implemented full AdminPanel EN/FR/DE display translation.
+- Added admin translation keys for shell copy, tab content, Approvals, Members, CP, GvG, Audit Logs, Permissions, Tools, errors, success messages, permission labels/descriptions, audit action labels, and audit metadata labels.
+- Updated AdminPanel and extracted admin section components to render translated display labels while preserving backend/logic values.
+- Kept usernames, IGN, guild names, CP numeric values, GvG event titles, absence reasons, raw audit values, and user-generated notes untranslated.
+- `npm.cmd run build` passed.
+- Static checks found no Supabase migration changes, no service changes, and no new direct protected table calls in frontend source.
+- Authenticated staging browser validation remains the next gate.

@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-05-24 - Milestone 18B i18n Foundation Implemented
+
+- Added a frontend-only EN/FR/DE language-pack foundation.
+- Added `LanguageProvider`, `useLanguage()`, `t(key, params?)`, English fallback behavior, and `agm_language` localStorage persistence.
+- Added compact topbar language selector visible before and after sign-in.
+- Translated core shell, navigation, auth/register, forgot-password, Set New Password, pending/rejected/suspended/roster-restricted, Dashboard/Profile status, and member GvG voting surfaces included in 18B scope.
+- Wired basic AdminPanel tab labels for translation.
+- Left full AdminPanel content, CP tab content, Audit details, permission descriptions, raw audit metadata, usernames, IGN, guild names, and user-generated notes out of scope.
+- `npm.cmd run build` passed.
+- Built-app preview validation passed for EN/FR/DE switching, reload persistence, auth/register/recovery translation, missing-key checks, compact language selector, and empty captured console errors.
+- No SQL migrations, Supabase/RLS/RPC logic, auth behavior, CP/GvG/audit/role/permission/member-status logic, deployment, or commit action changed.
+
 ## 2026-05-24 - Milestone 17D Registration Copy Update Implemented
 
 - Updated registration copy for controlled guild onboarding.
@@ -527,3 +539,11 @@
 - Added safe roster search/filter UI, admin member IGN edit via `admin_update_member_ign`, and username/profile slug reset via `admin_reset_profile_slug`.
 - Completed Milestone 6 manual browser validation: Owner roster access, member IGN edit, username/profile slug reset, normal member Admin denial, and no CP calls passed.
 - Recorded Milestone 7 requirement: admin/staff member guild + role management must be planned safely and not patched in quickly.
+## 2026-05-24 - Milestone 18D AdminPanel Full Translation Implemented
+
+- Added full AdminPanel display translations for English, French, and German.
+- Translated AdminPanel shell, Approvals, Members, CP, GvG, Audit Logs, Permissions, Tools, admin empty/loading states, errors, success messages, permission display labels/descriptions, audit action labels, and audit metadata labels.
+- Preserved raw logic/data values: usernames, IGN, guild names, permission keys, audit metadata values, CP numbers, GvG event titles, absence reasons, user notes, roster status values, and RPC payload values were not translated.
+- `npm.cmd run build` passed.
+- No SQL migrations, Supabase/RLS/RPC behavior, service behavior, dependencies, deployment, or commit action changed.
+- Authenticated staging browser validation is pending.

@@ -17,14 +17,16 @@ export function AdminGvgSection({
   onSetStatus,
   onSelectEvent,
   formatDate,
+  formatGvgStatus,
+  t,
 }) {
   return (
-    <section className="gvg-management admin-section" aria-label="GvG management">
+    <section className="gvg-management admin-section" aria-label={t('admin.gvg.aria')}>
       <div className="panel gvg-management-tools admin-section-tools">
         <div className="section-heading-row admin-section-heading">
           <div>
             <StatusBadge tone="success">GvG</StatusBadge>
-            <h3>Events</h3>
+            <h3>{t('admin.gvg.title')}</h3>
           </div>
           <button
             type="button"
@@ -32,21 +34,21 @@ export function AdminGvgSection({
             onClick={onRefresh}
             disabled={gvgLoading || Boolean(activeAction)}
           >
-            {gvgLoading ? 'Loading...' : 'Refresh'}
+            {gvgLoading ? t('common.loading') : t('common.refresh')}
           </button>
         </div>
 
       </div>
 
-      <section className="panel gvg-create-panel compact-admin-card" aria-label="Create GvG event">
-        <StatusBadge tone="warning">Create event</StatusBadge>
-        <h3>Create event</h3>
+      <section className="panel gvg-create-panel compact-admin-card" aria-label={t('admin.gvg.createAria')}>
+        <StatusBadge tone="warning">{t('admin.gvg.createBadge')}</StatusBadge>
+        <h3>{t('admin.gvg.createEvent')}</h3>
         <label>
-          Event title
+          {t('admin.gvg.eventTitle')}
           <input
             type="text"
             value={gvgDraft.title}
-            placeholder="GvG readiness check"
+            placeholder={t('admin.gvg.titlePlaceholder')}
             onChange={(event) => onUpdateDraft('title', event.target.value)}
             disabled={gvgLoading || Boolean(activeAction)}
           />
@@ -54,27 +56,27 @@ export function AdminGvgSection({
 
         {membership?.role === 'owner' ? (
           <label>
-            Scope
+            {t('admin.common.scope')}
             <select
               value={gvgDraft.scope}
               onChange={(event) => onUpdateDraft('scope', event.target.value)}
               disabled={gvgLoading || Boolean(activeAction)}
             >
-              <option value="guild">Guild</option>
-              <option value="global">Global</option>
+              <option value="guild">{t('admin.common.guildScope')}</option>
+              <option value="global">{t('admin.common.global')}</option>
             </select>
           </label>
         ) : null}
 
         {gvgDraft.scope === 'guild' || membership?.role !== 'owner' ? (
           <label>
-            Guild
+            {t('admin.common.guild')}
             <select
               value={gvgDraft.guildId}
               onChange={(event) => onUpdateDraft('guildId', event.target.value)}
               disabled={gvgLoading || Boolean(activeAction) || gvgGuildOptions.length <= 1}
             >
-              {gvgGuildOptions.length === 0 ? <option value="">No guild scope</option> : null}
+              {gvgGuildOptions.length === 0 ? <option value="">{t('admin.common.noGuildScope')}</option> : null}
               {gvgGuildOptions.map((guild) => (
                 <option key={guild.id} value={guild.id}>
                   {guild.name}
@@ -86,7 +88,7 @@ export function AdminGvgSection({
 
         <div className="gvg-date-grid">
           <label>
-            Starts
+            {t('admin.common.starts')}
             <input
               type="datetime-local"
               value={gvgDraft.startsAt}
@@ -95,7 +97,7 @@ export function AdminGvgSection({
             />
           </label>
           <label>
-            Ends
+            {t('admin.common.ends')}
             <input
               type="datetime-local"
               value={gvgDraft.endsAt}
@@ -106,29 +108,29 @@ export function AdminGvgSection({
         </div>
 
         <button type="button" className="primary-action" onClick={onCreateEvent} disabled={gvgLoading || Boolean(activeAction)}>
-          {activeAction?.type === 'gvg-create' ? 'Creating...' : 'Create draft event'}
+          {activeAction?.type === 'gvg-create' ? t('admin.gvg.creating') : t('admin.gvg.createDraft')}
         </button>
       </section>
 
-      {gvgLoading ? <p className="muted-line">Loading GvG events...</p> : null}
+      {gvgLoading ? <p className="muted-line">{t('admin.gvg.loading')}</p> : null}
 
       {!gvgLoading && gvgEvents.length === 0 ? (
         <section className="panel compact-empty-state">
-          <StatusBadge>Empty</StatusBadge>
-          <h3>No GvG events.</h3>
+          <StatusBadge>{t('admin.common.empty')}</StatusBadge>
+          <h3>{t('admin.gvg.empty')}</h3>
         </section>
       ) : null}
 
       {gvgEvents.length > 0 ? (
-        <section className="panel gvg-results-panel compact-admin-card" aria-label="GvG results">
+        <section className="panel gvg-results-panel compact-admin-card" aria-label={t('admin.gvg.resultsAria')}>
           <div className="section-heading-row admin-section-heading">
             <div>
-              <StatusBadge tone="success">Results</StatusBadge>
-              <h3>Results</h3>
+              <StatusBadge tone="success">{t('admin.gvg.results')}</StatusBadge>
+              <h3>{t('admin.gvg.results')}</h3>
             </div>
           </div>
           <label>
-            Event
+            {t('admin.common.event')}
             <select
               value={selectedGvgEventId}
               onChange={(event) => onSelectEvent(event.target.value)}
@@ -136,7 +138,7 @@ export function AdminGvgSection({
             >
               {gvgEvents.map((event) => (
                 <option key={event.id} value={event.id}>
-                  {event.title} - {event.status}
+                  {event.title} - {formatGvgStatus(event.status)}
                 </option>
               ))}
             </select>
@@ -144,23 +146,25 @@ export function AdminGvgSection({
 
           {selectedGvgEvent ? (
             <>
-              <div className="approval-meta compact-meta" aria-label="Selected GvG event details">
+              <div className="approval-meta compact-meta" aria-label={t('admin.gvg.eventDetails')}>
                 <div>
-                  <span>Status</span>
-                  <strong>{selectedGvgEvent.status}</strong>
+                  <span>{t('admin.common.status')}</span>
+                  <strong>{formatGvgStatus(selectedGvgEvent.status)}</strong>
                 </div>
                 <div>
-                  <span>Scope</span>
+                  <span>{t('admin.common.scope')}</span>
                   <strong>
-                    {selectedGvgEvent.scope === 'global' ? 'Global' : selectedGvgEvent.guild?.name ?? 'Guild'}
+                    {selectedGvgEvent.scope === 'global'
+                      ? t('admin.common.global')
+                      : selectedGvgEvent.guild?.name ?? t('admin.common.guildScope')}
                   </strong>
                 </div>
                 <div>
-                  <span>Starts</span>
+                  <span>{t('admin.common.starts')}</span>
                   <strong>{formatDate(selectedGvgEvent.starts_at)}</strong>
                 </div>
                 <div>
-                  <span>Updated</span>
+                  <span>{t('admin.common.updated')}</span>
                   <strong>{formatDate(selectedGvgEvent.updated_at)}</strong>
                 </div>
               </div>
@@ -173,8 +177,8 @@ export function AdminGvgSection({
                   disabled={Boolean(activeAction) || selectedGvgEvent.status === 'active'}
                 >
                   {activeAction?.id === selectedGvgEvent.id && activeAction?.type === 'gvg-active'
-                    ? 'Opening...'
-                    : 'Open voting'}
+                    ? t('admin.gvg.opening')
+                    : t('admin.gvg.openVoting')}
                 </button>
                 <button
                   type="button"
@@ -183,46 +187,46 @@ export function AdminGvgSection({
                   disabled={Boolean(activeAction) || selectedGvgEvent.status === 'closed'}
                 >
                   {activeAction?.id === selectedGvgEvent.id && activeAction?.type === 'gvg-closed'
-                    ? 'Closing...'
-                    : 'Close voting'}
+                    ? t('admin.gvg.closing')
+                    : t('admin.gvg.closeVoting')}
                 </button>
               </div>
 
               <div className="gvg-summary-grid">
                 <article>
-                  <span>Present</span>
+                  <span>{t('admin.gvg.present')}</span>
                   <strong>{gvgSummary.present.length}</strong>
                 </article>
                 <article>
-                  <span>Absent</span>
+                  <span>{t('admin.gvg.absent')}</span>
                   <strong>{gvgSummary.absent.length}</strong>
                 </article>
               </div>
 
               <div className="gvg-results-grid">
                 <section>
-                  <h4>Present</h4>
+                  <h4>{t('admin.gvg.present')}</h4>
                   {gvgSummary.present.length === 0 ? (
-                    <p className="muted-line">No present votes yet.</p>
+                    <p className="muted-line">{t('admin.gvg.noPresent')}</p>
                   ) : (
                     gvgSummary.present.map((vote) => (
                       <article className="gvg-vote-row" key={vote.profile_id}>
-                        <strong>{vote.ign ?? 'Unknown IGN'}</strong>
-                        <span>@{vote.username ?? 'unknown'}</span>
+                        <strong>{vote.ign ?? t('admin.common.unknownIgn')}</strong>
+                        <span>@{vote.username ?? t('common.unknown')}</span>
                       </article>
                     ))
                   )}
                 </section>
 
                 <section>
-                  <h4>Absence log</h4>
+                  <h4>{t('admin.gvg.absenceLog')}</h4>
                   {gvgSummary.absent.length === 0 ? (
-                    <p className="muted-line">No absent votes yet.</p>
+                    <p className="muted-line">{t('admin.gvg.noAbsent')}</p>
                   ) : (
                     gvgSummary.absent.map((vote) => (
                       <article className="gvg-vote-row" key={vote.profile_id}>
-                        <strong>{vote.ign ?? 'Unknown IGN'}</strong>
-                        <span>@{vote.username ?? 'unknown'}</span>
+                        <strong>{vote.ign ?? t('admin.common.unknownIgn')}</strong>
+                        <span>@{vote.username ?? t('common.unknown')}</span>
                         {vote.absence_reason ? <p>{vote.absence_reason}</p> : null}
                       </article>
                     ))

@@ -7,7 +7,12 @@
 - `src/components/StatusBadge.jsx`: Small status label component.
 - `src/config/supabaseClient.js`: Supabase env check and client placeholder.
 - `src/context/AuthContext.jsx`: Local Supabase auth/session provider, password recovery state, and safe viewer state.
+- `src/context/LanguageContext.jsx`: Frontend-only language provider, `useLanguage()` hook, `t(key, params?)`, and `agm_language` persistence.
 - `src/hooks/useAuth.js`: Hook for reading auth context.
+- `src/i18n/index.js`: Lightweight i18n registry, language options, fallback translation lookup, and interpolation helper.
+- `src/i18n/en.js`: English UI translation dictionary.
+- `src/i18n/fr.js`: French UI translation dictionary.
+- `src/i18n/de.js`: German UI translation dictionary.
 - `src/services/authService.js`: Supabase auth wrappers for session, signin, signup, password reset/update, and signout.
 - `src/services/profileService.js`: Safe own profile/membership/guild loading including `roster_status`, registration RPC call, and own IGN update RPC wrapper.
 - `src/services/guildService.js`: Safe core guild loading for registration.
@@ -34,6 +39,25 @@
 - `src/components/admin/AdminPermissionsSection.jsx`: Admin permission checkbox management section.
 - `src/components/admin/AdminToolsSection.jsx`: Planned/future admin tools section.
 - `src/styles/app.css`: Plain mobile-first dark styling.
+
+## Milestone 18B Language Pack Foundation
+
+- `src/context/LanguageContext.jsx`
+  - Adds `LanguageProvider`, `useLanguage()`, and persisted EN/FR/DE language selection.
+  - Uses localStorage key `agm_language`; no database storage.
+- `src/i18n/*.js`
+  - Adds English, French, and German dictionaries for common/auth/nav/status/member-facing surfaces.
+  - Keeps guild names, usernames, IGN, database keys, raw audit metadata, and user-generated text out of translation scope.
+- `src/layouts/AppShell.jsx`
+  - Adds compact topbar language selector visible before and after sign-in.
+- `src/App.jsx`, `src/data/navigation.js`
+  - Wire translated shell/page/nav labels without changing routing or access gates.
+- `src/pages/LoginRegister.jsx`, `src/pages/SetNewPassword.jsx`, `src/pages/PendingApproval.jsx`, `src/pages/RejectedStatus.jsx`, `src/pages/SuspendedStatus.jsx`, `src/pages/RosterRestrictedStatus.jsx`
+  - Translate core auth/recovery/status gate copy.
+- `src/pages/Dashboard.jsx`, `src/pages/Profile.jsx`, `src/pages/Gvg.jsx`
+  - Translate member-facing status labels and core GvG voting copy included in 18B scope.
+- `src/pages/AdminPanel.jsx`
+  - Translates basic Admin tab labels only; full AdminPanel section translation remains future work.
 
 ## Documentation
 
@@ -196,3 +220,25 @@
   - Replaces milestone-style placeholder language with compact coming-later rows.
 - `src/styles/app.css`
   - Adds compact AdminPanel card, empty-state, metadata, control-block, tab, and narrow-mobile styles.
+
+## Milestone 18D AdminPanel Full Translation
+
+- `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`
+  - Add full AdminPanel translation keys for shell, common admin labels, Approvals, Members, CP, GvG, Audit Logs, Permissions, Tools, errors, success messages, permission catalog display labels/descriptions, audit actions, and audit metadata labels.
+- `src/pages/AdminPanel.jsx`
+  - Adds UI-only translation wrappers for roles, membership statuses, roster statuses, GvG statuses, dates, audit actions, audit metadata labels, and permission labels/descriptions.
+  - Keeps all logic values, select values, RPC payload values, audit metadata values, permission keys, and roster/GvG/member status values unchanged.
+- `src/components/admin/AdminApprovalsSection.jsx`
+  - Translates approval queue labels, buttons, empty/loading states, details labels, and rejection note labels.
+- `src/components/admin/AdminMembersSection.jsx`
+  - Translates roster filters, compact row metadata, Manage disclosure controls, roster status controls, role controls, guild transfer controls, confirmations, warnings, and empty/loading states.
+- `src/components/admin/AdminCpSection.jsx`
+  - Translates CP roster, filters, CP details labels, read-only/update controls, empty states, and leaderboard labels.
+- `src/components/admin/AdminGvgSection.jsx`
+  - Translates GvG event creation, scope labels, date labels, lifecycle buttons, result summaries, and empty/loading states while preserving event titles and status values used in logic.
+- `src/components/admin/AdminAuditSection.jsx`
+  - Translates audit filters, action labels, card metadata labels, read-only badge, CP redaction notice, metadata labels, and load-older controls while preserving raw metadata values.
+- `src/components/admin/AdminPermissionsSection.jsx`
+  - Translates permission target labels, sensitive/Owner-only notes, save/cancel controls, and permission catalog display labels/descriptions without renaming permission keys.
+- `src/components/admin/AdminToolsSection.jsx`
+  - Translates Tools placeholder copy.
