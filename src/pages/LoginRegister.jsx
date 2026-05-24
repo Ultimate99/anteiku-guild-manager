@@ -20,6 +20,7 @@ export function LoginRegister() {
     notice,
     setError,
     setNotice,
+    requestPasswordReset,
     signIn,
     signUpAndRegister,
     user,
@@ -30,6 +31,7 @@ export function LoginRegister() {
   const [guildError, setGuildError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const isCompletingProfile = accessState === 'needs_profile';
+  const isPasswordResetMode = mode === 'forgot-password';
 
   useEffect(() => {
     if (isCompletingProfile) {
@@ -88,6 +90,15 @@ export function LoginRegister() {
         return;
       }
 
+      if (isPasswordResetMode && !isCompletingProfile) {
+        await requestPasswordReset(form.email.trim());
+        setForm((current) => ({
+          ...current,
+          password: '',
+        }));
+        return;
+      }
+
       if (!form.requestedGuildId) {
         throw new Error('Choose a guild before registering.');
       }
@@ -127,7 +138,11 @@ export function LoginRegister() {
 
       {!isCompletingProfile ? (
         <div className="segmented-control" aria-label="Auth mode">
-          <button type="button" data-active={mode === 'sign-in'} onClick={() => setMode('sign-in')}>
+          <button
+            type="button"
+            data-active={mode === 'sign-in' || mode === 'forgot-password'}
+            onClick={() => setMode('sign-in')}
+          >
             Sign in
           </button>
           <button type="button" data-active={mode === 'register'} onClick={() => setMode('register')}>
@@ -149,16 +164,18 @@ export function LoginRegister() {
                 required
               />
             </label>
-            <label>
-              Password
-              <input
-                type="password"
-                value={form.password}
-                placeholder="Your password"
-                onChange={(event) => updateField('password', event.target.value)}
-                required
-              />
-            </label>
+            {!isPasswordResetMode ? (
+              <label>
+                Password
+                <input
+                  type="password"
+                  value={form.password}
+                  placeholder="Your password"
+                  onChange={(event) => updateField('password', event.target.value)}
+                  required
+                />
+              </label>
+            ) : null}
           </>
         ) : (
           <StatusBadge tone="warning">Complete registration</StatusBadge>
@@ -206,6 +223,18 @@ export function LoginRegister() {
           </>
         ) : null}
 
+        {!isCompletingProfile && mode === 'sign-in' ? (
+          <button type="button" className="inline-text-action" onClick={() => setMode('forgot-password')}>
+            Forgot password?
+          </button>
+        ) : null}
+
+        {!isCompletingProfile && isPasswordResetMode ? (
+          <button type="button" className="inline-text-action" onClick={() => setMode('sign-in')}>
+            Back to sign in
+          </button>
+        ) : null}
+
         {notice ? <p className="notice-line">{notice}</p> : null}
         {error ? <p className="error-line">{error}</p> : null}
         {guildError ? <p className="error-line">{guildError}</p> : null}
@@ -213,7 +242,9 @@ export function LoginRegister() {
         <button type="submit" className="primary-action" disabled={!isSupabaseConfigured || submitting}>
           {submitting
             ? 'Working...'
-            : mode === 'sign-in' && !isCompletingProfile
+            : isPasswordResetMode && !isCompletingProfile
+              ? 'Send reset link'
+              : mode === 'sign-in' && !isCompletingProfile
               ? 'Sign in'
               : 'Register for approval'}
         </button>

@@ -1,21 +1,22 @@
 # Code Index
 
 - `src/main.jsx`: React root.
-- `src/App.jsx`: Local page state, auth/approval gates, and roster hard-block gate routing.
+- `src/App.jsx`: Local page state, auth/approval gates, password recovery gate, and roster hard-block gate routing.
 - `src/layouts/AppShell.jsx`: Header, content frame, sign-out action, and bottom navigation container.
 - `src/components/AppNav.jsx`: Mobile-first page navigation.
 - `src/components/StatusBadge.jsx`: Small status label component.
 - `src/config/supabaseClient.js`: Supabase env check and client placeholder.
-- `src/context/AuthContext.jsx`: Local Supabase auth/session provider and safe viewer state.
+- `src/context/AuthContext.jsx`: Local Supabase auth/session provider, password recovery state, and safe viewer state.
 - `src/hooks/useAuth.js`: Hook for reading auth context.
-- `src/services/authService.js`: Supabase auth wrappers for session, signin, signup, and signout.
+- `src/services/authService.js`: Supabase auth wrappers for session, signin, signup, password reset/update, and signout.
 - `src/services/profileService.js`: Safe own profile/membership/guild loading including `roster_status`, registration RPC call, and own IGN update RPC wrapper.
 - `src/services/guildService.js`: Safe core guild loading for registration.
 - `src/services/adminApprovalService.js`: RLS-safe approval queue reads, own approval permission lookup, and approval/rejection RPC wrappers.
 - `src/services/adminMemberService.js`: RLS-safe approved primary member roster reads, member-management permission helpers, roster status helpers, roster status RPC wrapper, and admin member IGN/slug/role/guild RPC wrappers.
 - `src/data/guilds.js`: Core guild list.
 - `src/data/navigation.js`: Navigation items.
-- `src/pages/LoginRegister.jsx`: Local Supabase signin/signup and registration UI.
+- `src/pages/LoginRegister.jsx`: Local Supabase signin/signup, forgot-password, and registration UI.
+- `src/pages/SetNewPassword.jsx`: Required password recovery screen shown before normal navigation during recovery sessions.
 - `src/pages/PendingApproval.jsx`: Pending approval gate with manual refresh.
 - `src/pages/RejectedStatus.jsx`: Rejected account gate; reapply is planned later.
 - `src/pages/SuspendedStatus.jsx`: Suspended account gate.

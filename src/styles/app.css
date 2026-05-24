@@ -222,6 +222,7 @@ textarea {
 .primary-action,
 .secondary-action,
 .danger-action,
+.inline-text-action,
 .nav-button,
 .segmented-control button {
   border: 1px solid transparent;
@@ -256,6 +257,22 @@ textarea {
   min-width: 96px;
   min-height: 44px;
   padding: 9px 12px;
+}
+
+.inline-text-action {
+  justify-self: start;
+  min-height: 36px;
+  padding: 4px 0;
+  background: transparent;
+  color: #f4c4ca;
+  font-size: 0.86rem;
+  text-align: left;
+}
+
+.inline-text-action:hover,
+.inline-text-action:focus-visible {
+  color: #fff;
+  text-decoration: underline;
 }
 
 .segmented-control button {
@@ -1001,6 +1018,30 @@ textarea {
     rgba(18, 18, 24, 0.94);
 }
 
+.recovery-stack {
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.recovery-panel {
+  display: grid;
+  gap: 8px;
+  border-color: rgba(197, 22, 39, 0.24);
+  background:
+    linear-gradient(135deg, rgba(197, 22, 39, 0.12), transparent 56%),
+    rgba(18, 18, 24, 0.94);
+}
+
+.recovery-form {
+  gap: 12px;
+}
+
+.recovery-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
 .roster-status-control textarea {
   min-height: 88px;
 }
@@ -1108,6 +1149,10 @@ textarea {
   }
 
   .profile-edit-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .recovery-actions {
     grid-template-columns: 1fr 1fr;
   }
 

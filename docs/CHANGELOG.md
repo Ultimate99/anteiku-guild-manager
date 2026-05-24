@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-05-24 - Milestone 17A Password Recovery Flow Implemented
+
+- Implemented frontend/auth UX for required password reset after Supabase recovery links.
+- Added password reset email request and recovered-password update wrappers.
+- Added Supabase `PASSWORD_RECOVERY` handling, recovery URL fallback detection, and a sessionStorage recovery marker.
+- Added a `Set new password` screen that blocks normal app navigation while recovery mode is active.
+- Added a forgot-password mode to the sign-in screen with neutral reset-email copy.
+- Preserved existing approval, membership, roster status, role/guild/permission, CP, GvG, and audit behavior.
+- `npm.cmd run build` passed.
+- Local browser smoke confirmed forgot-password UI, recovery-gated reset screen, blocked normal navigation, sign-out recovery cleanup, and no captured console warnings/errors.
+- No SQL migrations, Supabase/RLS/RPC logic, Vercel env, deployment, or commit action was performed.
+- Real staging recovery-email validation remains pending before production rollout.
+
 ## 2026-05-24 - Milestone 16D.1 AdminPanel Compact Roster Implemented
 
 - Implemented frontend-only AdminPanel compact member cards and technical text cleanup.

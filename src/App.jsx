@@ -5,6 +5,7 @@ import { AppShell } from './layouts/AppShell.jsx';
 import { navigationItems } from './data/navigation.js';
 import { Dashboard } from './pages/Dashboard.jsx';
 import { LoginRegister } from './pages/LoginRegister.jsx';
+import { SetNewPassword } from './pages/SetNewPassword.jsx';
 import { PendingApproval } from './pages/PendingApproval.jsx';
 import { Profile } from './pages/Profile.jsx';
 import { Gvg } from './pages/Gvg.jsx';
@@ -49,6 +50,11 @@ const statusItems = {
     label: 'Suspended',
     eyebrow: 'Status',
   },
+  recovery: {
+    id: 'recovery',
+    label: 'Password',
+    eyebrow: 'Recovery',
+  },
 };
 
 function isPrivilegedRole(role) {
@@ -67,7 +73,7 @@ function LoadingPanel() {
 }
 
 function AppContent() {
-  const { accessState, loading, membership } = useAuth();
+  const { accessState, loading, membership, recoveryRequired } = useAuth();
   const [activePage, setActivePage] = useState('dashboard');
   const rosterStatus = membership?.roster_status ?? 'active';
   const isHardMembershipState = ['suspended', 'left'].includes(membership?.membership_status);
@@ -118,6 +124,14 @@ function AppContent() {
     return (
       <AppShell activeItem={statusItems.loading} activePage="loading" navigationItems={[]}>
         <LoadingPanel />
+      </AppShell>
+    );
+  }
+
+  if (recoveryRequired) {
+    return (
+      <AppShell activeItem={statusItems.recovery} activePage="password-recovery" navigationItems={[]}>
+        <SetNewPassword />
       </AppShell>
     );
   }

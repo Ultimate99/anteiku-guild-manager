@@ -50,6 +50,30 @@ export async function signUpWithPassword(email, password) {
   return data;
 }
 
+export async function requestPasswordReset(email) {
+  const client = requireSupabase();
+  const redirectTo = typeof window !== 'undefined' ? window.location.origin : undefined;
+  const options = redirectTo ? { redirectTo } : undefined;
+  const { data, error } = await client.auth.resetPasswordForEmail(email, options);
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function updateRecoveredPassword(password) {
+  const client = requireSupabase();
+  const { data, error } = await client.auth.updateUser({ password });
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
 export async function signOutUser() {
   const client = requireSupabase();
   const { error } = await client.auth.signOut();

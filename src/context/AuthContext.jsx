@@ -3,13 +3,16 @@ import { isSupabaseConfigured } from '../config/supabaseClient.js';
 import {
   getSession,
   onAuthStateChange,
+  requestPasswordReset as requestPasswordResetEmail,
   signInWithPassword,
   signOutUser,
   signUpWithPassword,
+  updateRecoveredPassword as updateRecoveredPasswordAuth,
 } from '../services/authService.js';
 import { loadSafeViewerState, registerProfile } from '../services/profileService.js';
 
 export const AuthContext = createContext(null);
+const RECOVERY_MARKER_KEY = 'anteiku.passwordRecoveryRequired';
 
 function getAccessState(session, profile) {
   if (!isSupabaseConfigured) {
@@ -27,6 +30,68 @@ function getAccessState(session, profile) {
   return profile.approval_status ?? 'pending';
 }
 
+function safeSessionStorage() {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    return window.sessionStorage;
+  } catch {
+    return null;
+  }
+}
+
+function readRecoveryMarker() {
+  return safeSessionStorage()?.getItem(RECOVERY_MARKER_KEY) === 'true';
+}
+
+function writeRecoveryMarker() {
+  safeSessionStorage()?.setItem(RECOVERY_MARKER_KEY, 'true');
+}
+
+function removeRecoveryMarker() {
+  safeSessionStorage()?.removeItem(RECOVERY_MARKER_KEY);
+}
+
+function getRecoveryUrlState() {
+  if (typeof window === 'undefined') {
+    return { isRecovery: false, errorMessage: '' };
+  }
+
+  const searchParams = new URLSearchParams(window.location.search);
+  const hashValue = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash;
+  const hashParams = new URLSearchParams(hashValue);
+  const type = searchParams.get('type') || hashParams.get('type');
+  const mode = searchParams.get('mode') || hashParams.get('mode');
+  const event = searchParams.get('event') || hashParams.get('event');
+  const error = searchParams.get('error') || hashParams.get('error');
+  const errorCode = searchParams.get('error_code') || hashParams.get('error_code');
+  const errorDescription = searchParams.get('error_description') || hashParams.get('error_description');
+  const isRecovery = [type, mode, event].some((value) => value?.toLowerCase() === 'recovery');
+
+  if (!error && !errorCode && !errorDescription) {
+    return { isRecovery, errorMessage: '' };
+  }
+
+  const combinedError = `${error ?? ''} ${errorCode ?? ''} ${errorDescription ?? ''}`.toLowerCase();
+  const errorMessage =
+    combinedError.includes('expired') || combinedError.includes('otp')
+      ? 'Reset link expired. Request a new one.'
+      : 'Reset link invalid. Request a new one.';
+
+  return { isRecovery: true, errorMessage };
+}
+
+function clearRecoveryUrlState() {
+  if (typeof window === 'undefined' || (!window.location.search && !window.location.hash)) {
+    return;
+  }
+
+  const cleanUrl = `${window.location.origin}${window.location.pathname}`;
+  window.history.replaceState({}, document.title, cleanUrl);
+}
+
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -36,6 +101,23 @@ export function AuthProvider({ children }) {
   const [profileLoading, setProfileLoading] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [recoveryRequired, setRecoveryRequired] = useState(() => readRecoveryMarker());
+  const [recoveryError, setRecoveryError] = useState('');
+
+  const requirePasswordRecovery = useCallback((message = '') => {
+    writeRecoveryMarker();
+    setRecoveryRequired(true);
+    setRecoveryError(message);
+    setNotice('');
+    setError('');
+  }, []);
+
+  const clearPasswordRecovery = useCallback(() => {
+    removeRecoveryMarker();
+    clearRecoveryUrlState();
+    setRecoveryRequired(false);
+    setRecoveryError('');
+  }, []);
 
   const loadViewer = useCallback(async (activeSession) => {
     if (!activeSession?.user?.id || !isSupabaseConfigured) {
@@ -82,6 +164,7 @@ export function AuthProvider({ children }) {
       }
 
       try {
+        const recoveryUrlState = getRecoveryUrlState();
         const restoredSession = await getSession();
 
         if (!mounted) {
@@ -89,6 +172,12 @@ export function AuthProvider({ children }) {
         }
 
         setSession(restoredSession);
+        if (recoveryUrlState.isRecovery || (readRecoveryMarker() && restoredSession)) {
+          requirePasswordRecovery(recoveryUrlState.errorMessage);
+        } else if (!restoredSession) {
+          clearPasswordRecovery();
+        }
+
         await loadViewer(restoredSession);
       } catch (sessionError) {
         if (mounted) {
@@ -131,6 +220,15 @@ export function AuthProvider({ children }) {
       setSession(nextSession);
       setNotice('');
       setError('');
+
+      if (event === 'PASSWORD_RECOVERY') {
+        requirePasswordRecovery();
+      }
+
+      if (event === 'SIGNED_OUT') {
+        clearPasswordRecovery();
+      }
+
       loadViewerAfterAuthEvent(nextSession);
     });
 
@@ -138,7 +236,7 @@ export function AuthProvider({ children }) {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [loadViewer]);
+  }, [clearPasswordRecovery, loadViewer, requirePasswordRecovery]);
 
   const signIn = useCallback(
     async (email, password) => {
@@ -150,6 +248,32 @@ export function AuthProvider({ children }) {
       return data;
     },
     [loadViewer],
+  );
+
+  const requestPasswordReset = useCallback(async (email) => {
+    setError('');
+    setNotice('');
+    await requestPasswordResetEmail(email);
+    setNotice('If the email exists, a reset link was sent.');
+  }, []);
+
+  const updateRecoveredPassword = useCallback(
+    async (newPassword) => {
+      if (!session?.user) {
+        throw new Error('Reset link expired. Request a new one.');
+      }
+
+      setError('');
+      setNotice('');
+      await updateRecoveredPasswordAuth(newPassword);
+      clearPasswordRecovery();
+      setNotice('Password updated.');
+
+      const currentSession = await getSession();
+      setSession(currentSession);
+      await loadViewer(currentSession);
+    },
+    [clearPasswordRecovery, loadViewer, session],
   );
 
   const signUpAndRegister = useCallback(
@@ -213,8 +337,9 @@ export function AuthProvider({ children }) {
       setGuild(null);
       setProfileLoading(false);
       setLoading(false);
+      clearPasswordRecovery();
     }
-  }, []);
+  }, [clearPasswordRecovery]);
 
   const value = useMemo(
     () => ({
@@ -228,10 +353,14 @@ export function AuthProvider({ children }) {
       profileLoading,
       error,
       notice,
+      recoveryRequired,
+      recoveryError,
       setError,
       setNotice,
       refreshProfile,
       signIn,
+      requestPasswordReset,
+      updateRecoveredPassword,
       signUpAndRegister,
       completeRegistration,
       signOut,
@@ -245,8 +374,12 @@ export function AuthProvider({ children }) {
       profileLoading,
       error,
       notice,
+      recoveryRequired,
+      recoveryError,
       refreshProfile,
       signIn,
+      requestPasswordReset,
+      updateRecoveredPassword,
       signUpAndRegister,
       completeRegistration,
       signOut,

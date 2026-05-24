@@ -2,28 +2,26 @@
 
 ## Current Recommendation
 
-Milestone 16D.1 AdminPanel compact member cards and technical text cleanup is implemented locally, build-passed, and staging-browser validated. It is ready for a commit checkpoint before any deployment decision.
+Milestone 17A Password Recovery Required Reset Flow is implemented locally, build-passed, source/security-path validated, and local-browser smoke validated for the recovery gate. It still needs real staging recovery-email validation before production rollout.
 
-Recorded Milestone 16D.1 status:
-- Frontend UI/copy cleanup only.
-- AdminPanel Members now uses compact roster rows by default.
-- Per-member edit/status/role/guild controls moved behind a `Manage` disclosure.
-- The visible app chrome no longer shows `Supabase configured`.
-- Auth, dashboard, GvG, pending, and rejected-state copy was shortened.
-- User-facing "Profile slug" text remains rephrased to "Username"; the previous `Reset username/username` copy issue remains fixed.
-- Destructive confirmations, hard-block status confirmation/reason flow, CP redaction notice, permission-denial meaning, transfer reset warning, and existing tab/security gates were preserved.
+Recorded Milestone 17A status:
+- Frontend/auth UX only.
+- Password recovery links now set a required recovery state through Supabase `PASSWORD_RECOVERY` handling and recovery URL fallback detection.
+- A sessionStorage recovery marker prevents refresh from bypassing the required reset screen.
+- `Set new password` renders before normal pending/member/admin navigation while recovery is active.
+- Forgot-password UI sends reset emails with neutral success copy.
+- Password update uses Supabase `updateUser({ password })` only.
 - `npm.cmd run build` passed.
-- Static source checks found no service changes and no Supabase migration/test changes.
-- Technical-term search found no remaining product-facing UI strings for `Supabase configured`, `RPC`, `RLS`, `backend`, `policies`, `scaffold`, or `milestone`; remaining matches are internal code identifiers/config only.
-- Authenticated staging validation passed for Owner Members compact rows, expanded Manage controls, CP/GvG/Audit/Permissions/Tools rendering, and no console warnings/errors.
-- `.env.local` was restored to local Supabase settings after staging validation and Vite was restarted.
+- Local browser smoke confirmed `Forgot password?`, recovery-gated `Set new password`, no normal navigation during recovery, and sign-out recovery cleanup.
+- Static source checks found no SQL/Supabase migration changes and no protected-table path changes.
+- No profile approval, membership status, roster status, role/guild/permission, CP, GvG, audit, deployment, or Vercel env behavior was changed.
 
 Recommended next milestone:
-- Commit checkpoint for Milestone 16D.1 when approved.
-- Production UI rollout only after an explicit approval.
-- Later: member-facing UI cleanup planning.
+- Milestone 17B staging password recovery email-link validation.
+- Then production rollout planning only after staging validates the real Supabase recovery link and password update path.
 
 Later milestone options:
+- Member-facing UI cleanup planning.
 - Milestone 16D member-facing UI cleanup.
 - CP Update Window planning.
 - Weekly CP Snapshot/Growth Reports planning.

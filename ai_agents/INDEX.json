@@ -1,7 +1,7 @@
 {
   "project": "Anteiku Guild Manager",
-  "currentMilestone": "Milestone 16D.1 AdminPanel compact roster implemented",
-  "status": "milestone_16d1_adminpanel_compact_roster_build_staging_validated",
+  "currentMilestone": "Milestone 17A Password Recovery Required Reset Flow implemented",
+  "status": "milestone_17a_password_recovery_build_source_validated_recovery_gate_smoked",
   "milestone7BackendStatus": "SQL/RPC migration created for hardened role assignment and Owner-only guild transfer; local Supabase validation passed.",
   "milestone7ValidationStatus": "npx.cmd supabase db reset passed; local_validation_anteiku.sql passed; role assignment and guild transfer tests passed.",
   "milestone7FrontendStatus": "Admin member role-change and Owner-only guild-transfer UI browser validated; network writes used assign_member_role and transfer_member_guild; no CP/GvG calls observed.",
@@ -29,7 +29,8 @@
   "milestone16BStatus": "AdminPanel UI cleanup implemented locally as frontend-only copy/layout polish and browser-validated through Milestone 16C. AdminPanel shell and tab copy were tightened; compact card, empty-state, metadata, control-block, tab, and mobile styles were added; destructive confirmations, CP redaction notice, transfer warning, permission-denial meaning, and existing service/security behavior were preserved. npm.cmd run build passed and source/security-path checks found no service, SQL migration, Supabase test, protected table, or unsafe GvG write changes.",
   "milestone16CStatus": "Authenticated AdminPanel browser validation passed against staging through the local frontend. staging_owner validated all AdminPanel tabs and mobile layout; staging_admin_noperms saw only safe Tools access; staging_member had no AdminPanel or other-member CP exposure; staging_pending remained locked to pending; staging_audit_nocp saw CP audit redaction without CP values; staging_audit_cp saw permitted CP metadata; staging_wrongguild remained scoped to Anteiku:Rose. User-facing Profile slug copy was rephrased to Username, limited-admin shell copy was fixed, .env.local was restored to local Supabase, and staging test credentials were not stored in docs/source.",
   "milestone16D1Status": "AdminPanel compact member cards and technical text cleanup implemented locally. Members tab now uses compact roster rows with per-member Manage disclosure controls for IGN, username, roster status, role, and guild transfer. Product-facing technical text such as Supabase configured/RPC/RLS/backend/policies/scaffold/milestone was removed from visible UI. npm.cmd run build passed, no services or Supabase migrations/tests changed, staging Owner browser validation passed for compact Members rows and AdminPanel tab rendering, .env.local was restored to local Supabase, and no production/deployment/commit action was performed.",
-  "nextRecommendedStep": "Commit checkpoint for Milestone 16D.1 when approved, then explicit production UI rollout planning/execution if desired.",
+  "milestone17AStatus": "Password Recovery Required Reset Flow implemented locally. Supabase PASSWORD_RECOVERY events and recovery URL markers set a required recovery state, sessionStorage preserves the gate across refresh, normal app navigation is blocked by a Set new password screen until updateUser({ password }) succeeds or the user signs out, and Login/Register now includes a forgot-password email flow using resetPasswordForEmail. npm.cmd run build passed; local browser smoke confirmed forgot-password UI, recovery URL gate, sign-out cleanup, and no console warnings/errors. Real staging recovery-email click-through validation remains pending before production rollout.",
+  "nextRecommendedStep": "Milestone 17B staging password recovery email-link validation, then production rollout planning only after staging passes.",
   "currentSupabaseCliLinkedProjectRef": "mzflfyxxkascrfpteexz",
   "currentSupabaseCliLinkWarning": "Supabase CLI is currently linked to production after Milestone 15E; explicitly relink before future staging/local Supabase commands.",
   "futureCpUpdateWindowStatus": "Future CP-focused milestone candidate recorded. Corrected future CP privacy rule: members can see their own CP through safe backend/RPC flow and may submit only their own CP during an applicable open CP Update Window; members must not see other members' CP, CP roster, CP leaderboard, CP snapshots, or other members' CP history. Backend/RLS/RPC work is required before implementation.",
@@ -292,7 +293,8 @@
     "Member Status production rollout and smoke validation",
     "AdminPanel UI cleanup build/source validation",
     "AdminPanel UI cleanup authenticated staging browser validation",
-    "AdminPanel compact roster rows and technical text cleanup"
+    "AdminPanel compact roster rows and technical text cleanup",
+    "Password Recovery Required Reset Flow frontend/auth UX"
   ],
   "notImplemented": [
     "avatar editing",
@@ -311,6 +313,6 @@
   "gvgDecision": "supports guild-specific and global events; v1 vote correction by admins/leaders is not allowed. Milestone 15A excludes inactive/on_break roster statuses from active GvG event visibility/voting while preserving active membership.",
   "supabaseValidationStatus": "Local validation passed through Milestone 15A: db reset passed and local_validation_anteiku.sql passed, including Milestone 15A result 22 PASS / 0 FAIL / 0 SKIP. Staging and production schema/RLS/seed verification passed, and both staging and production have the additional Member Status migration applied and verified.",
   "securityIssueFixed": "Private helper parameter shadowing caused CP/RPC permission leakage during validation; fixed with p_* helper parameters and validated successfully.",
-  "validationStatus": "Milestone 16D.1 AdminPanel compact roster validation passed. npm.cmd run build passed, no service or Supabase migration/test files changed, technical-term search found no product-facing Supabase configured/RPC/RLS/backend/policies/scaffold/milestone strings, staging Owner browser validation confirmed compact Members rows and expanded Manage controls, CP/GvG/Audit/Permissions/Tools rendered, no console warnings/errors were captured, and .env.local was restored to local Supabase.",
+  "validationStatus": "Milestone 17A Password Recovery local validation passed for build/source/recovery-gate smoke. npm.cmd run build passed; local browser smoke confirmed Forgot password UI, recovery URL marker forces Set new password before normal navigation, sign-out clears recovery mode, and no console warnings/errors were captured. No SQL/Supabase migration or protected-table path changes were made. Real staging recovery-email click-through validation remains pending before production rollout.",
   "auditStatus": "Do not run npm audit fix --force; it would install Vite 8.0.13 as a breaking major upgrade."
 }

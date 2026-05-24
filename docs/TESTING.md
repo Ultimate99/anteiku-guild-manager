@@ -1,5 +1,37 @@
 # Testing
 
+## Milestone 17A Password Recovery Required Reset Flow
+
+Milestone 17A local implementation passed build/source validation and limited local browser smoke.
+
+Build:
+- `npm.cmd run build` passed.
+
+Source/security-path validation:
+- No SQL migrations changed.
+- No Supabase/RLS/RPC behavior changed.
+- No profile approval, membership status, roster status, role/guild/permission, CP, GvG, or audit behavior changed.
+- Password reset email requests use Supabase Auth through `resetPasswordForEmail`.
+- Password recovery updates use Supabase Auth through `updateUser({ password })`.
+- No new direct protected table paths were added.
+
+Local browser smoke:
+- Auth screen shows `Forgot password?`.
+- Forgot-password mode shows `Send reset link` and neutral success behavior.
+- A recovery URL marker forces the `Set new password` screen.
+- Normal navigation is hidden during recovery mode.
+- Sign out clears recovery mode and returns to the auth screen.
+- No console warnings/errors were captured for this smoke path.
+
+Remaining staging validation:
+- Trigger a real reset email for a controlled staging account.
+- Click the Supabase recovery link.
+- Confirm `Set new password` is required before normal navigation.
+- Validate mismatch and too-short password errors.
+- Submit a valid new password.
+- Confirm the new password works and the old password no longer works, if safely testable.
+- Confirm pending/member/admin/suspended gates remain unchanged after reset.
+
 ## Milestone 15E Member Status Production Rollout Validation
 
 Milestone 15E production rollout validation passed against `mzflfyxxkascrfpteexz` / `Anteiku Guild Manager Production`.

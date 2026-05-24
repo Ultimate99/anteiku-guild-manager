@@ -1,5 +1,36 @@
 # Testing And Validation
 
+## Milestone 17A Password Recovery Build/Source Validation Passed
+
+Milestone 17A local implementation passed build, source/security-path checks, and limited local browser smoke validation.
+
+Build:
+- `npm.cmd run build` passed.
+
+Static/source validation:
+- No Supabase migration files changed.
+- No SQL, Supabase/RLS/RPC, profile approval, membership status, roster status, role/guild, permission, CP, GvG, or audit behavior was changed.
+- Only `src/services/authService.js` changed under `src/services`, adding password reset/update auth wrappers.
+- No new direct frontend `member_cp`, `cp_snapshots`, `audit_logs`, `member_status_history`, or unsafe `gvg_votes` paths were added.
+
+Local browser smoke:
+- Local app loaded at `http://localhost:5173/`.
+- Auth screen showed `Forgot password?`.
+- Forgot-password mode showed `Send reset link` and `Back to sign in` without showing a password field.
+- Reloading `http://localhost:5173/#type=recovery` forced the `Set new password` screen.
+- Normal navigation was not shown while recovery mode was active.
+- Signing out from the recovery screen cleared the recovery marker and returned to the auth screen.
+- Captured console warnings/errors were empty for this smoke path.
+
+Not yet validated:
+- Real Supabase recovery email click-through.
+- Successful password update through a real recovery session.
+- New password sign-in and old password rejection.
+- Pending/member/admin/suspended gate preservation after a real reset.
+
+Recommended next validation:
+- Milestone 17B staging recovery-email validation using a controlled staging test account.
+
 ## Milestone 16D.1 AdminPanel Compact Roster Validation Passed
 
 Milestone 16D.1 local implementation and staging browser validation passed.

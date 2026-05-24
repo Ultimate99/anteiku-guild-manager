@@ -1,5 +1,37 @@
 # Project State
 
+## Milestone 17A Password Recovery Required Reset Flow Implemented
+
+Milestone 17A is implemented locally as a frontend/auth UX fix. Supabase password recovery sessions are now treated as a required reset state instead of a normal app sign-in, so normal navigation stays blocked until the user updates their password or signs out.
+
+Implemented:
+- Added auth service wrappers for requesting a password reset email and updating a recovered password.
+- Added `PASSWORD_RECOVERY` handling plus recovery URL fallback detection in `AuthContext`.
+- Added a sessionStorage recovery marker so refreshes during recovery keep showing the reset screen.
+- Added a top-priority app routing gate that renders `Set new password` before pending/member/admin routes.
+- Added a forgot-password flow on the sign-in screen with neutral success copy: `If the email exists, a reset link was sent.`
+- Added `src/pages/SetNewPassword.jsx` with new password, confirmation, validation, update action, and sign-out escape.
+
+Validation:
+- `npm.cmd run build` passed.
+- Local browser smoke confirmed the auth page shows `Forgot password?`.
+- Local browser smoke confirmed `#type=recovery` forces the `Set new password` screen and hides normal navigation.
+- Local browser smoke confirmed signing out clears the recovery marker and returns to the auth screen.
+- Captured console warnings/errors were empty for the local recovery smoke path.
+- Static checks found no Supabase migration changes and no protected-table path changes.
+
+Scope confirmation:
+- No SQL migrations were edited or created.
+- No Supabase/RLS/RPC logic was changed.
+- No profile approval, membership status, roster status, role/guild/permission, CP, GvG, or audit behavior was changed.
+- No deployment or commit was performed.
+
+Remaining validation:
+- Real staging recovery-email validation is still required before marking the recovery flow production-ready: send reset email, click Supabase recovery link, set a valid new password, confirm new password works, and confirm pending/member/admin/suspended gates remain unchanged.
+
+Recommended next milestone:
+- Milestone 17B staging password recovery email-link validation, then production rollout planning after staging passes.
+
 ## Milestone 16D.1 AdminPanel Compact Member Cards And Copy Cleanup Implemented
 
 Milestone 16D.1 is implemented locally as a frontend-only UI/copy cleanup pass. It makes the AdminPanel Members tab more practical for guilds with 30-40 members by turning the default roster view into compact rows and moving heavier edit controls behind a per-member `Manage` disclosure.
