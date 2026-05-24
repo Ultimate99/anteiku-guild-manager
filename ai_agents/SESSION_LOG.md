@@ -1,5 +1,21 @@
 # Session Log
 
+## 2026-05-24 - Milestone 19C CP Update Window Frontend Implemented
+
+- Implemented Milestone 19C as a frontend-only local integration for CP Update Window / Member CP Self-Submit.
+- Added `src/services/cpWindowService.js` with RPC-only wrappers for `get_my_cp`, `get_active_cp_update_window_for_me`, `submit_my_cp_update`, `get_cp_update_window_for_guild`, `open_cp_update_window`, and `close_cp_update_window`.
+- Added Profile `Your CP` UI that reads only the signed-in member's own CP and active window status.
+- Added member CP self-submit using only `submit_my_cp_update(...)`, with local required/numeric/non-negative validation and success/error refresh behavior.
+- Added AdminPanel CP Update Window status/open/close controls for the selected CP guild.
+- Added EN/FR/DE i18n keys for member CP, admin CP window controls, and new CP-window audit labels.
+- Added compact styling for the Profile CP panel and Admin CP window block.
+- `npm.cmd run build` passed.
+- Static source checks found no direct frontend `member_cp`, `cp_snapshots`, or `cp_update_windows` table calls.
+- Static source checks confirmed Profile and `cpWindowService` do not call admin CP roster/leaderboard RPCs.
+- Local unauthenticated browser smoke loaded the auth page with no captured console errors.
+- No SQL migrations, Supabase/RLS/RPC logic, services beyond the new display/RPC wrapper, staging, production, Vercel, deployment, or commit action was performed.
+- Authenticated staging validation remains pending because staging does not yet have migrations `20260524000100_cp_update_window_self_submit.sql` and `20260524000200_cp_update_window_staff_read.sql`.
+
 ## 2026-05-24 - Milestone 19B.1 CP Update Window Staff Read RPC Implemented
 
 - Implemented Milestone 19B.1 as a backend/database-only follow-up.

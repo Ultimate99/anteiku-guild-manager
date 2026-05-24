@@ -1,5 +1,33 @@
 # Testing
 
+## Milestone 19C CP Update Window Frontend Validation
+
+Milestone 19C frontend implementation passed build and source/security-path validation locally.
+
+Build:
+- `npm.cmd run build` passed.
+
+Local smoke:
+- Local app loaded at `http://127.0.0.1:5173/`.
+- Auth page rendered and no captured console errors were observed.
+
+Static/source checks:
+- No Supabase migration files changed.
+- No Supabase test files changed.
+- `src/services/cpWindowService.js` uses RPCs only.
+- No direct frontend `.from('member_cp')`, `.from('cp_snapshots')`, or `.from('cp_update_windows')` calls were found.
+- Profile and `cpWindowService` do not call `get_current_cp_roster` or `get_cp_leaderboard`.
+- Member Profile CP self-submit uses only `get_my_cp`, `get_active_cp_update_window_for_me`, and `submit_my_cp_update`.
+- AdminPanel CP Update Window controls use only `get_cp_update_window_for_guild`, `open_cp_update_window`, and `close_cp_update_window`.
+
+Not yet run:
+- Authenticated CP-window browser validation is pending because staging and production do not have migrations `20260524000100_cp_update_window_self_submit.sql` and `20260524000200_cp_update_window_staff_read.sql`.
+- Do not deploy this frontend to an environment until those migrations are applied and verified there.
+
+Next validation:
+- Apply both CP Update Window migrations to staging only after dry-run review.
+- Validate Profile `Your CP` self-submit and AdminPanel CP Update Window controls against controlled staging users.
+
 ## Milestone 19B.1 CP Update Window Staff Read Validation
 
 Milestone 19B.1 backend/database validation passed locally.

@@ -1,5 +1,34 @@
 # Testing And Validation
 
+## Milestone 19C CP Update Window Frontend Build/Source Validation
+
+Milestone 19C frontend implementation passed local build and source/security-path validation.
+
+Build:
+- `npm.cmd run build` passed.
+
+Browser smoke:
+- Local app loaded at `http://127.0.0.1:5173/`.
+- Unauthenticated auth page rendered with title `Anteiku Guild Manager`.
+- Captured console errors were empty for the smoke path.
+
+Static/source validation:
+- No Supabase migration files changed.
+- No Supabase test files changed.
+- `src/services/cpWindowService.js` uses RPCs only.
+- No direct frontend `.from('member_cp')`, `.from('cp_snapshots')`, or `.from('cp_update_windows')` calls were found.
+- Profile and `cpWindowService` do not call `get_current_cp_roster` or `get_cp_leaderboard`.
+- The new member Profile CP flow calls only `get_my_cp`, `get_active_cp_update_window_for_me`, and `submit_my_cp_update`.
+- The new AdminPanel CP window flow calls only `get_cp_update_window_for_guild`, `open_cp_update_window`, and `close_cp_update_window`.
+- No GvG, audit, role, permission, or member-status behavior was changed.
+
+Validation boundary:
+- Authenticated CP-window browser validation was not run because staging and production do not yet have `20260524000100_cp_update_window_self_submit.sql` and `20260524000200_cp_update_window_staff_read.sql`.
+- Do not deploy this frontend to an environment until both CP Update Window migrations are applied and verified there.
+
+Pending validation:
+- Milestone 19D staging migration rollout, staging backend verification, and staging browser validation for Owner opening/closing a CP Update Window and an eligible Member submitting own CP.
+
 ## Milestone 19B.1 CP Update Window Staff Read RPC Validation
 
 Milestone 19B.1 backend/database follow-up passed local validation.

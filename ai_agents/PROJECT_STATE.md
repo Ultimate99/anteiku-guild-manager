@@ -1,5 +1,31 @@
 # Project State
 
+## Milestone 19C CP Update Window Frontend Implemented
+
+Milestone 19C is implemented locally as a frontend-only Profile/AdminPanel integration for the Milestone 19B/19B.1 CP Update Window backend.
+
+Implemented locally:
+- Added `src/services/cpWindowService.js` with RPC-only wrappers for own CP, own active window status, member self-submit, selected-guild staff window status, and staff open/close actions.
+- Added a compact Profile `Your CP` panel that reads only the signed-in member's own CP through `get_my_cp()` and window status through `get_active_cp_update_window_for_me()`.
+- Profile CP submission calls only `submit_my_cp_update(...)`, validates required/numeric/non-negative input locally, and refreshes own CP/window status after success.
+- Added AdminPanel CP Update Window controls to the CP tab using `get_cp_update_window_for_guild(...)`, `open_cp_update_window(...)`, and `close_cp_update_window(...)`.
+- Added EN/FR/DE i18n copy for member CP self-submit, CP window controls, and new audit/window labels.
+- Added compact dark/crimson styling for the Profile CP card and Admin CP window block.
+
+Validation:
+- `npm.cmd run build` passed.
+- Local unauthenticated browser smoke loaded the app with no captured console errors.
+- Static source checks found no direct frontend `member_cp`, `cp_snapshots`, or `cp_update_windows` table calls.
+- Static source checks confirmed Profile and `cpWindowService` do not call `get_current_cp_roster` or `get_cp_leaderboard`.
+- SQL/migration files were not changed in 19C.
+
+Validation boundary:
+- Authenticated CP-window browser validation is pending because staging and production do not yet have migrations `20260524000100_cp_update_window_self_submit.sql` and `20260524000200_cp_update_window_staff_read.sql`.
+- Do not deploy or push this frontend to a target environment until that environment has both CP Update Window migrations applied and verified.
+
+Recommended next step:
+- Milestone 19D staging migration rollout and staging browser validation for CP Update Window / Member CP Self-Submit.
+
 ## Milestone 19B.1 CP Update Window Staff Read RPC Implemented
 
 Milestone 19B.1 is implemented and locally validated as a backend-only follow-up for AdminPanel CP Update Window status.
@@ -1256,7 +1282,7 @@ Validated results:
 
 ## Current Milestone
 
-Milestone 16H member-facing UI production rollout is complete. The compact member-facing auth, gate, Dashboard, Profile, and GvG surfaces are live in production, EN/FR/DE layout remains safe, and member security/CP privacy behavior is unchanged. Recommended next step: choose the next approved feature or polish track, such as CP Update Window planning, Weekly CP Snapshot/Growth Reports planning, Member Status history UI planning, announcements/onboarding invite codes, or French/German wording review by native speakers.
+Milestone 19C CP Update Window frontend is implemented locally, build/source validated, and awaiting staging validation. The Profile page now has a safe `Your CP` self-submit UI and AdminPanel CP has window open/close controls, but staging and production do not yet have the required 19B/19B.1 migrations. Recommended next step: Milestone 19D staging migration rollout and staging browser validation before any production rollout.
 
 Future CP-focused milestone candidate recorded: CP Update Window / Member CP Self-Submit. Corrected CP privacy rule going forward: members can see their own CP through safe backend/RPC flow, but must not see other members' CP, CP roster, CP leaderboard, CP snapshots, or other members' CP history. Members must not directly select or update `member_cp` and must not directly read `cp_snapshots`.
 
@@ -1319,7 +1345,7 @@ Milestone 14D recorded the staging/preview plan for future non-production valida
 - Avatar editing
 - Username/profile slug editing for normal users
 - Reapply UI
-- CP Update Window / Member CP Self-Submit
+- CP Update Window staging rollout/browser validation and production rollout
 - Weekly CP snapshot/growth report UI
 - Guild/subguild management UI
 

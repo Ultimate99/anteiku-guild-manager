@@ -3,6 +3,13 @@ import { StatusBadge } from '../components/StatusBadge.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { rosterStatusTone } from '../services/adminMemberService.js';
+import {
+  formatCpDisplayValue,
+  isValidCpValueInput,
+  loadMyCp,
+  loadMyCpUpdateWindow,
+  submitMyCpUpdate,
+} from '../services/cpWindowService.js';
 import { updateMyProfile } from '../services/profileService.js';
 
 export function Profile() {
@@ -13,13 +20,63 @@ export function Profile() {
   const [saving, setSaving] = useState(false);
   const [profileMessage, setProfileMessage] = useState('');
   const [profileError, setProfileError] = useState('');
+  const [cpState, setCpState] = useState(null);
+  const [cpWindowState, setCpWindowState] = useState(null);
+  const [cpDraft, setCpDraft] = useState('');
+  const [cpLoading, setCpLoading] = useState(false);
+  const [cpSubmitting, setCpSubmitting] = useState(false);
+  const [cpMessage, setCpMessage] = useState('');
+  const [cpError, setCpError] = useState('');
   const rosterStatus = membership?.roster_status ?? 'active';
+  const canSubmitCp = Boolean(cpWindowState?.can_submit);
+  const cpWindowMessage =
+    cpWindowState?.reason === 'not_eligible_roster_status' ? t('profile.cpNotEligible') : t('profile.cpWindowClosed');
 
   useEffect(() => {
     if (!isEditing) {
       setIgnDraft(profile?.ign ?? '');
     }
   }, [isEditing, profile?.ign]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadCpPanel() {
+      if (!profile?.id || !membership?.id) {
+        return;
+      }
+
+      setCpLoading(true);
+      setCpError('');
+      setCpMessage('');
+
+      try {
+        const [nextCpState, nextWindowState] = await Promise.all([loadMyCp(), loadMyCpUpdateWindow()]);
+
+        if (!cancelled) {
+          setCpState(nextCpState);
+          setCpWindowState(nextWindowState);
+          setCpDraft(nextCpState?.cp_value === null || nextCpState?.cp_value === undefined ? '' : String(nextCpState.cp_value));
+        }
+      } catch (loadError) {
+        if (!cancelled) {
+          setCpState(null);
+          setCpWindowState(null);
+          setCpError(loadError.message || t('profile.cpLoadError'));
+        }
+      } finally {
+        if (!cancelled) {
+          setCpLoading(false);
+        }
+      }
+    }
+
+    loadCpPanel();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [membership?.id, profile?.id, t]);
 
   function startEditing() {
     setIgnDraft(profile?.ign ?? '');
@@ -59,6 +116,56 @@ export function Profile() {
       setProfileError(saveError.message);
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function refreshCpPanel({ showMessage = false } = {}) {
+    setCpLoading(true);
+    setCpError('');
+    if (!showMessage) {
+      setCpMessage('');
+    }
+
+    try {
+      const [nextCpState, nextWindowState] = await Promise.all([loadMyCp(), loadMyCpUpdateWindow()]);
+      setCpState(nextCpState);
+      setCpWindowState(nextWindowState);
+      setCpDraft(nextCpState?.cp_value === null || nextCpState?.cp_value === undefined ? '' : String(nextCpState.cp_value));
+      if (showMessage) {
+        setCpMessage(t('profile.cpUpdated'));
+      }
+    } catch (loadError) {
+      setCpError(loadError.message || t('profile.cpLoadError'));
+    } finally {
+      setCpLoading(false);
+    }
+  }
+
+  async function saveCp(event) {
+    event.preventDefault();
+    const nextCpValue = cpDraft.trim();
+
+    if (!nextCpValue) {
+      setCpError(t('profile.cpRequired'));
+      return;
+    }
+
+    if (!isValidCpValueInput(nextCpValue)) {
+      setCpError(t('profile.cpInvalid'));
+      return;
+    }
+
+    setCpSubmitting(true);
+    setCpError('');
+    setCpMessage('');
+
+    try {
+      await submitMyCpUpdate({ cpValue: Number(nextCpValue) });
+      await refreshCpPanel({ showMessage: true });
+    } catch (submitError) {
+      setCpError(submitError.message);
+    } finally {
+      setCpSubmitting(false);
     }
   }
 
@@ -147,6 +254,57 @@ export function Profile() {
           <strong>{t(`roster.status.${rosterStatus}.label`)}</strong>
           <small>{t(`roster.status.${rosterStatus}.summary`)}</small>
         </div>
+      </section>
+
+      <section className="panel member-compact-panel profile-cp-panel" aria-label={t('profile.yourCp')}>
+        <div className="section-heading-row profile-cp-heading">
+          <div>
+            <StatusBadge tone={canSubmitCp ? 'success' : 'warning'}>
+              {canSubmitCp ? t('admin.cp.windowOpen') : t('admin.cp.windowClosed')}
+            </StatusBadge>
+            <h3>{t('profile.yourCp')}</h3>
+          </div>
+          <button type="button" className="secondary-action compact-action" onClick={() => refreshCpPanel()} disabled={cpLoading || cpSubmitting}>
+            {cpLoading ? t('common.loading') : t('common.refresh')}
+          </button>
+        </div>
+
+        <div className="approval-meta compact-meta profile-cp-meta">
+          <div>
+            <span>{t('profile.currentCp')}</span>
+            <strong>{formatCpDisplayValue(cpState?.cp_value, t('profile.cpNotEntered'))}</strong>
+          </div>
+          <div>
+            <span>{t('admin.cp.windowStatus')}</span>
+            <strong>{canSubmitCp ? t('admin.cp.windowOpen') : t('admin.cp.windowClosed')}</strong>
+          </div>
+        </div>
+
+        {cpMessage ? <p className="notice-line">{cpMessage}</p> : null}
+        {cpError ? <p className="error-line">{cpError}</p> : null}
+
+        {canSubmitCp ? (
+          <form className="profile-cp-form" onSubmit={saveCp}>
+            <label>
+              {t('profile.updateCp')}
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={cpDraft}
+                placeholder={t('profile.currentCp')}
+                onChange={(event) => setCpDraft(event.target.value)}
+                disabled={cpLoading || cpSubmitting}
+                required
+              />
+            </label>
+            <button type="submit" className="primary-action" disabled={cpLoading || cpSubmitting}>
+              {cpSubmitting ? t('common.working') : t('profile.submitCp')}
+            </button>
+          </form>
+        ) : (
+          <p className="muted-line compact-state-line">{cpWindowMessage}</p>
+        )}
       </section>
     </div>
   );

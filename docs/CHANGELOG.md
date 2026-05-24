@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-05-24 - Milestone 19C CP Update Window Frontend Implemented
+
+- Added frontend-only CP Update Window / Member CP Self-Submit UI.
+- Created `src/services/cpWindowService.js` with RPC-only wrappers for own CP, own window status, member CP self-submit, selected-guild staff window status, and staff open/close actions.
+- Added Profile `Your CP` card that reads only the signed-in member's own CP through `get_my_cp()` and window status through `get_active_cp_update_window_for_me()`.
+- Added member CP self-submit through `submit_my_cp_update(...)` with required/numeric/non-negative local validation and backend authority preserved.
+- Added AdminPanel CP Update Window controls using `get_cp_update_window_for_guild(...)`, `open_cp_update_window(...)`, and `close_cp_update_window(...)`.
+- Added EN/FR/DE i18n copy for Profile CP, Admin CP window controls, and new audit/window labels.
+- Added compact styling for the Profile CP card and Admin CP window block.
+- `npm.cmd run build` passed.
+- Static checks found no direct frontend `member_cp`, `cp_snapshots`, or `cp_update_windows` table calls.
+- Static checks confirmed Profile and `cpWindowService` do not call admin CP roster/leaderboard RPCs.
+- No SQL migrations, Supabase/RLS/RPC logic, staging, production, Vercel, deployment, or commit action was performed.
+- Authenticated browser validation remains pending until staging receives migrations `20260524000100_cp_update_window_self_submit.sql` and `20260524000200_cp_update_window_staff_read.sql`.
+
 ## 2026-05-24 - Milestone 19B.1 CP Update Window Staff Read RPC Implemented
 
 - Added backend-only staff read support for CP Update Window status.

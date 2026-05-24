@@ -39,6 +39,11 @@ import {
   updateMemberCp,
 } from '../services/adminCpService.js';
 import {
+  closeCpUpdateWindow,
+  loadCpUpdateWindowForGuild,
+  openCpUpdateWindow,
+} from '../services/cpWindowService.js';
+import {
   canManageAdminPermissions,
   canToggleAdminPermission,
   isCpPermissionKey,
@@ -409,6 +414,8 @@ export function AdminPanel() {
   const [cpDrafts, setCpDrafts] = useState({});
   const [cpSearch, setCpSearch] = useState('');
   const [cpLoading, setCpLoading] = useState(false);
+  const [cpWindow, setCpWindow] = useState(null);
+  const [cpWindowNote, setCpWindowNote] = useState('');
   const [auditLogs, setAuditLogs] = useState([]);
   const [auditFilters, setAuditFilters] = useState(() => getDefaultAuditFilters());
   const [auditLoading, setAuditLoading] = useState(false);
@@ -683,6 +690,8 @@ export function AdminPanel() {
     setCpRoster([]);
     setCpLeaderboard([]);
     setCpDrafts({});
+    setCpWindow(null);
+    setCpWindowNote('');
     setMemberDrafts({});
     setMemberStatusFilter('all');
     setAuditLogs([]);
@@ -796,6 +805,27 @@ export function AdminPanel() {
     }
   }
 
+  async function loadCpDataForGuild(guildId) {
+    if (!guildId) {
+      setCpRoster([]);
+      setCpLeaderboard([]);
+      setCpDrafts({});
+      setCpWindow(null);
+      return;
+    }
+
+    const [nextCpRoster, nextCpLeaderboard, nextCpWindow] = await Promise.all([
+      loadCurrentCpRoster({ guildId }),
+      loadCpLeaderboard({ guildId }),
+      loadCpUpdateWindowForGuild({ guildId }),
+    ]);
+
+    setCpRoster(nextCpRoster);
+    setCpLeaderboard(nextCpLeaderboard);
+    setCpDrafts(buildCpDrafts(nextCpRoster));
+    setCpWindow(nextCpWindow);
+  }
+
   async function loadCpSection({ clearMessage = true } = {}) {
     if (!canViewCpSection) {
       setCpGuildOptions([]);
@@ -803,6 +833,7 @@ export function AdminPanel() {
       setCpRoster([]);
       setCpLeaderboard([]);
       setCpDrafts({});
+      setCpWindow(null);
       markTabLoaded('cp');
       return;
     }
@@ -827,26 +858,13 @@ export function AdminPanel() {
 
       setCpGuildOptions(nextCpGuildOptions);
       setSelectedCpGuildId(nextSelectedCpGuildId);
-
-      if (nextSelectedCpGuildId) {
-        const [nextCpRoster, nextCpLeaderboard] = await Promise.all([
-          loadCurrentCpRoster({ guildId: nextSelectedCpGuildId }),
-          loadCpLeaderboard({ guildId: nextSelectedCpGuildId }),
-        ]);
-
-        setCpRoster(nextCpRoster);
-        setCpLeaderboard(nextCpLeaderboard);
-        setCpDrafts(buildCpDrafts(nextCpRoster));
-      } else {
-        setCpRoster([]);
-        setCpLeaderboard([]);
-        setCpDrafts({});
-      }
+      await loadCpDataForGuild(nextSelectedCpGuildId);
     } catch (cpError) {
       setCpGuildOptions([]);
       setCpRoster([]);
       setCpLeaderboard([]);
       setCpDrafts({});
+      setCpWindow(null);
       setAdminError(cpError.message);
     } finally {
       markTabLoaded('cp');
@@ -1268,6 +1286,74 @@ export function AdminPanel() {
     }
   }
 
+  async function handleSelectCpGuild(guildId) {
+    setSelectedCpGuildId(guildId);
+    setCpLoading(true);
+    setAdminError('');
+    setActionMessage('');
+
+    try {
+      await loadCpDataForGuild(guildId);
+      markTabLoaded('cp');
+    } catch (cpError) {
+      setCpRoster([]);
+      setCpLeaderboard([]);
+      setCpDrafts({});
+      setCpWindow(null);
+      setAdminError(cpError.message);
+    } finally {
+      setCpLoading(false);
+    }
+  }
+
+  async function handleOpenCpWindow() {
+    if (!selectedCpGuildId) {
+      setAdminError(t('admin.common.chooseGuild'));
+      return;
+    }
+
+    setActiveAction({ id: selectedCpGuildId, type: 'open-cp-window' });
+    setAdminError('');
+    setActionMessage('');
+
+    try {
+      await openCpUpdateWindow({
+        guildId: selectedCpGuildId,
+        note: cpWindowNote,
+      });
+      setCpWindowNote('');
+      setActionMessage(t('admin.cp.windowOpened'));
+      await loadCpDataForGuild(selectedCpGuildId);
+      markTabLoaded('cp');
+    } catch (cpError) {
+      setAdminError(cpError.message);
+    } finally {
+      setActiveAction(null);
+    }
+  }
+
+  async function handleCloseCpWindow() {
+    if (!cpWindow?.id || cpWindow.status !== 'open') {
+      setAdminError(t('admin.cp.noOpenWindow'));
+      return;
+    }
+
+    setActiveAction({ id: cpWindow.id, type: 'close-cp-window' });
+    setAdminError('');
+    setActionMessage('');
+
+    try {
+      await closeCpUpdateWindow({ windowId: cpWindow.id });
+      setActionMessage(t('admin.cp.windowClosedSuccess'));
+      await loadCpDataForGuild(selectedCpGuildId);
+      markTabLoaded('cp');
+    } catch (cpError) {
+      setAdminError(cpError.message);
+    } finally {
+      setActiveAction(null);
+    }
+  }
+
   function updateCpDraft(profileId, value) {
     setCpDrafts((current) => ({
       ...current,
@@ -1534,14 +1620,19 @@ export function AdminPanel() {
           filteredCpRoster={filteredCpRoster}
           cpLeaderboard={cpLeaderboard}
           cpDrafts={cpDrafts}
+          cpWindow={cpWindow}
+          cpWindowNote={cpWindowNote}
           activeAction={activeAction}
           canUpdateCpValues={canUpdateCpValues}
           onRefresh={() => loadTabData('cp', { force: true })}
           onSearchChange={setCpSearch}
-          onSelectedGuildChange={setSelectedCpGuildId}
+          onSelectedGuildChange={handleSelectCpGuild}
           onUpdateCpDraft={updateCpDraft}
           onResetCpDraft={resetCpDraft}
           onUpdateCp={handleUpdateCp}
+          onWindowNoteChange={setCpWindowNote}
+          onOpenWindow={handleOpenCpWindow}
+          onCloseWindow={handleCloseCpWindow}
           formatDate={formatAdminDate}
           formatCpValue={formatCpValue}
           t={t}

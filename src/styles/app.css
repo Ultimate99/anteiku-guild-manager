@@ -750,6 +750,21 @@ textarea {
   padding: 8px;
 }
 
+.cp-window-panel {
+  display: grid;
+  gap: 12px;
+  border-color: rgba(197, 22, 39, 0.22);
+}
+
+.cp-window-meta {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.cp-window-controls {
+  display: grid;
+  gap: 10px;
+}
+
 .compact-meta span {
   font-size: 0.68rem;
 }
@@ -1050,6 +1065,24 @@ textarea {
 .profile-edit-actions {
   display: grid;
   grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.profile-cp-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.profile-cp-heading {
+  align-items: start;
+}
+
+.profile-cp-meta {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.profile-cp-form {
+  display: grid;
   gap: 10px;
 }
 

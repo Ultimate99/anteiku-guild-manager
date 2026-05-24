@@ -2,9 +2,21 @@
 
 ## Current Recommendation
 
-Milestone 19B.1 backend follow-up is complete and locally validated. CP Update Window / Member CP Self-Submit now has local database support plus a staff-safe selected-guild window status RPC, but no frontend UI and no staging/production rollout yet.
+Milestone 19C frontend implementation is complete locally and build/source validated. CP Update Window / Member CP Self-Submit now has backend support plus local frontend UI, but staging and production do not have the required CP Update Window migrations yet.
 
-Recorded Milestone 19B/19B.1 status:
+Recorded Milestone 19C status:
+- New frontend service: `src/services/cpWindowService.js`.
+- Service wrappers use RPCs only: `get_my_cp`, `get_active_cp_update_window_for_me`, `submit_my_cp_update`, `get_cp_update_window_for_guild`, `open_cp_update_window`, and `close_cp_update_window`.
+- Profile now shows a compact `Your CP` panel that reads only the signed-in member's own CP and lets eligible members submit CP only through `submit_my_cp_update`.
+- AdminPanel CP tab now shows CP Update Window status for the selected guild and exposes open/close controls to existing CP-authorized staff UI.
+- New UI copy is translated through EN/FR/DE i18n dictionaries.
+- `npm.cmd run build` passed.
+- Static checks found no direct `member_cp`, `cp_snapshots`, or `cp_update_windows` frontend table calls.
+- Static checks confirmed Profile and `cpWindowService` do not call admin CP roster/leaderboard RPCs.
+- Local unauthenticated browser smoke passed with no captured console errors.
+- SQL/migration files were not changed in 19C.
+
+Recorded Milestone 19B/19B.1 backend status:
 - New migration: `20260524000100_cp_update_window_self_submit.sql`.
 - New follow-up migration: `20260524000200_cp_update_window_staff_read.sql`.
 - Added guild-scoped `cp_update_windows` with one open window per guild.
@@ -17,14 +29,12 @@ Recorded Milestone 19B/19B.1 status:
 - `member_cp_self_submitted` audit metadata redacts CP old/new values for viewers without scoped `view_cp`.
 - `npx.cmd supabase db reset` passed locally.
 - `supabase/tests/local_validation_anteiku.sql` passed, including Milestone 19B result 32 PASS / 0 FAIL / 0 SKIP and Milestone 19B.1 result 13 PASS / 0 FAIL / 0 SKIP.
-- No React/frontend UI was implemented.
 - Staging and production were not touched.
 
 Recommended next milestone:
-- Milestone 19C frontend implementation for Profile `Your CP` self-submit UI and AdminPanel CP Update Window controls.
+- Milestone 19D staging migration rollout and staging browser validation.
 
 Later milestone options:
-- Milestone 19D staging rollout/validation after frontend implementation.
 - Milestone 19E production rollout gate after staging passes.
 - Weekly CP Snapshot/Growth Reports planning after CP Update Window is deployed.
 

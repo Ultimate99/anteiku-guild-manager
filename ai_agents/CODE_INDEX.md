@@ -18,6 +18,7 @@
 - `src/services/guildService.js`: Safe core guild loading for registration.
 - `src/services/adminApprovalService.js`: RLS-safe approval queue reads, own approval permission lookup, and approval/rejection RPC wrappers.
 - `src/services/adminMemberService.js`: RLS-safe approved primary member roster reads, member-management permission helpers, roster status helpers, roster status RPC wrapper, and admin member IGN/slug/role/guild RPC wrappers.
+- `src/services/cpWindowService.js`: RPC-only CP Update Window service for own CP, member self-submit, selected-guild staff window status, and staff window open/close.
 - `src/data/guilds.js`: Core guild list.
 - `src/data/navigation.js`: Navigation items.
 - `src/pages/LoginRegister.jsx`: Local Supabase signin/signup, forgot-password, and registration UI.
@@ -27,13 +28,13 @@
 - `src/pages/SuspendedStatus.jsx`: Suspended account gate.
 - `src/pages/RosterRestrictedStatus.jsx`: Roster lifecycle hard-block gate for suspended/left/kicked members.
 - `src/pages/Dashboard.jsx`: Approved-user safe guild dashboard with roster status display and no CP data.
-- `src/pages/Profile.jsx`: Safe profile display with own roster status and no CP, plus own IGN edit mode for approved users.
+- `src/pages/Profile.jsx`: Safe profile display with own roster status, own CP through safe RPCs only, and own IGN edit mode for approved users.
 - `src/pages/Gvg.jsx`: GvG voting UI with roster-status UX gating for inactive/on_break and hard-blocked statuses.
 - `src/pages/AdminPanel.jsx`: Restricted AdminPanel coordinator for admin permission loading, visible tab calculation, active tab state, lazy section loading, and section action handlers.
 - `src/components/admin/AdminTabs.jsx`: Mobile-first AdminPanel tab bar.
 - `src/components/admin/AdminApprovalsSection.jsx`: Registration approval/rejection queue section.
 - `src/components/admin/AdminMembersSection.jsx`: Approved primary member management section with compact roster rows, roster status badges/filter, and expandable Manage controls for status/IGN/username/role/guild actions.
-- `src/components/admin/AdminCpSection.jsx`: Admin-only CP roster/update/leaderboard section.
+- `src/components/admin/AdminCpSection.jsx`: Admin-only CP roster/update/leaderboard section plus CP Update Window controls.
 - `src/components/admin/AdminGvgSection.jsx`: GvG event management/results section.
 - `src/components/admin/AdminAuditSection.jsx`: Read-only audit log viewer section.
 - `src/components/admin/AdminPermissionsSection.jsx`: Admin permission checkbox management section.
@@ -82,6 +83,26 @@ Production status:
   - Shorten member-facing Dashboard/Profile/GvG/gate copy in all supported languages.
 - `src/styles/app.css`
   - Adds compact member-facing panel, metric, profile, detail, recovery, and GvG vote styles.
+
+## Milestone 19C CP Update Window Frontend
+
+- `src/services/cpWindowService.js`
+  - Adds RPC-only wrappers for `get_my_cp`, `get_active_cp_update_window_for_me`, `submit_my_cp_update`, `get_cp_update_window_for_guild`, `open_cp_update_window`, and `close_cp_update_window`.
+  - Does not query `member_cp`, `cp_snapshots`, or `cp_update_windows` directly.
+  - Does not call admin CP roster or leaderboard RPCs.
+- `src/pages/Profile.jsx`
+  - Adds compact `Your CP` panel.
+  - Loads only the signed-in member's own CP and own active CP Update Window status.
+  - Submits own CP only through `submit_my_cp_update(...)`.
+- `src/pages/AdminPanel.jsx`
+  - Coordinates selected-guild CP Update Window state, note draft, open action, close action, and refresh after CP window changes.
+  - Keeps existing CP roster, leaderboard, and admin CP update behavior in place.
+- `src/components/admin/AdminCpSection.jsx`
+  - Adds compact CP Update Window status/open/close controls above the existing CP roster/leaderboard UI.
+- `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`
+  - Adds Profile CP, Admin CP window, and new audit/window display labels.
+- `src/styles/app.css`
+  - Adds compact Profile CP panel and Admin CP window block styling.
 
 ## Documentation
 
