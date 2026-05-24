@@ -1,5 +1,39 @@
 # Project State
 
+## Milestone 18F Language Pack Production Rollout Complete
+
+Milestone 18F is complete. The English/French/German language pack is live in production at `https://anteiku-guild-manager.vercel.app`.
+
+Production rollout:
+- Deployed commit `1f5b956 feat: add English French German language pack`.
+- Supported languages are English (`en`), French (`fr`), and German (`de`).
+- The language switcher works logged out and logged in.
+- Selected language persists after reload through `agm_language`.
+- Login, registration, forgot-password, member-facing surfaces, and full AdminPanel content are translated.
+- Full AdminPanel translation is live for Approvals, Members, CP, GvG, Audit Logs, Permissions, and Tools.
+
+Production validation:
+- Production app loaded successfully.
+- Owner sign-in and AdminPanel access worked.
+- AdminPanel tabs translated across EN/FR/DE.
+- Members, CP, GvG, Audit, Permissions, and Tools tabs rendered.
+- No raw translation keys were visible.
+- No console errors were captured during smoke validation.
+- Mobile/narrow viewport had no horizontal overflow.
+- Existing production Member had no Admin navigation.
+
+Security/scope:
+- Member/admin security behavior is unchanged.
+- CP privacy, Audit access, GvG behavior, role/permission behavior, and Member Status behavior are unchanged.
+- No SQL, Supabase, RLS/RPC, Vercel env, or production data changes were made.
+- Recovery gate copy was not fully re-tested during 18F because no live recovery session was triggered; recovery behavior was already production-validated in Milestone 17C.
+
+Future improvement:
+- Have French/German-speaking admins review wording and shorten any labels that feel unnatural in daily use.
+
+Recommended next milestone:
+- Milestone 18F docs/handoff commit checkpoint, then translation wording review or the next approved feature planning track.
+
 ## Milestone 18B i18n Foundation Implemented
 
 Milestone 18B is implemented locally as a frontend-only language-pack MVP foundation.
@@ -1105,7 +1139,7 @@ Validated results:
 
 ## Current Milestone
 
-Milestone 16B AdminPanel UI cleanup is implemented locally and Milestone 16C authenticated staging browser validation passed. Recommended next step: Milestone 16D member-facing UI cleanup planning, or a 16B/16C commit checkpoint before rollout.
+Milestone 18F Language Pack production rollout is complete. The frontend-only EN/FR/DE language system, member-facing translations, and full AdminPanel translations are live in production. Recommended next step: docs/handoff commit checkpoint, then French/German wording review by native speakers or the next approved feature planning track.
 
 Future CP-focused milestone candidate recorded: CP Update Window / Member CP Self-Submit. Corrected CP privacy rule going forward: members can see their own CP through safe backend/RPC flow, but must not see other members' CP, CP roster, CP leaderboard, CP snapshots, or other members' CP history. Members must not directly select or update `member_cp` and must not directly read `cp_snapshots`.
 
@@ -1308,13 +1342,14 @@ Milestone 7 backend implementation status:
 - Local database reset/validation has not been run yet.
 ## Milestone 18D AdminPanel Full Translation
 
-Milestone 18D is implemented locally as a frontend display-only translation pass.
+Milestone 18D is implemented and production-deployed through Milestone 18F as a frontend display-only translation pass.
 
 - Added full AdminPanel translation coverage for EN/FR/DE dictionaries.
 - AdminPanel shell, tab content, Approvals, Members, CP, GvG, Audit Logs, Permissions, Tools, admin empty/loading states, errors, and success messages now render through i18n display labels.
 - Permission catalog display labels/descriptions are translated through UI fallbacks while database permission keys remain unchanged.
 - Audit action and metadata display labels are translated while raw audit values, usernames, IGN, guild names, CP values, event titles, absence reasons, and user notes remain untranslated.
-- No SQL, Supabase migrations, Supabase/RLS/RPC behavior, services behavior, auth behavior, CP/GvG/audit access logic, role/guild/permission/member-status behavior, dependencies, deployment, or commit action was included.
+- No SQL, Supabase migrations, Supabase/RLS/RPC behavior, services behavior, auth behavior, CP/GvG/audit access logic, role/guild/permission/member-status behavior, dependencies, or data mutation was included.
 - `npm.cmd run build` passed.
 - Static source checks found no `supabase/` or `src/services/` changes and no new direct protected table calls in frontend source.
-- Authenticated staging browser validation for 18D is still pending.
+- Authenticated staging browser validation passed in Milestone 18E.
+- Production rollout and smoke validation passed in Milestone 18F.

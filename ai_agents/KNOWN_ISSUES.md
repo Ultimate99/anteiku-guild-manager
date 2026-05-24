@@ -21,6 +21,7 @@
 - Milestone 15D Member Status staging migration/browser validation is complete.
 - Milestone 15E Member Status production rollout is complete.
 - Milestone 17C Password Recovery Required Reset Flow production rollout is complete and validated with the controlled production test member.
+- Milestone 18F Language Pack production rollout is complete. English, French, and German are live in production, including full AdminPanel translation.
 - Staging test data remains intentionally; do not cleanup/delete it unless separately approved.
 - Vercel Preview env has not been configured for staging yet.
 
@@ -42,6 +43,7 @@
 - `manage_permissions` is not seeded in the current permission catalog migration. Treat it as a future/open permission question, not a Milestone 14E blocker, unless explicitly approved later.
 - Supabase CLI is currently linked to production `mzflfyxxkascrfpteexz`; future staging/local work must explicitly relink before Supabase commands.
 - Optional production roster-status mutation smoke must use the controlled production test member only, require explicit approval, and restore to `active`.
+- Recovery gate copy was not fully re-tested during Milestone 18F because no live recovery session was triggered; recovery behavior itself was already production-validated in Milestone 17C.
 
 ## Product Gaps
 
@@ -52,6 +54,7 @@
 - CP Update Window / Member CP Self-Submit is not implemented. Future rule: members may see and submit only their own CP through safe RPCs when allowed by an open CP update window; they must not see other members' CP, roster, leaderboard, snapshots, or CP history.
 - Weekly CP snapshot/growth report UI is not implemented.
 - Guild/subguild management UI is not implemented.
+- French/German wording review by native-speaking admins is recommended for the language pack.
 
 ## Development Notes
 

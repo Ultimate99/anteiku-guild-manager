@@ -1,5 +1,24 @@
 # Session Log
 
+## 2026-05-24 - Milestone 18F Language Pack Production Rollout Complete
+
+- Completed Milestone 18F production rollout for the frontend-only language pack.
+- Pushed and deployed commit `1f5b956 feat: add English French German language pack`.
+- Production app loaded at `https://anteiku-guild-manager.vercel.app`.
+- EN/FR/DE language switcher worked logged out and logged in.
+- Selected language persisted after reload.
+- Login, registration, and forgot-password copy translated in production.
+- Production Owner sign-in worked and AdminPanel opened.
+- AdminPanel tabs translated across EN/FR/DE.
+- Members, CP, GvG, Audit Logs, Permissions, and Tools tabs rendered in production.
+- No raw translation keys were visible.
+- No console errors were captured during production smoke.
+- Mobile/narrow viewport had no horizontal overflow.
+- Existing production Member had no Admin navigation.
+- Recovery gate copy was not fully re-tested during 18F because no live recovery session was triggered; recovery behavior was already production-validated in Milestone 17C.
+- No SQL, Supabase/RLS/RPC, service behavior, Vercel env, production data, CP/GvG/audit/role/permission/member-status behavior changed.
+- Recommended future improvement: French/German admin wording review by native speakers.
+
 ## 2026-05-24 - Milestone 18B i18n Foundation Implemented
 
 - Implemented Milestone 18B as a frontend-only language-pack foundation.

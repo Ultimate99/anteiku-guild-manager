@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-05-24 - Milestone 18F Language Pack Production Rollout Complete
+
+- Deployed the English/French/German frontend language pack to production.
+- Commit deployed: `1f5b956 feat: add English French German language pack`.
+- Language switcher works logged out and logged in.
+- Selected language persists after reload.
+- Login, registration, forgot-password, member-facing surfaces, and full AdminPanel content translate.
+- AdminPanel tabs and content render in EN/FR/DE for Approvals, Members, CP, GvG, Audit Logs, Permissions, and Tools.
+- Production smoke found no raw translation keys, no captured console errors, and no narrow/mobile horizontal overflow.
+- Existing production Member still has no Admin navigation.
+- Recovery gate copy was not fully re-tested during 18F because no live recovery session was triggered; recovery behavior was already production-validated in Milestone 17C.
+- No SQL migrations, Supabase/RLS/RPC logic, Vercel env, production data, CP/GvG/audit/role/permission/member-status behavior changed.
+- Future improvement: French/German admin wording review by native speakers.
+
 ## 2026-05-24 - Milestone 18B i18n Foundation Implemented
 
 - Added a frontend-only EN/FR/DE language-pack foundation.

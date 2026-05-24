@@ -1,5 +1,27 @@
 # Testing
 
+## Milestone 18F Language Pack Production Smoke
+
+Milestone 18F production smoke passed after deploying commit `1f5b956 feat: add English French German language pack`.
+
+Validated:
+- Production app loads at `https://anteiku-guild-manager.vercel.app`.
+- Language switcher is visible logged out and logged in.
+- EN/FR/DE switching works and persists after reload.
+- Login/register/forgot-password copy translates.
+- Production Owner can sign in and open AdminPanel.
+- AdminPanel tabs translate in EN/FR/DE.
+- Members, CP, GvG, Audit Logs, Permissions, and Tools tabs render.
+- No raw translation keys are visible.
+- No console errors were captured.
+- Narrow/mobile viewport had no horizontal overflow.
+- Existing production Member cannot access AdminPanel.
+
+Security notes:
+- CP privacy, Audit access, GvG behavior, role/permission behavior, and Member Status behavior were unchanged.
+- No SQL, Supabase/RLS/RPC, Vercel env, or production data changes were made.
+- Recovery gate copy was not fully re-tested during 18F because no live recovery session was triggered; recovery behavior was already production-validated in Milestone 17C.
+
 ## Milestone 17D Registration Copy And Onboarding Prep
 
 Milestone 17D prepares the frontend copy for controlled guild onboarding without assuming email confirmation.

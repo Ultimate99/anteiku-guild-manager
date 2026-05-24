@@ -4,6 +4,17 @@ Vercel is the production hosting target.
 
 Milestone 13B completed Vercel setup, Supabase Auth URL configuration, deployment, and production smoke/security validation.
 
+## Production Language Pack
+
+Milestone 18F deployed the frontend-only language pack to production.
+
+- Commit deployed: `1f5b956 feat: add English French German language pack`.
+- Supported languages: English, French, and German.
+- Language selection is stored client-side with `agm_language`.
+- Full AdminPanel translation is live in production.
+- This rollout did not require SQL, Supabase, RLS/RPC, Vercel env, or production data changes.
+- Future improvement: French/German admin wording review by native speakers.
+
 ## Production Supabase Project
 
 Production Supabase project is created and separate from local development.
@@ -26,7 +37,8 @@ Completed in Milestone 13B:
 - Site URL: `https://anteiku-guild-manager.vercel.app`.
 - Redirect URLs: `https://anteiku-guild-manager.vercel.app`.
 - Preview URLs: use a staging Supabase project when possible; avoid broad preview wildcards pointing at production.
-- Email signup and email confirmation: production email confirmation is enabled.
+- Email signup is enabled.
+- Email confirmation is disabled for controlled guild onboarding; admin approval remains the access gate.
 - Anonymous sign-ins: keep disabled.
 
 The app uses email/password auth through Supabase JS.
@@ -37,13 +49,12 @@ Password recovery status:
 - Supabase recovery links now open the app into a required `Set new password` gate.
 - Normal app navigation is blocked until the password update succeeds or the user signs out.
 - Production recovery validation passed with the controlled production test member.
-- Do not disable email confirmation or change Auth settings until the controlled guild onboarding plan is separately approved.
+- Do not disable password recovery.
 
 Controlled guild onboarding plan:
 
-- Milestone 17D updates app copy for admin-approval-based onboarding.
-- Production email confirmation remains enabled until a separate production Auth setting gate is approved.
-- Validate disabling email confirmation in staging project `ckyihuxkioeibzpgwenc` first.
+- Milestone 17D updated app copy for admin-approval-based onboarding.
+- Staging validation passed before the production Auth setting change.
 - When email confirmation is disabled, admin approval remains mandatory and pending users remain blocked.
 - Registration copy should tell users to use a real email because password recovery depends on it.
 

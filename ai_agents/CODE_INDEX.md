@@ -242,3 +242,9 @@
   - Translates permission target labels, sensitive/Owner-only notes, save/cancel controls, and permission catalog display labels/descriptions without renaming permission keys.
 - `src/components/admin/AdminToolsSection.jsx`
   - Translates Tools placeholder copy.
+
+Milestone 18F production note:
+- The frontend-only language pack is live in production as commit `1f5b956 feat: add English French German language pack`.
+- Supported languages are English, French, and German.
+- Full AdminPanel translation is production-smoke validated.
+- Translation remains display-only; backend logic, permission keys, audit values, guild names, usernames, IGN, and user-generated text remain raw/unchanged.

@@ -1,5 +1,37 @@
 # Testing And Validation
 
+## Milestone 18F Language Pack Production Smoke Passed
+
+Milestone 18F deployed the frontend-only language pack to production.
+
+Deployment:
+- Commit deployed: `1f5b956 feat: add English French German language pack`.
+- Production URL: `https://anteiku-guild-manager.vercel.app`.
+
+Production language smoke:
+- App loaded successfully.
+- Language switcher was visible logged out and logged in.
+- EN/FR/DE switching worked.
+- Selected language persisted after reload.
+- Login, registration, and forgot-password copy translated.
+- Production Owner sign-in worked.
+- Owner AdminPanel opened.
+- AdminPanel tabs translated in EN/FR/DE.
+- Members, CP, GvG, Audit Logs, Permissions, and Tools tabs rendered.
+- No raw translation keys were visible.
+- No console errors were captured.
+- Mobile/narrow viewport had no horizontal overflow.
+- Existing production Member had no Admin navigation.
+
+Security/source notes:
+- No SQL migrations changed.
+- No Supabase commands were run during docs checkpoint.
+- No Supabase/RLS/RPC, service behavior, Vercel env, production data, CP/GvG/audit/role/permission/member-status behavior changed.
+- Recovery gate copy was not fully re-tested during 18F because no live recovery session was triggered; recovery behavior was already production-validated in Milestone 17C.
+
+Future validation:
+- French/German admin wording review by native speakers is recommended.
+
 ## Milestone 18B i18n Foundation Build/Preview Validation Passed
 
 Milestone 18B implements the frontend-only language foundation for English, French, and German.
@@ -1339,7 +1371,7 @@ Planned validation coverage:
 - No CP access is added.
 
 Recommended validation commands are documented in `docs/TESTING.md`.
-## Milestone 18D AdminPanel Translation Validation
+## Milestone 18D/18E AdminPanel Translation Validation
 
 Implementation/build validation completed locally:
 
@@ -1349,10 +1381,13 @@ Implementation/build validation completed locally:
 - Static protected-table source check found no new direct frontend calls to `member_cp`, `cp_snapshots`, `audit_logs`, `member_status_history`, `gvg_votes`, or `guild_memberships`.
 - AdminPanel translations are display-only. Permission keys, roster status values, audit action values, membership status values, GvG status values, usernames, IGN, guild names, CP values, GvG event titles, absence reasons, and user-generated notes remain logic/raw values.
 
-Pending validation:
+Authenticated staging validation:
 
-- Authenticated staging browser validation for Owner/AdminPanel in EN/FR/DE.
-- Mobile FR/DE layout check.
-- No missing-key strings visible.
-- No console errors.
-- CP privacy, audit redaction, GvG, permissions, and member-status behavior unchanged.
+- Milestone 18E passed against staging through the local frontend.
+- `staging_owner` validated AdminPanel EN/FR/DE translations across Approvals, Members, CP, GvG, Audit Logs, Permissions, and Tools.
+- `staging_admin_noperms` validated restricted-admin state.
+- Member/pending sanity checks were intentionally skipped by user direction in 18E because they were already covered in Milestone 18C.
+- No missing-key strings were visible.
+- No console errors were captured.
+- Mobile FR/DE layout remained usable.
+- CP privacy, audit access, GvG behavior, permissions, and member-status behavior remained unchanged.

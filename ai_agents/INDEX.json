@@ -1,7 +1,7 @@
 {
   "project": "Anteiku Guild Manager",
-  "currentMilestone": "Milestone 18D AdminPanel full translation implemented",
-  "status": "milestone_18d_adminpanel_translation_build_source_validated",
+  "currentMilestone": "Milestone 18F Language Pack production rollout complete",
+  "status": "milestone_18f_language_pack_live_in_production",
   "milestone7BackendStatus": "SQL/RPC migration created for hardened role assignment and Owner-only guild transfer; local Supabase validation passed.",
   "milestone7ValidationStatus": "npx.cmd supabase db reset passed; local_validation_anteiku.sql passed; role assignment and guild transfer tests passed.",
   "milestone7FrontendStatus": "Admin member role-change and Owner-only guild-transfer UI browser validated; network writes used assign_member_role and transfer_member_guild; no CP/GvG calls observed.",
@@ -35,8 +35,10 @@
   "milestone17DStatus": "Registration copy update implemented locally for controlled guild onboarding. Registration now says Register for guild approval, warns users to use a real email for password reset, uses Request approval for the submit action, has a mode-tolerant no-session signup fallback for email-confirmation-on/off, and the pending screen says Awaiting approval. npm.cmd run build passed. Production email confirmation remains enabled; staging-only email confirmation disable validation is the next gate. No SQL, Supabase/RLS/RPC, Auth settings, Vercel env, CP/GvG/audit/role/permission/member-status, approval, or membership behavior changed.",
   "milestone18BStatus": "Frontend-only i18n foundation implemented for English, French, and German. Added LanguageProvider, useLanguage(), t(key, params?), English fallback, agm_language localStorage persistence, compact EN/FR/DE topbar selector, core shell/auth/recovery/nav/status/member-facing translations, and basic AdminPanel tab labels. npm.cmd run build passed; built-app preview validation passed for EN/FR/DE switching, reload persistence, auth/register/recovery translation, missing-key checks, and empty captured console errors. No SQL, Supabase/RLS/RPC, auth behavior, CP/GvG/audit/role/permission/member-status logic, deployment, or commit action changed.",
   "milestone18CStatus": "Authenticated staging language validation passed through the local frontend pointed at staging project ckyihuxkioeibzpgwenc. EN/FR/DE switching worked logged out and logged in, language persisted after reload, auth/register/recovery and pending/member pages translated, member security and CP privacy were unchanged, no missing keys or console errors were found, and full AdminPanel content translation remained pending.",
-  "milestone18DStatus": "AdminPanel full translation is implemented locally and build/source validated. Added EN/FR/DE display translations for AdminPanel shell, Approvals, Members, CP, GvG, Audit Logs, Permissions, Tools, admin empty/loading states, errors, success messages, permission labels/descriptions, audit action labels, and audit metadata labels. Logic/raw values remain unchanged, including usernames, IGN, guild names, permission keys, audit metadata values, CP values, GvG event titles, absence reasons, roster status values, and RPC payload values. npm.cmd run build passed; no Supabase migrations, src/services changes, or new direct protected table calls were added. Authenticated staging browser validation for 18D is pending.",
-  "nextRecommendedStep": "Milestone 18E authenticated staging validation for full AdminPanel translations, then production rollout planning for the i18n foundation/AdminPanel language pack if validation passes.",
+  "milestone18DStatus": "AdminPanel full translation is implemented and production-deployed through Milestone 18F. Added EN/FR/DE display translations for AdminPanel shell, Approvals, Members, CP, GvG, Audit Logs, Permissions, Tools, admin empty/loading states, errors, success messages, permission labels/descriptions, audit action labels, and audit metadata labels. Logic/raw values remain unchanged, including usernames, IGN, guild names, permission keys, audit metadata values, CP values, GvG event titles, absence reasons, roster status values, and RPC payload values. npm.cmd run build passed; no Supabase migrations, src/services changes, or new direct protected table calls were added.",
+  "milestone18EStatus": "Authenticated staging validation for AdminPanel translations passed. staging_owner validated EN/FR/DE AdminPanel shell and tabs across Approvals, Members, CP, GvG, Audit Logs, Permissions, and Tools; staging_admin_noperms validated restricted-admin state; member/pending sanity checks were intentionally skipped by user direction because they were covered in Milestone 18C. No raw translation keys, console errors, mobile overflow, or security behavior regressions were found.",
+  "milestone18FStatus": "Language Pack production rollout complete. Commit 1f5b956 feat: add English French German language pack was pushed and deployed. Production language switcher works logged out and logged in, EN/FR/DE persist after reload, login/register/forgot-password copy translates, Owner AdminPanel opens, AdminPanel tabs and Members/CP/GvG/Audit/Permissions/Tools render in EN/FR/DE, no raw translation keys or console errors were captured, mobile/narrow viewport had no horizontal overflow, and an existing production Member had no Admin navigation. Recovery gate copy was not fully re-tested during 18F because no live recovery session was triggered; recovery behavior was already production-validated in Milestone 17C.",
+  "nextRecommendedStep": "Docs/handoff commit checkpoint for Milestone 18F, then French/German admin wording review by native speakers or the next approved feature planning track.",
   "currentSupabaseCliLinkedProjectRef": "mzflfyxxkascrfpteexz",
   "currentSupabaseCliLinkWarning": "Supabase CLI is currently linked to production after Milestone 15E; explicitly relink before future staging/local Supabase commands.",
   "futureCpUpdateWindowStatus": "Future CP-focused milestone candidate recorded. Corrected future CP privacy rule: members can see their own CP through safe backend/RPC flow and may submit only their own CP during an applicable open CP Update Window; members must not see other members' CP, CP roster, CP leaderboard, CP snapshots, or other members' CP history. Backend/RLS/RPC work is required before implementation.",
@@ -90,6 +92,13 @@
     "milestone14CProductionValidated": true,
     "memberStatusSystemLive": true,
     "milestone15EProductionValidated": true,
+    "languagePackLive": true,
+    "languagePackProductionValidated": true,
+    "supportedLanguages": [
+      "English",
+      "French",
+      "German"
+    ],
     "productionUrl": "https://anteiku-guild-manager.vercel.app",
     "controlledTestMember": {
       "email": "krsticmiroslav99+m13b21144225@gmail.com",
@@ -305,7 +314,8 @@
     "Password Recovery Required Reset Flow frontend/auth UX",
     "Password Recovery Required Reset Flow production rollout and validation",
     "frontend i18n foundation for English, French, and German",
-    "AdminPanel full display translation for English, French, and German"
+    "AdminPanel full display translation for English, French, and German",
+    "Language Pack production rollout and smoke validation"
   ],
   "notImplemented": [
     "avatar editing",
@@ -316,7 +326,7 @@
     "weekly CP snapshot/growth report UI",
     "guild/subguild management UI"
   ],
-  "securityStatus": "locally validated in Supabase, production catalog-verified, production smoke/security validated, Milestone 14C AdminPanel tabs production-smoke validated, Milestone 14E staging schema/RLS/seed verified, Milestone 14F staging Owner bootstrap verified, Milestone 14G staging users/permissions verified, Milestone 14H staging CP redaction/GvG smoke validated, Milestone 15A Member Status backend security locally validated, Milestone 15B Member Status frontend source/security-path validation passed, Milestone 15D Member Status staging browser validation passed, Milestone 15E Member Status production rollout/smoke validation passed, Milestone 16B AdminPanel UI cleanup source/security-path validation passed, Milestone 16C authenticated staging browser validation passed, and Milestone 16D.1 compact roster source/staging validation passed. Deferred production-only GvG and CP redaction scenarios are covered in staging.",
+  "securityStatus": "locally validated in Supabase, production catalog-verified, production smoke/security validated, Milestone 14C AdminPanel tabs production-smoke validated, Milestone 14E staging schema/RLS/seed verified, Milestone 14F staging Owner bootstrap verified, Milestone 14G staging users/permissions verified, Milestone 14H staging CP redaction/GvG smoke validated, Milestone 15A Member Status backend security locally validated, Milestone 15B Member Status frontend source/security-path validation passed, Milestone 15D Member Status staging browser validation passed, Milestone 15E Member Status production rollout/smoke validation passed, Milestone 16B AdminPanel UI cleanup source/security-path validation passed, Milestone 16C authenticated staging browser validation passed, Milestone 16D.1 compact roster source/staging validation passed, Milestone 18E AdminPanel translation staging validation passed, and Milestone 18F Language Pack production smoke passed. Deferred production-only GvG and CP redaction scenarios are covered in staging.",
   "schemaSpecStatus": "migrations created and locally validated through Milestone 15A. Production and staging now both include 20260523000100_member_roster_status_system.sql applied and verified. Member Status is live in production.",
   "cpDecision": "CP stored outside profiles in member_cp and cp_snapshots; member direct SELECT forbidden. Corrected future rule: members may see their own CP only through safe auth.uid()-scoped RPC, but must not see other members' CP, CP roster, CP leaderboard, CP snapshots, or CP history.",
   "roleDecision": "Owner global CP access; Leader/Vice automatic guild-scoped CP access; Admin explicit CP permissions granted only by Owner.",
@@ -324,6 +334,6 @@
   "gvgDecision": "supports guild-specific and global events; v1 vote correction by admins/leaders is not allowed. Milestone 15A excludes inactive/on_break roster statuses from active GvG event visibility/voting while preserving active membership.",
   "supabaseValidationStatus": "Local validation passed through Milestone 15A: db reset passed and local_validation_anteiku.sql passed, including Milestone 15A result 22 PASS / 0 FAIL / 0 SKIP. Staging and production schema/RLS/seed verification passed, and both staging and production have the additional Member Status migration applied and verified.",
   "securityIssueFixed": "Private helper parameter shadowing caused CP/RPC permission leakage during validation; fixed with p_* helper parameters and validated successfully.",
-  "validationStatus": "Milestone 18D AdminPanel full translation is implemented locally and build/source validated. npm.cmd run build passed; static checks found no supabase/ or src/services changes and no new direct frontend protected table calls. Milestone 18C authenticated staging validation passed for the i18n foundation/member-facing surfaces. Full AdminPanel translation authenticated staging browser validation is pending.",
+  "validationStatus": "Milestone 18F Language Pack production rollout passed. Production smoke confirmed EN/FR/DE switching, reload persistence, translated login/register/forgot-password copy, Owner AdminPanel EN/FR/DE tab rendering, Members/CP/GvG/Audit/Permissions/Tools rendering, no raw translation keys, no captured console errors, no narrow/mobile horizontal overflow, and existing Member no-Admin access. Recovery gate copy was not fully re-tested during 18F because no live recovery session was triggered; recovery behavior was already production-validated in Milestone 17C.",
   "auditStatus": "Do not run npm audit fix --force; it would install Vite 8.0.13 as a breaking major upgrade."
 }

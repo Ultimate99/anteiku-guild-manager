@@ -2,23 +2,26 @@
 
 ## Current Recommendation
 
-Milestone 18B i18n foundation is implemented locally. The app now has a frontend-only EN/FR/DE language system, a compact topbar language selector, and translations for core shell/auth/recovery/status/member-facing surfaces.
+Milestone 18F Language Pack production rollout is complete. The app now has a live frontend-only EN/FR/DE language system in production, including full AdminPanel translations.
 
-Recorded Milestone 18B status:
-- Frontend-only language-pack foundation.
-- Added `LanguageProvider`, `useLanguage()`, `t(key, params?)`, English fallback, and `agm_language` localStorage persistence.
-- Added English, French, and German dictionaries.
-- Added compact EN/FR/DE selector in the topbar, visible before and after sign-in.
-- Translated common/auth/register/password recovery/navigation/status gate surfaces.
-- Translated member-facing status labels and core GvG voting copy included in 18B scope.
-- Wired basic AdminPanel tab labels only; full AdminPanel translation is still out of scope.
-- `npm.cmd run build` passed.
-- Built-app preview validation passed for language switching and reload persistence.
-- No SQL, Supabase/RLS/RPC, auth behavior, CP/GvG/audit/role/permission/member-status logic changed.
+Recorded Milestone 18F status:
+- Deployed commit `1f5b956 feat: add English French German language pack`.
+- Supported languages: English, French, and German.
+- Language switcher works logged out and logged in.
+- Language persists after reload.
+- Login/register/forgot-password copy translates.
+- Owner AdminPanel opens and AdminPanel tabs translate across EN/FR/DE.
+- Members, CP, GvG, Audit Logs, Permissions, and Tools tabs render in production.
+- No raw translation keys were visible.
+- No console errors were captured during production smoke.
+- Mobile/narrow viewport had no horizontal overflow.
+- Existing production Member had no Admin navigation.
+- No SQL, Supabase/RLS/RPC, service behavior, Vercel env, production data, CP/GvG/audit/role/permission/member-status behavior changed.
 
 Recommended next milestone:
-- Milestone 18C: authenticated/member-facing language validation and polish for Dashboard/Profile/GvG across EN/FR/DE.
-- Milestone 18D: AdminPanel full translation pass for Approvals, Members, CP, GvG management, Audit Logs, Permissions, and Tools.
+- Docs/handoff commit checkpoint for Milestone 18F.
+- French/German admin wording review by native speakers.
+- Then choose the next approved feature planning track.
 
 Later milestone options:
 - Member-facing UI cleanup planning.
@@ -434,18 +437,13 @@ Still required:
 - Admin/staff member guild changes.
 - Admin/staff role changes.
 - GvG persistence UI.
-## Current Next Step - Milestone 18E / 18D Validation
+## Completed Milestone 18E/18F Language Validation And Rollout
 
-Milestone 18D AdminPanel full translation is implemented locally and build/source validated.
+Milestone 18E authenticated staging validation passed, and Milestone 18F production rollout is complete.
 
-Recommended next step:
-
-1. Run authenticated staging browser validation for the translated AdminPanel:
-   - Owner opens AdminPanel.
-   - Switch EN/FR/DE.
-   - Confirm Approvals, Members, CP, GvG, Audit Logs, Permissions, and Tools translate.
-   - Confirm no raw i18n keys or console errors.
-   - Confirm mobile FR/DE layout remains usable.
-   - Confirm CP privacy, audit redaction, GvG behavior, permission behavior, and member-status behavior remain unchanged.
-2. If staging validation passes, plan production rollout for the i18n foundation plus full AdminPanel translation.
-3. Do not deploy or commit until explicitly approved.
+Recorded status:
+- `staging_owner` validated AdminPanel EN/FR/DE translations across all AdminPanel tabs.
+- `staging_admin_noperms` validated restricted-admin state.
+- Member/pending sanity checks were intentionally skipped in 18E by user direction because they were already covered in Milestone 18C.
+- Production smoke passed after pushing `1f5b956 feat: add English French German language pack`.
+- Recovery gate copy was not fully re-tested during 18F because no live recovery session was triggered; recovery behavior was already production-validated in Milestone 17C.
