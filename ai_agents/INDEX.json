@@ -1,7 +1,7 @@
 {
   "project": "Anteiku Guild Manager",
-  "currentMilestone": "Milestone 21C Profile/Dashboard Rank Badge UI implemented",
-  "status": "milestone_21c_rank_badge_frontend_build_source_validated",
+  "currentMilestone": "Milestone 21E Rank Badge / Profile Border production rollout complete",
+  "status": "milestone_21e_rank_badge_production_complete",
   "milestone7BackendStatus": "SQL/RPC migration created for hardened role assignment and Owner-only guild transfer; local Supabase validation passed.",
   "milestone7ValidationStatus": "npx.cmd supabase db reset passed; local_validation_anteiku.sql passed; role assignment and guild transfer tests passed.",
   "milestone7FrontendStatus": "Admin member role-change and Owner-only guild-transfer UI browser validated; network writes used assign_member_role and transfer_member_guild; no CP/GvG calls observed.",
@@ -52,13 +52,15 @@
   "milestone20EStatus": "Staging CP Leaderboard rollout and validation passed. Staging project ckyihuxkioeibzpgwenc received only 20260524000300_cp_rankings.sql after a clean dry-run. DB/API verification passed for RPC existence, execute grants, member-safe return shape, Owner admin CP values, non-Owner global denial, pending denial, Admin-without-CP denial, rank ordering, and active Owner count 1. Browser validation passed for staging_member rankings, Owner CP and CP Ranking tabs, and staging_admin_noperms restricted state. .env.local was restored to local Supabase. Production was not touched.",
   "milestone20FStatus": "CP Leaderboard production rollout complete. Production project mzflfyxxkascrfpteexz received only 20260524000300_cp_rankings.sql after a successful retry dry-run; production DB verification passed for ranking RPCs/grants, member-safe return shape, Owner admin CP fields, non-Owner global admin denial, direct CP table denial, and active Owner count 1. Commit 7ccf8c9 feat: add CP ranking UI was pushed and deployed. Production Member smoke passed for My Guild/Global rank-only leaderboard with no CP/private fields and no Admin nav. Production Owner smoke passed for existing CP tab controls and separate CP Ranking Guild/Global admin rankings with CP values.",
   "milestone21BStatus": "Rank Badge / Profile Border backend implemented and locally validated. Migration 20260524000400_cp_rank_badge_summary.sql adds get_my_cp_rank_summary(), returning only global_rank, guild_rank, rank_tier, visual_key, and is_ranked for the caller resolved through auth.uid(). It does not return CP values, timestamps, growth/history/snapshot data, usernames, profile ids, other-member data, or private metadata. Tier keys cover rank_one, rank_two, rank_three, elite_five, top_ten, high_rank, ranked_member, and unranked. Local validation passed with Milestone 21B result 15 PASS / 0 FAIL / 0 SKIP. No frontend UI, staging, production, Vercel, deployment, or commit action was included.",
-  "milestone21CStatus": "Profile/Dashboard Rank Badge UI implemented locally as frontend-only. Added cpRankBadgeService using only get_my_cp_rank_summary, added RankBadge component, added Profile rank border/badge, Dashboard compact rank badge, EN/FR/DE rankBadge labels, and dark/crimson visual variants for all 21B visual keys. npm.cmd run build passed. Source checks confirmed Profile/Dashboard badge paths do not call member/admin leaderboard RPCs, CP roster/leaderboard RPCs, or direct CP tables. Authenticated browser validation is pending until staging receives 20260524000400_cp_rank_badge_summary.sql.",
-  "nextRecommendedStep": "Milestone 21D staging migration rollout and authenticated browser validation for the Rank Badge package.",
+  "milestone21CStatus": "Profile/Dashboard Rank Badge UI implemented as frontend-only, build/source validated, staging-browser validated in Milestone 21D, and production-smoke validated in Milestone 21E. Added cpRankBadgeService using only get_my_cp_rank_summary, RankBadge component, Profile rank border/badge, Dashboard compact rank badge, EN/FR/DE rankBadge labels, and dark/crimson visual variants for all 21B visual keys. Source checks confirmed Profile/Dashboard badge paths do not call member/admin leaderboard RPCs, CP roster/leaderboard RPCs, or direct CP tables.",
+  "milestone21DStatus": "Rank Badge staging rollout and validation passed. Staging project ckyihuxkioeibzpgwenc received only 20260524000400_cp_rank_badge_summary.sql after a clean dry-run; staging DB verification passed for RPC existence, safe return shape, authenticated execute grant, no anon execute grant, direct CP table denial, and active Owner count 1. staging_member showed Global Rank #1 / Rank 1, staging_wrongguild showed safe unranked/default state, staging_pending remained locked, EN/FR/DE labels and mobile layout passed, and .env.local was restored to local Supabase.",
+  "milestone21EStatus": "Rank Badge / Profile Border production rollout complete. Production project mzflfyxxkascrfpteexz received only 20260524000400_cp_rank_badge_summary.sql after a clean dry-run; production DB verification passed for get_my_cp_rank_summary, authenticated execute grant, no anon execute grant, safe return shape, direct CP table denial, and active Owner count 1. Commit e99bec0 feat: add rank badge UI was pushed and deployed. Production Owner smoke passed for Dashboard badge, AdminPanel, CP tab, and CP Ranking tab. Controlled production Member smoke passed for Dashboard/Profile safe no-rank/default badge state, no Admin nav, EN/FR/DE rank labels, and no console errors.",
+  "nextRecommendedStep": "Milestone 22A Character Icons / Avatar Picker planning, or another user-prioritized member prestige/polish pass.",
   "currentSupabaseCliLinkedProjectRef": "mzflfyxxkascrfpteexz",
-  "currentSupabaseCliLinkWarning": "Supabase CLI is currently linked to production after Milestone 20F; explicitly relink before future staging/local Supabase commands.",
+  "currentSupabaseCliLinkWarning": "Supabase CLI is currently linked to production after Milestone 21E; explicitly relink before future staging/local Supabase commands.",
   "futureCpUpdateWindowStatus": "CP Update Window / Member CP Self-Submit is live in production as of Milestone 19E. Members can see own CP through get_my_cp and submit own CP through submit_my_cp_update during an applicable open guild CP Update Window; staff can read selected-guild window status through get_cp_update_window_for_guild; members still cannot see other members' CP, CP roster, CP leaderboard, CP snapshots, or CP history. Optional production mutation smoke was deferred by design.",
   "futureCpLeaderboardStatus": "Milestone 20B backend, 20C member frontend, 20D AdminPanel CP Ranking tab, 20E staging rollout/browser validation, and 20F production rollout are complete. Staging and production both have 20260524000300_cp_rankings.sql applied and verified. CP Leaderboard is live in production; member leaderboard is rank-only and AdminPanel CP Ranking is permission-protected.",
-  "futureCpRankBadgeStatus": "Milestone 21B backend and 21C frontend are implemented locally. get_my_cp_rank_summary returns safe own rank/tier keys without CP values. Profile/Dashboard badge UI uses only that RPC and does not expose CP values. Staging and production do not have 20260524000400_cp_rank_badge_summary.sql yet.",
+  "futureCpRankBadgeStatus": "Milestone 21B backend, 21C frontend, 21D staging rollout/browser validation, and 21E production rollout are complete. Staging and production both have 20260524000400_cp_rank_badge_summary.sql applied and verified. Rank Badge / Profile Border is live in production; Profile/Dashboard badge UI uses only get_my_cp_rank_summary and does not expose CP values.",
   "productionSupabase": {
     "projectRef": "mzflfyxxkascrfpteexz",
     "projectName": "Anteiku Guild Manager Production",
@@ -75,11 +77,15 @@
       "20260515000300",
       "20260523000100",
       "20260524000100",
-      "20260524000200"
+      "20260524000200",
+      "20260524000300",
+      "20260524000400"
     ],
     "schemaRlsSeedVerification": "passed",
     "memberStatusMigrationVerification": "passed",
-    "cpUpdateWindowMigrationVerification": "passed"
+    "cpUpdateWindowMigrationVerification": "passed",
+    "cpLeaderboardMigrationVerification": "passed",
+    "rankBadgeMigrationVerification": "passed"
   },
   "productionOwner": {
     "authUserId": "a89d7b78-7a5d-4b53-86d2-59c918709d60",
@@ -116,6 +122,10 @@
     "languagePackProductionValidated": true,
     "memberFacingUiCleanupLive": true,
     "milestone16HProductionValidated": true,
+    "cpLeaderboardLive": true,
+    "cpLeaderboardProductionValidated": true,
+    "rankBadgeLive": true,
+    "rankBadgeProductionValidated": true,
     "supportedLanguages": [
       "English",
       "French",
@@ -392,7 +402,7 @@
     "productionSmokePassed": true,
     "productionStatus": "Live in production as of Milestone 20F. Member Ranking page shows rank order without CP values. AdminPanel CP Ranking shows CP values only on permission-checked admin paths. Existing CP roster/update/window controls remain in the CP tab.",
     "rolloutWarning": "For any future new target environment, apply and verify 20260524000300_cp_rankings.sql before deploying CP leaderboard frontend UI.",
-    "nextMilestone": "Milestone 21B rank badge summary backend has been implemented locally; next is Milestone 21C frontend badge UI."
+    "nextMilestone": "Completed through Milestone 21E Rank Badge production rollout; next recommended track is Milestone 22A Character Icons / Avatar Picker planning or another user-prioritized polish pass."
   },
   "cpRankBadgeSystem": {
     "milestone21BCompleted": true,
@@ -445,12 +455,14 @@
     "frontendImplemented": true,
     "frontendBuildValidated": true,
     "frontendSourceSecurityValidated": true,
-    "frontendBrowserValidationPending": true,
-    "frontendStatus": "Milestone 21C adds cpRankBadgeService, RankBadge, Profile rank border/badge, Dashboard compact rank badge, EN/FR/DE labels, and dark/crimson visual styling. The frontend calls only get_my_cp_rank_summary for badge data and does not render CP values or private CP fields. Browser validation is pending until staging receives 20260524000400_cp_rank_badge_summary.sql.",
-    "stagingMigrationApplied": false,
-    "productionMigrationApplied": false,
-    "rolloutWarning": "Do not deploy future rank badge/profile border frontend UI until 20260524000400_cp_rank_badge_summary.sql is applied and verified in that target DB.",
-    "nextMilestone": "Milestone 21D staging migration rollout and authenticated browser validation."
+    "frontendBrowserValidationPending": false,
+    "frontendStatus": "Milestone 21C adds cpRankBadgeService, RankBadge, Profile rank border/badge, Dashboard compact rank badge, EN/FR/DE labels, and dark/crimson visual styling. The frontend calls only get_my_cp_rank_summary for badge data and does not render CP values or private CP fields. Browser validation passed in staging through Milestone 21D and production smoke passed through Milestone 21E.",
+    "stagingMigrationApplied": true,
+    "stagingValidated": true,
+    "productionMigrationApplied": true,
+    "productionValidated": true,
+    "rolloutWarning": "Resolved for staging and production. For any future new target environment, apply and verify 20260524000400_cp_rank_badge_summary.sql before deploying rank badge/profile border frontend UI.",
+    "nextMilestone": "Milestone 22A Character Icons / Avatar Picker planning, or another user-prioritized member prestige/polish pass."
   },
   "productionWarnings": [
     "Do not run supabase db reset against production.",
@@ -467,7 +479,7 @@
     "Optional production roster-status mutation smoke must use the controlled production test member only, require explicit approval, and restore to active.",
     "Optional production CP Update Window mutation smoke must use a controlled production test member only, require explicit approval, and document whether test CP/window data is restored or retained.",
     "For any future new target environment, do not deploy CP leaderboard frontend UI until 20260524000300_cp_rankings.sql has been applied and verified in that target DB.",
-    "Do not deploy future rank badge/profile border frontend UI until 20260524000400_cp_rank_badge_summary.sql has been applied and verified in that target DB."
+    "For any future new target environment, do not deploy rank badge/profile border frontend UI until 20260524000400_cp_rank_badge_summary.sql has been applied and verified in that target DB."
   ],
   "localToolingNote": "Supabase CLI was installed locally as dev tooling during Milestone 13A, and the CLI tooling/package changes were committed before Milestone 13B planning/execution.",
   "localTestingNote": "After local DB reset, stale browser auth can cause profiles_id_fkey registration errors; clear localStorage/sessionStorage before retesting auth/registration.",
@@ -533,8 +545,11 @@
     "Member-facing CP Leaderboard frontend build/source validation",
     "AdminPanel CP Leaderboard upgrade build/source validation",
     "CP Leaderboard staging migration rollout/browser validation",
+    "CP Leaderboard production rollout/smoke validation",
     "Rank Badge safe own-rank summary RPC local implementation and validation",
-    "Profile/Dashboard Rank Badge frontend build/source validation"
+    "Profile/Dashboard Rank Badge frontend build/source validation",
+    "Rank Badge staging migration rollout/browser validation",
+    "Rank Badge production rollout/smoke validation"
   ],
   "notImplemented": [
     "avatar editing",
@@ -545,14 +560,14 @@
     "weekly CP snapshot/growth report UI",
     "guild/subguild management UI"
   ],
-  "securityStatus": "locally validated in Supabase, production catalog-verified, production smoke/security validated, Milestone 14C AdminPanel tabs production-smoke validated, Milestone 14E staging schema/RLS/seed verified, Milestone 14F staging Owner bootstrap verified, Milestone 14G staging users/permissions verified, Milestone 14H staging CP redaction/GvG smoke validated, Milestone 15A Member Status backend security locally validated, Milestone 15B Member Status frontend source/security-path validation passed, Milestone 15D Member Status staging browser validation passed, Milestone 15E Member Status production rollout/smoke validation passed, Milestone 16B AdminPanel UI cleanup source/security-path validation passed, Milestone 16C authenticated staging browser validation passed, Milestone 16D.1 compact roster source/staging validation passed, Milestone 16G member-facing UI staging validation passed, Milestone 16H member-facing UI production smoke passed, Milestone 18E AdminPanel translation staging validation passed, Milestone 18F Language Pack production smoke passed, Milestone 19B CP Update Window backend/RLS/RPC local validation passed, Milestone 19B.1 staff selected-guild read RPC local validation passed, Milestone 19C frontend CP-window source/security-path validation passed, Milestone 19D staging browser/security validation passed, Milestone 19E production DB verification/read-only smoke passed, Milestone 20B CP Leaderboard backend/RPC local validation passed, Milestone 20C member CP Leaderboard frontend source/security-path validation passed, Milestone 20D AdminPanel CP Leaderboard frontend source/security-path validation passed, Milestone 20E CP Leaderboard staging browser/API validation passed, Milestone 20F CP Leaderboard production DB verification/smoke validation passed, Milestone 21B Rank Badge Summary backend/RPC local validation passed, and Milestone 21C Rank Badge frontend source/security-path validation passed. Deferred production-only GvG and CP redaction scenarios are covered in staging.",
-  "schemaSpecStatus": "migrations created and locally validated through Milestone 21B. Staging includes 20260524000300_cp_rankings.sql applied and verified as of Milestone 20E. Production includes 20260523000100_member_roster_status_system.sql, 20260524000100_cp_update_window_self_submit.sql, 20260524000200_cp_update_window_staff_read.sql, and 20260524000300_cp_rankings.sql applied and verified. The new 20260524000400_cp_rank_badge_summary.sql migration is local-only. Member Status, CP Update Window / Member CP Self-Submit, and CP Leaderboard are live in production.",
+  "securityStatus": "locally validated in Supabase, production catalog-verified, production smoke/security validated, Milestone 14C AdminPanel tabs production-smoke validated, Milestone 14E staging schema/RLS/seed verified, Milestone 14F staging Owner bootstrap verified, Milestone 14G staging users/permissions verified, Milestone 14H staging CP redaction/GvG smoke validated, Milestone 15A Member Status backend security locally validated, Milestone 15B Member Status frontend source/security-path validation passed, Milestone 15D Member Status staging browser validation passed, Milestone 15E Member Status production rollout/smoke validation passed, Milestone 16B AdminPanel UI cleanup source/security-path validation passed, Milestone 16C authenticated staging browser validation passed, Milestone 16D.1 compact roster source/staging validation passed, Milestone 16G member-facing UI staging validation passed, Milestone 16H member-facing UI production smoke passed, Milestone 18E AdminPanel translation staging validation passed, Milestone 18F Language Pack production smoke passed, Milestone 19B CP Update Window backend/RLS/RPC local validation passed, Milestone 19B.1 staff selected-guild read RPC local validation passed, Milestone 19C frontend CP-window source/security-path validation passed, Milestone 19D staging browser/security validation passed, Milestone 19E production DB verification/read-only smoke passed, Milestone 20B CP Leaderboard backend/RPC local validation passed, Milestone 20C member CP Leaderboard frontend source/security-path validation passed, Milestone 20D AdminPanel CP Leaderboard frontend source/security-path validation passed, Milestone 20E CP Leaderboard staging browser/API validation passed, Milestone 20F CP Leaderboard production DB verification/smoke validation passed, Milestone 21B Rank Badge Summary backend/RPC local validation passed, Milestone 21C Rank Badge frontend source/security-path validation passed, Milestone 21D Rank Badge staging browser/API validation passed, and Milestone 21E Rank Badge production DB verification/smoke validation passed. Deferred production-only GvG and CP redaction scenarios are covered in staging.",
+  "schemaSpecStatus": "migrations created and locally validated through Milestone 21B. Staging includes 20260524000300_cp_rankings.sql and 20260524000400_cp_rank_badge_summary.sql applied and verified as of Milestones 20E and 21D. Production includes 20260523000100_member_roster_status_system.sql, 20260524000100_cp_update_window_self_submit.sql, 20260524000200_cp_update_window_staff_read.sql, 20260524000300_cp_rankings.sql, and 20260524000400_cp_rank_badge_summary.sql applied and verified. Member Status, CP Update Window / Member CP Self-Submit, CP Leaderboard, and Rank Badge / Profile Border are live in production.",
   "cpDecision": "CP stored outside profiles in member_cp and cp_snapshots; member direct SELECT forbidden. Milestone 19B adds safe auth.uid()-scoped get_my_cp and submit_my_cp_update RPCs for own CP only during an open guild CP Update Window. Milestone 20B adds member-safe CP rank order through get_member_cp_rankings without returning CP values; admin CP rankings with values require get_admin_cp_rankings permission checks. Milestone 21B adds get_my_cp_rank_summary for safe own rank/tier badge keys without CP values. Members must not see other members' CP values, CP snapshots, CP history, or private CP metadata.",
   "roleDecision": "Owner global CP access; Leader/Vice automatic guild-scoped CP access; Admin explicit CP permissions granted only by Owner.",
   "membershipDecision": "v1 enforces one active primary guild membership per user while preserving room for history/future multi-guild. Milestone 15A adds separate roster_status for lifecycle state and preserves membership_status as the hard security/access state.",
   "gvgDecision": "supports guild-specific and global events; v1 vote correction by admins/leaders is not allowed. Milestone 15A excludes inactive/on_break roster statuses from active GvG event visibility/voting while preserving active membership.",
-  "supabaseValidationStatus": "Local validation passed through Milestone 21B: db reset passed and local_validation_anteiku.sql passed through Docker psql, including Milestone 21B result 15 PASS / 0 FAIL / 0 SKIP, Milestone 20B result 14 PASS / 0 FAIL / 0 SKIP, Milestone 19B result 32 PASS / 0 FAIL / 0 SKIP, and Milestone 19B.1 result 13 PASS / 0 FAIL / 0 SKIP. Staging has 20260524000300 applied and verified as of Milestone 20E. Production has 20260524000300 applied and verified as of Milestone 20F. Staging/production do not yet have 20260524000400.",
+  "supabaseValidationStatus": "Local validation passed through Milestone 21B: db reset passed and local_validation_anteiku.sql passed through Docker psql, including Milestone 21B result 15 PASS / 0 FAIL / 0 SKIP, Milestone 20B result 14 PASS / 0 FAIL / 0 SKIP, Milestone 19B result 32 PASS / 0 FAIL / 0 SKIP, and Milestone 19B.1 result 13 PASS / 0 FAIL / 0 SKIP. Staging has 20260524000300 and 20260524000400 applied and verified as of Milestones 20E and 21D. Production has 20260524000300 and 20260524000400 applied and verified as of Milestones 20F and 21E.",
   "securityIssueFixed": "Private helper parameter shadowing caused CP/RPC permission leakage during validation; fixed with p_* helper parameters and validated successfully.",
-  "validationStatus": "Milestone 21C frontend build/source validation passed. npm.cmd run build passed; Profile/Dashboard badge paths use only get_my_cp_rank_summary and do not call leaderboard/admin CP RPCs or direct CP tables. Authenticated browser validation awaits staging migration 20260524000400_cp_rank_badge_summary.sql. Milestone 20F production rollout remains the latest production deployment.",
+  "validationStatus": "Milestone 21E production rollout passed. Profile/Dashboard badge paths use only get_my_cp_rank_summary and do not call leaderboard/admin CP RPCs or direct CP tables. Staging browser validation passed in Milestone 21D, and production DB verification/smoke passed in Milestone 21E.",
   "auditStatus": "Do not run npm audit fix --force; it would install Vite 8.0.13 as a breaking major upgrade."
 }

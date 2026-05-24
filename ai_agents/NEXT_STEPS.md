@@ -2,7 +2,27 @@
 
 ## Current Recommendation
 
-Milestone 21C Profile/Dashboard Rank Badge UI is implemented and build/source validated locally. The next recommended milestone is Milestone 21D staging migration rollout and authenticated browser validation for the Rank Badge package.
+Milestone 21E Rank Badge / Profile Border production rollout is complete. The next recommended milestone is Milestone 22A Character Icons / Avatar Picker planning, unless the user prioritizes another member prestige/polish pass.
+
+Recorded Milestone 21E production status:
+- Production project `mzflfyxxkascrfpteexz` received only `20260524000400_cp_rank_badge_summary.sql` after a clean dry-run.
+- Production DB verification passed for `get_my_cp_rank_summary()`, authenticated execute grant, no anon execute grant, safe return shape, direct CP table denial, and active Owner count `1`.
+- Commit `e99bec0 feat: add rank badge UI` was pushed and deployed to production.
+- Owner Dashboard rank badge rendered; Owner AdminPanel still opened; existing CP tab and CP Ranking tab still rendered.
+- Controlled production Member Dashboard/Profile showed the safe default/no-rank badge state and no Admin navigation.
+- EN/FR/DE rank badge labels worked.
+- No CP values, growth/history/snapshot data, updated-by metadata, profile ids, usernames from the rank RPC, or private rank metadata were exposed by the badge.
+- No production CP/member data was mutated.
+- Supabase CLI is currently linked to production `mzflfyxxkascrfpteexz`; relink deliberately before future staging/local Supabase commands.
+
+Recorded Milestone 21D staging status:
+- Staging project `ckyihuxkioeibzpgwenc` received only `20260524000400_cp_rank_badge_summary.sql`.
+- Staging DB verification passed for RPC existence, safe return shape, grants, direct CP table denial, and active Owner count `1`.
+- `staging_member` showed `Global Rank #1` / `Rank 1`.
+- `staging_wrongguild` showed a safe unranked/default state.
+- `staging_pending` remained locked.
+- EN/FR/DE labels and mobile layout passed.
+- `.env.local` was restored to local Supabase after validation.
 
 Recorded Milestone 21C frontend status:
 - Added `src/services/cpRankBadgeService.js`.
@@ -14,12 +34,10 @@ Recorded Milestone 21C frontend status:
 - Rank badge data uses only `get_my_cp_rank_summary()`.
 - Profile/Dashboard do not use member/admin leaderboard RPCs, admin CP roster/leaderboard RPCs, or direct CP tables for badge data.
 - `npm.cmd run build` passed.
-- Authenticated browser validation is pending until staging receives `20260524000400_cp_rank_badge_summary.sql`.
+- Authenticated browser validation passed in staging through Milestone 21D and production smoke passed through Milestone 21E.
 
 Rollout boundary:
-- `20260524000400_cp_rank_badge_summary.sql` is local-only.
-- Staging and production do not have the Rank Badge Summary migration yet.
-- Do not deploy the 21C frontend to a remote target until that target DB has `20260524000400_cp_rank_badge_summary.sql` applied and verified.
+- Resolved for staging and production. For any future new target environment, apply and verify `20260524000400_cp_rank_badge_summary.sql` before deploying the rank badge frontend.
 
 Recorded Milestone 21B backend status:
 - New local migration: `20260524000400_cp_rank_badge_summary.sql`.
@@ -35,9 +53,7 @@ Recorded Milestone 21B backend status:
 - `npm.cmd run build` was not run because 21B changed only database migration/tests/docs and no frontend code.
 
 Rollout boundary:
-- `20260524000400_cp_rank_badge_summary.sql` is local-only.
-- Staging and production do not have the Rank Badge Summary migration yet.
-- Do not deploy future rank badge/profile border frontend UI to a remote target until that target DB has `20260524000400_cp_rank_badge_summary.sql` applied and verified.
+- Resolved for staging and production through Milestones 21D and 21E.
 
 Recorded Milestone 20F production status:
 - Production project `mzflfyxxkascrfpteexz` received only `20260524000300_cp_rankings.sql`.

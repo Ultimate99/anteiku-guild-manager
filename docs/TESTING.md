@@ -1,5 +1,43 @@
 # Testing
 
+## Milestone 21E Rank Badge Production Validation
+
+Milestone 21E production rollout and smoke validation passed.
+
+Migration:
+- Production dry-run showed only `20260524000400_cp_rank_badge_summary.sql`.
+- Applied only `20260524000400_cp_rank_badge_summary.sql` to production project `mzflfyxxkascrfpteexz`.
+- Remote migration list confirmed `20260524000400` applied.
+
+Validation:
+- `get_my_cp_rank_summary()` exists and authenticated execute grant is present.
+- Return shape is limited to `global_rank`, `guild_rank`, `rank_tier`, `visual_key`, and `is_ranked`.
+- Authenticated member-context response contained no CP values, growth/history/snapshot fields, updated timestamps, updated-by metadata, profile ids, usernames, or private metadata.
+- Direct authenticated member-context reads of `member_cp` and `cp_snapshots` returned zero rows.
+- Active Owner count remains `1`.
+
+Production smoke:
+- Owner Dashboard rank badge rendered.
+- Owner AdminPanel opened.
+- Existing `CP` tab still rendered roster and CP Update Window controls.
+- `CP Ranking` still rendered for Owner.
+- Controlled production Member Dashboard/Profile showed a safe no-rank/default badge state.
+- Controlled production Member had no Admin navigation.
+- EN/FR/DE rank badge labels worked.
+- No console errors were captured on checked paths.
+
+## Milestone 21D Rank Badge Staging Validation
+
+Milestone 21D staging rollout and browser validation passed.
+
+- Staging project `ckyihuxkioeibzpgwenc` received only `20260524000400_cp_rank_badge_summary.sql`.
+- Staging DB verification passed for safe RPC shape, execute grants, direct CP table denial, and active Owner count `1`.
+- `staging_member` showed `Global Rank #1` / `Rank 1`.
+- `staging_wrongguild` showed a safe unranked/default state.
+- `staging_pending` remained locked.
+- EN/FR/DE labels and mobile layout passed.
+- `.env.local` was restored to local Supabase.
+
 ## Milestone 21C Profile/Dashboard Rank Badge Frontend Validation
 
 Milestone 21C frontend implementation passed build and source/security-path validation.
@@ -16,8 +54,8 @@ Static/source checks:
 - Existing CP Leaderboard, CP Update Window, GvG, audit, role, permission, and member-status behavior was unchanged.
 
 Validation boundary:
-- Authenticated browser validation is pending until staging receives `20260524000400_cp_rank_badge_summary.sql`.
-- Do not deploy the 21C frontend to staging or production before applying and verifying that migration in the target DB.
+- Authenticated staging browser validation passed in Milestone 21D.
+- Production smoke validation passed in Milestone 21E.
 
 ## Milestone 21B Rank Badge Summary Local Validation
 
@@ -26,7 +64,7 @@ Milestone 21B backend/database validation passed locally.
 Migration:
 - Local migration `20260524000400_cp_rank_badge_summary.sql` adds `get_my_cp_rank_summary()`.
 - No frontend UI was implemented.
-- Staging and production do not have this migration yet.
+- Staging and production received this migration in Milestones 21D and 21E.
 
 Validation:
 - `npx.cmd supabase db reset` passed.

@@ -2,16 +2,16 @@
 
 ## Current Backend Status
 
-Milestone 21B adds local-only backend support for safe own CP rank badge/profile border summaries. It is implemented and locally validated, but has not been applied to staging or production.
+Milestone 21B added backend support for safe own CP rank badge/profile border summaries. It is locally validated and applied/verified in staging through Milestone 21D and production through Milestone 21E.
 
-New local migration:
+Rank badge migration:
 - `supabase/migrations/20260524000400_cp_rank_badge_summary.sql`
 
-Do not deploy future rank badge/profile border frontend UI to any remote environment until this migration has been applied and verified in that environment.
+Future new target environments must apply and verify this migration before deploying rank badge/profile border frontend UI.
 
 ## Production Deployment Status
 
-Production Supabase is live and migrated through Milestone 20F. Member Status, CP Update Window / Member CP Self-Submit, and CP Leaderboard are applied, verified, and live in production.
+Production Supabase is live and migrated through Milestone 21E. Member Status, CP Update Window / Member CP Self-Submit, CP Leaderboard, and Rank Badge / Profile Border are applied, verified, and live in production.
 
 Current local migration order:
 
@@ -28,7 +28,7 @@ Current local migration order:
 11. `20260524000100_cp_update_window_self_submit.sql`
 12. `20260524000200_cp_update_window_staff_read.sql`
 13. `20260524000300_cp_rankings.sql`
-14. `20260524000400_cp_rank_badge_summary.sql` - local only; not applied to staging or production yet.
+14. `20260524000400_cp_rank_badge_summary.sql`
 
 Migration `20260523000100_member_roster_status_system.sql` is implemented, locally validated, staging validated, and production applied/verified.
 
@@ -36,7 +36,7 @@ Migrations `20260524000100_cp_update_window_self_submit.sql` and `20260524000200
 
 Migration `20260524000300_cp_rankings.sql` is implemented, locally validated, staging validated, and production applied/verified.
 
-Migration `20260524000400_cp_rank_badge_summary.sql` is implemented and locally validated only.
+Migration `20260524000400_cp_rank_badge_summary.sql` is implemented, locally validated, staging validated, and production applied/verified.
 
 Production Member Status verification:
 - Existing production memberships were backfilled to `roster_status = active`.

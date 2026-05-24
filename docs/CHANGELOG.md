@@ -1,5 +1,28 @@
 # Changelog
 
+## 2026-05-24 - Milestone 21E Rank Badge / Profile Border Production Rollout Complete
+
+- Applied Rank Badge Summary migration `20260524000400_cp_rank_badge_summary.sql` to production after dry-run review showed only that migration pending.
+- Verified production `get_my_cp_rank_summary()` exists, is security definer, grants execute to `authenticated`, does not grant execute to `anon`, and returns only `global_rank`, `guild_rank`, `rank_tier`, `visual_key`, and `is_ranked`.
+- Verified an authenticated member-context RPC response contained no CP values, growth/history/snapshot data, timestamps, updated-by metadata, profile ids, usernames, or private metadata.
+- Verified direct authenticated member-context reads of `member_cp` and `cp_snapshots` returned zero rows.
+- Pushed and deployed commit `e99bec0 feat: add rank badge UI`.
+- Production Owner smoke passed: Dashboard rank badge rendered, AdminPanel opened, existing CP tab rendered CP roster/window controls, and `CP Ranking` rendered for Owner.
+- Production controlled Member smoke passed: Dashboard/Profile showed the safe default rank badge state, Profile border/badge rendered, Member had no Admin navigation, and EN/FR/DE rank labels worked.
+- No production CP/member data, Vercel env vars, service role keys, source edits, SQL edits, staging project, `db reset`, or `--include-seed` action was used during rollout.
+- Supabase CLI remains linked to production `mzflfyxxkascrfpteexz`; relink deliberately before future staging/local Supabase commands.
+
+## 2026-05-24 - Milestone 21D Rank Badge Staging Validation Passed
+
+- Applied Rank Badge Summary migration `20260524000400_cp_rank_badge_summary.sql` to staging only after dry-run review showed only that migration pending.
+- Verified staging `get_my_cp_rank_summary()` safe return shape, authenticated execute grant, no anon execute grant, direct CP table denial, and active Owner count `1`.
+- Browser-validated `staging_member` Dashboard/Profile rank badge with `Global Rank #1` / `Rank 1`.
+- Browser-validated `staging_wrongguild` safe unranked/default state and `staging_pending` pending lockout.
+- Confirmed EN/FR/DE labels and mobile layout.
+- Confirmed Profile/Dashboard badge path uses only `get_my_cp_rank_summary()` and no direct CP table/member/admin leaderboard calls.
+- Restored `.env.local` to local Supabase after validation.
+- Production was not touched.
+
 ## 2026-05-24 - Milestone 21C Profile/Dashboard Rank Badge UI Implemented
 
 - Added frontend-only Rank Badge / Profile Border UI.

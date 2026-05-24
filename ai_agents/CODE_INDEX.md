@@ -46,8 +46,9 @@
 ## Milestone 21B Rank Badge Summary Backend
 
 Production status:
-- Local-only as of Milestone 21B.
-- Do not deploy future rank badge/profile border frontend to any remote target until `20260524000400_cp_rank_badge_summary.sql` is applied and verified there.
+- Applied and verified in staging through Milestone 21D and production through Milestone 21E.
+- Production migration: `20260524000400_cp_rank_badge_summary.sql`.
+- Production smoke confirmed Profile/Dashboard rank badge visuals and no CP value exposure from the badge.
 
 - `supabase/migrations/20260524000400_cp_rank_badge_summary.sql`
   - Adds member-safe own-rank summary RPC `get_my_cp_rank_summary()`.
@@ -61,8 +62,9 @@ Production status:
 ## Milestone 21C Profile/Dashboard Rank Badge Frontend
 
 Production status:
-- Local-only as of Milestone 21C.
-- Do not deploy to any remote target until `20260524000400_cp_rank_badge_summary.sql` is applied and verified there.
+- Deployed to production through Milestone 21E with commit `e99bec0 feat: add rank badge UI`.
+- Production controlled Member smoke confirmed Dashboard/Profile safe no-rank/default badge state, no Admin navigation, and EN/FR/DE rank badge labels.
+- Production Owner smoke confirmed Dashboard badge, AdminPanel access, existing CP tab, and CP Ranking tab.
 
 - `src/services/cpRankBadgeService.js`
   - Adds `loadMyCpRankSummary()` for `get_my_cp_rank_summary`.

@@ -51,6 +51,19 @@ Milestone 20F deployed CP Leaderboard / CP Ranking to production.
 - Existing CP roster/update/window controls remain in the `CP` tab.
 - Supabase CLI is currently linked to production project `mzflfyxxkascrfpteexz`; relink deliberately before future staging/local Supabase commands.
 
+## Production Rank Badge / Profile Border
+
+Milestone 21E deployed Rank Badge / Profile Border to production.
+
+- Commit deployed: `e99bec0 feat: add rank badge UI`.
+- Production migration applied and verified:
+  - `20260524000400_cp_rank_badge_summary.sql`
+- Production DB verification passed for `get_my_cp_rank_summary()`, authenticated execute grant, no anon execute grant, safe return shape, direct CP table denial, and active Owner count.
+- The rank badge/profile border uses only the caller's own rank summary from `get_my_cp_rank_summary()`.
+- Rank badge API/UI does not expose CP values, growth/history/snapshot data, updated-by metadata, profile ids, usernames from the rank RPC, or other-member data.
+- Production smoke passed for Owner Dashboard/AdminPanel/CP tabs and controlled Member Dashboard/Profile badge state with no Admin navigation.
+- Supabase CLI is currently linked to production project `mzflfyxxkascrfpteexz`; relink deliberately before future staging/local Supabase commands.
+
 ## Production Supabase Project
 
 Production Supabase project is created and separate from local development.
@@ -131,6 +144,9 @@ Additional migration status:
 - `20260524000300_cp_rankings.sql` is applied and verified in staging as of Milestone 20E.
 - `20260524000300_cp_rankings.sql` is applied and verified in production as of Milestone 20F.
 - CP Leaderboard frontend deployment to production completed after production DB verification.
+- `20260524000400_cp_rank_badge_summary.sql` is applied and verified in staging as of Milestone 21D.
+- `20260524000400_cp_rank_badge_summary.sql` is applied and verified in production as of Milestone 21E.
+- Rank Badge / Profile Border frontend deployment to production completed after production DB verification.
 
 After applying migrations, production verification passed:
 

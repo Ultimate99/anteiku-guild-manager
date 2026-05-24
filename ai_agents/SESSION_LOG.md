@@ -1,5 +1,39 @@
 # Session Log
 
+## 2026-05-24 - Milestone 21E Rank Badge Production Rollout Complete
+
+- Completed production rollout for Rank Badge / Profile Border.
+- Confirmed clean working tree and latest commit `e99bec0 feat: add rank badge UI`.
+- Relinked Supabase CLI to production project `mzflfyxxkascrfpteexz`; staging project `ckyihuxkioeibzpgwenc` was not used.
+- Production dry-run showed only `20260524000400_cp_rank_badge_summary.sql`.
+- Applied only `20260524000400_cp_rank_badge_summary.sql` to production.
+- Remote migration list confirmed `20260524000400` applied.
+- Verified `get_my_cp_rank_summary()` exists, is security definer, grants execute to `authenticated`, does not grant execute to `anon`, and returns only safe rank summary fields.
+- Verified authenticated member-context RPC response contained no CP values, growth/history/snapshot data, timestamps, updated-by metadata, profile ids, usernames, or private metadata.
+- Verified direct authenticated member-context reads of `member_cp` and `cp_snapshots` returned zero rows.
+- Verified active Owner count remains `1`.
+- Pushed `main`; Vercel deployed commit `e99bec0`.
+- Production Owner smoke passed for Dashboard rank badge, AdminPanel access, existing CP tab, and `CP Ranking` tab.
+- Controlled production Member smoke passed for Dashboard/Profile safe no-rank/default badge state, no Admin nav, EN/FR/DE rank labels, and no captured console errors.
+- Static source checks confirmed Profile/Dashboard badge path calls only `get_my_cp_rank_summary()` and does not use direct CP tables or member/admin leaderboard RPCs.
+- No production CP/member data, Vercel env vars, source edits, SQL edits, service role keys, staging project, `db reset`, or `--include-seed` action was used.
+- Supabase CLI remains linked to production and must be relinked before future staging/local Supabase commands.
+
+## 2026-05-24 - Milestone 21D Rank Badge Staging Rollout and Validation
+
+- Completed staging-only Rank Badge rollout and validation.
+- Relinked Supabase CLI from production to staging project `ckyihuxkioeibzpgwenc`.
+- Staging dry-run showed only `20260524000400_cp_rank_badge_summary.sql`.
+- Applied only `20260524000400_cp_rank_badge_summary.sql` to staging.
+- Remote migration list confirmed `20260524000400` applied.
+- Verified staging RPC safe return shape, authenticated execute grant, no anon execute grant, direct CP table denial, and active Owner count `1`.
+- Browser-validated `staging_member` Dashboard/Profile rank badge with `Global Rank #1` / `Rank 1`.
+- Browser-validated `staging_wrongguild` safe unranked/default badge state.
+- Browser-validated `staging_pending` pending lockout.
+- EN/FR/DE labels, mobile layout, and console checks passed.
+- Restored `.env.local` to local Supabase and restarted local Vite.
+- Production was not touched.
+
 ## 2026-05-24 - Milestone 21C Profile/Dashboard Rank Badge UI Implemented
 
 - Implemented frontend-only Profile/Dashboard Rank Badge UI.

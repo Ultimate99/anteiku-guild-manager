@@ -1,8 +1,8 @@
 # Supabase RLS
 
-## Milestone 21B Rank Badge Summary RPC
+## Milestone 21E Rank Badge Summary RPC
 
-Milestone 21B is implemented and locally validated. `20260524000400_cp_rank_badge_summary.sql` is local-only and is not applied to staging or production yet.
+Milestone 21B backend is implemented and locally validated. `20260524000400_cp_rank_badge_summary.sql` is applied and verified in staging through Milestone 21D and production through Milestone 21E.
 
 New RPC:
 - `get_my_cp_rank_summary()`
@@ -103,7 +103,7 @@ Validation:
 
 ## Production Deployment Reminder
 
-Production is live through Milestone 20F. CP Leaderboard / CP Ranking is applied, deployed, and smoke-validated in production. Milestone 21B rank badge summary is local-only until a separately approved staging/production rollout.
+Production is live through Milestone 21E. CP Leaderboard / CP Ranking and Rank Badge / Profile Border are applied, deployed, and smoke-validated in production.
 
 Future production setup must:
 - Apply migrations in documented timestamp order.

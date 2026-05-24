@@ -6,7 +6,7 @@ Current production checkpoint:
 - Production project ref: `mzflfyxxkascrfpteexz`.
 - Project name: `Anteiku Guild Manager Production`.
 - Region: Central EU / Frankfurt.
-- All 13 approved migrations are applied remotely, including `20260523000100_member_roster_status_system.sql`, `20260524000100_cp_update_window_self_submit.sql`, `20260524000200_cp_update_window_staff_read.sql`, and `20260524000300_cp_rankings.sql`.
+- All 14 approved migrations are applied remotely, including `20260523000100_member_roster_status_system.sql`, `20260524000100_cp_update_window_self_submit.sql`, `20260524000200_cp_update_window_staff_read.sql`, `20260524000300_cp_rankings.sql`, and `20260524000400_cp_rank_badge_summary.sql`.
 - Production schema/RLS/seed verification passed.
 - Manual Owner bootstrap completed for `ultimatesrb` / `UltimateSRB` in `Anteiku`.
 - Exactly one active Owner membership exists.
@@ -30,6 +30,8 @@ Current production checkpoint:
 - Milestone 20F CP Leaderboard / CP Ranking is live and production-smoke validated.
 - Member leaderboard is rank-only; CP values remain hidden from members.
 - AdminPanel `CP Ranking` is permission-protected and Owner Global ranking was smoke-tested.
+- Milestone 21E Rank Badge / Profile Border is live and production-smoke validated.
+- Rank badge/profile border uses only `get_my_cp_rank_summary()` and does not expose CP values or private CP metadata.
 - Vercel Preview env has not been configured for staging yet.
 
 Controlled guild onboarding checkpoint:

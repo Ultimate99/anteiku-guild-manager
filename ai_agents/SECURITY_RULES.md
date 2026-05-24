@@ -1,11 +1,11 @@
 # Security Rules
 
-## Milestone 21B Rank Badge Summary Rules
+## Milestone 21E Rank Badge / Profile Border Production Rules
 
-Milestone 21B is backend-only and locally validated. `20260524000400_cp_rank_badge_summary.sql` is not yet applied to staging or production.
+Milestone 21B backend, Milestone 21C frontend, Milestone 21D staging validation, and Milestone 21E production rollout are complete. Rank Badge / Profile Border is live in production.
 
 Own rank summary rules:
-- Profile/Dashboard rank badge visuals must use `get_my_cp_rank_summary()` after the target DB has the migration.
+- Profile/Dashboard rank badge visuals must use `get_my_cp_rank_summary()`.
 - The RPC returns only the caller's own `global_rank`, `guild_rank`, `rank_tier`, `visual_key`, and `is_ranked`.
 - The RPC must not return CP values, updated timestamps, growth/history/snapshot data, updated-by metadata, usernames, profile ids, other-member rows, or private CP metadata.
 - The RPC accepts no target profile id; it resolves the caller only through `auth.uid()`.
@@ -17,7 +17,8 @@ Rank eligibility:
 - `suspended`, `left`, and `kicked` remain blocked by existing membership/security gates.
 
 Rollout boundary:
-- Do not deploy future rank badge/profile border frontend to staging or production until `20260524000400_cp_rank_badge_summary.sql` is applied and verified there.
+- `20260524000400_cp_rank_badge_summary.sql` is applied and verified in staging and production.
+- For any future new target environment, apply and verify this migration before deploying the rank badge/profile border frontend.
 
 ## Milestone 20F CP Leaderboard Production Rules
 

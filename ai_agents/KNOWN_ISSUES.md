@@ -25,6 +25,7 @@
 - Milestone 19E CP Update Window / Member CP Self-Submit production rollout is complete. Production has both CP Update Window migrations applied, frontend deployment complete, and read-only production smoke passed.
 - No controlled production CP mutation smoke was performed during Milestone 19E; do not open/close a production CP window or submit production CP test values without explicit approval.
 - Milestone 20F CP Leaderboard production rollout is complete. Production has `20260524000300_cp_rankings.sql` applied, member rank-only leaderboard is live, AdminPanel CP Ranking is permission-protected, and production smoke passed.
+- Milestone 21E Rank Badge / Profile Border production rollout is complete. Production has `20260524000400_cp_rank_badge_summary.sql` applied, Profile/Dashboard rank badge visuals are live, and production smoke passed with no CP value exposure from the badge.
 - Staging test data remains intentionally; do not cleanup/delete it unless separately approved.
 - Vercel Preview env has not been configured for staging yet.
 
@@ -48,6 +49,7 @@
 - Optional production roster-status mutation smoke must use the controlled production test member only, require explicit approval, and restore to `active`.
 - Optional production CP Update Window mutation smoke must use a controlled production test member only, require explicit approval, and document whether test CP/window data is restored or retained.
 - Member CP Leaderboard rank order intentionally reveals relative CP strength, but exact CP values remain hidden from member API responses and UI.
+- Rank Badge / Profile Border intentionally reveals the caller's own global/guild rank and rank tier only; it must not expose CP values, growth/history/snapshot data, updated-by metadata, profile ids, usernames from the rank RPC, or other-member data.
 - Recovery gate copy was not fully re-tested during Milestone 18F because no live recovery session was triggered; recovery behavior itself was already production-validated in Milestone 17C.
 
 ## Product Gaps

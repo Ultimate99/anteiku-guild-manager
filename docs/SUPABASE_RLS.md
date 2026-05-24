@@ -1,12 +1,12 @@
 # Supabase RLS
 
-The local Supabase RLS/RPC implementation has been validated through Milestone 21B, and the Milestone 11B frontend audit viewer has been live-browser validated against the safe audit RPC.
+The local Supabase RLS/RPC implementation has been validated through Milestone 21B, and production is applied/verified through Milestone 21E.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
 
-## Milestone 21B Rank Badge Summary RPC
+## Milestone 21E Rank Badge Summary RPC
 
-Milestone 21B is backend/database-only and locally validated. Staging and production rollout are pending.
+Milestone 21B backend is locally validated. Staging rollout passed in Milestone 21D and production rollout passed in Milestone 21E.
 
 New RPC:
 - `get_my_cp_rank_summary()`
