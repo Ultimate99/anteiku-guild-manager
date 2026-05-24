@@ -2,25 +2,29 @@
 
 ## Current Recommendation
 
-Milestone 16F member-facing UI compact pass is implemented locally and build/source validated.
+Milestone 16H production rollout is complete. The member-facing compact UI/copy pass is live in production.
 
-Recorded Milestone 16F status:
-- Frontend-only UI/copy cleanup for member-facing pages.
-- Compact panel/layout treatment added for auth, recovery, pending/rejected/suspended/restricted gates, Dashboard/Home, Profile, and GvG.
-- Dashboard/Home now prioritizes guild, role, roster status, GvG state, and compact member summary.
-- Profile copy is shorter and keeps IGN editing behavior unchanged.
-- GvG copy is shorter and keeps vote behavior unchanged.
-- All changed copy uses the existing EN/FR/DE i18n dictionaries.
-- `npm.cmd run build` passed.
-- Static checks found no `supabase/` or `src/services/` changes and no new direct protected table calls.
-- Local browser smoke passed for Login/Register/Forgot Password in EN/FR/DE with no raw keys, no console errors, and no horizontal overflow.
+Recorded Milestone 16H status:
+- Deployed commit `53c7907 style: clean up member-facing UI`.
+- Production app loaded at `https://anteiku-guild-manager.vercel.app`.
+- Login/Register panels are compact and translated.
+- Forgot Password remains visible.
+- Owner login and AdminPanel access worked.
+- Controlled production Member login worked.
+- Member Dashboard/Profile/GvG are compact and translated.
+- EN/FR/DE language switching works and persists after reload.
+- Mobile/narrow viewport had no horizontal overflow.
+- Member has no Admin navigation or AdminPanel access.
+- No other-member CP exposure was found.
+- No raw translation keys or console errors were captured.
+- No SQL, Supabase/RLS/RPC, service behavior, Vercel env, production data, CP/GvG/audit/role/permission/member-status behavior changed.
 
-Recommended next milestone:
-- Milestone 16G authenticated staging validation for the member-facing compact UI pass.
-- Validate member Dashboard/Profile/GvG, pending lockout, restricted states if testable, member no-AdminPanel, CP privacy, GvG eligibility, language switching, and mobile EN/FR/DE layout.
-
-Validation caveat:
-- Set New Password was not re-tested with a live recovery session during 16F; recovery behavior was already production-validated in Milestone 17C.
+Recommended next milestone options:
+- CP Update Window / Member CP Self-Submit planning.
+- Weekly CP Snapshot/Growth Reports planning.
+- Member Status history UI planning.
+- Announcements or onboarding/invite-code planning.
+- French/German wording review by native speakers.
 
 ## Previous Recommendation - Milestone 18F
 

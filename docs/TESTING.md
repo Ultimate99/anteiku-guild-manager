@@ -1,5 +1,27 @@
 # Testing
 
+## Milestone 16H Member-Facing UI Production Smoke
+
+Milestone 16H production smoke passed after deploying commit `53c7907 style: clean up member-facing UI`.
+
+Validated:
+- Production app loads at `https://anteiku-guild-manager.vercel.app`.
+- Language switcher works and persists after reload.
+- Login/Register panels are compact and translated.
+- Forgot Password remains visible.
+- Production Owner can sign in and open AdminPanel.
+- Controlled production Member can sign in.
+- Member Dashboard/Profile/GvG are compact and translated.
+- Member cannot access AdminPanel.
+- No other-member CP exposure was found.
+- No raw translation keys are visible.
+- No console errors were captured.
+- Narrow/mobile viewport had no horizontal overflow.
+
+Security notes:
+- CP privacy, GvG behavior, Audit access, role/permission behavior, and Member Status behavior were unchanged.
+- No SQL, Supabase/RLS/RPC, Vercel env, or production data changes were made.
+
 ## Milestone 18F Language Pack Production Smoke
 
 Milestone 18F production smoke passed after deploying commit `1f5b956 feat: add English French German language pack`.

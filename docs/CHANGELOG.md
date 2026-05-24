@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-05-24 - Milestone 16H Member-Facing UI Production Rollout Complete
+
+- Deployed `53c7907 style: clean up member-facing UI` to production.
+- Member-facing compact UI/copy cleanup is live at `https://anteiku-guild-manager.vercel.app`.
+- Production smoke passed for app load, EN/FR/DE language persistence, compact Login/Register, Forgot Password visibility, Owner AdminPanel access, controlled Member login, compact Member Dashboard/Profile/GvG, Member AdminPanel denial, CP non-leakage, missing-key checks, console-error checks, and narrow/mobile layout.
+- No SQL, Supabase commands, Supabase/RLS/RPC changes, Vercel env changes, production data mutations, or CP/GvG/audit/role/permission/member-status behavior changes were made.
+
 ## 2026-05-24 - Milestone 16F Member-Facing UI Compact Pass Implemented
 
 - Implemented a frontend-only member-facing UI/copy compact pass.

@@ -4,6 +4,15 @@ Vercel is the production hosting target.
 
 Milestone 13B completed Vercel setup, Supabase Auth URL configuration, deployment, and production smoke/security validation.
 
+## Production Member-Facing UI Cleanup
+
+Milestone 16H deployed the frontend-only member-facing compact UI/copy pass to production.
+
+- Commit deployed: `53c7907 style: clean up member-facing UI`.
+- Production URL: `https://anteiku-guild-manager.vercel.app`.
+- No SQL migration, Supabase command, Vercel env, or production data change was part of this rollout.
+- Production smoke passed for Owner access, controlled Member access, compact member-facing pages, EN/FR/DE layout, member AdminPanel denial, and CP non-leakage.
+
 ## Production Language Pack
 
 Milestone 18F deployed the frontend-only language pack to production.

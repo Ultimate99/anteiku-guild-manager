@@ -1,5 +1,30 @@
 # Project State
 
+## Milestone 16H Member-Facing UI Production Rollout Complete
+
+Milestone 16H is complete. The member-facing compact UI/copy pass is live in production at `https://anteiku-guild-manager.vercel.app`.
+
+Production rollout:
+- Deployed commit `53c7907 style: clean up member-facing UI`.
+- Production app loaded successfully after Vercel served the new build.
+- Login/Register panels are compact and translated.
+- Forgot Password remains visible.
+- Owner login and AdminPanel access worked.
+- Controlled production Member login worked.
+- Member Dashboard, Profile, and GvG are compact and translated.
+- EN/FR/DE language switching works and persists after reload.
+- Mobile/narrow viewport had no horizontal overflow.
+
+Security/scope:
+- Member has no Admin navigation or AdminPanel access.
+- No other-member CP exposure was found.
+- No raw translation keys or console errors were captured.
+- CP privacy, GvG behavior, audit access, role/guild/permission behavior, and Member Status behavior are unchanged.
+- No SQL, Supabase commands, Supabase/RLS/RPC changes, Vercel env changes, production data mutations, or deployment settings changes were made.
+
+Recommended next milestone:
+- Choose the next approved feature or polish track. Good candidates are CP Update Window planning, Weekly CP Snapshot/Growth Reports planning, Member Status history UI planning, announcements/onboarding invite codes, or French/German wording review by native speakers.
+
 ## Milestone 16F Member-Facing UI Compact Pass Implemented
 
 Milestone 16F is implemented locally as a frontend-only member-facing UI/copy compact pass.
@@ -1173,7 +1198,7 @@ Validated results:
 
 ## Current Milestone
 
-Milestone 18F Language Pack production rollout is complete. The frontend-only EN/FR/DE language system, member-facing translations, and full AdminPanel translations are live in production. Recommended next step: docs/handoff commit checkpoint, then French/German wording review by native speakers or the next approved feature planning track.
+Milestone 16H member-facing UI production rollout is complete. The compact member-facing auth, gate, Dashboard, Profile, and GvG surfaces are live in production, EN/FR/DE layout remains safe, and member security/CP privacy behavior is unchanged. Recommended next step: choose the next approved feature or polish track, such as CP Update Window planning, Weekly CP Snapshot/Growth Reports planning, Member Status history UI planning, announcements/onboarding invite codes, or French/German wording review by native speakers.
 
 Future CP-focused milestone candidate recorded: CP Update Window / Member CP Self-Submit. Corrected CP privacy rule going forward: members can see their own CP through safe backend/RPC flow, but must not see other members' CP, CP roster, CP leaderboard, CP snapshots, or other members' CP history. Members must not directly select or update `member_cp` and must not directly read `cp_snapshots`.
 

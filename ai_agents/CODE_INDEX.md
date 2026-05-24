@@ -61,6 +61,11 @@
 
 ## Milestone 16F Member-Facing UI Compact Pass
 
+Production status:
+- Browser-validated in staging through Milestone 16G and deployed to production through Milestone 16H.
+- Production commit: `53c7907 style: clean up member-facing UI`.
+- Production smoke passed for compact auth, Dashboard, Profile, GvG, EN/FR/DE layout, member AdminPanel denial, and CP non-leakage.
+
 - `src/pages/LoginRegister.jsx`
   - Uses compact auth panel/form classes while preserving sign-in, registration, forgot-password, and approval-request behavior.
 - `src/pages/SetNewPassword.jsx`
