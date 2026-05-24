@@ -2,9 +2,9 @@
 
 ## Current Recommendation
 
-Milestone 17A Password Recovery Required Reset Flow is implemented locally, build-passed, source/security-path validated, and local-browser smoke validated for the recovery gate. It still needs real staging recovery-email validation before production rollout.
+Milestone 17C Password Recovery production rollout is complete. The required reset gate is live in production and was validated with the controlled production test member.
 
-Recorded Milestone 17A status:
+Recorded Milestone 17A/17B/17C status:
 - Frontend/auth UX only.
 - Password recovery links now set a required recovery state through Supabase `PASSWORD_RECOVERY` handling and recovery URL fallback detection.
 - A sessionStorage recovery marker prevents refresh from bypassing the required reset screen.
@@ -13,16 +13,19 @@ Recorded Milestone 17A status:
 - Password update uses Supabase `updateUser({ password })` only.
 - `npm.cmd run build` passed.
 - Local browser smoke confirmed `Forgot password?`, recovery-gated `Set new password`, no normal navigation during recovery, and sign-out recovery cleanup.
+- Staging real recovery email-link validation passed.
+- Production rollout deployed commit `23dd956 fix: require password reset after recovery link`.
+- Production smoke and controlled production test-member recovery validation passed.
+- No passwords, recovery tokens, or secrets were stored in docs/source.
 - Static source checks found no SQL/Supabase migration changes and no protected-table path changes.
-- No profile approval, membership status, roster status, role/guild/permission, CP, GvG, audit, deployment, or Vercel env behavior was changed.
+- No profile approval, membership status, roster status, role/guild/permission, CP, GvG, audit, Supabase Auth setting, or Vercel env behavior was changed.
 
 Recommended next milestone:
-- Milestone 17B staging password recovery email-link validation.
-- Then production rollout planning only after staging validates the real Supabase recovery link and password update path.
+- Milestone 17D / 16F: Disable email confirmation + registration copy update planning for controlled guild onboarding.
+- Keep this as a planning gate first; do not change Supabase Auth settings until the onboarding policy and rollback plan are approved.
 
 Later milestone options:
 - Member-facing UI cleanup planning.
-- Milestone 16D member-facing UI cleanup.
 - CP Update Window planning.
 - Weekly CP Snapshot/Growth Reports planning.
 - Member status history UI planning.

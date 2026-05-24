@@ -1,5 +1,36 @@
 # Project State
 
+## Milestone 17C Password Recovery Production Rollout Complete
+
+Milestone 17C is complete. The Password Recovery Required Reset Flow is live in production at `https://anteiku-guild-manager.vercel.app`.
+
+Production rollout:
+- Deployed commit `23dd956 fix: require password reset after recovery link`.
+- Production smoke passed after deployment.
+- Forgot-password UI is visible in production.
+- Recovery links now show the required `Set new password` gate.
+- Normal app navigation is blocked before password update.
+- Password update succeeds through the Supabase Auth password update flow.
+- New password login works after reset.
+- Role/access state remains unchanged after reset.
+
+Validation:
+- Controlled production test member `krsticmiroslav99+m13b21144225@gmail.com` was used for first production recovery validation.
+- No real member account was used for the first production recovery test.
+- No passwords, recovery tokens, or secrets were stored in docs or source.
+- Captured production console warnings/errors were empty after rollout validation.
+
+Scope confirmation:
+- No SQL migrations were edited or created.
+- No Supabase/RLS/RPC logic was changed.
+- No Supabase Auth settings were changed.
+- No Vercel env vars were changed.
+- No profile approval, membership status, roster status, role/guild/permission, CP, GvG, or audit behavior was changed.
+- No production data was intentionally mutated outside the controlled password reset for the controlled production test member.
+
+Recommended next milestone:
+- Milestone 17D / 16F: Disable email confirmation + registration copy update planning for controlled guild onboarding.
+
 ## Milestone 17A Password Recovery Required Reset Flow Implemented
 
 Milestone 17A is implemented locally as a frontend/auth UX fix. Supabase password recovery sessions are now treated as a required reset state instead of a normal app sign-in, so normal navigation stays blocked until the user updates their password or signs out.

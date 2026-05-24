@@ -1,5 +1,20 @@
 # Session Log
 
+## 2026-05-24 - Milestone 17C Password Recovery Production Rollout Complete
+
+- Milestone 17C production rollout completed for the Password Recovery Required Reset Flow.
+- Pushed and deployed commit `23dd956 fix: require password reset after recovery link`.
+- Production smoke passed at `https://anteiku-guild-manager.vercel.app`.
+- Forgot-password UI is visible in production.
+- Controlled production test member `krsticmiroslav99+m13b21144225@gmail.com` was used for the first production recovery validation.
+- Production recovery link opened the app and showed the required `Set new password` gate.
+- Normal navigation was blocked before password update.
+- Password update succeeded and new password login worked.
+- Role/access remained unchanged after reset.
+- No passwords, recovery tokens, or secrets were stored in docs/source.
+- No SQL, Supabase/RLS/RPC, Supabase Auth settings, Vercel env, CP, GvG, audit, role/guild/permission, member-status, approval, or membership behavior was changed.
+- Recommended next milestone: Milestone 17D / 16F Disable email confirmation + registration copy update planning for controlled guild onboarding.
+
 ## 2026-05-24 - Milestone 17A Password Recovery Flow Implemented
 
 - Implemented Milestone 17A as a frontend/auth UX fix.

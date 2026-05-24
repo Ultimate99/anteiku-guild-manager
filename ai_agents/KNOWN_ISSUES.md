@@ -20,6 +20,7 @@
 - Milestone 14H staging CP audit redaction and GvG full-smoke validation is complete.
 - Milestone 15D Member Status staging migration/browser validation is complete.
 - Milestone 15E Member Status production rollout is complete.
+- Milestone 17C Password Recovery Required Reset Flow production rollout is complete and validated with the controlled production test member.
 - Staging test data remains intentionally; do not cleanup/delete it unless separately approved.
 - Vercel Preview env has not been configured for staging yet.
 

@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-05-24 - Milestone 17C Password Recovery Production Rollout Complete
+
+- Deployed Password Recovery Required Reset Flow to production.
+- Commit deployed: `23dd956 fix: require password reset after recovery link`.
+- Production smoke passed.
+- Controlled production test member recovery validation passed.
+- Recovery links now show the required `Set new password` gate.
+- Normal navigation is blocked before password update.
+- Password update succeeds and new password login works.
+- Role/access remains unchanged after reset.
+- No passwords, recovery tokens, or secrets were stored in docs/source.
+- No SQL migrations, Supabase/RLS/RPC logic, Supabase Auth settings, Vercel env, CP, GvG, audit, role/permission/member-status, approval, or membership behavior changed.
+
 ## 2026-05-24 - Milestone 17A Password Recovery Flow Implemented
 
 - Implemented frontend/auth UX for required password reset after Supabase recovery links.

@@ -31,6 +31,14 @@ Completed in Milestone 13B:
 
 The app uses email/password auth through Supabase JS.
 
+Password recovery status:
+
+- Milestone 17C deployed the Password Recovery Required Reset Flow to production.
+- Supabase recovery links now open the app into a required `Set new password` gate.
+- Normal app navigation is blocked until the password update succeeds or the user signs out.
+- Production recovery validation passed with the controlled production test member.
+- Do not disable email confirmation or change Auth settings until the controlled guild onboarding plan is separately approved.
+
 ## Migration Workflow
 
 Milestone 13A completed this workflow using the local Supabase CLI dev tooling:

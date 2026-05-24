@@ -1,5 +1,40 @@
 # Testing And Validation
 
+## Milestone 17C Password Recovery Production Validation Passed
+
+Milestone 17C production rollout and recovery validation passed.
+
+Production rollout:
+- Commit deployed: `23dd956 fix: require password reset after recovery link`.
+- Production URL: `https://anteiku-guild-manager.vercel.app`.
+- Production smoke passed after deployment.
+
+Production smoke:
+- App loads.
+- Login/register screen works.
+- Forgot-password UI is visible.
+- Controlled member access remains member-only.
+- No AdminPanel exposure for the controlled member.
+- Captured production console warnings/errors were empty.
+
+Production recovery validation:
+- Controlled production test member `krsticmiroslav99+m13b21144225@gmail.com` was used.
+- Reset request was sent through production forgot-password UI.
+- Recovery email link opened production.
+- `Set new password` gate appeared.
+- Normal navigation was blocked before password update.
+- Password update succeeded.
+- New password login worked.
+- Role/access remained unchanged after reset.
+
+Security/scope:
+- No passwords, recovery tokens, or secrets were stored in docs/source.
+- No SQL migrations changed.
+- No Supabase/RLS/RPC logic changed.
+- No Supabase Auth settings changed.
+- No Vercel env vars changed.
+- No CP, GvG, audit, role, permission, member-status, approval, or membership behavior changed.
+
 ## Milestone 17A Password Recovery Build/Source Validation Passed
 
 Milestone 17A local implementation passed build, source/security-path checks, and limited local browser smoke validation.
