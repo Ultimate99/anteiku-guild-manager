@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { RankBadge } from '../components/RankBadge.jsx';
 import { StatusBadge } from '../components/StatusBadge.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import { useAuth } from '../hooks/useAuth.js';
@@ -6,14 +7,54 @@ import {
   isGvgLimitedRosterStatus,
   rosterStatusTone,
 } from '../services/adminMemberService.js';
+import { loadMyCpRankSummary } from '../services/cpRankBadgeService.js';
 
 export function Dashboard() {
   const { t } = useLanguage();
   const { guild, membership, profile } = useAuth();
+  const [rankSummary, setRankSummary] = useState(null);
+  const [rankLoading, setRankLoading] = useState(false);
+  const [rankError, setRankError] = useState('');
   const guildName = guild?.name ?? t('guild.assigned');
   const role = membership?.role ?? 'member';
   const rosterStatus = membership?.roster_status ?? 'active';
   const gvgStatus = isGvgLimitedRosterStatus(rosterStatus) ? t('dashboard.notExpected') : t('dashboard.awaitingEvent');
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadRankBadge() {
+      if (!profile?.id || !membership?.id) {
+        return;
+      }
+
+      setRankLoading(true);
+      setRankError('');
+
+      try {
+        const nextRankSummary = await loadMyCpRankSummary();
+
+        if (!cancelled) {
+          setRankSummary(nextRankSummary);
+        }
+      } catch {
+        if (!cancelled) {
+          setRankSummary(null);
+          setRankError('load_error');
+        }
+      } finally {
+        if (!cancelled) {
+          setRankLoading(false);
+        }
+      }
+    }
+
+    loadRankBadge();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [membership?.id, profile?.id]);
 
   return (
     <div className="stack">
@@ -46,7 +87,10 @@ export function Dashboard() {
           <h4>{profile?.ign ?? t('dashboard.memberFallback')}</h4>
           <p>@{profile?.username ?? t('common.unknown')}</p>
         </div>
-        <StatusBadge tone={rosterStatusTone(rosterStatus)}>{t(`roster.status.${rosterStatus}.label`)}</StatusBadge>
+        <div className="member-id-badges">
+          <RankBadge compact summary={rankSummary} loading={rankLoading} error={rankError} />
+          <StatusBadge tone={rosterStatusTone(rosterStatus)}>{t(`roster.status.${rosterStatus}.label`)}</StatusBadge>
+        </div>
       </section>
     </div>
   );

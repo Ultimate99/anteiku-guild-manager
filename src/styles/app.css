@@ -425,8 +425,20 @@ textarea {
   gap: 12px;
 }
 
+.member-id-panel > div:first-child {
+  min-width: 0;
+}
+
 .member-id-panel p {
   font-size: 0.88rem;
+}
+
+.member-id-badges {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 7px;
 }
 
 .admin-hero-panel {
@@ -1229,6 +1241,44 @@ textarea {
   padding: 13px;
 }
 
+.rank-profile-panel {
+  position: relative;
+  overflow: hidden;
+  border-left: 3px solid rgba(197, 22, 39, 0.45);
+}
+
+.rank-profile-panel[data-rank-visual="rank_1"] {
+  border-color: rgba(217, 164, 65, 0.72);
+  background:
+    linear-gradient(90deg, rgba(217, 164, 65, 0.13), transparent 58%),
+    rgba(18, 18, 24, 0.94);
+  box-shadow: 0 16px 48px rgba(217, 164, 65, 0.09), 0 16px 50px rgba(0, 0, 0, 0.28);
+}
+
+.rank-profile-panel[data-rank-visual="rank_2"] {
+  border-left-color: rgba(195, 198, 209, 0.65);
+}
+
+.rank-profile-panel[data-rank-visual="rank_3"] {
+  border-left-color: rgba(183, 120, 77, 0.68);
+}
+
+.rank-profile-panel[data-rank-visual="elite_5"] {
+  border-left-color: rgba(226, 27, 45, 0.78);
+}
+
+.rank-profile-panel[data-rank-visual="top_10"] {
+  border-left-color: rgba(197, 22, 39, 0.72);
+}
+
+.rank-profile-panel[data-rank-visual="high_rank"] {
+  border-left-color: rgba(255, 70, 96, 0.58);
+}
+
+.rank-profile-panel[data-rank-visual="ranked_member"] {
+  border-left-color: rgba(123, 167, 255, 0.46);
+}
+
 .profile-edit-panel,
 .profile-edit-form {
   display: grid;
@@ -1279,6 +1329,127 @@ textarea {
   background: #101016;
   color: #fff;
   font-weight: 1000;
+}
+
+.rank-avatar {
+  border-color: rgba(197, 22, 39, 0.75);
+}
+
+.rank-profile-panel[data-rank-visual="rank_1"] .rank-avatar {
+  border-color: #d9a441;
+  color: #ffe3a0;
+}
+
+.rank-profile-panel[data-rank-visual="rank_2"] .rank-avatar {
+  border-color: #c3c6d1;
+  color: #e4e6ef;
+}
+
+.rank-profile-panel[data-rank-visual="rank_3"] .rank-avatar {
+  border-color: #b7784d;
+  color: #ffc39b;
+}
+
+.rank-profile-panel[data-rank-visual="elite_5"] .rank-avatar,
+.rank-profile-panel[data-rank-visual="top_10"] .rank-avatar {
+  border-color: #e21b2d;
+}
+
+.rank-badge {
+  display: inline-grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  max-width: 100%;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: 3px solid rgba(197, 22, 39, 0.55);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.rank-badge[data-rank-visual="rank_1"] {
+  border-color: rgba(217, 164, 65, 0.55);
+  border-left-color: #d9a441;
+  background: linear-gradient(90deg, rgba(217, 164, 65, 0.14), rgba(255, 255, 255, 0.04));
+}
+
+.rank-badge[data-rank-visual="rank_2"] {
+  border-left-color: #c3c6d1;
+}
+
+.rank-badge[data-rank-visual="rank_3"] {
+  border-left-color: #b7784d;
+}
+
+.rank-badge[data-rank-visual="elite_5"] {
+  border-left-color: #e21b2d;
+}
+
+.rank-badge[data-rank-visual="top_10"] {
+  border-left-color: #c51627;
+}
+
+.rank-badge[data-rank-visual="high_rank"] {
+  border-left-color: #ff465f;
+}
+
+.rank-badge[data-rank-visual="ranked_member"] {
+  border-left-color: #7ba7ff;
+}
+
+.rank-badge-marker {
+  display: inline-flex;
+  min-width: 34px;
+  min-height: 30px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  background: #101016;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 1000;
+}
+
+.rank-badge-copy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.rank-badge-copy strong {
+  color: #fff;
+  font-size: 0.86rem;
+  overflow-wrap: anywhere;
+}
+
+.rank-badge-copy span {
+  color: #a7a7af;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.rank-badge-compact {
+  padding: 5px 7px;
+  gap: 6px;
+}
+
+.rank-badge-compact .rank-badge-marker {
+  min-width: 30px;
+  min-height: 28px;
+  font-size: 0.68rem;
+}
+
+.rank-badge-compact .rank-badge-copy strong {
+  font-size: 0.76rem;
+}
+
+.rank-badge-compact .rank-badge-copy span {
+  font-size: 0.66rem;
+}
+
+.profile-rank-badge {
+  margin-top: 8px;
 }
 
 .detail-list > div {
@@ -1377,6 +1548,18 @@ textarea {
 }
 
 @media (max-width: 520px) {
+  .profile-panel {
+    align-items: flex-start;
+  }
+
+  .member-id-panel {
+    align-items: flex-start;
+  }
+
+  .member-id-badges {
+    justify-content: flex-start;
+  }
+
   .admin-cp-rank-row {
     grid-template-columns: auto minmax(0, 1fr);
   }

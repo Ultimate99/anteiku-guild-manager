@@ -5,6 +5,7 @@
 - `src/layouts/AppShell.jsx`: Header, content frame, sign-out action, and bottom navigation container.
 - `src/components/AppNav.jsx`: Mobile-first page navigation.
 - `src/components/StatusBadge.jsx`: Small status label component.
+- `src/components/RankBadge.jsx`: Member-safe rank badge component for Profile/Dashboard visuals using safe rank summary fields only.
 - `src/config/supabaseClient.js`: Supabase env check and client placeholder.
 - `src/context/AuthContext.jsx`: Local Supabase auth/session provider, password recovery state, and safe viewer state.
 - `src/context/LanguageContext.jsx`: Frontend-only language provider, `useLanguage()` hook, `t(key, params?)`, and `agm_language` persistence.
@@ -19,6 +20,7 @@
 - `src/services/adminApprovalService.js`: RLS-safe approval queue reads, own approval permission lookup, and approval/rejection RPC wrappers.
 - `src/services/adminMemberService.js`: RLS-safe approved primary member roster reads, member-management permission helpers, roster status helpers, roster status RPC wrapper, and admin member IGN/slug/role/guild RPC wrappers.
 - `src/services/cpWindowService.js`: RPC-only CP Update Window service for own CP, member self-submit, selected-guild staff window status, and staff window open/close.
+- `src/services/cpRankBadgeService.js`: RPC-only own CP rank summary wrapper for `get_my_cp_rank_summary`.
 - `src/data/guilds.js`: Core guild list.
 - `src/data/navigation.js`: Navigation items.
 - `src/pages/LoginRegister.jsx`: Local Supabase signin/signup, forgot-password, and registration UI.
@@ -27,8 +29,8 @@
 - `src/pages/RejectedStatus.jsx`: Rejected account gate; reapply is planned later.
 - `src/pages/SuspendedStatus.jsx`: Suspended account gate.
 - `src/pages/RosterRestrictedStatus.jsx`: Roster lifecycle hard-block gate for suspended/left/kicked members.
-- `src/pages/Dashboard.jsx`: Approved-user safe guild dashboard with roster status display and no CP data.
-- `src/pages/Profile.jsx`: Safe profile display with own roster status, own CP through safe RPCs only, and own IGN edit mode for approved users.
+- `src/pages/Dashboard.jsx`: Approved-user safe guild dashboard with roster status display, compact own rank badge, and no CP values.
+- `src/pages/Profile.jsx`: Safe profile display with own roster status, rank badge/profile border from safe own-rank RPC, own CP through safe RPCs only, and own IGN edit mode for approved users.
 - `src/pages/Gvg.jsx`: GvG voting UI with roster-status UX gating for inactive/on_break and hard-blocked statuses.
 - `src/pages/AdminPanel.jsx`: Restricted AdminPanel coordinator for admin permission loading, visible tab calculation, active tab state, lazy section loading, and section action handlers.
 - `src/components/admin/AdminTabs.jsx`: Mobile-first AdminPanel tab bar.
@@ -55,6 +57,28 @@ Production status:
   - Uses the same eligible row set as member-safe CP rankings and returns `unranked` for excluded active statuses such as `inactive` and `on_break`.
 - `supabase/tests/local_validation_anteiku.sql`
   - Adds Milestone 21B validation for rank tiers, unranked/no-CP behavior, inactive exclusion, hard-block denial, private-field absence, no other-user parameter, and direct CP table denial.
+
+## Milestone 21C Profile/Dashboard Rank Badge Frontend
+
+Production status:
+- Local-only as of Milestone 21C.
+- Do not deploy to any remote target until `20260524000400_cp_rank_badge_summary.sql` is applied and verified there.
+
+- `src/services/cpRankBadgeService.js`
+  - Adds `loadMyCpRankSummary()` for `get_my_cp_rank_summary`.
+  - Guards against unexpected CP/private fields in the rank summary response.
+  - Does not call member/admin leaderboard RPCs, CP roster/leaderboard RPCs, or direct CP tables.
+- `src/components/RankBadge.jsx`
+  - Renders stable rank tier/visual keys as translated badge text and serious compact markers.
+  - Shows global rank when ranked, or a no-rank/load-error state without CP values.
+- `src/pages/Profile.jsx`
+  - Adds rank-based profile border and badge to the profile header.
+- `src/pages/Dashboard.jsx`
+  - Adds compact rank badge to the member summary.
+- `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`
+  - Add `rankBadge` labels.
+- `src/styles/app.css`
+  - Adds rank badge, dashboard badge, and profile-border visual variants for all 21B visual keys.
 
 ## Milestone 20B CP Leaderboard Backend
 

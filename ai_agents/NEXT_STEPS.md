@@ -2,7 +2,24 @@
 
 ## Current Recommendation
 
-Milestone 21B Rank Badge / Profile Border backend is implemented and locally validated. The next recommended milestone is Milestone 21C frontend Profile/Dashboard badge UI, followed by staging migration rollout and validation before production.
+Milestone 21C Profile/Dashboard Rank Badge UI is implemented and build/source validated locally. The next recommended milestone is Milestone 21D staging migration rollout and authenticated browser validation for the Rank Badge package.
+
+Recorded Milestone 21C frontend status:
+- Added `src/services/cpRankBadgeService.js`.
+- Added `src/components/RankBadge.jsx`.
+- Profile now shows a rank-based profile border and badge in the profile header.
+- Dashboard now shows a compact rank badge in the member summary.
+- Added EN/FR/DE `rankBadge` labels.
+- Added compact dark/crimson rank badge/profile-border styles for all 21B visual keys.
+- Rank badge data uses only `get_my_cp_rank_summary()`.
+- Profile/Dashboard do not use member/admin leaderboard RPCs, admin CP roster/leaderboard RPCs, or direct CP tables for badge data.
+- `npm.cmd run build` passed.
+- Authenticated browser validation is pending until staging receives `20260524000400_cp_rank_badge_summary.sql`.
+
+Rollout boundary:
+- `20260524000400_cp_rank_badge_summary.sql` is local-only.
+- Staging and production do not have the Rank Badge Summary migration yet.
+- Do not deploy the 21C frontend to a remote target until that target DB has `20260524000400_cp_rank_badge_summary.sql` applied and verified.
 
 Recorded Milestone 21B backend status:
 - New local migration: `20260524000400_cp_rank_badge_summary.sql`.

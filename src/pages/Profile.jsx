@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { RankBadge } from '../components/RankBadge.jsx';
 import { StatusBadge } from '../components/StatusBadge.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { rosterStatusTone } from '../services/adminMemberService.js';
+import { loadMyCpRankSummary } from '../services/cpRankBadgeService.js';
 import {
   formatCpDisplayValue,
   isValidCpValueInput,
@@ -27,7 +29,11 @@ export function Profile() {
   const [cpSubmitting, setCpSubmitting] = useState(false);
   const [cpMessage, setCpMessage] = useState('');
   const [cpError, setCpError] = useState('');
+  const [rankSummary, setRankSummary] = useState(null);
+  const [rankLoading, setRankLoading] = useState(false);
+  const [rankError, setRankError] = useState('');
   const rosterStatus = membership?.roster_status ?? 'active';
+  const rankVisualKey = rankSummary?.visualKey ?? 'unranked';
   const canSubmitCp = Boolean(cpWindowState?.can_submit);
   const cpWindowMessage =
     cpWindowState?.reason === 'not_eligible_roster_status' ? t('profile.cpNotEligible') : t('profile.cpWindowClosed');
@@ -77,6 +83,42 @@ export function Profile() {
       cancelled = true;
     };
   }, [membership?.id, profile?.id, t]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadRankBadge() {
+      if (!profile?.id || !membership?.id) {
+        return;
+      }
+
+      setRankLoading(true);
+      setRankError('');
+
+      try {
+        const nextRankSummary = await loadMyCpRankSummary();
+
+        if (!cancelled) {
+          setRankSummary(nextRankSummary);
+        }
+      } catch {
+        if (!cancelled) {
+          setRankSummary(null);
+          setRankError('load_error');
+        }
+      } finally {
+        if (!cancelled) {
+          setRankLoading(false);
+        }
+      }
+    }
+
+    loadRankBadge();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [membership?.id, profile?.id]);
 
   function startEditing() {
     setIgnDraft(profile?.ign ?? '');
@@ -171,8 +213,8 @@ export function Profile() {
 
   return (
     <div className="stack">
-      <section className="panel profile-panel compact-profile-panel">
-        <div className="avatar-placeholder" aria-hidden="true">
+      <section className="panel profile-panel compact-profile-panel rank-profile-panel" data-rank-visual={rankVisualKey}>
+        <div className="avatar-placeholder rank-avatar" aria-hidden="true">
           AG
         </div>
         <div>
@@ -182,6 +224,7 @@ export function Profile() {
           </div>
           <h3>{profile?.ign ?? t('dashboard.memberFallback')}</h3>
           <p>@{profile?.username ?? t('common.unknown')}</p>
+          <RankBadge className="profile-rank-badge" summary={rankSummary} loading={rankLoading} error={rankError} />
         </div>
       </section>
 

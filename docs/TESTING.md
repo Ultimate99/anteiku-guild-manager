@@ -1,5 +1,24 @@
 # Testing
 
+## Milestone 21C Profile/Dashboard Rank Badge Frontend Validation
+
+Milestone 21C frontend implementation passed build and source/security-path validation.
+
+Build:
+- `npm.cmd run build` passed.
+- Vite reported the existing large chunk warning only.
+
+Static/source checks:
+- Rank badge service calls only `get_my_cp_rank_summary()`.
+- Profile/Dashboard badge paths do not call member/admin leaderboard RPCs, CP roster/leaderboard RPCs, or direct CP tables.
+- Badge UI does not render CP values, growth/history/snapshot data, profile ids, usernames from the rank RPC, updated-by metadata, or other-member data.
+- No SQL migrations were edited or created.
+- Existing CP Leaderboard, CP Update Window, GvG, audit, role, permission, and member-status behavior was unchanged.
+
+Validation boundary:
+- Authenticated browser validation is pending until staging receives `20260524000400_cp_rank_badge_summary.sql`.
+- Do not deploy the 21C frontend to staging or production before applying and verifying that migration in the target DB.
+
 ## Milestone 21B Rank Badge Summary Local Validation
 
 Milestone 21B backend/database validation passed locally.

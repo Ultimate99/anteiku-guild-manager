@@ -285,6 +285,20 @@ export const de = {
     eliteFive: 'Elite 5',
     topTen: 'Top 10',
   },
+  rankBadge: {
+    globalRank: 'Globaler Rang #{rank}',
+    guildRank: 'Gildenrang #{rank}',
+    noRank: 'Noch kein Rang',
+    rankOne: 'Rang 1',
+    rankTwo: 'Rang 2',
+    rankThree: 'Rang 3',
+    eliteFive: 'Elite Five',
+    topTen: 'Top Ten',
+    highRank: 'Hoher Rang',
+    rankedMember: 'Rangmitglied',
+    unranked: 'Ohne Rang',
+    loadError: 'Rang nicht verfugbar',
+  },
   admin: {
     shell: {
       title: 'Gildenverwaltung',

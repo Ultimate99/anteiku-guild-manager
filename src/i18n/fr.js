@@ -285,6 +285,20 @@ export const fr = {
     eliteFive: 'Elite 5',
     topTen: 'Top 10',
   },
+  rankBadge: {
+    globalRank: 'Rang global #{rank}',
+    guildRank: 'Rang de guilde #{rank}',
+    noRank: 'Pas encore classe',
+    rankOne: 'Rang 1',
+    rankTwo: 'Rang 2',
+    rankThree: 'Rang 3',
+    eliteFive: 'Elite Five',
+    topTen: 'Top Ten',
+    highRank: 'Haut rang',
+    rankedMember: 'Membre classe',
+    unranked: 'Non classe',
+    loadError: 'Rang indisponible',
+  },
   admin: {
     shell: {
       title: 'Gestion de guilde',

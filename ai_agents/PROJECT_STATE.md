@@ -1,5 +1,35 @@
 # Project State
 
+## Milestone 21C Profile/Dashboard Rank Badge UI Implemented
+
+Milestone 21C is implemented locally as frontend-only Profile/Dashboard rank badge UI.
+
+Implemented locally:
+- Added `src/services/cpRankBadgeService.js`.
+- Added `src/components/RankBadge.jsx`.
+- Updated `Profile` with a rank-based profile border and badge in the profile header.
+- Updated `Dashboard` with a compact rank badge in the member summary.
+- Added EN/FR/DE `rankBadge` labels.
+- Added compact dark/crimson rank badge and profile-border styling for `rank_1`, `rank_2`, `rank_3`, `elite_5`, `top_10`, `high_rank`, `ranked_member`, and `unranked`.
+
+Security/source validation:
+- Rank badge service calls only `get_my_cp_rank_summary()`.
+- Profile/Dashboard do not call `get_member_cp_rankings`, `get_admin_cp_rankings`, `get_cp_leaderboard`, or `get_current_cp_roster` for badge data.
+- No direct frontend `member_cp` or `cp_snapshots` table calls were added.
+- Badge UI does not render CP values, CP growth/history, snapshots, usernames from the rank RPC, profile ids, or other-member data.
+- Existing CP Leaderboard, CP Update Window, GvG, audit, role, permission, and member-status behavior was not changed.
+
+Validation:
+- `npm.cmd run build` passed.
+- Static/source validation passed for rank badge RPC use and protected CP paths.
+- Authenticated browser validation is pending because staging/production do not yet have `20260524000400_cp_rank_badge_summary.sql`.
+
+Rollout boundary:
+- Do not deploy this frontend to any remote environment until that environment has `20260524000400_cp_rank_badge_summary.sql` applied and verified.
+
+Recommended next step:
+- Milestone 21D staging migration rollout and authenticated browser validation for 21B/21C.
+
 ## Milestone 21B Rank Badge Summary Backend Implemented
 
 Milestone 21B is implemented and locally validated as backend/database-only support for safe rank badge/profile border visuals.
@@ -40,7 +70,7 @@ Rollout boundary:
 - Do not deploy future rank badge/profile border frontend to any remote target until that target DB has this migration applied and verified.
 
 Recommended next step:
-- Milestone 21C frontend planning/implementation for Profile/Dashboard badge UI, followed by staging migration rollout and validation before production.
+- Completed later by Milestone 21C frontend implementation.
 
 ## Milestone 20F CP Leaderboard Production Rollout Complete
 
@@ -1550,7 +1580,7 @@ Validated results:
 
 ## Current Milestone
 
-Milestone 21B Rank Badge / Profile Border backend is implemented and locally validated. The new local-only RPC `get_my_cp_rank_summary()` returns safe own rank/tier keys for future Profile/Dashboard visuals without exposing CP values or other-member data. Recommended next step: Milestone 21C frontend planning/implementation for Profile/Dashboard badge UI, then staging migration rollout and validation.
+Milestone 21C Profile/Dashboard Rank Badge UI is implemented and build/source validated locally. It uses the new safe own-rank summary RPC through `cpRankBadgeService`, but authenticated browser validation is waiting for staging to receive `20260524000400_cp_rank_badge_summary.sql`. Recommended next step: Milestone 21D staging migration rollout and validation.
 
 Current CP privacy rule: members can see their own CP through safe backend/RPC flow, can see rank order through `get_member_cp_rankings`, and can receive their own rank/tier summary through `get_my_cp_rank_summary`, but exact CP values remain hidden from member leaderboard/rank-summary APIs and UI. Members must not see other members' CP values, CP snapshots, CP history, or private CP metadata. Members must not directly select or update `member_cp` and must not directly read `cp_snapshots`.
 
@@ -1558,7 +1588,7 @@ Current CP privacy rule: members can see their own CP through safe backend/RPC f
 
 The app is a React + Vite frontend backed by local Supabase migrations/RLS/RPCs. Milestones 10, 11A, and 11B are complete and validated. Milestone 12 is complete as a documentation-only production readiness pass.
 
-Current capabilities include local Supabase auth/session restore, registration through `register_profile`, pending/rejected/suspended gates, approval/rejection queue, own IGN editing, admin member profile management, role/guild management through RPCs, Admin permission checkbox management, protected CP management, CP Update Window / Member CP Self-Submit, member-safe rank-only CP Ranking, safe own CP rank summary for future badge visuals, permission-protected AdminPanel CP Ranking, GvG event management and voting, and read-only audit log viewing through `get_audit_logs`.
+Current capabilities include local Supabase auth/session restore, registration through `register_profile`, pending/rejected/suspended gates, approval/rejection queue, own IGN editing, admin member profile management, role/guild management through RPCs, Admin permission checkbox management, protected CP management, CP Update Window / Member CP Self-Submit, member-safe rank-only CP Ranking, local-only Profile/Dashboard rank badge UI awaiting staging validation, permission-protected AdminPanel CP Ranking, GvG event management and voting, and read-only audit log viewing through `get_audit_logs`.
 
 Production Supabase is set up through migrations and Owner bootstrap. Vercel deployment is live at `https://anteiku-guild-manager.vercel.app`, production Auth Site URL/redirect URL setup is complete, and production browser/network smoke validation has passed with documented deferred items for production GvG data creation and CP redaction browser coverage.
 

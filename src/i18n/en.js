@@ -284,6 +284,20 @@ export const en = {
     eliteFive: 'Elite 5',
     topTen: 'Top 10',
   },
+  rankBadge: {
+    globalRank: 'Global Rank #{rank}',
+    guildRank: 'Guild Rank #{rank}',
+    noRank: 'No rank yet',
+    rankOne: 'Rank 1',
+    rankTwo: 'Rank 2',
+    rankThree: 'Rank 3',
+    eliteFive: 'Elite Five',
+    topTen: 'Top Ten',
+    highRank: 'High Rank',
+    rankedMember: 'Ranked Member',
+    unranked: 'Unranked',
+    loadError: 'Rank unavailable',
+  },
   admin: {
     shell: {
       title: 'Guild management',

@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-05-24 - Milestone 21C Profile/Dashboard Rank Badge UI Implemented
+
+- Added frontend-only Rank Badge / Profile Border UI.
+- Created `src/services/cpRankBadgeService.js` using only `get_my_cp_rank_summary()`.
+- Created `src/components/RankBadge.jsx`.
+- Profile now shows a rank-based profile border and badge in the profile header.
+- Dashboard now shows a compact rank badge in the member summary.
+- Added EN/FR/DE `rankBadge` labels.
+- Added dark/crimson badge and profile-border styling for `rank_1`, `rank_2`, `rank_3`, `elite_5`, `top_10`, `high_rank`, `ranked_member`, and `unranked`.
+- Confirmed the badge path does not call `get_member_cp_rankings`, `get_admin_cp_rankings`, `get_cp_leaderboard`, `get_current_cp_roster`, or direct CP tables.
+- Confirmed the badge UI does not render CP values, growth/history/snapshot data, profile ids, updated-by metadata, or other-member data.
+- `npm.cmd run build` passed.
+- Authenticated browser validation remains pending until staging receives `20260524000400_cp_rank_badge_summary.sql`.
+- No SQL migrations, Supabase/RLS/RPC logic, staging, production, Vercel, deployment, or commit action was performed.
+
 ## 2026-05-24 - Milestone 21B Rank Badge Summary Backend Implemented
 
 - Added backend/database-only support for safe rank badge/profile border visuals.
