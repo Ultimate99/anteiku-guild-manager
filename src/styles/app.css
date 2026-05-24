@@ -697,6 +697,33 @@ textarea {
   color: #ffb9c0;
 }
 
+.status-badge[data-tone="info"] {
+  border-color: rgba(123, 167, 255, 0.38);
+  color: #c7d7ff;
+}
+
+.status-badge[data-tone="muted"] {
+  border-color: rgba(185, 185, 194, 0.24);
+  color: #c6c6cf;
+}
+
+.status-badge[data-tone="orange"] {
+  border-color: rgba(255, 137, 66, 0.4);
+  color: #ffc39b;
+}
+
+.status-badge[data-tone="crimson"] {
+  border-color: rgba(255, 70, 96, 0.5);
+  color: #ff8f9f;
+}
+
+.status-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
 .profile-panel {
   display: flex;
   align-items: center;
@@ -753,6 +780,17 @@ textarea {
   display: grid;
   grid-template-columns: 1fr;
   gap: 10px;
+}
+
+.restricted-panel {
+  border-color: rgba(226, 27, 45, 0.26);
+  background:
+    linear-gradient(135deg, rgba(197, 22, 39, 0.12), transparent 54%),
+    rgba(18, 18, 24, 0.94);
+}
+
+.roster-status-control textarea {
+  min-height: 88px;
 }
 
 .app-nav {

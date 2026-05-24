@@ -58,17 +58,24 @@ import {
   adminResetProfileSlug,
   adminUpdateMemberIgn,
   assignMemberRole,
+  ROSTER_STATUS_OPTIONS,
   canAssignMemberRole,
   canEditMemberIgn,
   canResetMemberSlug,
   canTransferMemberGuild,
+  canUpdateMemberRosterStatus,
   canViewMemberManagement,
+  formatRosterStatus,
+  getAllowedRosterStatusOptions,
   getAllowedMemberRoleOptions,
+  isHardBlockedRosterStatus,
   isValidProfileSlug,
   loadActiveGuildOptions,
   loadMemberRoster,
   normalizeProfileSlug,
+  rosterStatusTone,
   transferMemberGuild,
+  updateMemberRosterStatus,
 } from '../services/adminMemberService.js';
 
 const plannedSections = ['Guild and subguild management'];
@@ -119,6 +126,8 @@ function buildMemberDrafts(roster) {
     drafts[item.id] = {
       ign: item.profile?.ign ?? '',
       role: item.role ?? 'member',
+      rosterStatus: item.roster_status ?? 'active',
+      statusReason: '',
       slug: item.profile?.profile_slug ?? item.profile?.username ?? '',
       targetGuildId: '',
     };
@@ -340,6 +349,7 @@ export function AdminPanel() {
   const [memberDrafts, setMemberDrafts] = useState({});
   const [memberSearch, setMemberSearch] = useState('');
   const [guildFilter, setGuildFilter] = useState('all');
+  const [memberStatusFilter, setMemberStatusFilter] = useState('all');
   const [activeGuildOptions, setActiveGuildOptions] = useState([]);
   const [cpGuildOptions, setCpGuildOptions] = useState([]);
   const [selectedCpGuildId, setSelectedCpGuildId] = useState('');
@@ -366,6 +376,7 @@ export function AdminPanel() {
   const canManagePermissions = canManageAdminPermissions({ membership });
   const canManageGvgEvents = canManageGvg({ membership, permissionKeys });
   const canTransferGuilds = canTransferMemberGuild({ membership });
+  const canManageRosterStatuses = canUpdateMemberRosterStatus({ membership, permissionKeys });
   const canViewCpSection = canViewCp({ membership, permissionKeys });
   const canUpdateCpValues = canUpdateCp({ membership, permissionKeys });
   const canViewAuditSection = canViewAuditLogs({ membership, permissionKeys });
@@ -373,7 +384,6 @@ export function AdminPanel() {
     () => getAllowedMemberRoleOptions({ membership, permissionKeys }),
     [membership, permissionKeys],
   );
-
   const selectedCpGuild = useMemo(
     () => cpGuildOptions.find((guildOption) => guildOption.id === selectedCpGuildId) ?? null,
     [cpGuildOptions, selectedCpGuildId],
@@ -412,8 +422,10 @@ export function AdminPanel() {
 
     return memberRoster.filter((item) => {
       const matchesGuild = guildFilter === 'all' || item.guild_id === guildFilter;
+      const matchesRosterStatus =
+        memberStatusFilter === 'all' || (item.roster_status ?? 'active') === memberStatusFilter;
 
-      if (!matchesGuild) {
+      if (!matchesGuild || !matchesRosterStatus) {
         return false;
       }
 
@@ -428,6 +440,7 @@ export function AdminPanel() {
         item.guild?.name,
         item.guild?.slug,
         item.role,
+        item.roster_status,
       ]
         .filter(Boolean)
         .join(' ')
@@ -435,7 +448,7 @@ export function AdminPanel() {
 
       return searchableText.includes(normalizedSearch);
     });
-  }, [guildFilter, memberRoster, memberSearch]);
+  }, [guildFilter, memberRoster, memberSearch, memberStatusFilter]);
 
   const selectedGvgEvent = useMemo(
     () => gvgEvents.find((event) => event.id === selectedGvgEventId) ?? null,
@@ -571,6 +584,7 @@ export function AdminPanel() {
     setCpLeaderboard([]);
     setCpDrafts({});
     setMemberDrafts({});
+    setMemberStatusFilter('all');
     setAuditLogs([]);
     setAuditError('');
     setAuditNotAuthorized(false);
@@ -646,6 +660,7 @@ export function AdminPanel() {
       setActiveGuildOptions([]);
       setMemberDrafts({});
       setGuildFilter('all');
+      setMemberStatusFilter('all');
       markTabLoaded('members');
       return;
     }
@@ -666,10 +681,14 @@ export function AdminPanel() {
       setGuildFilter((current) =>
         current === 'all' || nextRoster.some((item) => item.guild_id === current) ? current : 'all',
       );
+      setMemberStatusFilter((current) =>
+        current === 'all' || nextRoster.some((item) => (item.roster_status ?? 'active') === current) ? current : 'all',
+      );
     } catch (memberError) {
       setMemberRoster([]);
       setActiveGuildOptions([]);
       setMemberDrafts({});
+      setMemberStatusFilter('all');
       setAdminError(memberError.message);
     } finally {
       markTabLoaded('members');
@@ -1042,6 +1061,54 @@ export function AdminPanel() {
     }
   }
 
+  async function handleUpdateMemberRosterStatus(item) {
+    const currentStatus = item.roster_status ?? 'active';
+    const draftedStatus = memberDrafts[item.id]?.rosterStatus ?? currentStatus;
+    const reason = memberDrafts[item.id]?.statusReason?.trim() ?? '';
+    const allowedStatusOptions = getAllowedRosterStatusOptions({
+      membership,
+      permissionKeys,
+      targetMembership: item,
+    });
+    const allowedStatuses = allowedStatusOptions.map((option) => option.value);
+
+    if (!allowedStatuses.includes(draftedStatus)) {
+      setAdminError('Selected roster status is not allowed for your current role or permissions.');
+      return;
+    }
+
+    if (draftedStatus === currentStatus) {
+      setAdminError('Choose a different roster status before saving.');
+      return;
+    }
+
+    if (isHardBlockedRosterStatus(draftedStatus) && !reason) {
+      setAdminError('A reason is required before setting suspended, left, or kicked.');
+      return;
+    }
+
+    setActiveAction({ id: item.id, type: 'roster-status' });
+    setAdminError('');
+    setActionMessage('');
+
+    try {
+      await updateMemberRosterStatus({
+        membershipId: item.id,
+        status: draftedStatus,
+        reason,
+      });
+      setActionMessage(
+        `Updated @${item.profile?.username ?? 'member'} to ${formatRosterStatus(draftedStatus)}.`,
+      );
+      setConfirmAction(null);
+      await loadMembersSection({ clearMessage: false });
+    } catch (memberError) {
+      setAdminError(memberError.message);
+    } finally {
+      setActiveAction(null);
+    }
+  }
+
   async function handleUpdateCp(item) {
     const rawCpValue = cpDrafts[item.profile_id]?.trim() ?? '';
 
@@ -1269,6 +1336,7 @@ export function AdminPanel() {
           filteredMembers={filteredMembers}
           memberSearch={memberSearch}
           guildFilter={guildFilter}
+          memberStatusFilter={memberStatusFilter}
           guildOptions={guildOptions}
           memberDrafts={memberDrafts}
           activeGuildOptions={activeGuildOptions}
@@ -1278,18 +1346,27 @@ export function AdminPanel() {
           canResetSlug={canResetSlug}
           canManageRoles={canManageRoles}
           canTransferGuilds={canTransferGuilds}
+          canManageRosterStatuses={canManageRosterStatuses}
           allowedMemberRoles={allowedMemberRoles}
+          visibleRosterStatusOptions={ROSTER_STATUS_OPTIONS}
           onRefresh={() => loadTabData('members', { force: true })}
           onSearchChange={setMemberSearch}
           onGuildFilterChange={setGuildFilter}
+          onMemberStatusFilterChange={setMemberStatusFilter}
           onUpdateDraft={updateMemberDraft}
           onSetConfirmAction={setConfirmAction}
           onSaveIgn={handleSaveMemberIgn}
           onResetSlug={handleResetMemberSlug}
           onAssignRole={handleAssignMemberRole}
           onTransferGuild={handleTransferMemberGuild}
+          onUpdateRosterStatus={handleUpdateMemberRosterStatus}
           formatDate={formatDate}
           formatRole={formatRole}
+          formatRosterStatus={formatRosterStatus}
+          getAllowedRosterStatusOptions={(item) =>
+            getAllowedRosterStatusOptions({ membership, permissionKeys, targetMembership: item })
+          }
+          rosterStatusTone={rosterStatusTone}
           statusTone={statusTone}
         />
       );

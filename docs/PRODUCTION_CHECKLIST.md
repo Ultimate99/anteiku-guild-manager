@@ -19,6 +19,9 @@ Current production checkpoint:
 - Milestone 14F staging Owner bootstrap is complete and verified.
 - Milestone 14G controlled staging test users and permission matrix setup is complete.
 - Milestone 14H staging CP audit redaction and GvG full-smoke validation is complete.
+- Milestone 15D Member Status staging migration/browser validation is complete.
+- Production does not yet have `20260523000100_member_roster_status_system.sql`.
+- Do not deploy the Member Status frontend to production until the production DB migration is applied and verified.
 - Vercel Preview env has not been configured for staging yet.
 
 ## Milestone 14A Production Hardening Policy
@@ -179,6 +182,27 @@ Deferred production tests now covered in staging:
 - [x] Permission denial flows.
 - [x] Wrong-guild access.
 - [x] Pending-user lockout.
+
+## Milestone 15D Member Status Staging Validation
+
+Milestone 15D is complete for staging only.
+
+- [x] Staging project confirmed: `ckyihuxkioeibzpgwenc`.
+- [x] Production project `mzflfyxxkascrfpteexz` was not touched.
+- [x] Dry-run showed only `20260523000100_member_roster_status_system.sql` pending.
+- [x] `20260523000100_member_roster_status_system.sql` was applied to staging.
+- [x] Staging schema/RLS verification passed for `roster_status`, `member_status_history`, `update_member_roster_status(...)`, policies/grants, backfilled memberships, and active Owner count.
+- [x] Milestone 15B frontend is browser-validated through staging.
+- [x] `staging_member` was restored to `membership_status = active` and `roster_status = active`.
+- [x] Status history/audit rows were verified.
+- [x] `.env.local` was restored to local Supabase.
+- [x] Production rollout was not performed.
+- [ ] Production migration rollout is pending.
+- [ ] Production frontend deployment is blocked until production DB migration verification passes.
+
+Recommended next milestone:
+
+- Milestone 15E: production rollout planning/execution gate.
 
 ## Milestone 14D Staging Supabase And Vercel Preview Plan
 

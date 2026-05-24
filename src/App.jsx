@@ -10,7 +10,9 @@ import { Profile } from './pages/Profile.jsx';
 import { Gvg } from './pages/Gvg.jsx';
 import { AdminPanel } from './pages/AdminPanel.jsx';
 import { RejectedStatus } from './pages/RejectedStatus.jsx';
+import { RosterRestrictedStatus } from './pages/RosterRestrictedStatus.jsx';
 import { SuspendedStatus } from './pages/SuspendedStatus.jsx';
+import { isHardBlockedRosterStatus } from './services/adminMemberService.js';
 
 const pageComponents = {
   auth: LoginRegister,
@@ -67,7 +69,21 @@ function LoadingPanel() {
 function AppContent() {
   const { accessState, loading, membership } = useAuth();
   const [activePage, setActivePage] = useState('dashboard');
-  const canViewAdmin = isPrivilegedRole(membership?.role);
+  const rosterStatus = membership?.roster_status ?? 'active';
+  const isHardMembershipState = ['suspended', 'left'].includes(membership?.membership_status);
+  const blockedRosterStatus = isHardBlockedRosterStatus(rosterStatus)
+    ? rosterStatus
+    : membership?.membership_status === 'left'
+      ? 'left'
+      : 'suspended';
+  const isRosterBlocked =
+    accessState === 'approved' && (isHardBlockedRosterStatus(rosterStatus) || isHardMembershipState);
+  const canViewAdmin = accessState === 'approved' && !isRosterBlocked && isPrivilegedRole(membership?.role);
+  const rosterBlockedItem = {
+    id: `roster-${blockedRosterStatus}`,
+    label: blockedRosterStatus === 'kicked' ? 'Removed' : blockedRosterStatus,
+    eyebrow: 'Roster',
+  };
 
   const approvedNavigationItems = useMemo(
     () =>
@@ -134,6 +150,14 @@ function AppContent() {
     return (
       <AppShell activeItem={statusItems.suspended} activePage="suspended" navigationItems={[]}>
         <SuspendedStatus />
+      </AppShell>
+    );
+  }
+
+  if (isRosterBlocked) {
+    return (
+      <AppShell activeItem={rosterBlockedItem} activePage={`roster-${blockedRosterStatus}`} navigationItems={[]}>
+        <RosterRestrictedStatus />
       </AppShell>
     );
   }

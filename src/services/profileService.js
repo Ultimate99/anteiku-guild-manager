@@ -2,7 +2,7 @@ import { supabase } from '../config/supabaseClient.js';
 
 const SAFE_PROFILE_FIELDS =
   'id, username, profile_slug, ign, avatar_key, approval_status, reapply_requested_at, created_at, updated_at';
-const SAFE_MEMBERSHIP_FIELDS = 'id, guild_id, role, membership_status, is_primary';
+const SAFE_MEMBERSHIP_FIELDS = 'id, guild_id, role, membership_status, roster_status, is_primary';
 const SAFE_GUILD_FIELDS = 'id, name, slug';
 
 function requireSupabase() {

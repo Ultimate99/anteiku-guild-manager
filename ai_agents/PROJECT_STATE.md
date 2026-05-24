@@ -1,5 +1,83 @@
 # Project State
 
+## Milestone 15D Member Status Staging Validation Passed
+
+Milestone 15D staging migration rollout and browser validation passed. The Milestone 15A Member Status migration was applied to staging only, and the Milestone 15B frontend was validated against controlled staging users.
+
+Staging target:
+- Project ref: `ckyihuxkioeibzpgwenc`.
+- Project name: `Anteiku Guild Manager Staging`.
+- Production project ref `mzflfyxxkascrfpteexz` was not touched.
+
+Migration rollout:
+- Dry-run showed only `20260523000100_member_roster_status_system.sql` pending for staging.
+- `20260523000100_member_roster_status_system.sql` was applied to staging.
+- Staging migration history now includes the prior 9 migrations plus the 15A Member Status migration.
+- Staging schema/RLS verification passed for `guild_memberships.roster_status`, `member_status_history`, `update_member_roster_status(...)`, RLS/policies/grants, default/backfilled `roster_status`, and active Owner count.
+
+Browser validation:
+- Milestone 15B frontend is browser-validated through staging.
+- `staging_owner` Members tab badges, filter, and status controls worked.
+- `staging_member` was transitioned through `trial`, `inactive`, `on_break`, `pending_transfer`, `suspended`, and restored to `active`.
+- `suspended` showed the restricted notice and blocked member/admin areas.
+- `on_break` allowed Home/Profile and showed not expected for GvG with no vote controls.
+- `staging_admin_noperms` had no Members/status/CP/Audit/GvG management controls.
+- Final `staging_member` state was verified as `membership_status = active` and `roster_status = active`.
+- Read-only verification found 8 `member_status_history` rows and 8 `member_roster_status_changed` audit rows from the validation flow.
+
+Source/security-path validation:
+- Status updates use `update_member_roster_status(...)` only.
+- No direct frontend `guild_memberships` writes were added.
+- No frontend `member_status_history` calls were added.
+- No new direct `member_cp`, `cp_snapshots`, or `audit_logs` table calls were added.
+- CP privacy remains unchanged.
+
+Scope confirmation:
+- Production was not touched.
+- Vercel env vars were not changed.
+- No deployment was performed.
+- `.env.local` was restored to local Supabase after validation.
+- Vite was restarted locally after `.env.local` restore.
+- No source or SQL changes were made during this 15D docs checkpoint.
+
+Production gate:
+- Production rollout remains pending.
+- Do not deploy the 15B frontend to production until the 15A migration has been dry-run, applied, and verified in production.
+
+Recommended next milestone:
+- Milestone 15E production rollout planning/execution gate for the Member Status migration and frontend release.
+
+## Milestone 15B Member Status Frontend Implemented And Staging Browser Validated
+
+Milestone 15B frontend work is implemented locally and build/source validated. It wires the Milestone 15A backend Member Status system into the React UI without changing SQL, RLS, RPCs, CP logic, Vercel, staging, or production.
+
+Implemented:
+- Safe viewer/member roster reads now include `guild_memberships.roster_status`.
+- Admin Members tab shows roster status badges, roster status filtering, and status-change controls.
+- Status changes call only `update_member_roster_status(...)` through the frontend service wrapper.
+- Hard-block status changes (`suspended`, `left`, `kicked`) require a reason and confirmation.
+- Private status history/reasons are not displayed in the roster UI.
+- Dashboard and Profile show the current user's roster status badge and safe explanatory notes.
+- Hard-blocked roster statuses show a restricted notice instead of member/admin areas.
+- GvG hides vote controls for `inactive` and `on_break` users and shows a not-expected/not-eligible message.
+- Added `RosterRestrictedStatus` for roster-level `suspended`, `left`, and `kicked` gates.
+
+Validation:
+- `npm.cmd run build` passed.
+- Static source checks confirmed status writes use `update_member_roster_status`.
+- Static source checks found no new direct `member_status_history` calls, no direct `guild_memberships` updates, and no direct `member_cp`, `cp_snapshots`, or `audit_logs` table calls.
+- No `supabase/migrations` or `supabase/tests` files were changed during Milestone 15B.
+
+Browser validation status:
+- Milestone 15B was browser-validated through staging in Milestone 15D after applying the 15A migration to staging.
+- Production browser validation is still pending and must wait until the production database migration is applied and verified.
+
+Recommended next milestone:
+- Milestone 15E production rollout planning/execution gate.
+
+Rollout warning:
+- Do not deploy this frontend to staging or production before the Milestone 15A migration is applied and verified in that target, because the frontend now reads `guild_memberships.roster_status`.
+
 ## Milestone 15A Member Status Backend Implemented And Validated
 
 Milestone 15A backend/database work is complete locally. It adds a separate roster lifecycle concept without reusing `profiles.approval_status` or `guild_memberships.membership_status`.
@@ -781,7 +859,7 @@ Validated results:
 
 ## Current Milestone
 
-Milestone 15A Member Status backend/database implementation is complete and locally validated. Recommended next milestone is Milestone 15B frontend planning for Member Status UI/access gating.
+Milestone 15D Member Status staging rollout and browser validation passed. Staging has the 15A migration applied and verified, and the 15B frontend is browser-validated through staging. Production rollout remains pending. Recommended next milestone is Milestone 15E production rollout planning/execution gate. Do not deploy the frontend to production until the production database has the 15A migration applied and verified.
 
 Future CP-focused milestone candidate recorded: CP Update Window / Member CP Self-Submit. Corrected CP privacy rule going forward: members can see their own CP through safe backend/RPC flow, but must not see other members' CP, CP roster, CP leaderboard, CP snapshots, or other members' CP history. Members must not directly select or update `member_cp` and must not directly read `cp_snapshots`.
 
@@ -797,7 +875,7 @@ Production hardening policy now documents Vercel GitHub App restriction, control
 
 Milestone 14C reorganized AdminPanel into mobile-friendly tabs and section components. The refactor is frontend-only and behavior-preserving; CP, Audit Logs, and GvG management sections lazy-load when their tabs are opened. Production rollout validation passed after the Vercel deployment.
 
-Milestone 14D recorded the staging/preview plan for future non-production validation. Milestone 14E created/linked the staging Supabase project, applied the same 9 migrations as production, and verified staging schema/RLS/seed. Milestone 14F bootstrapped and verified the staging Owner. Milestone 14G created and verified controlled staging users and permissions. Milestone 14H validated CP audit redaction and GvG smoke in staging. Milestone 15A implemented and locally validated backend Member Status support. Vercel Preview env remains unchanged.
+Milestone 14D recorded the staging/preview plan for future non-production validation. Milestone 14E created/linked the staging Supabase project, applied the same 9 migrations as production, and verified staging schema/RLS/seed. Milestone 14F bootstrapped and verified the staging Owner. Milestone 14G created and verified controlled staging users and permissions. Milestone 14H validated CP audit redaction and GvG smoke in staging. Milestone 15A implemented and locally validated backend Member Status support. Milestone 15B implemented the frontend UI/access gating. Milestone 15D applied the 15A migration to staging and browser-validated the 15B frontend against staging users. Vercel Preview env remains unchanged.
 
 ## Implemented
 

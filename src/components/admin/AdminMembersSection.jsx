@@ -6,6 +6,7 @@ export function AdminMembersSection({
   filteredMembers,
   memberSearch,
   guildFilter,
+  memberStatusFilter,
   guildOptions,
   memberDrafts,
   activeGuildOptions,
@@ -15,18 +16,25 @@ export function AdminMembersSection({
   canResetSlug,
   canManageRoles,
   canTransferGuilds,
+  canManageRosterStatuses,
   allowedMemberRoles,
+  visibleRosterStatusOptions,
   onRefresh,
   onSearchChange,
   onGuildFilterChange,
+  onMemberStatusFilterChange,
   onUpdateDraft,
   onSetConfirmAction,
   onSaveIgn,
   onResetSlug,
   onAssignRole,
   onTransferGuild,
+  onUpdateRosterStatus,
   formatDate,
   formatRole,
+  formatRosterStatus,
+  getAllowedRosterStatusOptions,
+  rosterStatusTone,
   statusTone,
 }) {
   return (
@@ -63,16 +71,27 @@ export function AdminMembersSection({
               ))}
             </select>
           </label>
+          <label>
+            Roster status
+            <select value={memberStatusFilter} onChange={(event) => onMemberStatusFilterChange(event.target.value)}>
+              <option value="all">All roster statuses</option>
+              {visibleRosterStatusOptions.map((statusOption) => (
+                <option key={statusOption.value} value={statusOption.value}>
+                  {statusOption.label}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
       </div>
 
-      {memberLoading ? <p className="muted-line">Loading active roster...</p> : null}
+      {memberLoading ? <p className="muted-line">Loading roster...</p> : null}
 
       {!memberLoading && filteredMembers.length === 0 ? (
         <section className="panel hero-panel">
           <StatusBadge>Roster empty</StatusBadge>
-          <h3>No active approved members found</h3>
-          <p>Only active memberships with approved profiles are shown here.</p>
+          <h3>No approved members found</h3>
+          <p>Approved primary memberships are shown here when they match the current filters.</p>
         </section>
       ) : null}
 
@@ -82,12 +101,16 @@ export function AdminMembersSection({
           const isResettingSlug = activeAction?.id === item.id && activeAction.type === 'reset-slug';
           const isAssigningRole = activeAction?.id === item.id && activeAction.type === 'assign-role';
           const isTransferringGuild = activeAction?.id === item.id && activeAction.type === 'transfer-guild';
+          const isUpdatingRosterStatus = activeAction?.id === item.id && activeAction.type === 'roster-status';
           const isConfirmingRole = confirmAction?.id === item.id && confirmAction.type === 'assign-role';
           const isConfirmingTransfer = confirmAction?.id === item.id && confirmAction.type === 'transfer-guild';
+          const isConfirmingRosterStatus = confirmAction?.id === item.id && confirmAction.type === 'roster-status';
           const actionDisabled = Boolean(activeAction);
           const draft = memberDrafts[item.id] ?? {
             ign: item.profile?.ign ?? '',
             role: item.role ?? 'member',
+            rosterStatus: item.roster_status ?? 'active',
+            statusReason: '',
             slug: item.profile?.profile_slug ?? item.profile?.username ?? '',
             targetGuildId: '',
           };
@@ -97,6 +120,21 @@ export function AdminMembersSection({
           const roleSelectValue = allowedMemberRoles.includes(draft.role)
             ? draft.role
             : allowedMemberRoles[0] ?? 'member';
+          const allowedRosterStatusOptions = getAllowedRosterStatusOptions(item);
+          const allowedRosterStatusValues = allowedRosterStatusOptions.map((statusOption) => statusOption.value);
+          const rosterStatusCanBeChanged = canManageRosterStatuses && allowedRosterStatusOptions.length > 0;
+          const currentRosterStatus = item.roster_status ?? 'active';
+          const rosterStatusSelectValue = allowedRosterStatusValues.includes(draft.rosterStatus)
+            ? draft.rosterStatus
+            : allowedRosterStatusValues[0] ?? currentRosterStatus;
+          const rosterStatusRequiresReason = ['suspended', 'left', 'kicked'].includes(rosterStatusSelectValue);
+          const rosterReason = draft.statusReason ?? '';
+          const rosterStatusChanged = rosterStatusSelectValue !== currentRosterStatus;
+          const rosterStatusSubmitDisabled =
+            actionDisabled ||
+            !rosterStatusCanBeChanged ||
+            !rosterStatusChanged ||
+            (rosterStatusRequiresReason && !rosterReason.trim());
 
           return (
             <article className="panel member-card" key={item.id}>
@@ -105,7 +143,12 @@ export function AdminMembersSection({
                   <h4>{item.profile?.ign ?? 'Unknown IGN'}</h4>
                   <p>@{item.profile?.username ?? 'unknown'}</p>
                 </div>
-                <StatusBadge tone={statusTone(item.membership_status)}>{item.membership_status}</StatusBadge>
+                <div className="status-badge-row">
+                  <StatusBadge tone={statusTone(item.membership_status)}>{item.membership_status}</StatusBadge>
+                  <StatusBadge tone={rosterStatusTone(currentRosterStatus)}>
+                    {formatRosterStatus(currentRosterStatus)}
+                  </StatusBadge>
+                </div>
               </div>
 
               <div className="approval-meta" aria-label="Member details">
@@ -116,6 +159,10 @@ export function AdminMembersSection({
                 <div>
                   <span>Role</span>
                   <strong>{formatRole(item.role)}</strong>
+                </div>
+                <div>
+                  <span>Roster status</span>
+                  <strong>{formatRosterStatus(currentRosterStatus)}</strong>
                 </div>
                 <div>
                   <span>Profile status</span>
@@ -166,6 +213,102 @@ export function AdminMembersSection({
               ) : (
                 <p className="muted-line">Roster visibility only. No edit action is available for this permission set.</p>
               )}
+
+              {canManageRosterStatuses ? (
+                <div className="member-admin-actions">
+                  <div className="member-edit-block roster-status-control">
+                    <div>
+                      <h4>Roster status</h4>
+                      <p className="muted-copy">
+                        Status changes use the backend RPC and keep private reasons out of this roster.
+                      </p>
+                    </div>
+
+                    {rosterStatusCanBeChanged ? (
+                      <>
+                        <label>
+                          New status
+                          <select
+                            value={rosterStatusSelectValue}
+                            onChange={(event) => onUpdateDraft(item.id, 'rosterStatus', event.target.value)}
+                            disabled={actionDisabled}
+                          >
+                            {allowedRosterStatusOptions.map((statusOption) => (
+                              <option key={statusOption.value} value={statusOption.value}>
+                                {statusOption.label}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+
+                        <label>
+                          Reason
+                          <textarea
+                            value={rosterReason}
+                            maxLength={1000}
+                            placeholder={
+                              rosterStatusRequiresReason
+                                ? 'Required for suspended, left, or kicked'
+                                : 'Optional staff note, stored privately'
+                            }
+                            onChange={(event) => onUpdateDraft(item.id, 'statusReason', event.target.value)}
+                            disabled={actionDisabled}
+                          />
+                        </label>
+
+                        {rosterStatusRequiresReason && !rosterReason.trim() ? (
+                          <p className="member-warning">A private reason is required for this hard-block status.</p>
+                        ) : null}
+
+                        {isConfirmingRosterStatus ? (
+                          <p className="member-warning">
+                            Confirm roster status change from {formatRosterStatus(currentRosterStatus)} to{' '}
+                            {formatRosterStatus(rosterStatusSelectValue)}.
+                          </p>
+                        ) : null}
+
+                        <div className="member-action-row">
+                          {isConfirmingRosterStatus ? (
+                            <>
+                              <button
+                                type="button"
+                                className="danger-action"
+                                onClick={() => onUpdateRosterStatus(item)}
+                                disabled={actionDisabled}
+                              >
+                                {isUpdatingRosterStatus ? 'Saving status...' : 'Confirm status'}
+                              </button>
+                              <button
+                                type="button"
+                                className="secondary-action"
+                                onClick={() => onSetConfirmAction(null)}
+                                disabled={actionDisabled}
+                              >
+                                Cancel
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              type="button"
+                              className={rosterStatusRequiresReason ? 'danger-action' : 'primary-action'}
+                              onClick={() =>
+                                rosterStatusRequiresReason
+                                  ? onSetConfirmAction({ id: item.id, type: 'roster-status' })
+                                  : onUpdateRosterStatus(item)
+                              }
+                              disabled={rosterStatusSubmitDisabled}
+                            >
+                              {rosterStatusRequiresReason ? 'Review status change' : 'Save status'}
+                            </button>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      <p className="muted-line">Roster status changes are not available for this target.</p>
+                    )}
+                  </div>
+                </div>
+              ) : null}
 
               {canManageRoles || canTransferGuilds ? (
                 <div className="member-admin-actions">

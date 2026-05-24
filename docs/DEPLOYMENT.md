@@ -57,6 +57,12 @@ Migration order:
 8. `20260515000200_cp_rpc_hardening.sql`
 9. `20260515000300_audit_log_read_hardening.sql`
 
+Additional migration status:
+
+- `20260523000100_member_roster_status_system.sql` is applied and verified in staging only as of Milestone 15D.
+- `20260523000100_member_roster_status_system.sql` is not applied to production yet.
+- Do not deploy the Member Status frontend to production until this migration is dry-run, applied, and verified in production.
+
 After applying migrations, production verification passed:
 
 - Core tables exist.
@@ -172,14 +178,15 @@ Recommended policy:
 
 ## Future Staging Supabase And Preview Setup
 
-Milestone 14E completed staging Supabase migration/apply/verification. Milestone 14F completed and verified staging Owner bootstrap. Milestone 14G completed controlled staging test-user and permission matrix setup. Milestone 14H completed staging CP audit redaction and GvG full-smoke validation. No Vercel Preview env vars were changed and no deployment was performed.
+Milestone 14E completed staging Supabase migration/apply/verification. Milestone 14F completed and verified staging Owner bootstrap. Milestone 14G completed controlled staging test-user and permission matrix setup. Milestone 14H completed staging CP audit redaction and GvG full-smoke validation. Milestone 15D applied and verified the Member Status migration in staging and browser-validated the frontend against staging users. No Vercel Preview env vars were changed and no deployment was performed.
 
 Staging architecture:
 
 - Staging Supabase project: `ckyihuxkioeibzpgwenc`.
 - Project name: `Anteiku Guild Manager Staging`.
 - Project URL: `https://ckyihuxkioeibzpgwenc.supabase.co`.
-- Same 9 migrations as production are applied and verified.
+- Same 9 baseline migrations as production are applied and verified.
+- The additional Member Status migration `20260523000100_member_roster_status_system.sql` is applied and verified in staging.
 - Keep staging separate from production for URL, anon/publishable key, Auth users, Owner bootstrap, and test data.
 - Allow fake/test data only in staging.
 - Do not copy production data into staging unless explicitly approved.

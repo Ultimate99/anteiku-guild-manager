@@ -1,5 +1,66 @@
 # Testing
 
+## Milestone 15D Member Status Staging Validation
+
+Milestone 15D staging validation passed against `ckyihuxkioeibzpgwenc` / `Anteiku Guild Manager Staging`.
+
+Migration:
+- Dry-run showed only `20260523000100_member_roster_status_system.sql` pending.
+- The migration was applied to staging only.
+- Staging schema/RLS verification passed for `roster_status`, `member_status_history`, `update_member_roster_status(...)`, policies/grants, default/backfilled memberships, and active Owner count.
+
+Browser validation:
+- `staging_owner` saw roster status badges, filter, and controls in Admin Members.
+- `staging_member` transitions passed: `trial`, `inactive`, `on_break`, `pending_transfer`, `suspended`, restored `active`.
+- `suspended` showed restricted notice and blocked member/admin areas.
+- `on_break` allowed Home/Profile and showed not expected for GvG with no vote controls.
+- `staging_admin_noperms` had no Members/status/CP/Audit/GvG management controls.
+- Final `staging_member` state was `membership_status = active` and `roster_status = active`.
+- Status changes created 8 `member_status_history` rows and 8 `member_roster_status_changed` audit rows.
+
+Source/security-path validation:
+- Status changes use only `update_member_roster_status(...)`.
+- No direct frontend `guild_memberships` writes.
+- No frontend `member_status_history` calls or writes.
+- No new direct frontend `member_cp`, `cp_snapshots`, or `audit_logs` table calls.
+- CP privacy unchanged.
+
+Production gate:
+- Production rollout is pending.
+- Do not deploy the 15B frontend to production until the 15A migration is applied and verified in production.
+
+## Milestone 15B Member Status Frontend Build/Source Validation
+
+Milestone 15B frontend implementation is complete locally and browser-validated through staging in Milestone 15D.
+
+Build:
+- `npm.cmd run build` passed.
+
+Source/security-path validation:
+- `roster_status` is included in safe profile/member reads.
+- Roster status writes use only `update_member_roster_status` through `adminMemberService.js`.
+- No direct frontend `guild_memberships` updates were found.
+- No direct frontend `member_status_history` calls/writes were found.
+- No direct `member_cp`, `cp_snapshots`, or `audit_logs` table calls were added.
+- No SQL migration or Supabase validation files changed during Milestone 15B.
+
+Browser validation:
+- Staging browser validation passed in Milestone 15D after the 15A migration was applied to staging.
+- Production validation remains pending until the production database migration is applied and verified.
+
+Milestone 15D browser validation confirmed:
+- Owner sees roster status badges, filter, and controls in Admin Members.
+- Owner can set all statuses where backend allows.
+- Admin without `manage_members` cannot change roster status.
+- `suspended` shows restricted notice and no member/admin areas.
+- `on_break` can log in/view profile but is not expected in GvG and gets no vote controls.
+- Status changes produce backend audit/history through `update_member_roster_status`.
+- Dashboard/Profile/GvG do not leak CP data or call CP roster/leaderboard/snapshot paths.
+
+Not tested in 15D because no matching staging account exists:
+- Admin with `manage_members` limited to non-terminal statuses.
+- `left` and `kicked` browser notices; backend behavior was covered in 15A validation.
+
 ## Milestone 15A Member Status Backend Validation
 
 Milestone 15A backend/database validation passed locally.

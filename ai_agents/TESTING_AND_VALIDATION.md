@@ -1,5 +1,81 @@
 # Testing And Validation
 
+## Milestone 15D Member Status Staging Validation Passed
+
+Milestone 15D staging migration rollout and browser validation passed.
+
+Staging target:
+- Project ref: `ckyihuxkioeibzpgwenc`.
+- Project name: `Anteiku Guild Manager Staging`.
+- Production project `mzflfyxxkascrfpteexz` was not touched.
+
+Migration:
+- `npx.cmd supabase db push --dry-run` showed only `20260523000100_member_roster_status_system.sql` pending for staging.
+- `20260523000100_member_roster_status_system.sql` was applied to staging.
+- Staging migration history includes the 15A migration after apply.
+
+Schema/RLS verification:
+- `guild_memberships.roster_status` exists.
+- `member_status_history` exists with RLS/policy/grants.
+- `update_member_roster_status(...)` exists and is executable by authenticated users.
+- Existing staging memberships were backfilled to `roster_status = active`.
+- Exactly one active staging Owner remains.
+
+Browser validation:
+- `staging_owner` Members tab showed roster status badges, filter, and status controls.
+- `staging_member` transitions passed: `trial`, `inactive`, `on_break`, `pending_transfer`, `suspended`, restored `active`.
+- `suspended` showed the restricted notice and blocked member/admin areas.
+- `on_break` allowed Home/Profile and showed not expected for GvG with no vote controls.
+- `staging_admin_noperms` had no Members/status/CP/Audit/GvG management controls.
+- Final `staging_member` state was verified as `membership_status = active` and `roster_status = active`.
+- Status changes created 8 `member_status_history` rows and 8 `member_roster_status_changed` audit rows.
+
+Source/security-path validation:
+- Status changes use only `update_member_roster_status(...)`.
+- No direct frontend `guild_memberships` writes were found.
+- No frontend `member_status_history` calls or writes were found.
+- No new direct frontend `member_cp`, `cp_snapshots`, or `audit_logs` table calls were found.
+- CP privacy is unchanged.
+
+Scope:
+- `.env.local` was temporarily pointed at staging and restored to local Supabase.
+- Vite was restarted locally after the restore.
+- No production, Vercel, deployment, commit, source, or SQL migration changes were performed during this 15D docs checkpoint.
+
+Production gate:
+- Production rollout is pending.
+- Do not deploy the 15B frontend to production until the 15A migration is applied and verified in production.
+
+## Milestone 15B Member Status Frontend Build/Source Validation Passed
+
+Milestone 15B frontend implementation is build-passed, source/security-path validated, and browser-validated through staging in Milestone 15D.
+
+Build:
+- `npm.cmd run build` passed.
+
+Static/source validation:
+- Status changes call only `update_member_roster_status` from `src/services/adminMemberService.js`.
+- No direct frontend `guild_memberships` updates were found.
+- No direct frontend `member_status_history` calls or writes were found.
+- No direct frontend `member_cp`, `cp_snapshots`, or `audit_logs` table calls were added.
+- No `supabase/migrations` or `supabase/tests` files changed during Milestone 15B.
+- `git diff --check` reported only CRLF normalization warnings.
+
+Implemented validation targets awaiting browser confirmation:
+- Owner sees roster status badges/filter/control in Admin Members.
+- Owner can set member roster statuses through the RPC wrapper.
+- Admin with `manage_members` is offered non-terminal statuses only.
+- Admin without `manage_members` cannot use roster status controls.
+- Member cannot change own roster status.
+- `suspended`, `left`, and `kicked` show restricted notices.
+- `inactive` and `on_break` can still reach profile/dashboard but do not get GvG vote controls.
+- Status changes should produce backend audit/history rows through Milestone 15A RPC behavior.
+- No CP appears on member Dashboard/Profile/GvG pages.
+
+Browser validation:
+- Staging browser validation passed in Milestone 15D after the 15A migration was applied to staging.
+- Production browser validation remains pending until the production database migration is applied and verified.
+
 ## Milestone 15A Member Status Backend Validation Passed
 
 Milestone 15A backend/database validation is complete.

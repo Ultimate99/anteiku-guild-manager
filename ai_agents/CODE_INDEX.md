@@ -1,7 +1,7 @@
 # Code Index
 
 - `src/main.jsx`: React root.
-- `src/App.jsx`: Local page state and placeholder session.
+- `src/App.jsx`: Local page state, auth/approval gates, and roster hard-block gate routing.
 - `src/layouts/AppShell.jsx`: Header, content frame, and bottom navigation container.
 - `src/components/AppNav.jsx`: Mobile-first page navigation.
 - `src/components/StatusBadge.jsx`: Small status label component.
@@ -9,23 +9,24 @@
 - `src/context/AuthContext.jsx`: Local Supabase auth/session provider and safe viewer state.
 - `src/hooks/useAuth.js`: Hook for reading auth context.
 - `src/services/authService.js`: Supabase auth wrappers for session, signin, signup, and signout.
-- `src/services/profileService.js`: Safe own profile/membership/guild loading, registration RPC call, and own IGN update RPC wrapper.
+- `src/services/profileService.js`: Safe own profile/membership/guild loading including `roster_status`, registration RPC call, and own IGN update RPC wrapper.
 - `src/services/guildService.js`: Safe core guild loading for registration.
 - `src/services/adminApprovalService.js`: RLS-safe approval queue reads, own approval permission lookup, and approval/rejection RPC wrappers.
-- `src/services/adminMemberService.js`: RLS-safe active approved member roster reads, member-management permission helpers, and admin member IGN/slug RPC wrappers.
+- `src/services/adminMemberService.js`: RLS-safe approved primary member roster reads, member-management permission helpers, roster status helpers, roster status RPC wrapper, and admin member IGN/slug/role/guild RPC wrappers.
 - `src/data/guilds.js`: Core guild list.
 - `src/data/navigation.js`: Navigation items.
 - `src/pages/LoginRegister.jsx`: Local Supabase signin/signup and registration UI.
 - `src/pages/PendingApproval.jsx`: Pending approval gate with manual refresh.
 - `src/pages/RejectedStatus.jsx`: Rejected account gate; reapply is planned later.
 - `src/pages/SuspendedStatus.jsx`: Suspended account gate.
-- `src/pages/Dashboard.jsx`: Approved-user safe guild dashboard.
-- `src/pages/Profile.jsx`: Safe profile display without CP, plus own IGN edit mode for approved users.
-- `src/pages/Gvg.jsx`: GvG voting placeholder without persistence.
+- `src/pages/RosterRestrictedStatus.jsx`: Roster lifecycle hard-block gate for suspended/left/kicked members.
+- `src/pages/Dashboard.jsx`: Approved-user safe guild dashboard with roster status display and no CP data.
+- `src/pages/Profile.jsx`: Safe profile display with own roster status and no CP, plus own IGN edit mode for approved users.
+- `src/pages/Gvg.jsx`: GvG voting UI with roster-status UX gating for inactive/on_break and hard-blocked statuses.
 - `src/pages/AdminPanel.jsx`: Restricted AdminPanel coordinator for admin permission loading, visible tab calculation, active tab state, lazy section loading, and section action handlers.
 - `src/components/admin/AdminTabs.jsx`: Mobile-first AdminPanel tab bar.
 - `src/components/admin/AdminApprovalsSection.jsx`: Registration approval/rejection queue section.
-- `src/components/admin/AdminMembersSection.jsx`: Active approved member management section.
+- `src/components/admin/AdminMembersSection.jsx`: Approved primary member management section with roster status badges/filter/status-change controls.
 - `src/components/admin/AdminCpSection.jsx`: Admin-only CP roster/update/leaderboard section.
 - `src/components/admin/AdminGvgSection.jsx`: GvG event management/results section.
 - `src/components/admin/AdminAuditSection.jsx`: Read-only audit log viewer section.
@@ -146,3 +147,29 @@
   - Extracted planned admin modules placeholder.
 - `src/styles/app.css`
   - Adds sticky/mobile horizontal admin tab styling and tab content spacing.
+
+## Milestone 15B Frontend Member Status UI
+
+- `src/services/profileService.js`
+  - Includes `roster_status` in the safe current membership shape.
+- `src/services/adminMemberService.js`
+  - Includes `roster_status` in the safe member roster select.
+  - Loads approved primary memberships across active/suspended/left hard states.
+  - Adds roster status label/tone/summary helpers.
+  - Adds `updateMemberRosterStatus(...)`, which calls only `update_member_roster_status`.
+- `src/App.jsx`
+  - Derives UX-only hard roster blocking for `suspended`, `left`, and `kicked`.
+  - Keeps pending/rejected/profile approval gating intact.
+- `src/pages/RosterRestrictedStatus.jsx`
+  - Shows safe restricted notices for roster hard-block states.
+- `src/pages/Dashboard.jsx` and `src/pages/Profile.jsx`
+  - Show own roster status badges/notes without adding CP reads.
+- `src/pages/Gvg.jsx`
+  - Shows no vote controls for `inactive` and `on_break`; backend remains authority.
+- `src/pages/AdminPanel.jsx`
+  - Coordinates roster status filters, drafts, RPC action handler, and refresh after status changes.
+- `src/components/admin/AdminMembersSection.jsx`
+  - Displays roster badges/filter/status controls, reason input, and hard-block confirmation.
+  - Does not display private status history/reasons.
+- `src/styles/app.css`
+  - Adds roster badge tones, badge rows, restricted panels, and compact status reason styling.

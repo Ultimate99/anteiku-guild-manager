@@ -6,6 +6,13 @@ import {
   loadOwnGvgVote,
   submitGvgVote,
 } from '../services/gvgService.js';
+import {
+  formatRosterStatus,
+  getRosterStatusSummary,
+  isGvgLimitedRosterStatus,
+  isHardBlockedRosterStatus,
+  rosterStatusTone,
+} from '../services/adminMemberService.js';
 
 function formatDate(value) {
   if (!value) {
@@ -32,6 +39,11 @@ function formatVoteStatus(status) {
 
 export function Gvg() {
   const { membership, user } = useAuth();
+  const rosterStatus = membership?.roster_status ?? 'active';
+  const isRosterBlocked =
+    isHardBlockedRosterStatus(rosterStatus) || ['suspended', 'left'].includes(membership?.membership_status);
+  const isGvgLimited = isGvgLimitedRosterStatus(rosterStatus);
+  const canUseGvg = !isRosterBlocked && !isGvgLimited;
   const [events, setEvents] = useState([]);
   const [selectedEventId, setSelectedEventId] = useState('');
   const [currentVote, setCurrentVote] = useState(null);
@@ -54,6 +66,16 @@ export function Gvg() {
 
       if (clearMessage) {
         setMessage('');
+      }
+
+      if (!canUseGvg) {
+        setEvents([]);
+        setSelectedEventId('');
+        setCurrentVote(null);
+        setVoteStatus('present');
+        setAbsenceReason('');
+        setLoading(false);
+        return;
       }
 
       try {
@@ -82,7 +104,7 @@ export function Gvg() {
         setLoading(false);
       }
     },
-    [membership?.guild_id, selectedEventId, user?.id],
+    [canUseGvg, membership?.guild_id, selectedEventId, user?.id],
   );
 
   useEffect(() => {
@@ -116,6 +138,11 @@ export function Gvg() {
   }
 
   async function handleSubmitVote() {
+    if (!canUseGvg) {
+      setError('This roster status is not eligible for GvG voting.');
+      return;
+    }
+
     if (!selectedEventId) {
       setError('No active GvG event is available.');
       return;
@@ -151,13 +178,16 @@ export function Gvg() {
   return (
     <div className="stack">
       <section className="panel hero-panel">
-        <StatusBadge tone={selectedEvent ? 'success' : 'warning'}>GvG vote</StatusBadge>
+        <div className="status-badge-row">
+          <StatusBadge tone={selectedEvent ? 'success' : 'warning'}>GvG vote</StatusBadge>
+          <StatusBadge tone={rosterStatusTone(rosterStatus)}>{formatRosterStatus(rosterStatus)}</StatusBadge>
+        </div>
         <h3>GvG readiness vote</h3>
         <p>
           Vote once for the active event. Changing from Present to Absent updates the same vote
           record; it does not create a duplicate.
         </p>
-        <button type="button" className="secondary-action" onClick={() => loadGvgData()} disabled={loading || saving}>
+        <button type="button" className="secondary-action" onClick={() => loadGvgData()} disabled={loading || saving || !canUseGvg}>
           {loading ? 'Refreshing...' : 'Refresh GvG'}
         </button>
       </section>
@@ -165,9 +195,17 @@ export function Gvg() {
       {error ? <p className="error-line">{error}</p> : null}
       {message ? <p className="notice-line">{message}</p> : null}
 
-      {loading ? <p className="muted-line">Loading active GvG event...</p> : null}
+      {!canUseGvg ? (
+        <section className="panel restricted-panel">
+          <StatusBadge tone={rosterStatusTone(rosterStatus)}>{formatRosterStatus(rosterStatus)}</StatusBadge>
+          <h3>{isRosterBlocked ? 'GvG access unavailable' : 'Not expected for GvG'}</h3>
+          <p>{getRosterStatusSummary(rosterStatus)}</p>
+        </section>
+      ) : null}
 
-      {!loading && events.length === 0 ? (
+      {canUseGvg && loading ? <p className="muted-line">Loading active GvG event...</p> : null}
+
+      {canUseGvg && !loading && events.length === 0 ? (
         <section className="panel hero-panel">
           <StatusBadge tone="warning">Awaiting event</StatusBadge>
           <h3>No active GvG event</h3>
@@ -175,7 +213,7 @@ export function Gvg() {
         </section>
       ) : null}
 
-      {events.length > 0 ? (
+      {canUseGvg && events.length > 0 ? (
         <section className="panel vote-panel" aria-label="GvG voting">
           {events.length > 1 ? (
             <label>

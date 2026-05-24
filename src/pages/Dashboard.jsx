@@ -1,27 +1,39 @@
 import React from 'react';
 import { StatusBadge } from '../components/StatusBadge.jsx';
 import { useAuth } from '../hooks/useAuth.js';
+import {
+  formatRosterStatus,
+  getRosterStatusSummary,
+  isGvgLimitedRosterStatus,
+  rosterStatusTone,
+} from '../services/adminMemberService.js';
 
 export function Dashboard() {
   const { guild, membership, profile } = useAuth();
   const guildName = guild?.name ?? 'Assigned guild';
   const roleLabel = membership?.role ?? 'member';
+  const rosterStatus = membership?.roster_status ?? 'active';
+  const gvgStatus = isGvgLimitedRosterStatus(rosterStatus) ? 'Not expected' : 'Awaiting event';
 
   return (
     <div className="stack">
       <section className="panel hero-panel">
-        <StatusBadge tone="success">{profile?.approval_status ?? 'approved'}</StatusBadge>
+        <div className="status-badge-row">
+          <StatusBadge tone="success">{profile?.approval_status ?? 'approved'}</StatusBadge>
+          <StatusBadge tone={rosterStatusTone(rosterStatus)}>{formatRosterStatus(rosterStatus)}</StatusBadge>
+        </div>
         <h3>{guildName} command floor</h3>
         <p>
           Mobile-first guild overview using safe profile and membership fields from Supabase.
           Sensitive statistics stay out of the member dashboard.
         </p>
+        {rosterStatus !== 'active' ? <p className="muted-copy">{getRosterStatusSummary(rosterStatus)}</p> : null}
       </section>
 
       <section className="metric-grid" aria-label="Guild overview">
         <article className="metric-card">
           <span>GvG status</span>
-          <strong>Awaiting event</strong>
+          <strong>{gvgStatus}</strong>
         </article>
         <article className="metric-card">
           <span>Role</span>
@@ -36,10 +48,10 @@ export function Dashboard() {
       <section className="guild-list" aria-label="Core guilds">
         <article className="guild-row">
           <div>
-            <h4>{profile?.ign ?? 'Member'}</h4>
+          <h4>{profile?.ign ?? 'Member'}</h4>
             <p>@{profile?.username ?? 'unknown'}</p>
           </div>
-          <StatusBadge>{membership?.membership_status ?? 'active'}</StatusBadge>
+          <StatusBadge tone={rosterStatusTone(rosterStatus)}>{formatRosterStatus(rosterStatus)}</StatusBadge>
         </article>
       </section>
     </div>

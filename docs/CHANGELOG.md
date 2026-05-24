@@ -1,5 +1,38 @@
 # Changelog
 
+## 2026-05-24 - Milestone 15D Member Status Staging Validation Passed
+
+- Applied `20260523000100_member_roster_status_system.sql` to staging only after a dry-run showed it was the only pending migration.
+- Verified staging schema/RLS for `guild_memberships.roster_status`, `member_status_history`, `update_member_roster_status(...)`, policies/grants, backfilled memberships, and active Owner count.
+- Browser-validated the Milestone 15B frontend through staging users.
+- Confirmed Owner Members tab roster badges, status filter, and status controls worked.
+- Tested `staging_member` through `trial`, `inactive`, `on_break`, `pending_transfer`, `suspended`, and restored `active`.
+- Confirmed `suspended` blocks member/admin areas with a restricted notice.
+- Confirmed `on_break` allows Home/Profile and shows not expected for GvG with no vote controls.
+- Confirmed `staging_admin_noperms` has no Members/status/CP/Audit/GvG management controls.
+- Verified final `staging_member` state: `membership_status = active`, `roster_status = active`.
+- Verified 8 `member_status_history` rows and 8 `member_roster_status_changed` audit rows from validation.
+- Source-path validation still shows status updates use only `update_member_roster_status`, with no direct frontend `guild_memberships` writes, no frontend `member_status_history` calls, no new direct `member_cp`/`cp_snapshots`/`audit_logs` calls, and CP privacy unchanged.
+- Restored `.env.local` to local Supabase and restarted Vite locally.
+- Production, Vercel env, deployment, and commit actions were not performed.
+- Production rollout remains pending; do not deploy the 15B frontend to production until the 15A migration is applied and verified in production.
+
+## 2026-05-23 - Milestone 15B Member Status Frontend Implemented
+
+- Implemented frontend Member Status UI/access gating locally.
+- Added safe frontend `roster_status` reads for current viewer membership and Admin Members roster.
+- Added roster status badges, filter, status change control, reason input, and hard-block confirmation to Admin Members.
+- Added `updateMemberRosterStatus(...)` frontend wrapper using only `update_member_roster_status`.
+- Added Dashboard/Profile roster status badges and safe notes without adding CP reads.
+- Added roster hard-block restricted notice for `suspended`, `left`, and `kicked`.
+- Updated GvG UX so `inactive` and `on_break` users do not get vote controls.
+- Preserved private status history/reason privacy; no `member_status_history` UI was added.
+- `npm.cmd run build` passed.
+- Source/security checks found no direct frontend `guild_memberships` updates, no direct `member_status_history` calls, and no new direct `member_cp`, `cp_snapshots`, or `audit_logs` table calls.
+- Browser validation later passed through staging in Milestone 15D.
+- This frontend should not be deployed before the Milestone 15A migration is applied and verified in the target environment.
+- No SQL migrations, backend/RLS/RPC changes, production, Vercel env, deployment, or commit action was included.
+
 ## 2026-05-23 - Milestone 15A Member Status Backend Complete
 
 - Added backend Member Status support.

@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBadge } from '../components/StatusBadge.jsx';
 import { useAuth } from '../hooks/useAuth.js';
+import {
+  formatRosterStatus,
+  getRosterStatusSummary,
+  rosterStatusTone,
+} from '../services/adminMemberService.js';
 import { updateMyProfile } from '../services/profileService.js';
 
 export function Profile() {
@@ -10,6 +15,7 @@ export function Profile() {
   const [saving, setSaving] = useState(false);
   const [profileMessage, setProfileMessage] = useState('');
   const [profileError, setProfileError] = useState('');
+  const rosterStatus = membership?.roster_status ?? 'active';
 
   useEffect(() => {
     if (!isEditing) {
@@ -65,7 +71,10 @@ export function Profile() {
           AG
         </div>
         <div>
-          <StatusBadge tone="success">{profile?.approval_status ?? 'approved'}</StatusBadge>
+          <div className="status-badge-row">
+            <StatusBadge tone="success">{profile?.approval_status ?? 'approved'}</StatusBadge>
+            <StatusBadge tone={rosterStatusTone(rosterStatus)}>{formatRosterStatus(rosterStatus)}</StatusBadge>
+          </div>
           <h3>{profile?.ign ?? 'Member'}</h3>
           <p>@{profile?.username ?? 'unknown'}</p>
         </div>
@@ -79,6 +88,7 @@ export function Profile() {
             </StatusBadge>
             <h3>Member profile</h3>
             <p>IGN can be edited. Username, profile slug, guild, role, and status are locked.</p>
+            {rosterStatus !== 'active' ? <p className="muted-copy">{getRosterStatusSummary(rosterStatus)}</p> : null}
           </div>
           {!isEditing ? (
             <button type="button" className="secondary-action compact-action" onClick={startEditing}>
@@ -133,6 +143,11 @@ export function Profile() {
         <div>
           <span>Role</span>
           <strong>{membership?.role ?? 'member'}</strong>
+        </div>
+        <div>
+          <span>Roster status</span>
+          <strong>{formatRosterStatus(rosterStatus)}</strong>
+          <small>{getRosterStatusSummary(rosterStatus)}</small>
         </div>
       </section>
     </div>
