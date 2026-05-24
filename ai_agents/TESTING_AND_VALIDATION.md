@@ -1,5 +1,43 @@
 # Testing And Validation
 
+## Milestone 20B CP Leaderboard Backend Validation
+
+Milestone 20B backend/database implementation passed local validation.
+
+Migration:
+- `supabase/migrations/20260524000300_cp_rankings.sql`
+
+Validation commands:
+- `npx.cmd supabase db reset`
+- `Get-Content supabase/tests/local_validation_anteiku.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres`
+
+Tooling note:
+- `npx.cmd supabase db query --local --file supabase/tests/local_validation_anteiku.sql` was attempted, but the Supabase CLI query wrapper rejected the multi-statement validation file with `cannot insert multiple commands into a prepared statement`.
+- The same validation SQL was then run against the local Supabase Postgres container with `psql` and passed.
+
+Focused 20B validation result:
+- 14 PASS / 0 FAIL / 0 SKIP.
+
+Validated:
+- `get_member_cp_rankings(text)` and `get_admin_cp_rankings(uuid,text)` exist.
+- Member ranking RPC shape has no CP fields or private identifiers.
+- Member guild ranking returns deterministic rank order and excludes ineligible roster statuses.
+- Member global ranking returns guild labels without CP values.
+- Current user row marks `is_current_user = true`.
+- `inactive` active-membership users can view rank order.
+- Hard-blocked users are denied by active-membership requirements.
+- Normal members cannot call admin ranking RPC.
+- Admin with scoped `view_cp` can read guild CP values.
+- Admin without scoped `view_cp` is denied.
+- Non-Owner Admin is denied global admin CP rankings.
+- Owner can read global admin CP values.
+- Direct `member_cp` and `cp_snapshots` reads remain denied for normal members.
+- Existing Milestone 19B and 19B.1 CP Update Window checks still pass.
+
+Not run:
+- `npm.cmd run build` was not needed because 20B changed only database migration/tests/docs and no frontend source.
+- Staging/production rollout and frontend browser validation are pending future milestones.
+
 ## Milestone 19E CP Update Window Production Rollout Validation
 
 Milestone 19E production rollout and read-only smoke validation passed.

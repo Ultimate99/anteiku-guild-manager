@@ -1,7 +1,7 @@
 {
   "project": "Anteiku Guild Manager",
-  "currentMilestone": "Milestone 19E CP Update Window production rollout complete",
-  "status": "milestone_19e_cp_update_window_production_complete",
+  "currentMilestone": "Milestone 20B CP Leaderboard backend implemented and locally validated",
+  "status": "milestone_20b_cp_leaderboard_backend_validated",
   "milestone7BackendStatus": "SQL/RPC migration created for hardened role assignment and Owner-only guild transfer; local Supabase validation passed.",
   "milestone7ValidationStatus": "npx.cmd supabase db reset passed; local_validation_anteiku.sql passed; role assignment and guild transfer tests passed.",
   "milestone7FrontendStatus": "Admin member role-change and Owner-only guild-transfer UI browser validated; network writes used assign_member_role and transfer_member_guild; no CP/GvG calls observed.",
@@ -46,10 +46,12 @@
   "milestone19CStatus": "CP Update Window frontend implemented locally and build/source validated. Added cpWindowService RPC-only wrappers, Profile Your CP own-CP/self-submit UI, AdminPanel CP Update Window status/open/close controls, EN/FR/DE i18n labels, and compact styling. npm.cmd run build passed; source checks found no direct member_cp, cp_snapshots, or cp_update_windows table calls and no Profile/admin roster/leaderboard CP leakage. Browser validation later passed through staging in Milestone 19D and production read-only smoke passed in Milestone 19E.",
   "milestone19DStatus": "Staging CP Update Window rollout and validation passed. Staging received migrations 20260524000100 and 20260524000200; staging DB/RLS/RPC verification passed; Owner opened/closed a CP Update Window; staging_member submitted own CP through Profile; audit redaction and audit+CP visibility passed; admin without permissions was denied; no CP leakage was found; .env.local was restored to local Supabase.",
   "milestone19EStatus": "CP Update Window production rollout complete. Production project mzflfyxxkascrfpteexz received only migrations 20260524000100_cp_update_window_self_submit.sql and 20260524000200_cp_update_window_staff_read.sql after a clean dry-run; production DB verification passed; commit 6a3a181 feat: add CP update window self-submit was pushed and deployed; Owner AdminPanel CP/window status and Member Profile Your CP closed-window state smoke passed. Controlled production mutation smoke was not performed by design.",
-  "nextRecommendedStep": "Milestone 19E docs/handoff commit checkpoint, then optional controlled production CP mutation smoke or Weekly CP Snapshot/Growth Reports planning.",
+  "milestone20BStatus": "CP Leaderboard backend implemented and locally validated. Migration 20260524000300_cp_rankings.sql adds member-safe get_member_cp_rankings and permission-checked get_admin_cp_rankings. Member ranking responses return rank, IGN, optional guild labels, and is_current_user only; they do not return CP values, profile ids, usernames, timestamps, snapshots, growth, history, or audit metadata. Admin guild rankings require scoped view_cp; admin global rankings are Owner-only. Local validation passed with Milestone 20B result 14 PASS / 0 FAIL / 0 SKIP. No frontend UI, staging, production, Vercel, deployment, or commit action was included.",
+  "nextRecommendedStep": "Milestone 20C member leaderboard frontend planning/implementation, then staging migration rollout and validation before any production deployment.",
   "currentSupabaseCliLinkedProjectRef": "mzflfyxxkascrfpteexz",
   "currentSupabaseCliLinkWarning": "Supabase CLI is currently linked to production after Milestone 19E; explicitly relink before future staging/local Supabase commands.",
   "futureCpUpdateWindowStatus": "CP Update Window / Member CP Self-Submit is live in production as of Milestone 19E. Members can see own CP through get_my_cp and submit own CP through submit_my_cp_update during an applicable open guild CP Update Window; staff can read selected-guild window status through get_cp_update_window_for_guild; members still cannot see other members' CP, CP roster, CP leaderboard, CP snapshots, or CP history. Optional production mutation smoke was deferred by design.",
+  "futureCpLeaderboardStatus": "Milestone 20B backend is local-only. Member-safe rank-order RPC and admin CP ranking RPC are implemented and locally validated, but staging/production do not have 20260524000300_cp_rankings.sql yet and no frontend CP leaderboard UI exists yet.",
   "productionSupabase": {
     "projectRef": "mzflfyxxkascrfpteexz",
     "projectName": "Anteiku Guild Manager Production",
@@ -324,6 +326,56 @@
     "productionStatus": "Live in production as of Milestone 19E. Owner AdminPanel CP/window status and Member Profile Your CP closed-window state were smoke-tested. No production CP window was opened/closed and no production CP value was submitted.",
     "nextMilestone": "Milestone 19E docs/handoff checkpoint, optional controlled production CP mutation smoke, or Weekly CP Snapshot/Growth Reports planning."
   },
+  "cpLeaderboardSystem": {
+    "milestone20BCompleted": true,
+    "backendValidatedLocally": true,
+    "migration": "20260524000300_cp_rankings.sql",
+    "memberRpc": "get_member_cp_rankings",
+    "adminRpc": "get_admin_cp_rankings",
+    "memberScopes": [
+      "guild",
+      "global"
+    ],
+    "memberReturnShape": [
+      "rank",
+      "ign",
+      "guild_name",
+      "guild_slug",
+      "is_current_user"
+    ],
+    "memberPrivacy": "Member ranking responses do not include CP values, profile ids, usernames, updated timestamps, snapshots, growth, history, audit metadata, or private CP fields.",
+    "adminAccess": "Guild scope requires existing scoped view_cp authority. Global scope is Owner-only in v1.",
+    "adminReturnShape": [
+      "rank",
+      "profile_id",
+      "username",
+      "ign",
+      "guild_id",
+      "guild_name",
+      "guild_slug",
+      "cp_value",
+      "updated_at"
+    ],
+    "rankBehavior": "row_number over cp_value desc, then deterministic IGN/profile tie-breaker.",
+    "includedRosterStatuses": [
+      "active",
+      "trial",
+      "pending_transfer"
+    ],
+    "excludedRosterStatuses": [
+      "inactive",
+      "on_break",
+      "suspended",
+      "left",
+      "kicked"
+    ],
+    "validation": "npx.cmd supabase db reset passed; local_validation_anteiku.sql passed through Docker psql; Milestone 20B result 14 PASS / 0 FAIL / 0 SKIP.",
+    "frontendImplemented": false,
+    "stagingMigrationApplied": false,
+    "productionMigrationApplied": false,
+    "rolloutWarning": "Do not deploy CP leaderboard frontend UI to any remote target until 20260524000300_cp_rankings.sql is applied and verified in that target DB.",
+    "nextMilestone": "Milestone 20C member leaderboard frontend planning/implementation."
+  },
   "productionWarnings": [
     "Do not run supabase db reset against production.",
     "Do not run supabase/tests/local_validation_anteiku.sql against production because it inserts fake auth users/test data.",
@@ -337,7 +389,8 @@
     "Do not create production GvG test data without explicit approval and cleanup/data-retention planning.",
     "Supabase CLI is currently linked to production project mzflfyxxkascrfpteexz; relink explicitly before future staging/local Supabase commands.",
     "Optional production roster-status mutation smoke must use the controlled production test member only, require explicit approval, and restore to active.",
-    "Optional production CP Update Window mutation smoke must use a controlled production test member only, require explicit approval, and document whether test CP/window data is restored or retained."
+    "Optional production CP Update Window mutation smoke must use a controlled production test member only, require explicit approval, and document whether test CP/window data is restored or retained.",
+    "Do not deploy CP leaderboard frontend UI to staging or production until 20260524000300_cp_rankings.sql has been applied and verified in that target DB."
   ],
   "localToolingNote": "Supabase CLI was installed locally as dev tooling during Milestone 13A, and the CLI tooling/package changes were committed before Milestone 13B planning/execution.",
   "localTestingNote": "After local DB reset, stale browser auth can cause profiles_id_fkey registration errors; clear localStorage/sessionStorage before retesting auth/registration.",
@@ -398,25 +451,29 @@
     "CP Update Window staff selected-guild read RPC local implementation and validation",
     "CP Update Window frontend UI build/source validation",
     "CP Update Window staging rollout/browser validation",
-    "CP Update Window production rollout/read-only smoke validation"
+    "CP Update Window production rollout/read-only smoke validation",
+    "CP Leaderboard backend/RPC local implementation and validation"
   ],
   "notImplemented": [
     "avatar editing",
     "normal-user username/profile slug editing",
     "reapply UI",
     "optional controlled production CP Update Window mutation smoke",
+    "CP Leaderboard frontend UI",
+    "CP Leaderboard staging migration rollout/browser validation",
+    "CP Leaderboard production rollout",
     "suspended/left/rejected member management UI",
     "weekly CP snapshot/growth report UI",
     "guild/subguild management UI"
   ],
-  "securityStatus": "locally validated in Supabase, production catalog-verified, production smoke/security validated, Milestone 14C AdminPanel tabs production-smoke validated, Milestone 14E staging schema/RLS/seed verified, Milestone 14F staging Owner bootstrap verified, Milestone 14G staging users/permissions verified, Milestone 14H staging CP redaction/GvG smoke validated, Milestone 15A Member Status backend security locally validated, Milestone 15B Member Status frontend source/security-path validation passed, Milestone 15D Member Status staging browser validation passed, Milestone 15E Member Status production rollout/smoke validation passed, Milestone 16B AdminPanel UI cleanup source/security-path validation passed, Milestone 16C authenticated staging browser validation passed, Milestone 16D.1 compact roster source/staging validation passed, Milestone 16G member-facing UI staging validation passed, Milestone 16H member-facing UI production smoke passed, Milestone 18E AdminPanel translation staging validation passed, Milestone 18F Language Pack production smoke passed, Milestone 19B CP Update Window backend/RLS/RPC local validation passed, Milestone 19B.1 staff selected-guild read RPC local validation passed, Milestone 19C frontend CP-window source/security-path validation passed, Milestone 19D staging browser/security validation passed, and Milestone 19E production DB verification/read-only smoke passed. Deferred production-only GvG and CP redaction scenarios are covered in staging.",
-  "schemaSpecStatus": "migrations created and locally validated through Milestone 19B.1. Production and staging now both include 20260523000100_member_roster_status_system.sql, 20260524000100_cp_update_window_self_submit.sql, and 20260524000200_cp_update_window_staff_read.sql applied and verified. Member Status and CP Update Window / Member CP Self-Submit are live in production.",
-  "cpDecision": "CP stored outside profiles in member_cp and cp_snapshots; member direct SELECT forbidden. Milestone 19B adds safe auth.uid()-scoped get_my_cp and submit_my_cp_update RPCs for own CP only during an open guild CP Update Window. Milestone 19B.1 adds safe staff selected-guild window status reads through get_cp_update_window_for_guild. Members must not see other members' CP, CP roster, CP leaderboard, CP snapshots, or CP history.",
+  "securityStatus": "locally validated in Supabase, production catalog-verified, production smoke/security validated, Milestone 14C AdminPanel tabs production-smoke validated, Milestone 14E staging schema/RLS/seed verified, Milestone 14F staging Owner bootstrap verified, Milestone 14G staging users/permissions verified, Milestone 14H staging CP redaction/GvG smoke validated, Milestone 15A Member Status backend security locally validated, Milestone 15B Member Status frontend source/security-path validation passed, Milestone 15D Member Status staging browser validation passed, Milestone 15E Member Status production rollout/smoke validation passed, Milestone 16B AdminPanel UI cleanup source/security-path validation passed, Milestone 16C authenticated staging browser validation passed, Milestone 16D.1 compact roster source/staging validation passed, Milestone 16G member-facing UI staging validation passed, Milestone 16H member-facing UI production smoke passed, Milestone 18E AdminPanel translation staging validation passed, Milestone 18F Language Pack production smoke passed, Milestone 19B CP Update Window backend/RLS/RPC local validation passed, Milestone 19B.1 staff selected-guild read RPC local validation passed, Milestone 19C frontend CP-window source/security-path validation passed, Milestone 19D staging browser/security validation passed, Milestone 19E production DB verification/read-only smoke passed, and Milestone 20B CP Leaderboard backend/RPC local validation passed. Deferred production-only GvG and CP redaction scenarios are covered in staging.",
+  "schemaSpecStatus": "migrations created and locally validated through Milestone 20B. Production and staging now both include 20260523000100_member_roster_status_system.sql, 20260524000100_cp_update_window_self_submit.sql, and 20260524000200_cp_update_window_staff_read.sql applied and verified. Member Status and CP Update Window / Member CP Self-Submit are live in production. CP Leaderboard migration 20260524000300_cp_rankings.sql is local-only until a separate rollout gate.",
+  "cpDecision": "CP stored outside profiles in member_cp and cp_snapshots; member direct SELECT forbidden. Milestone 19B adds safe auth.uid()-scoped get_my_cp and submit_my_cp_update RPCs for own CP only during an open guild CP Update Window. Milestone 20B adds member-safe CP rank order through get_member_cp_rankings without returning CP values; admin CP rankings with values require get_admin_cp_rankings permission checks. Members must not see other members' CP values, CP snapshots, CP history, or private CP metadata.",
   "roleDecision": "Owner global CP access; Leader/Vice automatic guild-scoped CP access; Admin explicit CP permissions granted only by Owner.",
   "membershipDecision": "v1 enforces one active primary guild membership per user while preserving room for history/future multi-guild. Milestone 15A adds separate roster_status for lifecycle state and preserves membership_status as the hard security/access state.",
   "gvgDecision": "supports guild-specific and global events; v1 vote correction by admins/leaders is not allowed. Milestone 15A excludes inactive/on_break roster statuses from active GvG event visibility/voting while preserving active membership.",
-  "supabaseValidationStatus": "Local validation passed through Milestone 19B.1: db reset passed and local_validation_anteiku.sql passed, including Milestone 19B result 32 PASS / 0 FAIL / 0 SKIP and Milestone 19B.1 result 13 PASS / 0 FAIL / 0 SKIP. Staging and production schema/RLS/seed verification passed through Member Status. Both staging and production have 20260523000100, 20260524000100, and 20260524000200 applied and verified.",
+  "supabaseValidationStatus": "Local validation passed through Milestone 20B: db reset passed and local_validation_anteiku.sql passed through Docker psql, including Milestone 20B result 14 PASS / 0 FAIL / 0 SKIP, Milestone 19B result 32 PASS / 0 FAIL / 0 SKIP, and Milestone 19B.1 result 13 PASS / 0 FAIL / 0 SKIP. Staging and production have 20260523000100, 20260524000100, and 20260524000200 applied and verified. Staging and production do not yet have 20260524000300.",
   "securityIssueFixed": "Private helper parameter shadowing caused CP/RPC permission leakage during validation; fixed with p_* helper parameters and validated successfully.",
-  "validationStatus": "Milestone 19E production rollout validation passed. Production dry-run showed only 20260524000100 and 20260524000200 pending; both were applied and verified. Production smoke passed for Owner AdminPanel CP window status and Member Profile Your CP closed-window state. Source checks found no direct member_cp, cp_snapshots, or cp_update_windows table calls and no Profile/admin CP roster/leaderboard calls. Controlled production mutation smoke was not performed by design.",
+  "validationStatus": "Milestone 20B backend validation passed locally. Local db reset passed; local_validation_anteiku.sql passed through Docker psql; Milestone 20B result was 14 PASS / 0 FAIL / 0 SKIP. npm.cmd run build was not run because no frontend code changed. Staging/production migration rollout and frontend leaderboard browser validation are pending future milestones.",
   "auditStatus": "Do not run npm audit fix --force; it would install Vite 8.0.13 as a breaking major upgrade."
 }

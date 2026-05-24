@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-05-24 - Milestone 20B CP Leaderboard Backend Implemented
+
+- Added local backend/database support for CP Leaderboards.
+- Created migration `20260524000300_cp_rankings.sql`.
+- Added member-safe RPC `get_member_cp_rankings(p_scope text default 'guild')`.
+- Added admin/staff RPC `get_admin_cp_rankings(p_guild_id uuid default null, p_scope text default 'guild')`.
+- Added ranking support indexes on `member_cp`.
+- Member rankings support `guild` and `global` scopes while returning only rank, IGN, optional guild label/slug, and current-user highlight.
+- Member rankings do not return CP values, profile ids, usernames, updated timestamps, snapshots, growth, history, audit metadata, or private CP fields.
+- Admin guild rankings return CP values only to callers with scoped `view_cp`.
+- Admin global rankings are Owner-only in v1.
+- Ranking rows include approved active memberships with roster status `active`, `trial`, or `pending_transfer`.
+- Ranking rows exclude `inactive`, `on_break`, `suspended`, `left`, `kicked`, pending memberships, and rejected memberships.
+- Ranks use deterministic `row_number()` ordering by CP descending and stable tie-breakers.
+- Updated local validation SQL with Milestone 20B checks.
+- Local Supabase reset passed.
+- Local validation passed through Docker `psql`, including Milestone 20B result 14 PASS / 0 FAIL / 0 SKIP.
+- No frontend UI, staging, production, Vercel, deployment, or commit action was performed.
+- `20260524000300_cp_rankings.sql` remains local-only until a separate staging/production rollout gate.
+
 ## 2026-05-24 - Milestone 19E CP Update Window Production Rollout Complete
 
 - Applied CP Update Window migrations to production after a clean dry-run:

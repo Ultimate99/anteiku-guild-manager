@@ -1,12 +1,42 @@
 # Supabase RLS
 
-The local Supabase RLS/RPC implementation has been validated through Milestone 19B.1, and the Milestone 11B frontend audit viewer has been live-browser validated against the safe audit RPC.
+The local Supabase RLS/RPC implementation has been validated through Milestone 20B, and the Milestone 11B frontend audit viewer has been live-browser validated against the safe audit RPC.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
 
+## Milestone 20B CP Ranking RPCs
+
+Milestone 20B is backend/database-only and locally validated. Staging and production rollout are pending.
+
+New RPCs:
+- `get_member_cp_rankings(p_scope text default 'guild')`
+- `get_admin_cp_rankings(p_guild_id uuid default null, p_scope text default 'guild')`
+
+Member-safe behavior:
+- `get_member_cp_rankings(...)` uses `auth.uid()` and requires an approved profile with active primary membership.
+- Members can request `guild` or `global` rank scope only.
+- Guild scope uses the caller's active primary guild.
+- Global scope returns safe rank order across eligible approved active roster members.
+- Return shape is only `rank`, `ign`, `guild_name`, `guild_slug`, and `is_current_user`.
+- Member responses do not include CP values, profile ids, usernames, updated timestamps, snapshots, growth, history, audit metadata, or private CP fields.
+
+Admin behavior:
+- `get_admin_cp_rankings(...)` uses `auth.uid()`.
+- Guild scope requires existing scoped `view_cp` authority.
+- Global scope is Owner-only in v1.
+- Normal Members and Admins without scoped `view_cp` are denied.
+
+Roster/ranking rules:
+- Ranking rows include approved active memberships with roster status `active`, `trial`, or `pending_transfer`.
+- Ranking rows exclude `inactive`, `on_break`, `suspended`, `left`, and `kicked`.
+- Ranks use deterministic `row_number()` ordering by `cp_value desc`, then IGN/profile tie-breaker.
+
+Validation:
+- Milestone 20B local validation passed with 14 PASS / 0 FAIL / 0 SKIP.
+
 ## Milestone 19B / 19B.1 CP Update Window RLS/RPC
 
-Milestone 19B/19B.1 is backend/database-only and locally validated. Staging and production rollout are pending.
+Milestone 19B/19B.1 is backend/database-only, locally validated, staging validated, and production applied/verified as of Milestone 19E.
 
 New table:
 - `cp_update_windows`
@@ -129,12 +159,12 @@ CP metadata redaction:
 
 Base local validation result: 29 PASS / 0 FAIL / 0 SKIP.
 
-Latest focused local validation includes Milestone 19B CP Update Window checks: 32 PASS / 0 FAIL / 0 SKIP, plus Milestone 19B.1 staff read checks: 13 PASS / 0 FAIL / 0 SKIP.
+Latest focused local validation includes Milestone 20B CP Ranking checks: 14 PASS / 0 FAIL / 0 SKIP, Milestone 19B CP Update Window checks: 32 PASS / 0 FAIL / 0 SKIP, and Milestone 19B.1 staff read checks: 13 PASS / 0 FAIL / 0 SKIP.
 
 Validated:
 
 - Members cannot directly read CP tables.
-- Members cannot access CP through CP RPCs.
+- Members cannot access other-member CP values through CP RPCs.
 - Admin without `view_cp` is blocked.
 - Admin with `view_cp` can read scoped CP.
 - Leader wrong-guild CP access is blocked.

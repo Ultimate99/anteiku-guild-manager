@@ -1,5 +1,54 @@
 # Project State
 
+## Milestone 20B CP Leaderboard Backend Implemented
+
+Milestone 20B is implemented and locally validated as backend/database-only support for member-safe CP rankings and admin CP rankings.
+
+Implemented locally:
+- Added migration `20260524000300_cp_rankings.sql`.
+- Added member-safe RPC `get_member_cp_rankings(p_scope text default 'guild')`.
+- Added admin/staff RPC `get_admin_cp_rankings(p_guild_id uuid default null, p_scope text default 'guild')`.
+- Added ranking support indexes on `member_cp`.
+- Preserved existing CP Update Window, admin CP roster/update, and audit-redaction behavior.
+
+Member-safe ranking behavior:
+- Member rankings support `guild` and `global` scopes.
+- Member RPC returns only `rank`, `ign`, `guild_name`, `guild_slug`, and `is_current_user`.
+- Member RPC does not return CP values, profile ids, usernames, timestamps, snapshots, growth, history, or audit metadata.
+- Member guild scope uses the caller's active primary guild.
+- Member global scope returns safe rank order across eligible approved active roster members.
+
+Admin ranking behavior:
+- Admin guild scope returns CP values only when the caller passes existing scoped `view_cp` authority.
+- Admin global scope is Owner-only in v1.
+- Admin return shape includes rank, profile/user labels, guild labels, CP value, and updated timestamp.
+
+Roster and ranking rules:
+- Rows include approved profiles with active memberships and roster status `active`, `trial`, or `pending_transfer`.
+- Rows exclude `inactive`, `on_break`, `suspended`, `left`, `kicked`, pending memberships, and rejected memberships.
+- `inactive` and `on_break` members can still view rank order if existing access gates allow them into the member area, but they are not listed as ranked rows.
+- Ranks use `row_number()` with deterministic ordering by `cp_value desc`, then IGN/profile tie-breaker.
+
+Validation:
+- Local `npx.cmd supabase db reset` passed.
+- Local validation script passed through Docker `psql` after the Supabase CLI query wrapper rejected the multi-statement validation file.
+- Milestone 20B focused validation result: 14 PASS / 0 FAIL / 0 SKIP.
+- Existing Milestone 19B and 19B.1 CP Update Window validation still passed.
+- `npm.cmd run build` was not run because 20B changed only database migration/tests/docs and no frontend code.
+
+Scope confirmation:
+- Backend/database only.
+- No React components or frontend services were edited.
+- No staging or production project was touched.
+- No deployment, Vercel configuration, or commit was performed.
+
+Rollout boundary:
+- `20260524000300_cp_rankings.sql` is local-only. Staging and production do not have it yet.
+- Do not deploy frontend CP leaderboard UI to any target until that target DB has this migration applied and verified.
+
+Recommended next step:
+- Milestone 20C member leaderboard frontend planning/implementation, followed by staging migration rollout and validation before any production deployment.
+
 ## Milestone 19E CP Update Window Production Rollout Complete
 
 Milestone 19E is complete. CP Update Window / Member CP Self-Submit is live in production at `https://anteiku-guild-manager.vercel.app`.

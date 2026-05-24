@@ -1,5 +1,37 @@
 # Security Rules
 
+## Milestone 20B CP Leaderboard Security Rules
+
+Milestone 20B adds local-only backend support for member-safe CP rank order and admin CP rankings. The migration has not been applied to staging or production yet.
+
+Member ranking rules:
+- Members may see CP rank order for `guild` and `global` scopes.
+- This approved tradeoff reveals relative CP strength only.
+- Members must not receive CP values from `get_member_cp_rankings(...)`.
+- Members must not receive profile ids, usernames, updated timestamps, growth, snapshots, history, audit metadata, or private CP fields from the member ranking RPC.
+- Member rankings may show IGN and, for global scope, guild label/slug.
+- Current user highlighting uses `is_current_user`; no profile id is needed in the response.
+
+Admin ranking rules:
+- Admin guild CP rankings require scoped `view_cp` authority through the existing CP permission model.
+- Admin global CP rankings are Owner-only in v1.
+- Admin without scoped `view_cp` and normal Members must be denied by the RPC.
+- CP values must only be returned by `get_admin_cp_rankings(...)` after database-side permission checks pass.
+
+Roster inclusion:
+- Ranking rows include approved active memberships with roster status `active`, `trial`, or `pending_transfer`.
+- Ranking rows exclude `inactive`, `on_break`, `suspended`, `left`, and `kicked`.
+- `inactive` and `on_break` members may still view rank order if existing access gates allow them into member pages, but they are not ranked.
+
+CP table privacy:
+- Members still cannot directly read `member_cp` or `cp_snapshots`.
+- Frontend leaderboard UI must use the member-safe ranking RPC and must not call admin CP ranking/roster APIs for member pages.
+- Never send CP values to member frontend and hide them in UI; member API responses must omit them.
+
+Rollout boundary:
+- `20260524000300_cp_rankings.sql` is local-only until a separate staging/production rollout gate.
+- Do not deploy CP leaderboard frontend to a target DB that has not applied and verified the migration.
+
 ## Milestone 19E CP Update Window Security Rules
 
 Milestone 19B/19B.1 backend, Milestone 19C frontend, Milestone 19D staging validation, and Milestone 19E production rollout are complete. CP Update Window / Member CP Self-Submit is live in production.

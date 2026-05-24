@@ -2,17 +2,16 @@
 
 ## Current Backend Status
 
-Milestone 19B/19B.1 adds local-only backend support for CP Update Window / Member CP Self-Submit. It is implemented and locally validated, but has not been applied to staging or production.
+Milestone 20B adds local-only backend support for member-safe CP rankings and admin CP rankings. It is implemented and locally validated, but has not been applied to staging or production.
 
 New local migration:
-- `supabase/migrations/20260524000100_cp_update_window_self_submit.sql`
-- `supabase/migrations/20260524000200_cp_update_window_staff_read.sql`
+- `supabase/migrations/20260524000300_cp_rankings.sql`
 
-Do not deploy frontend CP Update Window UI to any remote environment until the migration has been applied and verified in that environment.
+Do not deploy frontend CP leaderboard UI to any remote environment until this migration has been applied and verified in that environment.
 
 ## Production Deployment Status
 
-Production Supabase is live and migrated through Milestone 15E. The Member Status migration `20260523000100_member_roster_status_system.sql` is applied and verified in production.
+Production Supabase is live and migrated through Milestone 19E. Member Status and CP Update Window / Member CP Self-Submit are applied, verified, and live in production.
 
 Current local migration order:
 
@@ -26,12 +25,15 @@ Current local migration order:
 8. `20260515000200_cp_rpc_hardening.sql`
 9. `20260515000300_audit_log_read_hardening.sql`
 10. `20260523000100_member_roster_status_system.sql`
-11. `20260524000100_cp_update_window_self_submit.sql` - local only; not applied to staging or production yet.
-12. `20260524000200_cp_update_window_staff_read.sql` - local only; not applied to staging or production yet.
+11. `20260524000100_cp_update_window_self_submit.sql`
+12. `20260524000200_cp_update_window_staff_read.sql`
+13. `20260524000300_cp_rankings.sql` - local only; not applied to staging or production yet.
 
 Migration `20260523000100_member_roster_status_system.sql` is implemented, locally validated, staging validated, and production applied/verified.
 
-Migrations `20260524000100_cp_update_window_self_submit.sql` and `20260524000200_cp_update_window_staff_read.sql` are implemented and locally validated only.
+Migrations `20260524000100_cp_update_window_self_submit.sql` and `20260524000200_cp_update_window_staff_read.sql` are implemented, locally validated, staging validated, and production applied/verified.
+
+Migration `20260524000300_cp_rankings.sql` is implemented and locally validated only.
 
 Production Member Status verification:
 - Existing production memberships were backfilled to `roster_status = active`.
@@ -47,6 +49,41 @@ Operational note: Supabase CLI is currently linked to production `mzflfyxxkascrf
 Do not run `supabase db reset` or `supabase/tests/local_validation_anteiku.sql` against production.
 
 `supabase/config.toml` references missing `./seed.sql`; do not use `db push --include-seed` until that hazard is resolved. Core guild and permission seed data currently lives in migration `20260514000400_seed_core_data.sql`.
+
+## Milestone 20B CP Ranking RPCs
+
+Migration:
+- `supabase/migrations/20260524000300_cp_rankings.sql`
+
+New RPCs:
+- `get_member_cp_rankings(p_scope text default 'guild')`
+- `get_admin_cp_rankings(p_guild_id uuid default null, p_scope text default 'guild')`
+
+Member-safe ranking behavior:
+- Members can view CP rank order for `guild` or `global` scope.
+- Guild scope uses the caller's active primary guild.
+- Global scope returns rank rows across eligible approved active roster members in all active guilds.
+- Return shape is limited to `rank`, `ign`, `guild_name`, `guild_slug`, and `is_current_user`.
+- Member responses do not include `cp_value`, profile id, username, updated timestamps, snapshots, growth, audit metadata, or private CP data.
+
+Admin ranking behavior:
+- Guild scope requires existing scoped CP view authority through `private.can_view_cp(...)`.
+- Global scope is Owner-only in v1.
+- Admin return shape includes `rank`, profile/user labels, guild labels, `cp_value`, and `updated_at`.
+- Existing `get_cp_leaderboard(...)`, CP roster, CP Update Window, and CP update behavior are preserved.
+
+Ranking and roster inclusion:
+- Ranks use `row_number()` with deterministic ordering by `cp_value desc`, then IGN/profile tie-breaker.
+- Ranking rows include approved profiles with active memberships and roster status `active`, `trial`, or `pending_transfer`.
+- Ranking rows exclude `inactive`, `on_break`, `suspended`, `left`, `kicked`, pending memberships, and rejected memberships.
+
+Indexes:
+- Adds ranking support indexes on `member_cp` for guild and global CP sorting.
+
+Validation:
+- Local Supabase reset passed.
+- Local validation script passed through Docker `psql`.
+- Milestone 20B focused validation result: 14 PASS / 0 FAIL / 0 SKIP.
 
 ## Milestone 19B CP Update Window Backend
 

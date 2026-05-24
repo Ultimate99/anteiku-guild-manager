@@ -1,5 +1,42 @@
 # Testing
 
+## Milestone 20B CP Leaderboard Backend Validation
+
+Milestone 20B backend/database validation passed locally.
+
+Migration:
+- `20260524000300_cp_rankings.sql`
+
+Commands:
+- `npx.cmd supabase db reset`
+- `Get-Content supabase/tests/local_validation_anteiku.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres`
+
+Tooling note:
+- The Supabase CLI `db query --local --file` path could not execute the multi-statement validation script, so the same validation SQL was run through Docker `psql`.
+
+Focused 20B result:
+- 14 PASS / 0 FAIL / 0 SKIP.
+
+Validated:
+- Member guild/global rankings return rank order and IGN/guild labels only.
+- Member ranking response shape has no CP fields, profile id, username, timestamps, snapshots, growth, history, or audit metadata.
+- Current user row marks `is_current_user`.
+- Rank ordering is deterministic by CP descending and tie-breakers.
+- Trial and pending-transfer rows are included.
+- Inactive, on_break, suspended, left, and kicked rows are excluded.
+- Inactive active-membership users can still view rankings.
+- Hard-blocked users are denied.
+- Member cannot call admin ranking RPC.
+- Admin with scoped `view_cp` can see guild CP values.
+- Admin without scoped `view_cp` is denied.
+- Non-Owner Admin is denied global admin rankings.
+- Owner can see global admin CP values.
+- Direct `member_cp` and `cp_snapshots` reads remain denied for normal members.
+
+Not run:
+- `npm.cmd run build` was not needed because no frontend code changed.
+- Staging/production migration rollout and frontend browser validation are pending future milestones.
+
 ## Milestone 19E CP Update Window Production Smoke
 
 Milestone 19E production rollout passed after applying both CP Update Window migrations and deploying commit `6a3a181 feat: add CP update window self-submit`.

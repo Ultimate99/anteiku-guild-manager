@@ -41,6 +41,17 @@
 - `src/components/admin/AdminToolsSection.jsx`: Planned/future admin tools section.
 - `src/styles/app.css`: Plain mobile-first dark styling.
 
+## Milestone 20B CP Leaderboard Backend
+
+- `supabase/migrations/20260524000300_cp_rankings.sql`
+  - Adds member-safe CP ranking RPC `get_member_cp_rankings(p_scope text default 'guild')`.
+  - Adds admin CP ranking RPC `get_admin_cp_rankings(p_guild_id uuid default null, p_scope text default 'guild')`.
+  - Adds ranking support indexes on `member_cp`.
+  - Member RPC returns rank order only and intentionally omits CP values, profile ids, usernames, updated timestamps, snapshots, growth, history, and audit metadata.
+  - Admin guild RPC path requires scoped `view_cp`; admin global scope is Owner-only in v1.
+- `supabase/tests/local_validation_anteiku.sql`
+  - Adds Milestone 20B validation for member-safe response shape, rank ordering, roster inclusion/exclusion, current-user highlighting, admin permission checks, Owner-only global admin rankings, and direct CP table denial.
+
 ## Milestone 18B Language Pack Foundation
 
 - `src/context/LanguageContext.jsx`

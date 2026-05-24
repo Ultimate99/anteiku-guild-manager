@@ -2,7 +2,31 @@
 
 ## Current Recommendation
 
-Milestone 19E CP Update Window production rollout is complete. CP Update Window / Member CP Self-Submit is live in production after production DB migration verification, frontend deployment, and read-only Owner/member smoke validation.
+Milestone 20B CP Leaderboard backend is implemented and locally validated. The next recommended milestone is Milestone 20C: member leaderboard frontend planning/implementation, followed by a staging migration rollout and staging validation before any production deployment.
+
+Recorded Milestone 20B backend status:
+- New local migration: `20260524000300_cp_rankings.sql`.
+- Added `get_member_cp_rankings(p_scope text default 'guild')`.
+- Added `get_admin_cp_rankings(p_guild_id uuid default null, p_scope text default 'guild')`.
+- Member rankings support `guild` and `global` scopes and return rank order only.
+- Member ranking responses include only `rank`, `ign`, `guild_name`, `guild_slug`, and `is_current_user`.
+- Member ranking responses intentionally do not include CP values, profile ids, usernames, timestamps, snapshots, growth, history, or audit metadata.
+- Admin guild rankings return CP values only through existing scoped `view_cp` authority.
+- Admin global rankings are Owner-only in v1.
+- Ranking rows include approved active memberships with roster status `active`, `trial`, or `pending_transfer`.
+- Ranking rows exclude `inactive`, `on_break`, `suspended`, `left`, `kicked`, pending memberships, and rejected memberships.
+- Ranks use deterministic `row_number()` ordering by `cp_value desc`, then IGN/profile tie-breaker.
+- Direct `member_cp` and `cp_snapshots` access remains blocked for normal members.
+- Local validation passed: `npx.cmd supabase db reset`; `supabase/tests/local_validation_anteiku.sql` through Docker `psql`; Milestone 20B result 14 PASS / 0 FAIL / 0 SKIP.
+- `npm.cmd run build` was not run because 20B changed only database migration/tests/docs and no frontend code.
+
+Rollout boundary:
+- `20260524000300_cp_rankings.sql` is local-only.
+- Staging and production do not have the CP Ranking migration yet.
+- Do not deploy frontend CP leaderboard UI to a remote target until that target DB has `20260524000300_cp_rankings.sql` applied and verified.
+
+Recorded Milestone 19E production status:
+- CP Update Window / Member CP Self-Submit is live in production after production DB migration verification, frontend deployment, and read-only Owner/member smoke validation.
 
 Recorded Milestone 19B/19B.1 backend status:
 - New migration: `20260524000100_cp_update_window_self_submit.sql`.
@@ -33,11 +57,11 @@ Recorded Milestone 19C/19D/19E frontend and rollout status:
 - No controlled production CP mutation smoke was performed by design.
 
 Recommended next milestone:
-- Docs/handoff commit checkpoint for Milestone 19E.
+- Milestone 20C member leaderboard frontend planning/implementation, then Milestone 20D/20E staging migration rollout and staging validation.
 
 Later milestone options:
 - Optional controlled production CP mutation smoke with explicit approval.
-- Weekly CP Snapshot/Growth Reports planning after CP Update Window is deployed.
+- Weekly CP Snapshot/Growth Reports planning after CP Leaderboard work.
 - Member status history UI planning.
 - Announcements, invite codes, or onboarding tools.
 

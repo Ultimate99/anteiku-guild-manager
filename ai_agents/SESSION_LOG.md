@@ -1,5 +1,27 @@
 # Session Log
 
+## 2026-05-24 - Milestone 20B CP Leaderboard Backend Implemented
+
+- Implemented backend/database-only CP Leaderboard support.
+- Created migration `supabase/migrations/20260524000300_cp_rankings.sql`.
+- Added member-safe RPC `get_member_cp_rankings(p_scope text default 'guild')`.
+- Added admin/staff RPC `get_admin_cp_rankings(p_guild_id uuid default null, p_scope text default 'guild')`.
+- Added ranking support indexes on `member_cp`.
+- Member rankings return rank order only: `rank`, `ign`, `guild_name`, `guild_slug`, and `is_current_user`.
+- Member rankings do not return CP values, profile ids, usernames, updated timestamps, snapshots, growth, history, or audit metadata.
+- Admin guild rankings require existing scoped `view_cp` authority and return CP values only to authorized staff.
+- Admin global rankings are Owner-only in v1.
+- Ranking rows include approved active memberships with roster status `active`, `trial`, or `pending_transfer`.
+- Ranking rows exclude `inactive`, `on_break`, `suspended`, `left`, `kicked`, pending memberships, and rejected memberships.
+- Ranks use deterministic `row_number()` order by `cp_value desc`, then IGN/profile tie-breaker.
+- Updated local validation SQL with Milestone 20B checks.
+- Local `npx.cmd supabase db reset` passed.
+- `npx.cmd supabase db query --local --file supabase/tests/local_validation_anteiku.sql` could not run the multi-statement validation file, so the validation SQL was executed through Docker `psql`.
+- Local validation passed, including Milestone 20B result 14 PASS / 0 FAIL / 0 SKIP.
+- Existing Milestone 19B and 19B.1 CP Update Window validation still passed.
+- No frontend UI, React component, service behavior, staging, production, Vercel, deployment, or commit action was performed.
+- `20260524000300_cp_rankings.sql` remains local-only; do not deploy frontend CP leaderboard UI until each target DB has the migration applied and verified.
+
 ## 2026-05-24 - Milestone 19E CP Update Window Production Rollout Complete
 
 - Completed Milestone 19E production rollout for CP Update Window / Member CP Self-Submit.

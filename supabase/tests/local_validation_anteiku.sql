@@ -3092,4 +3092,393 @@ select count(*) filter (where status = 'PASS') as milestone19b1_total_pass,
        count(*) filter (where status = 'SKIP') as milestone19b1_total_skip
 from milestone19b1_cp_window_read_results;
 
+-- Milestone 20B: CP Leaderboard RPC validation.
+-- This validates member-safe rank-only CP rankings and admin CP rankings
+-- without direct member_cp/cp_snapshots access or member CP value leakage.
+create temp table if not exists milestone20b_cp_rankings_results (
+  section text not null,
+  test_name text not null,
+  status text not null check (status in ('PASS', 'FAIL', 'SKIP')),
+  details text
+) on commit drop;
+
+do $$
+declare
+  anteiku_id constant uuid := '00000000-0000-0000-0000-000000000101';
+  anteiku_re_id constant uuid := '00000000-0000-0000-0000-000000000102';
+  owner_id constant uuid := '10000000-0000-0000-0000-000000000001';
+  leader_id constant uuid := '10000000-0000-0000-0000-000000000002';
+  vice_id constant uuid := '10000000-0000-0000-0000-000000000003';
+  admin_cp_id constant uuid := '10000000-0000-0000-0000-000000000005';
+  member_id constant uuid := '10000000-0000-0000-0000-000000000006';
+  wrong_guild_id constant uuid := '10000000-0000-0000-0000-000000000009';
+  trial_rank_id constant uuid := '10000000-0000-0000-0000-000000000020';
+  pending_transfer_rank_id constant uuid := '10000000-0000-0000-0000-000000000021';
+  inactive_rank_id constant uuid := '10000000-0000-0000-0000-000000000022';
+  on_break_rank_id constant uuid := '10000000-0000-0000-0000-000000000023';
+  suspended_rank_id constant uuid := '10000000-0000-0000-0000-000000000024';
+  left_rank_id constant uuid := '10000000-0000-0000-0000-000000000025';
+  kicked_rank_id constant uuid := '10000000-0000-0000-0000-000000000026';
+  admin_no_view_rank_id constant uuid := '10000000-0000-0000-0000-000000000027';
+  admin_no_view_membership_id uuid;
+  member_signature text;
+  forbidden_member_columns integer;
+  guild_igns text[];
+  global_guild_count integer;
+  global_missing_label_count integer;
+  wrong_guild_global_count integer;
+  direct_count integer;
+  member_ranking record;
+  first_ranking record;
+  admin_ranking record;
+begin
+  insert into auth.users (
+    instance_id,
+    id,
+    aud,
+    role,
+    email,
+    encrypted_password,
+    email_confirmed_at,
+    raw_app_meta_data,
+    raw_user_meta_data,
+    created_at,
+    updated_at
+  )
+  values
+    ('00000000-0000-0000-0000-000000000000', trial_rank_id, 'authenticated', 'authenticated', 'trial-rank.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+    ('00000000-0000-0000-0000-000000000000', pending_transfer_rank_id, 'authenticated', 'authenticated', 'pending-transfer-rank.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+    ('00000000-0000-0000-0000-000000000000', inactive_rank_id, 'authenticated', 'authenticated', 'inactive-rank.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+    ('00000000-0000-0000-0000-000000000000', on_break_rank_id, 'authenticated', 'authenticated', 'on-break-rank.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+    ('00000000-0000-0000-0000-000000000000', suspended_rank_id, 'authenticated', 'authenticated', 'suspended-rank.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+    ('00000000-0000-0000-0000-000000000000', left_rank_id, 'authenticated', 'authenticated', 'left-rank.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+    ('00000000-0000-0000-0000-000000000000', kicked_rank_id, 'authenticated', 'authenticated', 'kicked-rank.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+    ('00000000-0000-0000-0000-000000000000', admin_no_view_rank_id, 'authenticated', 'authenticated', 'admin-no-view-rank.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now())
+  on conflict (id) do nothing;
+
+  insert into public.profiles (id, username, profile_slug, ign, approval_status, approved_at)
+  values
+    (trial_rank_id, 'trial_rank', 'trial_rank', 'Trial Rank', 'approved', now()),
+    (pending_transfer_rank_id, 'pending_transfer_rank', 'pending_transfer_rank', 'Pending Transfer Rank', 'approved', now()),
+    (inactive_rank_id, 'inactive_rank', 'inactive_rank', 'Inactive Rank', 'approved', now()),
+    (on_break_rank_id, 'on_break_rank', 'on_break_rank', 'On Break Rank', 'approved', now()),
+    (suspended_rank_id, 'suspended_rank', 'suspended_rank', 'Suspended Rank', 'approved', now()),
+    (left_rank_id, 'left_rank', 'left_rank', 'Left Rank', 'approved', now()),
+    (kicked_rank_id, 'kicked_rank', 'kicked_rank', 'Kicked Rank', 'approved', now()),
+    (admin_no_view_rank_id, 'admin_no_view_rank', 'admin_no_view_rank', 'Admin No View Rank', 'approved', now())
+  on conflict (id) do update
+  set ign = excluded.ign,
+      approval_status = excluded.approval_status,
+      approved_at = excluded.approved_at;
+
+  update public.guild_memberships
+  set membership_status = 'active',
+      roster_status = 'active',
+      is_primary = true
+  where profile_id in (owner_id, leader_id, vice_id, admin_cp_id, member_id)
+    and guild_id = anteiku_id;
+
+  update public.guild_memberships
+  set membership_status = 'active',
+      roster_status = 'active',
+      is_primary = true
+  where profile_id = wrong_guild_id
+    and guild_id = anteiku_re_id;
+
+  insert into public.guild_memberships (profile_id, guild_id, role, membership_status, roster_status, is_primary, assigned_by)
+  values
+    (trial_rank_id, anteiku_id, 'member', 'active', 'trial', true, owner_id),
+    (pending_transfer_rank_id, anteiku_id, 'member', 'active', 'pending_transfer', true, owner_id),
+    (inactive_rank_id, anteiku_id, 'member', 'active', 'inactive', true, owner_id),
+    (on_break_rank_id, anteiku_id, 'member', 'active', 'on_break', true, owner_id),
+    (suspended_rank_id, anteiku_id, 'member', 'suspended', 'suspended', true, owner_id),
+    (left_rank_id, anteiku_id, 'member', 'left', 'left', false, owner_id),
+    (kicked_rank_id, anteiku_id, 'member', 'left', 'kicked', false, owner_id),
+    (admin_no_view_rank_id, anteiku_id, 'admin', 'active', 'active', true, owner_id)
+  on conflict (profile_id, guild_id) do update
+  set role = excluded.role,
+      membership_status = excluded.membership_status,
+      roster_status = excluded.roster_status,
+      is_primary = excluded.is_primary,
+      assigned_by = excluded.assigned_by;
+
+  select id into admin_no_view_membership_id
+  from public.guild_memberships
+  where profile_id = admin_no_view_rank_id
+    and guild_id = anteiku_id;
+
+  delete from public.admin_permissions
+  where membership_id = admin_no_view_membership_id
+    and permission_key in ('view_cp', 'update_cp');
+
+  insert into public.admin_permissions (membership_id, permission_key, granted_by)
+  select gm.id, 'view_cp', owner_id
+  from public.guild_memberships gm
+  where gm.profile_id = admin_cp_id
+    and gm.guild_id = anteiku_id
+  on conflict (membership_id, permission_key) do nothing;
+
+  insert into public.member_cp (profile_id, guild_id, cp_value, updated_by, updated_at)
+  values
+    (leader_id, anteiku_id, 900000, owner_id, now()),
+    (vice_id, anteiku_id, 850000, owner_id, now()),
+    (admin_cp_id, anteiku_id, 800000, owner_id, now()),
+    (trial_rank_id, anteiku_id, 760000, owner_id, now()),
+    (pending_transfer_rank_id, anteiku_id, 750000, owner_id, now()),
+    (member_id, anteiku_id, 700000, owner_id, now()),
+    (wrong_guild_id, anteiku_re_id, 650000, owner_id, now()),
+    (inactive_rank_id, anteiku_id, 990000, owner_id, now()),
+    (on_break_rank_id, anteiku_id, 980000, owner_id, now()),
+    (suspended_rank_id, anteiku_id, 970000, owner_id, now()),
+    (left_rank_id, anteiku_id, 960000, owner_id, now()),
+    (kicked_rank_id, anteiku_id, 950000, owner_id, now())
+  on conflict (profile_id) do update
+  set guild_id = excluded.guild_id,
+      cp_value = excluded.cp_value,
+      updated_by = excluded.updated_by,
+      updated_at = excluded.updated_at;
+
+  if to_regprocedure('public.get_member_cp_rankings(text)') is not null
+     and to_regprocedure('public.get_admin_cp_rankings(uuid,text)') is not null then
+    insert into milestone20b_cp_rankings_results values ('schema', 'cp_ranking_rpcs_exist', 'PASS', 'Both CP ranking RPCs exist.');
+  else
+    insert into milestone20b_cp_rankings_results values ('schema', 'cp_ranking_rpcs_exist', 'FAIL', 'One or both CP ranking RPCs are missing.');
+  end if;
+
+  select pg_get_function_result('public.get_member_cp_rankings(text)'::regprocedure)
+  into member_signature;
+
+  select count(*) into forbidden_member_columns
+  from regexp_matches(
+    lower(member_signature),
+    '(cp_value|old_cp|cp_new|growth|updated_at|updated_by|profile_id|username|snapshot|metadata)',
+    'g'
+  );
+
+  if forbidden_member_columns = 0 then
+    insert into milestone20b_cp_rankings_results values ('schema', 'member_rpc_shape_has_no_cp_fields', 'PASS', member_signature);
+  else
+    insert into milestone20b_cp_rankings_results values ('schema', 'member_rpc_shape_has_no_cp_fields', 'FAIL', member_signature);
+  end if;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    execute 'set local role authenticated';
+    select array_agg(r.ign order by r.rank) into guild_igns
+    from public.get_member_cp_rankings('guild') r;
+    execute 'reset role';
+
+    if guild_igns[1:6] = array[
+      'Leader Local',
+      'Vice Local',
+      'Admin CP',
+      'Trial Rank',
+      'Pending Transfer Rank',
+      'Member Local'
+    ]
+       and array_position(guild_igns, 'Inactive Rank') is null
+       and array_position(guild_igns, 'On Break Rank') is null
+       and array_position(guild_igns, 'Suspended Rank') is null
+       and array_position(guild_igns, 'Left Rank') is null
+       and array_position(guild_igns, 'Kicked Rank') is null then
+      insert into milestone20b_cp_rankings_results values ('rpc', 'member_guild_ranking_order_and_visibility', 'PASS', array_to_string(guild_igns, ', '));
+    else
+      insert into milestone20b_cp_rankings_results values ('rpc', 'member_guild_ranking_order_and_visibility', 'FAIL', coalesce(array_to_string(guild_igns, ', '), 'No rows.'));
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone20b_cp_rankings_results values ('rpc', 'member_guild_ranking_order_and_visibility', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    execute 'set local role authenticated';
+    select * into member_ranking
+    from public.get_member_cp_rankings('guild')
+    where is_current_user = true;
+    execute 'reset role';
+
+    if member_ranking.ign = 'Member Local'
+       and member_ranking.rank = 6
+       and member_ranking.guild_name is null
+       and member_ranking.guild_slug is null then
+      insert into milestone20b_cp_rankings_results values ('rpc', 'member_current_user_highlighted', 'PASS', row_to_json(member_ranking)::text);
+    else
+      insert into milestone20b_cp_rankings_results values ('rpc', 'member_current_user_highlighted', 'FAIL', coalesce(row_to_json(member_ranking)::text, 'No current-user row.'));
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone20b_cp_rankings_results values ('rpc', 'member_current_user_highlighted', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    execute 'set local role authenticated';
+    select count(*) into global_guild_count
+    from public.get_member_cp_rankings('global') r
+    where r.guild_name is not null
+      and r.guild_slug is not null;
+    select count(*) into global_missing_label_count
+    from public.get_member_cp_rankings('global') r
+    where r.guild_name is null
+       or r.guild_slug is null;
+    select count(*) into wrong_guild_global_count
+    from public.get_member_cp_rankings('global') r
+    where r.ign = 'Wrong Guild'
+      and r.guild_name = 'Anteiku:Re'
+      and r.guild_slug = 'anteiku-re';
+    execute 'reset role';
+
+    if global_guild_count >= 7
+       and global_missing_label_count = 0
+       and wrong_guild_global_count = 1 then
+      insert into milestone20b_cp_rankings_results values ('rpc', 'member_global_ranking_has_guild_labels_only', 'PASS', 'Global member ranking returned guild labels for all eligible rows.');
+    else
+      insert into milestone20b_cp_rankings_results values ('rpc', 'member_global_ranking_has_guild_labels_only', 'FAIL', 'Expected 7 labeled global rows, found ' || coalesce(global_guild_count::text, 'null') || '.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone20b_cp_rankings_results values ('rpc', 'member_global_ranking_has_guild_labels_only', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', inactive_rank_id::text, true);
+    execute 'set local role authenticated';
+    perform public.get_member_cp_rankings('global');
+    execute 'reset role';
+    insert into milestone20b_cp_rankings_results values ('rpc', 'inactive_can_view_rankings', 'PASS', 'Inactive active-membership user can view rank order.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone20b_cp_rankings_results values ('rpc', 'inactive_can_view_rankings', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', suspended_rank_id::text, true);
+    execute 'set local role authenticated';
+    perform public.get_member_cp_rankings('global');
+    execute 'reset role';
+    insert into milestone20b_cp_rankings_results values ('rpc', 'hard_blocked_user_denied_rankings', 'FAIL', 'Suspended user read member rankings.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone20b_cp_rankings_results values ('rpc', 'hard_blocked_user_denied_rankings', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    execute 'set local role authenticated';
+    perform public.get_admin_cp_rankings(anteiku_id, 'guild');
+    execute 'reset role';
+    insert into milestone20b_cp_rankings_results values ('rpc', 'member_cannot_call_admin_rankings', 'FAIL', 'Member called admin CP rankings.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone20b_cp_rankings_results values ('rpc', 'member_cannot_call_admin_rankings', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_cp_id::text, true);
+    execute 'set local role authenticated';
+    select * into admin_ranking
+    from public.get_admin_cp_rankings(anteiku_id, 'guild')
+    where rank = 1;
+    execute 'reset role';
+
+    if admin_ranking.profile_id = leader_id
+       and admin_ranking.cp_value = 900000
+       and admin_ranking.guild_id = anteiku_id
+       and admin_ranking.updated_at is not null then
+      insert into milestone20b_cp_rankings_results values ('rpc', 'admin_with_view_cp_reads_guild_values', 'PASS', row_to_json(admin_ranking)::text);
+    else
+      insert into milestone20b_cp_rankings_results values ('rpc', 'admin_with_view_cp_reads_guild_values', 'FAIL', coalesce(row_to_json(admin_ranking)::text, 'No admin ranking row.'));
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone20b_cp_rankings_results values ('rpc', 'admin_with_view_cp_reads_guild_values', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_no_view_rank_id::text, true);
+    execute 'set local role authenticated';
+    perform public.get_admin_cp_rankings(anteiku_id, 'guild');
+    execute 'reset role';
+    insert into milestone20b_cp_rankings_results values ('rpc', 'admin_without_view_cp_denied', 'FAIL', 'Admin without view_cp read guild CP rankings.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone20b_cp_rankings_results values ('rpc', 'admin_without_view_cp_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_cp_id::text, true);
+    execute 'set local role authenticated';
+    perform public.get_admin_cp_rankings(null, 'global');
+    execute 'reset role';
+    insert into milestone20b_cp_rankings_results values ('rpc', 'non_owner_admin_global_denied', 'FAIL', 'Non-owner Admin read global CP rankings.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone20b_cp_rankings_results values ('rpc', 'non_owner_admin_global_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    execute 'set local role authenticated';
+    select * into first_ranking
+    from public.get_admin_cp_rankings(null, 'global')
+    where rank = 1;
+    execute 'reset role';
+
+    if first_ranking.profile_id = leader_id
+       and first_ranking.cp_value = 900000 then
+      insert into milestone20b_cp_rankings_results values ('rpc', 'owner_reads_global_admin_values', 'PASS', row_to_json(first_ranking)::text);
+    else
+      insert into milestone20b_cp_rankings_results values ('rpc', 'owner_reads_global_admin_values', 'FAIL', coalesce(row_to_json(first_ranking)::text, 'No owner global ranking row.'));
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone20b_cp_rankings_results values ('rpc', 'owner_reads_global_admin_values', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    execute 'set local role authenticated';
+    select count(*) into direct_count from public.member_cp;
+    execute 'reset role';
+
+    if direct_count = 0 then
+      insert into milestone20b_cp_rankings_results values ('rls', 'member_direct_member_cp_still_denied', 'PASS', 'Direct member_cp read returned no rows.');
+    else
+      insert into milestone20b_cp_rankings_results values ('rls', 'member_direct_member_cp_still_denied', 'FAIL', 'Direct member_cp read returned rows.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone20b_cp_rankings_results values ('rls', 'member_direct_member_cp_still_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    execute 'set local role authenticated';
+    select count(*) into direct_count from public.cp_snapshots;
+    execute 'reset role';
+
+    if direct_count = 0 then
+      insert into milestone20b_cp_rankings_results values ('rls', 'member_direct_cp_snapshots_still_denied', 'PASS', 'Direct cp_snapshots read returned no rows.');
+    else
+      insert into milestone20b_cp_rankings_results values ('rls', 'member_direct_cp_snapshots_still_denied', 'FAIL', 'Direct cp_snapshots read returned rows.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone20b_cp_rankings_results values ('rls', 'member_direct_cp_snapshots_still_denied', 'PASS', sqlerrm);
+  end;
+end;
+$$;
+
+select section, test_name, status, details
+from milestone20b_cp_rankings_results
+order by section, test_name;
+
+select count(*) filter (where status = 'PASS') as milestone20b_total_pass,
+       count(*) filter (where status = 'FAIL') as milestone20b_total_fail,
+       count(*) filter (where status = 'SKIP') as milestone20b_total_skip
+from milestone20b_cp_rankings_results;
+
 rollback;

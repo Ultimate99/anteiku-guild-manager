@@ -1,8 +1,46 @@
 # Supabase RLS
 
+## Milestone 20B CP Ranking RPCs
+
+Milestone 20B is implemented and locally validated only. Staging and production do not have `20260524000300_cp_rankings.sql` yet.
+
+New RPCs:
+- `get_member_cp_rankings(p_scope text default 'guild')`
+- `get_admin_cp_rankings(p_guild_id uuid default null, p_scope text default 'guild')`
+
+Member-safe RPC behavior:
+- `get_member_cp_rankings(...)` uses `auth.uid()` and requires an approved profile with active primary membership.
+- Members can request only `guild` or `global` rank scopes.
+- Guild scope uses the caller's active primary guild.
+- Global scope returns safe rank order across eligible approved active roster members in all active guilds.
+- Return shape is limited to `rank`, `ign`, `guild_name`, `guild_slug`, and `is_current_user`.
+- The member RPC does not return CP values, profile ids, usernames, updated timestamps, snapshots, growth, audit metadata, or other private CP data.
+
+Admin RPC behavior:
+- `get_admin_cp_rankings(...)` uses `auth.uid()`.
+- Guild scope requires existing scoped `private.can_view_cp(actor_id, guild_id)` authority.
+- Global scope is Owner-only in v1.
+- Admin response can include CP values only after permission checks pass.
+- Normal members and Admins without scoped `view_cp` are denied.
+
+Roster/ranking rules:
+- Ranking rows include approved active memberships with roster status `active`, `trial`, or `pending_transfer`.
+- Ranking rows exclude `inactive`, `on_break`, `suspended`, `left`, and `kicked`.
+- Ranks use deterministic `row_number()` order by `cp_value desc`, then IGN/profile tie-breaker.
+
+Direct table access:
+- No direct `member_cp` or `cp_snapshots` grants/policies were broadened.
+- Members still cannot directly read CP tables.
+- Existing CP Update Window and admin CP roster/update RPC behavior is preserved.
+
+Validation:
+- Local Supabase reset passed.
+- Local validation script passed through Docker `psql`.
+- Milestone 20B focused validation result: 14 PASS / 0 FAIL / 0 SKIP.
+
 ## Milestone 19B / 19B.1 CP Update Window RLS/RPC
 
-Milestone 19B and 19B.1 are implemented and locally validated only. Staging and production do not have these migrations yet.
+Milestone 19B and 19B.1 are implemented, locally validated, staging validated, and production applied/verified as of Milestone 19E.
 
 New table:
 - `public.cp_update_windows`
@@ -36,7 +74,7 @@ Validation:
 
 ## Production Deployment Reminder
 
-Production is live, but Milestone 19B/19B.1 has not been applied to staging or production. Treat `20260524000100_cp_update_window_self_submit.sql` and `20260524000200_cp_update_window_staff_read.sql` as local-only until a separate rollout gate is approved.
+Production is live through Milestone 19E. Treat `20260524000300_cp_rankings.sql` as local-only until a separate staging/production rollout gate is approved.
 
 Future production setup must:
 - Apply migrations in documented timestamp order.

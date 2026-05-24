@@ -1,5 +1,29 @@
 # Role Permissions
 
+## Milestone 20B CP Leaderboard Permissions
+
+Member-safe CP rankings:
+- Approved users with active primary membership can call `get_member_cp_rankings(...)`.
+- `guild` scope uses the caller's active primary guild.
+- `global` scope returns safe rank order across eligible active roster members.
+- Member ranking responses never include CP values.
+- Normal Members cannot call the admin CP ranking RPC.
+
+Admin CP rankings:
+- Guild scope in `get_admin_cp_rankings(...)` requires scoped CP view authority.
+- Owner can view CP rankings globally.
+- Leader/Vice can view guild CP rankings in their guild scope.
+- Admin can view guild CP rankings only with explicit scoped `view_cp`.
+- Admin global CP rankings are Owner-only in v1.
+- Admin without scoped `view_cp` is denied.
+
+Roster rows:
+- Included in ranking rows: `active`, `trial`, `pending_transfer`.
+- Excluded from ranking rows: `inactive`, `on_break`, `suspended`, `left`, `kicked`.
+
+Important boundary:
+- CP ranking permission does not grant members CP roster, CP values, CP snapshots, CP history, or other-member CP metadata.
+
 ## Milestone 19B CP Update Window Permissions
 
 Milestone 19B reuses the existing CP update authority model for CP Update Window management.
