@@ -68,18 +68,29 @@ export async function loadCurrentCpRoster({ guildId }) {
   return data ?? [];
 }
 
-export async function loadCpLeaderboard({ guildId }) {
+export async function loadAdminCpRankings({ guildId = null, scope = 'guild' }) {
+  const normalizedScope = scope === 'global' ? 'global' : 'guild';
   const client = requireSupabase();
-  const { data, error } = await client.rpc('get_cp_leaderboard', {
-    p_guild_id: guildId,
-    p_snapshot_week_start: null,
+  const { data, error } = await client.rpc('get_admin_cp_rankings', {
+    p_guild_id: normalizedScope === 'guild' ? guildId : null,
+    p_scope: normalizedScope,
   });
 
   if (error) {
     throw error;
   }
 
-  return data ?? [];
+  return (data ?? []).map((row) => ({
+    rank: Number(row.rank),
+    profileId: row.profile_id,
+    username: row.username,
+    ign: row.ign,
+    guildId: row.guild_id,
+    guildName: row.guild_name,
+    guildSlug: row.guild_slug,
+    cpValue: row.cp_value,
+    updatedAt: row.updated_at,
+  }));
 }
 
 export async function updateMemberCp({ profileId, cpValue }) {

@@ -1,5 +1,36 @@
 # Project State
 
+## Milestone 20D AdminPanel CP Leaderboard Upgrade Implemented
+
+Milestone 20D is implemented locally as a frontend-only AdminPanel CP leaderboard upgrade.
+
+Implemented locally:
+- Updated `src/services/adminCpService.js` with normalized `get_admin_cp_rankings` rows for AdminPanel use.
+- Updated `src/pages/AdminPanel.jsx` to load admin CP rankings through `get_admin_cp_rankings`.
+- Updated `src/components/admin/AdminCpSection.jsx` with Guild / Global leaderboard tabs.
+- Added compact decorated admin rank rows showing rank, IGN, username, guild, CP value, and last updated.
+- Added Owner-only frontend visibility for the Global admin leaderboard tab; backend RPC authorization remains the authority.
+- Added EN/FR/DE i18n labels for admin leaderboard scope, rank, guild, last-updated, empty, and permission/error states.
+- Added compact mobile styling for admin CP ranking rows.
+
+Security/source validation:
+- Admin CP leaderboard now calls `get_admin_cp_rankings` and no longer uses the older `get_cp_leaderboard` path.
+- Member-facing Leaderboard remains unchanged and still calls only `get_member_cp_rankings`.
+- No direct frontend `member_cp`, `cp_snapshots`, or `cp_update_windows` table calls were added.
+- Existing AdminPanel CP roster/update/window controls were preserved.
+- Existing CP Update Window, member CP Ranking page, GvG, audit, role, permission, and member-status behavior was not changed.
+
+Validation:
+- `npm.cmd run build` passed.
+- Static/source validation passed for protected CP paths.
+- Authenticated browser validation is pending because staging/production do not yet have `20260524000300_cp_rankings.sql`.
+
+Rollout boundary:
+- Do not deploy this frontend to any remote environment until that environment has `20260524000300_cp_rankings.sql` applied and verified.
+
+Recommended next step:
+- Milestone 20E staging migration rollout and browser validation for 20B/20C/20D.
+
 ## Milestone 20C Member CP Leaderboard Frontend Implemented
 
 Milestone 20C is implemented locally as a frontend-only member-facing CP Ranking page.

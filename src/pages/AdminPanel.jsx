@@ -33,8 +33,8 @@ import {
   canViewCp,
   formatCpValue,
   isValidCpInput,
+  loadAdminCpRankings,
   loadCpGuildOptions,
-  loadCpLeaderboard,
   loadCurrentCpRoster,
   updateMemberCp,
 } from '../services/adminCpService.js';
@@ -411,6 +411,8 @@ export function AdminPanel() {
   const [selectedCpGuildId, setSelectedCpGuildId] = useState('');
   const [cpRoster, setCpRoster] = useState([]);
   const [cpLeaderboard, setCpLeaderboard] = useState([]);
+  const [cpLeaderboardScope, setCpLeaderboardScope] = useState('guild');
+  const [cpLeaderboardError, setCpLeaderboardError] = useState('');
   const [cpDrafts, setCpDrafts] = useState({});
   const [cpSearch, setCpSearch] = useState('');
   const [cpLoading, setCpLoading] = useState(false);
@@ -437,6 +439,7 @@ export function AdminPanel() {
   const canManageRosterStatuses = canUpdateMemberRosterStatus({ membership, permissionKeys });
   const canViewCpSection = canViewCp({ membership, permissionKeys });
   const canUpdateCpValues = canUpdateCp({ membership, permissionKeys });
+  const canViewGlobalCpLeaderboard = membership?.role === 'owner';
   const canViewAuditSection = canViewAuditLogs({ membership, permissionKeys });
   const allowedMemberRoles = useMemo(
     () => getAllowedMemberRoleOptions({ membership, permissionKeys }),
@@ -689,6 +692,8 @@ export function AdminPanel() {
     setSelectedCpGuildId('');
     setCpRoster([]);
     setCpLeaderboard([]);
+    setCpLeaderboardScope('guild');
+    setCpLeaderboardError('');
     setCpDrafts({});
     setCpWindow(null);
     setCpWindowNote('');
@@ -805,23 +810,29 @@ export function AdminPanel() {
     }
   }
 
-  async function loadCpDataForGuild(guildId) {
+  async function loadCpDataForGuild(guildId, { leaderboardScope = cpLeaderboardScope } = {}) {
     if (!guildId) {
       setCpRoster([]);
       setCpLeaderboard([]);
+      setCpLeaderboardScope('guild');
+      setCpLeaderboardError('');
       setCpDrafts({});
       setCpWindow(null);
       return;
     }
 
+    const nextLeaderboardScope =
+      leaderboardScope === 'global' && canViewGlobalCpLeaderboard ? 'global' : 'guild';
     const [nextCpRoster, nextCpLeaderboard, nextCpWindow] = await Promise.all([
       loadCurrentCpRoster({ guildId }),
-      loadCpLeaderboard({ guildId }),
+      loadAdminCpRankings({ guildId, scope: nextLeaderboardScope }),
       loadCpUpdateWindowForGuild({ guildId }),
     ]);
 
     setCpRoster(nextCpRoster);
     setCpLeaderboard(nextCpLeaderboard);
+    setCpLeaderboardScope(nextLeaderboardScope);
+    setCpLeaderboardError('');
     setCpDrafts(buildCpDrafts(nextCpRoster));
     setCpWindow(nextCpWindow);
   }
@@ -832,6 +843,8 @@ export function AdminPanel() {
       setSelectedCpGuildId('');
       setCpRoster([]);
       setCpLeaderboard([]);
+      setCpLeaderboardScope('guild');
+      setCpLeaderboardError('');
       setCpDrafts({});
       setCpWindow(null);
       markTabLoaded('cp');
@@ -863,6 +876,7 @@ export function AdminPanel() {
       setCpGuildOptions([]);
       setCpRoster([]);
       setCpLeaderboard([]);
+      setCpLeaderboardError('');
       setCpDrafts({});
       setCpWindow(null);
       setAdminError(cpError.message);
@@ -1298,9 +1312,34 @@ export function AdminPanel() {
     } catch (cpError) {
       setCpRoster([]);
       setCpLeaderboard([]);
+      setCpLeaderboardError('');
       setCpDrafts({});
       setCpWindow(null);
       setAdminError(cpError.message);
+    } finally {
+      setCpLoading(false);
+    }
+  }
+
+  async function handleSelectCpLeaderboardScope(scope) {
+    const nextScope = scope === 'global' && canViewGlobalCpLeaderboard ? 'global' : 'guild';
+
+    if (scope === 'global' && !canViewGlobalCpLeaderboard) {
+      setCpLeaderboardError(t('admin.cp.globalOwnerOnly'));
+      return;
+    }
+
+    setCpLeaderboardScope(nextScope);
+    setCpLoading(true);
+    setAdminError('');
+    setActionMessage('');
+
+    try {
+      await loadCpDataForGuild(selectedCpGuildId, { leaderboardScope: nextScope });
+      markTabLoaded('cp');
+    } catch (cpError) {
+      setCpLeaderboard([]);
+      setCpLeaderboardError(cpError.message || t('admin.cp.loadRankingsError'));
     } finally {
       setCpLoading(false);
     }
@@ -1619,14 +1658,18 @@ export function AdminPanel() {
           selectedCpGuild={selectedCpGuild}
           filteredCpRoster={filteredCpRoster}
           cpLeaderboard={cpLeaderboard}
+          cpLeaderboardScope={cpLeaderboardScope}
+          cpLeaderboardError={cpLeaderboardError}
           cpDrafts={cpDrafts}
           cpWindow={cpWindow}
           cpWindowNote={cpWindowNote}
           activeAction={activeAction}
           canUpdateCpValues={canUpdateCpValues}
+          canViewGlobalCpLeaderboard={canViewGlobalCpLeaderboard}
           onRefresh={() => loadTabData('cp', { force: true })}
           onSearchChange={setCpSearch}
           onSelectedGuildChange={handleSelectCpGuild}
+          onLeaderboardScopeChange={handleSelectCpLeaderboardScope}
           onUpdateCpDraft={updateCpDraft}
           onResetCpDraft={resetCpDraft}
           onUpdateCp={handleUpdateCp}

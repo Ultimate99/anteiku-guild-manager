@@ -1,5 +1,23 @@
 # Session Log
 
+## 2026-05-24 - Milestone 20D AdminPanel CP Leaderboard Upgrade Implemented
+
+- Implemented frontend-only AdminPanel CP leaderboard upgrade.
+- Updated AdminPanel CP loading to use `get_admin_cp_rankings`.
+- Added Guild / Global tabs to the AdminPanel CP leaderboard.
+- Guild tab uses the selected CP guild scope.
+- Global tab is visible only to Owner in the frontend; backend RPC authorization remains the authority.
+- Added compact decorated admin rank rows with rank, IGN, username, guild, CP value, and last updated.
+- Added top-rank, Elite 5, and Top 10 row decoration for admin rows.
+- Added EN/FR/DE i18n labels for admin leaderboard scope, rank, guild, last updated, empty, and permission/error states.
+- Preserved existing CP roster, manual CP update, and CP Update Window controls.
+- Preserved member-facing CP Ranking page behavior.
+- `npm.cmd run build` passed.
+- Static source checks found no direct frontend `member_cp`, `cp_snapshots`, or `cp_update_windows` table calls.
+- Static source checks confirmed the member leaderboard still uses only `get_member_cp_rankings`.
+- Authenticated AdminPanel CP leaderboard browser validation remains pending until staging receives `20260524000300_cp_rankings.sql`.
+- No SQL migrations, Supabase/RLS/RPC logic, CP Update Window behavior, member CP Ranking behavior, GvG, audit, role, permission, member-status behavior, production, staging, Vercel, deployment, or commit action was performed.
+
 ## 2026-05-24 - Milestone 20C Member CP Leaderboard Frontend Implemented
 
 - Implemented frontend-only member-facing CP Ranking page.

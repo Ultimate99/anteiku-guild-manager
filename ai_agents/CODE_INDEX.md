@@ -70,6 +70,24 @@
 - `src/styles/app.css`
   - Adds compact leaderboard tabs, rows, rank markers, current-user highlight, and top-rank/Elite 5/Top 10 decoration.
 
+## Milestone 20D AdminPanel CP Leaderboard Upgrade
+
+- `src/services/adminCpService.js`
+  - Adds normalized `loadAdminCpRankings({ guildId, scope })` mapping for `get_admin_cp_rankings`.
+  - Keeps existing CP roster and manual CP update wrappers unchanged.
+- `src/pages/AdminPanel.jsx`
+  - Loads AdminPanel CP leaderboard data through `get_admin_cp_rankings`.
+  - Tracks Guild/Global leaderboard scope and clean leaderboard errors.
+  - Keeps Global admin leaderboard frontend visibility Owner-only; backend RPC authorization remains authoritative.
+- `src/components/admin/AdminCpSection.jsx`
+  - Adds Guild / Global tabs in the AdminPanel CP leaderboard section.
+  - Renders compact decorated rows with rank, IGN, username, guild, CP value, and last updated.
+  - Preserves CP roster, manual CP update, and CP Update Window controls.
+- `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`
+  - Add admin CP leaderboard scope, rank, guild, last-updated, empty, and permission/error labels.
+- `src/styles/app.css`
+  - Adds compact AdminPanel CP ranking layout and mobile wrapping.
+
 ## Milestone 18B Language Pack Foundation
 
 - `src/context/LanguageContext.jsx`

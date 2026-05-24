@@ -1,5 +1,24 @@
 # Testing
 
+## Milestone 20D AdminPanel CP Leaderboard Frontend Validation
+
+Milestone 20D frontend implementation passed build and source/security-path validation.
+
+Build:
+- `npm.cmd run build` passed.
+
+Static/source checks:
+- AdminPanel CP leaderboard uses `get_admin_cp_rankings`.
+- Member leaderboard service still uses only `get_member_cp_rankings`.
+- Member leaderboard does not call `get_admin_cp_rankings`, `get_cp_leaderboard`, or `get_current_cp_roster`.
+- No direct frontend `.from('member_cp')`, `.from('cp_snapshots')`, or `.from('cp_update_windows')` calls were added.
+- Existing AdminPanel CP roster, manual CP update, and CP Update Window behavior was not changed.
+- Existing CP Update Window, member CP Ranking, GvG, audit, role, permission, and member-status behavior was not changed.
+
+Validation boundary:
+- Authenticated browser validation is pending until staging receives `20260524000300_cp_rankings.sql`.
+- Do not deploy this frontend to staging or production until that target DB has the CP Ranking migration applied and verified.
+
 ## Milestone 20C Member CP Leaderboard Frontend Validation
 
 Milestone 20C frontend implementation passed build and source/security-path validation.

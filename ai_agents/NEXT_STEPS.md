@@ -2,7 +2,24 @@
 
 ## Current Recommendation
 
-Milestone 20C member-facing CP Leaderboard frontend is implemented and build/source validated. The next recommended milestone is Milestone 20D AdminPanel CP leaderboard upgrade if the full leaderboard feature should be finished before staging, or Milestone 20E staging migration rollout/validation if the member-only slice should be validated first.
+Milestone 20D AdminPanel CP Leaderboard upgrade is implemented and build/source validated. The next recommended milestone is Milestone 20E staging migration rollout and browser validation for the complete CP Leaderboard package.
+
+Recorded Milestone 20D frontend status:
+- AdminPanel CP leaderboard now uses `get_admin_cp_rankings`.
+- Added Guild / Global leaderboard tabs inside the AdminPanel CP section.
+- Guild tab uses the selected CP guild scope and shows CP values through the permission-checked admin RPC.
+- Global tab is shown only for Owner in the frontend; backend Owner-only authorization remains the real gate.
+- Admin leaderboard rows show rank, IGN, username, guild, CP value, and last updated.
+- Added top-rank, Elite 5, and Top 10 rank decoration to admin rows.
+- Added EN/FR/DE i18n labels and compact mobile styling.
+- Existing CP roster, manual CP update, and CP Update Window controls were preserved.
+- Member-facing CP Ranking page behavior was not changed.
+- `npm.cmd run build` passed.
+- Static checks found no direct `member_cp`, `cp_snapshots`, or `cp_update_windows` table calls.
+
+Rollout boundary:
+- Staging and production do not have `20260524000300_cp_rankings.sql`.
+- Do not deploy the 20C/20D frontend to a remote target until that target DB has the 20B CP Ranking migration applied and verified.
 
 Recorded Milestone 20C frontend status:
 - Added `src/services/cpLeaderboardService.js`.
