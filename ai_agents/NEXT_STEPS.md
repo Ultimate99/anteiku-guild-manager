@@ -2,7 +2,16 @@
 
 ## Current Recommendation
 
-Owner Cosmetics grant tool is live in the production bundle.
+Frontend Command Center Polish is implemented, build-passed, and manually browser-validated.
+
+Recommended next options:
+- Commit the frontend/docs polish when approved.
+- Plan a normal production rollout for the Command Center polish if the user wants it live.
+- Optional next frontend milestone: polish profile/member identity surfaces further, or add production rollout checkpoint docs after deploy.
+
+## Previous Recommendation - Owner Cosmetics Grant Tool
+
+Owner Cosmetics grant tool is complete in production.
 
 Recorded status:
 - Commit `d97fc9f feat: add owner cosmetics grant tool` was pushed to `main`.
@@ -12,14 +21,13 @@ Recorded status:
 - Free/default and auto-unlocked types (`free`, `rank`, `event`, `gvg`, `founder`) are excluded.
 - Local browser validation passed for Owner Tools visibility, dropdown rendering, required-field validation, non-owner Admin hidden state, and Member AdminPanel denial.
 - Production app load smoke passed with no captured console errors.
-- Authenticated production Owner/non-owner smoke is pending because the browser was signed out.
+- Authenticated production smoke passed for Owner visibility, dropdown filtering, empty username/profile slug validation, empty cosmetic validation, non-owner Admin hidden state, Member AdminPanel denial, no console errors, no unexpected network calls, and no CP/GvG/audit/ranking/member-status regression.
 - Grant mutation smoke was not performed; no production cosmetic grants were created.
 
 Recommended next options:
-- Have the user sign in as production Owner and verify AdminPanel -> Tools -> Owner Cosmetics renders.
-- Verify the dropdown contains only manual/admin-grant cosmetics and no free/default cosmetics.
-- If explicitly approved, perform one controlled production grant to the controlled test member and verify the member can equip it.
-- Otherwise keep grant mutation untested in production and rely on staging/backend validation.
+- No immediate Owner Cosmetics follow-up is required.
+- If explicitly approved later, perform one controlled production grant to the controlled test member and verify the member can equip it.
+- Otherwise keep production grant mutation untested and rely on staging/backend validation for grant/equip mutation behavior.
 
 ## Previous Recommendation - Cosmetics Frame Unlock Hotfix
 

@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-05-25 - Frontend Command Center Polish
+
+- Added a frontend-only Member Dashboard polish pass with a compact guild command identity panel, safe status badges, Profile/GvG quick action cards, and a guild status card.
+- Added an AdminPanel Overview command center tab with permission-aware shortcut cards to existing admin sections.
+- Overview cards switch tabs only and do not introduce new backend calls or eager CP/Audit/GvG loading.
+- Polished AppShell/AppNav mobile header and bottom navigation active states.
+- Improved compact empty/loading/error state styling.
+- Added EN/FR/DE labels for the new Dashboard and Admin Overview copy.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Manual browser validation passed for Member Dashboard, Profile/GvG quick actions, Member AdminPanel denial, AdminPanel Overview shortcut switching, CP/Audit/GvG lazy loading, Owner/non-owner Admin shortcut visibility, existing AdminPanel tabs, mobile nav/header, EN/FR/DE copy, console checks, and network checks.
+- No SQL migrations, Supabase/RLS/RPC logic, package/dependency files, service behavior, CP/GvG/audit/ranking/role/permission/member-status behavior, cosmetics backend behavior, deployment config, or production data changed.
+
 ## 2026-05-25 - Owner Cosmetics Grant Tool
 
 - Added AdminPanel -> Tools -> Owner Cosmetics.
@@ -7,14 +19,16 @@
 - Non-owner Admins do not see Owner Cosmetics; Members still have no AdminPanel access.
 - Added username/profile slug input, cosmetic dropdown, optional reason input, required-field validation, and grant action.
 - Cosmetic dropdown uses existing `get_my_cosmetics()` data.
+- Owner Cosmetics dropdown filters by backend `unlock_type` and shows only `manual` / `admin_grant` cosmetics; free/default and auto-unlocked cosmetics are excluded.
 - Grant action uses only existing `admin_grant_cosmetic_by_slug(...)`.
 - Added EN/FR/DE `ownerCosmetics` labels.
 - Added compact dark/crimson Tools styling.
 - `npm.cmd run build` passed.
 - Local browser validation passed for Owner visibility/form validation, non-owner Admin hidden state, and Member AdminPanel denial.
 - Commit `d97fc9f feat: add owner cosmetics grant tool` was pushed and Vercel deployed the production bundle.
+- Commit `24287cb fix: hide free cosmetics from owner grant dropdown` was pushed and Vercel served the dropdown hotfix.
 - Production app load smoke passed with no captured console errors.
-- Authenticated production Owner/non-owner smoke remains pending because the browser was signed out.
+- Authenticated production smoke passed for Owner visibility, dropdown filtering, empty-field validation, non-owner Admin hidden state, Member AdminPanel denial, no console errors, no unexpected network calls, and no CP/GvG/audit/ranking/member-status regression.
 - No grant mutation smoke was performed; no production cosmetic grants were created.
 - No SQL migrations, Supabase/RLS/RPC changes, Vercel env changes, uploads, Supabase Storage, arbitrary URLs, or CP/GvG/audit/ranking/role/permission/member-status behavior changes were included.
 

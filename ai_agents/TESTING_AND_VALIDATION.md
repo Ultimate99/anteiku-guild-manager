@@ -1,8 +1,41 @@
 # Testing And Validation
 
+## Frontend Command Center Polish Validation
+
+Frontend-only Command Center polish build and manual browser validation passed.
+
+Command:
+- `npm.cmd run build`
+
+Result:
+- Build passed with the existing Vite chunk-size warning only.
+
+Source/scope result:
+- No SQL migrations, Supabase/RLS/RPC logic, package/dependency files, deployment config, or backend service behavior were changed.
+- No new Supabase/RPC/table calls were added.
+- AdminPanel Overview shortcut cards switch to existing allowed tabs only.
+- Member Dashboard shows safe username/IGN/guild/role/status information and no CP values.
+- CP/GvG/audit/ranking/role/permission/member-status and cosmetics backend behavior were unchanged.
+
+Manual validation:
+- Member Dashboard loaded and showed no CP values.
+- Profile quick action opened Profile.
+- GvG quick action opened GvG.
+- Member had no AdminPanel access.
+- AdminPanel opened on Overview.
+- Overview cards switched to existing allowed tabs.
+- CP/Audit/GvG did not load until their tabs were opened.
+- Owner saw Owner Tools shortcut.
+- Non-owner Admin did not see Owner Tools shortcut.
+- Existing AdminPanel tabs still worked.
+- Mobile nav/header were readable and tappable.
+- EN/FR/DE copy rendered without raw keys.
+- No console errors or unexpected network calls were found.
+- No backend/RPC/SQL/package/security behavior changed.
+
 ## Owner Cosmetics Grant Tool Validation
 
-Owner Cosmetics frontend validation passed locally and production app-load smoke passed after deployment.
+Owner Cosmetics frontend validation passed locally, production app-load smoke passed after deployment, and authenticated production smoke passed after the dropdown hotfix.
 
 Commands:
 - `npm.cmd run build`
@@ -26,11 +59,20 @@ Results:
   - Owner Cosmetics section was not present.
 - Production deployment:
   - Commit `d97fc9f feat: add owner cosmetics grant tool` was pushed.
+  - Commit `24287cb fix: hide free cosmetics from owner grant dropdown` was pushed.
   - Vercel production bundle deployed.
   - Production app loaded with no captured console errors.
+- Authenticated production smoke:
+  - Owner saw AdminPanel -> Tools -> Owner Cosmetics.
+  - Dropdown showed only `manual` / `admin_grant` cosmetics.
+  - Free/default cosmetics were absent.
+  - Empty username/profile slug validation worked.
+  - Empty cosmetic validation worked.
+  - Non-owner Admin did not see Owner Cosmetics.
+  - Member had no AdminPanel access.
+  - No console errors, unexpected network calls, or CP/GvG/audit/ranking/member-status regressions were found.
 
 Not tested:
-- Production authenticated Owner/non-owner UI smoke is pending because the browser was signed out and no passwords were requested.
 - Grant mutation smoke was not performed by design; no production cosmetic grant was created.
 
 Security/source result:

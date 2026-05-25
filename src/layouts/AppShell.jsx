@@ -7,6 +7,7 @@ export function AppShell({ activeItem, activePage, children, navigationItems, on
   const { accessState, signOut } = useAuth();
   const { language, languageOptions, setLanguage, t } = useLanguage();
   const showShellSignOut = accessState === 'approved';
+  const pageContent = React.isValidElement(children) ? React.cloneElement(children, { onNavigate }) : children;
 
   return (
     <div className="app-shell">
@@ -42,7 +43,7 @@ export function AppShell({ activeItem, activePage, children, navigationItems, on
         <h2 id="page-title">{activeItem.label}</h2>
       </section>
 
-      <main className="page-content">{children}</main>
+      <main className="page-content">{pageContent}</main>
 
       <AppNav activePage={activePage} items={navigationItems} onNavigate={onNavigate} />
     </div>

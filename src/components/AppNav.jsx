@@ -13,7 +13,9 @@ export function AppNav({ activePage, items, onNavigate }) {
           className="nav-button"
           type="button"
           data-active={activePage === item.id}
+          data-page={item.id}
           onClick={() => onNavigate(item.id)}
+          aria-current={activePage === item.id ? 'page' : undefined}
         >
           <span>{item.label}</span>
         </button>

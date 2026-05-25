@@ -1,6 +1,28 @@
 # Project State
 
-## Owner Cosmetics Grant Tool Live
+## Frontend Command Center Polish Validated
+
+Frontend-only Command Center polish is implemented and manually validated locally.
+
+Implemented:
+- Member Dashboard now presents a compact guild command identity panel, safe status badges, quick action cards for Profile/GvG, and a guild status card.
+- AdminPanel now opens on an Overview command center tab with permission-aware shortcut cards to existing sections.
+- Admin Overview shortcuts switch to existing tabs only; they do not fetch sensitive tab data themselves.
+- Mobile/header/nav styling was tightened with a sticky header, clearer bottom-nav active state, crimson glow/accent, and Admin active styling.
+- Existing empty/loading/error panels received stronger compact dark/crimson state styling.
+- EN/FR/DE text keys were added for the new Dashboard and Admin Overview copy.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Manual browser validation passed for Member Dashboard, Profile/GvG quick actions, Member AdminPanel denial, AdminPanel Overview, Overview shortcut switching, CP/Audit/GvG lazy loading, Owner Tools shortcut visibility, non-owner Admin hidden Owner Tools shortcut, existing AdminPanel tabs, mobile nav/header, EN/FR/DE copy, console checks, and network checks.
+
+Security/scope:
+- Frontend polish only.
+- No SQL migrations, Supabase/RLS/RPC logic, package/dependency, service behavior, Vercel/deployment, production data, CP/GvG/audit/ranking/role/permission/member-status, or cosmetics backend behavior changes.
+- No new Supabase/RPC/table calls were added.
+- Member Dashboard still shows no CP values.
+
+## Owner Cosmetics Grant Tool Complete
 
 AdminPanel -> Tools now includes an Owner-only Owner Cosmetics grant tool.
 
@@ -22,7 +44,8 @@ Validation:
 - Commit `d97fc9f feat: add owner cosmetics grant tool` was pushed to `main`.
 - Commit `24287cb fix: hide free cosmetics from owner grant dropdown` was pushed to `main`.
 - Vercel production bundle deployed and production app load smoke passed with no captured console errors.
-- Authenticated production Owner/non-owner smoke remains pending because the production browser session was signed out and no passwords were requested.
+- Authenticated production smoke passed: Owner sees AdminPanel -> Tools -> Owner Cosmetics; dropdown shows only `manual` / `admin_grant` cosmetics; free/default cosmetics are absent; empty username/profile slug and empty cosmetic validation work; non-owner Admin does not see Owner Cosmetics; Member has no AdminPanel access.
+- No console errors, unexpected network calls, or CP/GvG/audit/ranking/member-status regressions were found during the authenticated production smoke.
 - Grant mutation smoke was not performed by design; no production cosmetic grants were created.
 
 Security:

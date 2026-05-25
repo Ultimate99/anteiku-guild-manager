@@ -86,6 +86,7 @@ import {
 } from '../services/adminMemberService.js';
 
 const ADMIN_TABS = [
+  { id: 'overview', label: 'Overview', labelKey: 'admin.tabs.overview' },
   { id: 'approvals', label: 'Approvals', labelKey: 'admin.tabs.approvals' },
   { id: 'members', label: 'Members', labelKey: 'admin.tabs.members' },
   { id: 'cp', label: 'CP', labelKey: 'admin.tabs.cp' },
@@ -379,7 +380,7 @@ export function AdminPanel() {
   const [permissionKeys, setPermissionKeys] = useState([]);
   const [permissionLoading, setPermissionLoading] = useState(true);
   const [loadedTabs, setLoadedTabs] = useState({});
-  const [activeTab, setActiveTab] = useState('approvals');
+  const [activeTab, setActiveTab] = useState('overview');
   const [queue, setQueue] = useState([]);
   const [memberRoster, setMemberRoster] = useState([]);
   const [approvalLoading, setApprovalLoading] = useState(false);
@@ -576,6 +577,9 @@ export function AdminPanel() {
     }
 
     return ADMIN_TABS.filter((tab) => {
+      if (tab.id === 'overview') {
+        return true;
+      }
       if (tab.id === 'approvals') {
         return canReviewQueue;
       }
@@ -614,6 +618,67 @@ export function AdminPanel() {
   ]);
 
   const activeTabMeta = visibleTabs.find((tab) => tab.id === activeTab) ?? null;
+  const adminOverviewCards = useMemo(() => {
+    const cardCopy = {
+      approvals: {
+        badge: t('admin.overview.approvalsBadge'),
+        title: t('admin.tabs.approvals'),
+        body: t('admin.overview.approvalsBody'),
+        tone: 'warning',
+      },
+      members: {
+        badge: t('admin.overview.membersBadge'),
+        title: t('admin.tabs.members'),
+        body: t('admin.overview.membersBody'),
+        tone: 'success',
+      },
+      cp: {
+        badge: t('admin.overview.cpBadge'),
+        title: t('admin.tabs.cp'),
+        body: t('admin.overview.cpBody'),
+        tone: 'success',
+      },
+      cpLeaderboard: {
+        badge: t('admin.overview.cpLeaderboardBadge'),
+        title: t('admin.tabs.cpLeaderboard'),
+        body: t('admin.overview.cpLeaderboardBody'),
+        tone: 'success',
+      },
+      gvg: {
+        badge: t('admin.overview.gvgBadge'),
+        title: t('admin.tabs.gvg'),
+        body: t('admin.overview.gvgBody'),
+        tone: 'warning',
+      },
+      audit: {
+        badge: t('admin.overview.auditBadge'),
+        title: t('admin.tabs.audit'),
+        body: t('admin.overview.auditBody'),
+        tone: 'warning',
+      },
+      permissions: {
+        badge: t('admin.overview.permissionsBadge'),
+        title: t('admin.tabs.permissions'),
+        body: t('admin.overview.permissionsBody'),
+        tone: 'danger',
+      },
+      tools: {
+        badge: t('admin.overview.toolsBadge'),
+        title: membership?.role === 'owner' ? t('admin.overview.ownerTools') : t('admin.tabs.tools'),
+        body: t('admin.overview.toolsBody'),
+        tone: 'danger',
+      },
+    };
+
+    return visibleTabs
+      .filter((tab) => tab.id !== 'overview')
+      .filter((tab) => tab.id !== 'tools' || membership?.role === 'owner')
+      .map((tab) => ({
+        id: tab.id,
+        ...cardCopy[tab.id],
+      }))
+      .filter((card) => card.title);
+  }, [membership?.role, t, visibleTabs]);
   const currentTabLoading =
     (activeTab === 'approvals' && approvalLoading) ||
     (activeTab === 'members' && memberLoading) ||
@@ -737,6 +802,8 @@ export function AdminPanel() {
       await loadAuditLogPage({ append: false, clearMessage });
     } else if (tabId === 'permissions') {
       await loadPermissionManagementSection({ clearMessage });
+    } else if (tabId === 'overview') {
+      markTabLoaded('overview');
     } else {
       markTabLoaded('tools');
     }
@@ -1604,6 +1671,44 @@ export function AdminPanel() {
           statusTone={statusTone}
           t={t}
         />
+      );
+    }
+
+    if (activeTab === 'overview') {
+      return (
+        <section className="admin-overview admin-section" aria-label={t('admin.overview.aria')}>
+          <div className="panel admin-overview-panel">
+            <div className="section-heading-row admin-section-heading">
+              <div>
+                <StatusBadge tone="success">{t('admin.overview.badge')}</StatusBadge>
+                <h3>{t('admin.overview.title')}</h3>
+                <p>{t('admin.overview.body')}</p>
+              </div>
+            </div>
+
+            {adminOverviewCards.length > 0 ? (
+              <div className="admin-command-grid">
+                {adminOverviewCards.map((card) => (
+                  <button
+                    key={card.id}
+                    type="button"
+                    className="command-card admin-command-card"
+                    onClick={() => setActiveTab(card.id)}
+                  >
+                    <StatusBadge tone={card.tone}>{card.badge}</StatusBadge>
+                    <strong>{card.title}</strong>
+                    <small>{card.body}</small>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <section className="panel compact-empty-state">
+                <StatusBadge>{t('admin.common.readOnly')}</StatusBadge>
+                <h3>{t('admin.overview.noShortcuts')}</h3>
+              </section>
+            )}
+          </div>
+        </section>
       );
     }
 
