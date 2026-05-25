@@ -45,6 +45,14 @@ function getRankLabelKey(rank) {
     return 'leaderboard.topRank';
   }
 
+  if (rank === 2) {
+    return 'leaderboard.silverRank';
+  }
+
+  if (rank === 3) {
+    return 'leaderboard.bronzeRank';
+  }
+
   if (rank <= 5) {
     return 'leaderboard.eliteFive';
   }
@@ -53,7 +61,7 @@ function getRankLabelKey(rank) {
     return 'leaderboard.topTen';
   }
 
-  return null;
+  return 'leaderboard.ranked';
 }
 
 function getRankMarker(rank) {
@@ -72,6 +80,37 @@ function getRankMarker(rank) {
   return `#${rank}`;
 }
 
+function LeaderboardCompetitorCard({ row, scope, t, variant = 'row' }) {
+  const rankLabelKey = getRankLabelKey(row.rank);
+  const isGlobal = scope === 'global';
+
+  return (
+    <>
+      <CosmeticPreview
+        avatar={row.avatar}
+        frame={row.frame}
+        label={row.ign}
+        size={variant === 'podium' && row.rank === 1 ? 'medium' : 'small'}
+        className={variant === 'podium' ? 'leaderboard-podium-cosmetic' : 'leaderboard-cosmetic'}
+      />
+      <div className="leaderboard-member">
+        <div className="leaderboard-member-line">
+          <strong>{row.ign}</strong>
+          {row.isCurrentUser ? <StatusBadge tone="info">{t('leaderboard.currentUser')}</StatusBadge> : null}
+        </div>
+        <div className="leaderboard-meta">
+          <span>{t(rankLabelKey)}</span>
+          {isGlobal && row.guildName ? (
+            <span>
+              {t('leaderboard.guild')}: {row.guildName}
+            </span>
+          ) : null}
+        </div>
+      </div>
+    </>
+  );
+}
+
 export function Leaderboard() {
   const { t } = useLanguage();
   const [scope, setScope] = useState('guild');
@@ -85,6 +124,9 @@ export function Leaderboard() {
     () => (normalizedScope === 'global' ? t('leaderboard.global') : t('leaderboard.myGuild')),
     [normalizedScope, t],
   );
+  const currentUserRanking = useMemo(() => rankings.find((row) => row.isCurrentUser) ?? null, [rankings]);
+  const podiumRankings = rankings.length >= 3 ? rankings.slice(0, 3) : [];
+  const listRankings = podiumRankings.length === 3 ? rankings.slice(3) : rankings;
 
   useEffect(() => {
     let cancelled = false;
@@ -122,8 +164,8 @@ export function Leaderboard() {
     <div className="stack leaderboard-page">
       <section className="panel member-compact-panel leaderboard-hero">
         <div>
-          <StatusBadge tone="crimson">{t('leaderboard.cpHidden')}</StatusBadge>
           <h3>{t('leaderboard.title')}</h3>
+          <p className="leaderboard-privacy-note">{t('leaderboard.cpHidden')}</p>
         </div>
       </section>
 
@@ -159,13 +201,51 @@ export function Leaderboard() {
         {!loading && !error && rankings.length === 0 ? (
           <div className="compact-empty-state leaderboard-empty">
             <h3>{t('leaderboard.noRankings')}</h3>
+            <p>{t('leaderboard.rankingsAfterCp')}</p>
           </div>
         ) : null}
 
+        {!loading && !error && rankings.length > 0 ? (
+          currentUserRanking ? (
+            <article className="leaderboard-your-rank" data-rank-tier={getRankTier(currentUserRanking.rank)}>
+              <div>
+                <span className="eyebrow">{t('leaderboard.yourRank')}</span>
+                <div className="rank-marker" aria-label={`${t('leaderboard.rank')} ${currentUserRanking.rank}`}>
+                  <span>{getRankMarker(currentUserRanking.rank)}</span>
+                </div>
+              </div>
+              <LeaderboardCompetitorCard row={currentUserRanking} scope={normalizedScope} t={t} />
+            </article>
+          ) : (
+            <p className="muted-line leaderboard-not-ranked">{t('leaderboard.notRankedYet')}</p>
+          )
+        ) : null}
+
+        {podiumRankings.length === 3 ? (
+          <section className="leaderboard-podium" aria-label={t('leaderboard.podium')}>
+            <span className="eyebrow">{t('leaderboard.podium')}</span>
+            <div className="leaderboard-podium-grid">
+              {podiumRankings.map((row) => (
+                <article
+                  key={`podium-${normalizedScope}-${row.rank}-${row.ign}-${row.guildSlug ?? 'guild'}`}
+                  className="leaderboard-podium-card"
+                  data-rank-tier={getRankTier(row.rank)}
+                  data-rank={row.rank}
+                  data-current-user={row.isCurrentUser ? 'true' : 'false'}
+                >
+                  <div className="rank-marker" aria-label={`${t('leaderboard.rank')} ${row.rank}`}>
+                    <span>{getRankMarker(row.rank)}</span>
+                  </div>
+                  <LeaderboardCompetitorCard row={row} scope={normalizedScope} t={t} variant="podium" />
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
         <div className="leaderboard-list" aria-live="polite">
-          {rankings.map((row) => {
+          {listRankings.map((row) => {
             const tier = getRankTier(row.rank);
-            const rankLabelKey = getRankLabelKey(row.rank);
 
             return (
               <article
@@ -177,27 +257,7 @@ export function Leaderboard() {
                 <div className="rank-marker" aria-label={`${t('leaderboard.rank')} ${row.rank}`}>
                   <span>{getRankMarker(row.rank)}</span>
                 </div>
-                <CosmeticPreview
-                  avatar={row.avatar}
-                  frame={row.frame}
-                  label={row.ign}
-                  size="small"
-                  className="leaderboard-cosmetic"
-                />
-                <div className="leaderboard-member">
-                  <div className="leaderboard-member-line">
-                    <strong>{row.ign}</strong>
-                    {row.isCurrentUser ? <StatusBadge tone="info">{t('leaderboard.currentUser')}</StatusBadge> : null}
-                  </div>
-                  <div className="leaderboard-meta">
-                    {rankLabelKey ? <span>{t(rankLabelKey)}</span> : null}
-                    {normalizedScope === 'global' && row.guildName ? (
-                      <span>
-                        {t('leaderboard.guild')}: {row.guildName}
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
+                <LeaderboardCompetitorCard row={row} scope={normalizedScope} t={t} />
               </article>
             );
           })}

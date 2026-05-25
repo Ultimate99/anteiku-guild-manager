@@ -31,6 +31,14 @@ function getRankLabelKey(rank) {
     return 'leaderboard.topRank';
   }
 
+  if (rank === 2) {
+    return 'leaderboard.silverRank';
+  }
+
+  if (rank === 3) {
+    return 'leaderboard.bronzeRank';
+  }
+
   if (rank <= 5) {
     return 'leaderboard.eliteFive';
   }
@@ -39,7 +47,7 @@ function getRankLabelKey(rank) {
     return 'leaderboard.topTen';
   }
 
-  return null;
+  return 'leaderboard.ranked';
 }
 
 function getRankMarker(rank) {
@@ -58,6 +66,37 @@ function getRankMarker(rank) {
   return `#${rank}`;
 }
 
+function AdminRankingIdentity({ item, selectedCpGuild, formatDate, t, variant = 'row' }) {
+  const rankLabelKey = getRankLabelKey(item.rank);
+
+  return (
+    <>
+      <CosmeticPreview
+        avatar={item.avatar}
+        frame={item.frame}
+        label={item.ign ?? item.username ?? t('admin.common.unknownIgn')}
+        size={variant === 'podium' && item.rank === 1 ? 'medium' : 'small'}
+        className={variant === 'podium' ? 'leaderboard-podium-cosmetic' : 'leaderboard-cosmetic'}
+      />
+      <div className="leaderboard-member admin-cp-rank-main">
+        <div className="leaderboard-member-line">
+          <strong>{item.ign ?? t('admin.common.unknownIgn')}</strong>
+          <StatusBadge tone="crimson">{t(rankLabelKey)}</StatusBadge>
+        </div>
+        <div className="leaderboard-meta admin-cp-rank-meta">
+          <span>@{item.username ?? t('common.unknown')}</span>
+          <span>
+            {t('admin.cp.guild')}: {item.guildName ?? selectedCpGuild?.name ?? t('admin.common.selectedGuild')}
+          </span>
+          <span>
+            {t('admin.cp.lastUpdated')}: {formatDate(item.updatedAt)}
+          </span>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export function AdminCpLeaderboardSection({
   cpLoading,
   selectedCpGuild,
@@ -71,6 +110,9 @@ export function AdminCpLeaderboardSection({
   formatCpValue,
   t,
 }) {
+  const podiumRankings = cpLeaderboard.length >= 3 ? cpLeaderboard.slice(0, 3) : [];
+  const listRankings = podiumRankings.length === 3 ? cpLeaderboard.slice(3) : cpLeaderboard;
+
   return (
     <section className="admin-section" aria-label={t('admin.cp.leaderboardTitle')}>
       <section className="panel cp-leaderboard compact-admin-card" aria-label={t('admin.cp.leaderboardTitle')}>
@@ -128,50 +170,65 @@ export function AdminCpLeaderboardSection({
           cpLeaderboard.length === 0 ? (
             <p className="muted-line">{t('admin.cp.noRankings')}</p>
           ) : (
-            <div className="leaderboard-list admin-cp-rank-list">
-              {cpLeaderboard.map((item) => {
-                const tier = getRankTier(item.rank);
-                const rankLabelKey = getRankLabelKey(item.rank);
+            <>
+              {podiumRankings.length === 3 ? (
+                <section className="leaderboard-podium admin-cp-podium" aria-label={t('leaderboard.podium')}>
+                  <span className="eyebrow">{t('leaderboard.podium')}</span>
+                  <div className="leaderboard-podium-grid">
+                    {podiumRankings.map((item) => (
+                      <article
+                        className="leaderboard-podium-card admin-cp-podium-card"
+                        data-rank-tier={getRankTier(item.rank)}
+                        data-rank={item.rank}
+                        key={item.profileId ?? `podium-${item.rank}-${item.ign}-${item.guildId ?? 'guild'}`}
+                      >
+                        <div className="rank-marker" aria-label={`${t('admin.cp.rank')} ${item.rank}`}>
+                          <span>{getRankMarker(item.rank)}</span>
+                        </div>
+                        <AdminRankingIdentity
+                          item={item}
+                          selectedCpGuild={selectedCpGuild}
+                          formatDate={formatDate}
+                          t={t}
+                          variant="podium"
+                        />
+                        <div className="admin-cp-rank-value">
+                          <span>{t('admin.cp.cpValue')}</span>
+                          <strong>{formatCpValue(item.cpValue)}</strong>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
+              <div className="leaderboard-list admin-cp-rank-list">
+                {listRankings.map((item) => {
+                  const tier = getRankTier(item.rank);
 
-                return (
-                  <article
-                    className="leaderboard-row admin-cp-rank-row"
-                    data-rank-tier={tier}
-                    key={item.profileId ?? `${item.rank}-${item.ign}-${item.guildId ?? 'guild'}`}
-                  >
-                    <div className="rank-marker" aria-label={`${t('admin.cp.rank')} ${item.rank}`}>
-                      <span>{getRankMarker(item.rank)}</span>
-                    </div>
-                    <CosmeticPreview
-                      avatar={item.avatar}
-                      frame={item.frame}
-                      label={item.ign ?? item.username ?? t('admin.common.unknownIgn')}
-                      size="small"
-                      className="leaderboard-cosmetic"
-                    />
-                    <div className="leaderboard-member admin-cp-rank-main">
-                      <div className="leaderboard-member-line">
-                        <strong>{item.ign ?? t('admin.common.unknownIgn')}</strong>
-                        {rankLabelKey ? <StatusBadge tone="crimson">{t(rankLabelKey)}</StatusBadge> : null}
+                  return (
+                    <article
+                      className="leaderboard-row admin-cp-rank-row"
+                      data-rank-tier={tier}
+                      key={item.profileId ?? `${item.rank}-${item.ign}-${item.guildId ?? 'guild'}`}
+                    >
+                      <div className="rank-marker" aria-label={`${t('admin.cp.rank')} ${item.rank}`}>
+                        <span>{getRankMarker(item.rank)}</span>
                       </div>
-                      <div className="leaderboard-meta admin-cp-rank-meta">
-                        <span>@{item.username ?? t('common.unknown')}</span>
-                        <span>
-                          {t('admin.cp.guild')}: {item.guildName ?? selectedCpGuild?.name ?? t('admin.common.selectedGuild')}
-                        </span>
-                        <span>
-                          {t('admin.cp.lastUpdated')}: {formatDate(item.updatedAt)}
-                        </span>
+                      <AdminRankingIdentity
+                        item={item}
+                        selectedCpGuild={selectedCpGuild}
+                        formatDate={formatDate}
+                        t={t}
+                      />
+                      <div className="admin-cp-rank-value">
+                        <span>{t('admin.cp.cpValue')}</span>
+                        <strong>{formatCpValue(item.cpValue)}</strong>
                       </div>
-                    </div>
-                    <div className="admin-cp-rank-value">
-                      <span>{t('admin.cp.cpValue')}</span>
-                      <strong>{formatCpValue(item.cpValue)}</strong>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
+                    </article>
+                  );
+                })}
+              </div>
+            </>
           )
         ) : null}
       </section>
