@@ -254,6 +254,17 @@ export const en = {
     equipping: 'Equipping...',
     noCosmetics: 'No cosmetics are available.',
   },
+  cosmetics: {
+    customize: 'Customize',
+    avatars: 'Avatars',
+    frames: 'Frames',
+    close: 'Close',
+    locked: 'Locked',
+    equipped: 'Equipped',
+    current: 'Current',
+    chooseAvatar: 'Choose avatar',
+    chooseFrame: 'Choose frame',
+  },
   gvg: {
     voteBadge: 'GvG',
     readinessTitle: 'GvG',

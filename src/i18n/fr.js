@@ -255,6 +255,17 @@ export const fr = {
     equipping: 'Equipement...',
     noCosmetics: 'Aucun cosmetique disponible.',
   },
+  cosmetics: {
+    customize: 'Personnaliser',
+    avatars: 'Avatars',
+    frames: 'Cadres',
+    close: 'Fermer',
+    locked: 'Verrouille',
+    equipped: 'Equipe',
+    current: 'Actuel',
+    chooseAvatar: 'Choisir avatar',
+    chooseFrame: 'Choisir cadre',
+  },
   gvg: {
     voteBadge: 'GvG',
     readinessTitle: 'GvG',

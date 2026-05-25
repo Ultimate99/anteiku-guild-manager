@@ -255,6 +255,17 @@ export const de = {
     equipping: 'Ruestet aus...',
     noCosmetics: 'Keine Kosmetik verfuegbar.',
   },
+  cosmetics: {
+    customize: 'Anpassen',
+    avatars: 'Avatare',
+    frames: 'Rahmen',
+    close: 'Schliessen',
+    locked: 'Gesperrt',
+    equipped: 'Ausgeruestet',
+    current: 'Aktuell',
+    chooseAvatar: 'Avatar waehlen',
+    chooseFrame: 'Rahmen waehlen',
+  },
   gvg: {
     voteBadge: 'GvG',
     readinessTitle: 'GvG',
