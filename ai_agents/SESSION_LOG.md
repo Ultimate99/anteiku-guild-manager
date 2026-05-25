@@ -1,5 +1,25 @@
 # Session Log
 
+## 2026-05-25 - Cosmetics Frame Unlock Hotfix Production Rollout
+
+- Updated `scripts/sync-cosmetics-catalog.mjs` frame defaults so only `TXK_Arena*` and `TXK_KOF*` frames are generated as `manual`; all other frames are generated as `free`.
+- Kept `_FREE` keys free and preserved premium avatar intent by keeping `premium` avatar keys manual.
+- Added migration `20260525220522_cosmetics_frame_unlock_hotfix.sql`.
+- `node --check scripts\sync-cosmetics-catalog.mjs` passed.
+- `npm.cmd run cosmetics:sync -- --dry-run` passed and showed premium avatars manual, Arena/KOF frames manual, and C-series frames free.
+- `npm.cmd run build` passed.
+- Relinked Supabase CLI to production project `mzflfyxxkascrfpteexz`.
+- Production migration list showed only `20260525220522_cosmetics_frame_unlock_hotfix.sql` pending.
+- Production dry-run showed only `20260525220522_cosmetics_frame_unlock_hotfix.sql`.
+- Applied only `20260525220522_cosmetics_frame_unlock_hotfix.sql`.
+- Remote migration list confirmed `20260525220522` applied.
+- Read-only production verification confirmed 7 Arena manual frames, 3 KOF manual frames, 10 other free frames, and 0 other locked frames.
+- Active Owner count remains `1`.
+- Production app load smoke passed with no captured console errors.
+- Authenticated Profile cosmetics browser smoke remains pending because the browser was signed out and no passwords were requested.
+- No profile equipment rows, Vercel env, upload path, Supabase Storage, arbitrary URL path, CP/GvG/audit/role/permission/member-status behavior, or service-role path changed.
+- Supabase CLI remains linked to production `mzflfyxxkascrfpteexz`.
+
 ## 2026-05-25 - Milestone 22F Cosmetics Catalog Sync Script Implemented
 
 - Implemented local developer tooling for cosmetics catalog sync.
@@ -8,7 +28,7 @@
 - Dry-run validated: detected 54 avatars, 10 frames, 64 total cosmetics, and printed SQL preview without writing.
 - Normal generation validated: created `supabase/migrations/20260525193210_cosmetics_catalog_sync.sql`.
 - Generated migration upserts `public.cosmetic_catalog` rows using repo-backed assets only and does not delete/deactivate missing rows.
-- Generated migration follows current sync defaults: `_FREE` keys are free, v1 avatars without `_FREE` are free, and frames without `_FREE` are manual.
+- Generated migration follows the then-current sync defaults: `_FREE` keys are free, v1 avatars without `_FREE` are free, and frames without `_FREE` are manual.
 - `npm.cmd run build` passed.
 - No Supabase commands, staging, production, deployment, runtime app behavior, Supabase/RLS/RPC behavior, uploads, Supabase Storage, arbitrary URLs, CP/GvG/audit/role/permission/member-status behavior, or production data were touched.
 - Generated migration was not applied anywhere and must be reviewed before normal staging/production migration gates.

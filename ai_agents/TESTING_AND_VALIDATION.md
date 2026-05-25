@@ -1,5 +1,36 @@
 # Testing And Validation
 
+## Cosmetics Frame Unlock Hotfix Validation
+
+Production rollout/verification passed for the database hotfix.
+
+Commands:
+- `node --check scripts\sync-cosmetics-catalog.mjs`
+- `npm.cmd run cosmetics:sync -- --dry-run`
+- `npm.cmd run build`
+- `npx.cmd supabase link --project-ref mzflfyxxkascrfpteexz`
+- `npx.cmd supabase migration list`
+- `npx.cmd supabase db push --dry-run`
+- `npx.cmd supabase db push`
+- `npx.cmd supabase migration list`
+
+Results:
+- Sync script dry-run detected 56 avatars and 20 frames.
+- Premium avatar test keys remained `unlock_type = 'manual'`.
+- `TXK_Arena*` and `TXK_KOF*` frame rows generated as `manual`.
+- C-series/free frame rows generated as `free`.
+- Build passed with the existing Vite chunk-size warning only.
+- Production dry-run showed only `20260525220522_cosmetics_frame_unlock_hotfix.sql`.
+- Production migration push applied `20260525220522` and remote migration list confirmed it.
+- Read-only production verification found 20 frame rows: 7 Arena manual, 3 KOF manual, 10 other free, 0 other locked.
+- Active Owner count remains `1`.
+- Production app load smoke passed and no captured console errors were found.
+- Authenticated Profile -> Customize -> Frames browser smoke is pending because the browser was signed out and no passwords were requested.
+
+Security/source result:
+- No frontend source, RLS/RPC/function behavior, profile equipment rows, uploads, Supabase Storage, arbitrary URLs, CP/GvG/audit/role/permission/member-status behavior, or Vercel env changed.
+- The migration updates only `public.cosmetic_catalog.unlock_type` for frame rows.
+
 ## Milestone 22F Cosmetics Catalog Sync Script Validation
 
 Milestone 22F local tooling validation passed.

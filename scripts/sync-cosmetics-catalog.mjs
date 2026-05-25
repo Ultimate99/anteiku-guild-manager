@@ -34,13 +34,25 @@ function sqlString(value) {
   return `'${String(value).replaceAll("'", "''")}'`;
 }
 
+function isManualAvatarKey(key) {
+  return key.toLowerCase().includes('premium');
+}
+
+function isManualFrameKey(key) {
+  return key.startsWith('TXK_Arena') || key.startsWith('TXK_KOF');
+}
+
 function getUnlockType(type, key) {
   if (key.endsWith('_FREE')) {
     return 'free';
   }
 
   if (type === 'avatar') {
-    return 'free';
+    return isManualAvatarKey(key) ? 'manual' : 'free';
+  }
+
+  if (type === 'frame') {
+    return isManualFrameKey(key) ? 'manual' : 'free';
   }
 
   return 'manual';

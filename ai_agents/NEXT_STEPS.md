@@ -2,6 +2,24 @@
 
 ## Current Recommendation
 
+Cosmetics frame unlock hotfix is applied in production.
+
+Recorded hotfix status:
+- Updated `scripts/sync-cosmetics-catalog.mjs` so only `TXK_Arena*` and `TXK_KOF*` frames default to `manual`; all other frames default to `free`.
+- Preserved premium avatar sync behavior by keeping `premium` avatar keys manual.
+- Added and applied production migration `20260525220522_cosmetics_frame_unlock_hotfix.sql`.
+- Production dry-run showed exactly that one migration pending.
+- Read-only production catalog verification found 7 Arena manual frames, 3 KOF manual frames, 10 other free frames, and 0 other locked frames.
+- Production app load smoke passed with no captured console errors.
+- Authenticated Profile cosmetics browser smoke is pending until a production session is available.
+
+Recommended next options:
+- Have the user sign in to production and verify Profile -> Customize -> Frames shows only Arena/KOF locked and C-series frames unlocked.
+- Commit the hotfix script, migration, and docs after user approval.
+- Relink Supabase CLI deliberately before any staging/local Supabase work; it is currently linked to production `mzflfyxxkascrfpteexz`.
+
+## Previous Recommendation - Milestone 22F
+
 Milestone 22F Cosmetics Catalog Sync Script is implemented locally.
 
 Recorded 22F tooling status:
@@ -13,7 +31,7 @@ Recorded 22F tooling status:
 - No Supabase commands, staging/prod commands, deploys, uploads, Storage, arbitrary URLs, runtime source behavior changes, or RLS/RPC behavior changes were included.
 
 Recommended next options:
-- Review `20260525193210_cosmetics_catalog_sync.sql` before any migration rollout because it follows the sync default that frame filenames without `_FREE` become `unlock_type = 'manual'`.
+- Review generated catalog sync migrations before rollout because catalog `unlock_type` is the runtime authority.
 - Decide whether to keep this generated migration as the next catalog sync artifact, regenerate after adding new assets, or add optional override/config support before staging.
 - If approved later, run normal staging dry-run/apply/verification before production.
 - Relink Supabase CLI deliberately before any staging/local Supabase work; it is currently linked to production `mzflfyxxkascrfpteexz`.

@@ -1,6 +1,6 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and validated through Milestone 23D. Remote production is live through Premium Cosmetics backend/grant-helper hardening.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and validated through the Cosmetics Frame Unlock Hotfix. Remote production is live through the frame unlock catalog correction.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
@@ -23,7 +23,10 @@ Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION
 15. `20260525000100_cosmetics_catalog_unlocks.sql`
 16. `20260525000200_cp_rankings_cosmetics.sql`
 17. `20260525000300_premium_cosmetics_grant_helper.sql`
-18. `20260525193210_cosmetics_catalog_sync.sql` *(generated locally by Milestone 22F tooling; not applied to staging or production)*
+18. `20260525213531_cosmetics_catalog_sync.sql`
+19. `20260525213537_cosmetics_catalog_sync.sql`
+20. `20260525213900_cosmetics_catalog_sync.sql`
+21. `20260525220522_cosmetics_frame_unlock_hotfix.sql`
 
 Migration `20260523000100_member_roster_status_system.sql` is locally validated, staging validated, and production applied/verified as of Milestone 15E.
 
@@ -39,7 +42,7 @@ Migration `20260525000200_cp_rankings_cosmetics.sql` is production applied/verif
 
 Migration `20260525000300_premium_cosmetics_grant_helper.sql` is implemented, locally validated, staging validated, and production applied/verified as of Milestone 23D.
 
-Migration `20260525193210_cosmetics_catalog_sync.sql` was generated locally by `npm.cmd run cosmetics:sync` for Milestone 22F tooling validation. It has not been applied anywhere. Review it before any staging/production migration gate, especially because the sync rules treat frame filenames without `_FREE` as `unlock_type = 'manual'`.
+Cosmetics catalog sync migrations `20260525213531`, `20260525213537`, and `20260525213900` are applied in production. Migration `20260525220522_cosmetics_frame_unlock_hotfix.sql` is applied in production and corrects frame unlock types so only `TXK_Arena*` and `TXK_KOF*` frames are manual while all other frames are free.
 
 Production Member Status rollout:
 - Existing production memberships were backfilled to `roster_status = active`.
@@ -78,13 +81,15 @@ Seeded cosmetics:
 - Frames: 10 rows from `public/cosmetics/frames/*.png`.
 - Default avatar: `1079_head`.
 - Default frame: `TXK_frame_reOpen_EN_FREE`.
-- `_FREE` frames use `unlock_type = 'free'`; non-`_FREE` frames use `unlock_type = 'manual'`.
+- `TXK_Arena*` and `TXK_KOF*` frames use `unlock_type = 'manual'`; all other current frames use `unlock_type = 'free'`.
 
 Asset storage:
 - Database stores keys and static asset paths only.
 - Static assets are expected under `/cosmetics/avatars/` and `/cosmetics/frames/`.
 - No uploads, arbitrary URLs, or Supabase Storage are introduced.
 - Cosmetic keys ending `_FREE` are an asset/import convention and must map to `unlock_type = 'free'`.
+- Frame families `TXK_Arena*` and `TXK_KOF*` are the current manual/locked frame families.
+- Other frame families, including C-series frames, are free/unlocked.
 - Runtime access uses catalog `unlock_type` as the source of truth, not filename parsing alone.
 - Catalog asset paths were verified against local files: 64 rows checked, 0 missing files.
 
@@ -137,6 +142,27 @@ Validation:
 - Local validation script passed through Docker `psql`.
 - Milestone 23B focused validation result: 18 PASS / 0 FAIL / 0 SKIP.
 
+## Cosmetics Frame Unlock Hotfix
+
+New migration:
+- `supabase/migrations/20260525220522_cosmetics_frame_unlock_hotfix.sql`
+
+Status:
+- Production applied and read-only verified.
+
+Rule:
+- `TXK_Arena*` frames are `unlock_type = 'manual'`.
+- `TXK_KOF*` frames are `unlock_type = 'manual'`.
+- All other frame rows are `unlock_type = 'free'`.
+- Avatar premium/manual behavior is unchanged.
+
+Production verification:
+- Production dry-run showed only `20260525220522_cosmetics_frame_unlock_hotfix.sql`.
+- Remote migration list confirmed `20260525220522` applied.
+- Production catalog contains 20 frame rows: 7 Arena manual, 3 KOF manual, 10 other free, and 0 other locked.
+- Active Owner count remains `1`.
+- The migration does not delete catalog rows or mutate profile equipment.
+
 ## Milestone 22F Cosmetics Catalog Sync Script
 
 Local developer tooling:
@@ -158,8 +184,9 @@ Generated catalog rules:
 - Frame asset path = `/cosmetics/frames/<filename>`.
 - Label key = `cosmetics.avatar.<key>` or `cosmetics.frame.<key>`.
 - Keys ending `_FREE` use `unlock_type = 'free'`.
-- Avatar files without `_FREE` use `unlock_type = 'free'` for v1.
-- Frame files without `_FREE` use `unlock_type = 'manual'`.
+- Premium avatar keys use `unlock_type = 'manual'`; other avatar files without `_FREE` use `unlock_type = 'free'` for v1.
+- Frame keys starting `TXK_Arena` or `TXK_KOF` use `unlock_type = 'manual'`.
+- All other frame files use `unlock_type = 'free'`.
 - `free` rows use `rarity = 'common'`; `manual` rows use `rarity = 'rare'`.
 - Sort order is deterministic in increments of `10`: avatars first by filename, then frames by filename.
 

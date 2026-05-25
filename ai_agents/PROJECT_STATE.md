@@ -1,5 +1,33 @@
 # Project State
 
+## Cosmetics Frame Unlock Hotfix Production Rollout
+
+Production frame unlock hotfix is applied to production project `mzflfyxxkascrfpteexz`.
+
+Implemented:
+- Updated `scripts/sync-cosmetics-catalog.mjs` so future catalog sync migrations classify frames by family:
+  - `TXK_Arena*` frames use `unlock_type = 'manual'`;
+  - `TXK_KOF*` frames use `unlock_type = 'manual'`;
+  - all other frames use `unlock_type = 'free'`;
+  - `_FREE` keys remain free.
+- Preserved premium avatar handling in the sync script by keeping `premium` avatar keys manual.
+- Added migration `20260525220522_cosmetics_frame_unlock_hotfix.sql`.
+- The migration updates only `public.cosmetic_catalog.unlock_type` for `type = 'frame'`; it does not delete catalog rows or mutate profile equipment.
+
+Production rollout:
+- Production dry-run showed only `20260525220522_cosmetics_frame_unlock_hotfix.sql` pending.
+- Applied only `20260525220522_cosmetics_frame_unlock_hotfix.sql`.
+- Remote migration list confirmed `20260525220522` applied.
+- Read-only production verification found 20 frame rows total: 7 Arena manual, 3 KOF manual, 10 other frames free, and 0 non-Arena/KOF frames left locked.
+- Active Owner count remains `1`.
+- Production app load smoke passed with no captured console errors.
+- Authenticated Profile cosmetics browser smoke is pending until a production session is available in the browser.
+
+Scope/security:
+- Catalog `unlock_type` remains the runtime source of truth.
+- No profile equipment rows, CP/GvG/audit/role/permission/member-status behavior, Vercel env, uploads, Supabase Storage, arbitrary URLs, or service-role paths were changed.
+- Supabase CLI is currently linked to production `mzflfyxxkascrfpteexz`; relink deliberately before staging/local Supabase work.
+
 ## Milestone 22F Cosmetics Catalog Sync Script Implemented
 
 Milestone 22F is implemented as local developer tooling only.
@@ -12,10 +40,12 @@ Implemented:
 - Cosmetic keys are generated from filenames without extensions.
 - Asset paths are generated as `/cosmetics/avatars/<filename>` or `/cosmetics/frames/<filename>`.
 - Label keys are generated as `cosmetics.avatar.<key>` or `cosmetics.frame.<key>`.
-- Unlock defaults follow the approved local sync rules:
+- Unlock defaults follow the current catalog sync rules:
   - keys ending `_FREE` use `unlock_type = 'free'`;
-  - avatar files without `_FREE` use `unlock_type = 'free'` for v1;
-  - frame files without `_FREE` use `unlock_type = 'manual'`.
+  - premium avatar keys use `unlock_type = 'manual'`;
+  - other avatar files without `_FREE` use `unlock_type = 'free'`;
+  - frame keys starting `TXK_Arena` or `TXK_KOF` use `unlock_type = 'manual'`;
+  - all other frame files use `unlock_type = 'free'`.
 - Rarity defaults to `common` for free cosmetics and `rare` for manual cosmetics.
 - Sort order is deterministic in increments of `10`, with avatars first by filename and frames after by filename.
 - Generated migrations upsert `public.cosmetic_catalog` rows and do not delete/deactivate missing rows.

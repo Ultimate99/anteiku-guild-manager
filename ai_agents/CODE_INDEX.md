@@ -53,7 +53,9 @@
   - Accepts `.png` and `.webp`; ignores hidden files, directories, and unsupported extensions.
   - Generates cosmetic keys from filenames without extensions.
   - Generates repo-backed asset paths and label keys.
-  - Defaults `_FREE` keys to `unlock_type = 'free'`, v1 avatars without `_FREE` to `free`, and frames without `_FREE` to `manual`.
+  - Defaults `_FREE` keys to `unlock_type = 'free'`.
+  - Keeps `premium` avatar keys manual and other v1 avatars free.
+  - Defaults only `TXK_Arena*` and `TXK_KOF*` frames to manual; all other frames default to free.
   - Emits deterministic sort orders in increments of `10`.
   - Supports `--dry-run` for SQL preview without writing.
   - Writes timestamped `supabase/migrations/*_cosmetics_catalog_sync.sql` files but does not apply them.
@@ -63,6 +65,17 @@
   - Generated locally during validation; not applied to staging or production.
   - Upserts 54 avatar rows and 10 frame rows into `public.cosmetic_catalog`.
   - Does not delete or deactivate missing catalog rows.
+
+## Cosmetics Frame Unlock Hotfix
+
+- `supabase/migrations/20260525220522_cosmetics_frame_unlock_hotfix.sql`
+  - Updates only `public.cosmetic_catalog.unlock_type` for frame rows.
+  - Sets `TXK_Arena*` and `TXK_KOF*` frames to `manual`.
+  - Sets all other frame rows to `free`.
+  - Does not delete catalog rows or mutate profile equipment.
+- Production status:
+  - Applied to production project `mzflfyxxkascrfpteexz`.
+  - Read-only verification confirmed 7 Arena manual frames, 3 KOF manual frames, 10 other free frames, and 0 other locked frames.
 
 ## Milestone 22E Cosmetics Production Rollout
 

@@ -1,5 +1,24 @@
 # Testing
 
+## Cosmetics Frame Unlock Hotfix
+
+Production database hotfix validation passed.
+
+- `node --check scripts\sync-cosmetics-catalog.mjs` passed.
+- `npm.cmd run cosmetics:sync -- --dry-run` showed premium avatars remain manual, `TXK_Arena*` / `TXK_KOF*` frames are manual, and C-series/free frames are free.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production dry-run showed only `20260525220522_cosmetics_frame_unlock_hotfix.sql`.
+- Production migration push applied `20260525220522`.
+- Remote migration list confirmed `20260525220522` applied.
+- Read-only production verification found 20 frame rows: 7 Arena manual, 3 KOF manual, 10 other free, and 0 other locked.
+- Active Owner count remains `1`.
+- Production app load smoke passed with no captured console errors.
+- Authenticated Profile -> Customize -> Frames smoke is pending until a production browser session is available.
+
+Security result:
+- The hotfix updates only catalog frame `unlock_type` values.
+- No profile equipment rows, frontend runtime behavior, RLS/RPC/function behavior, uploads, Supabase Storage, arbitrary URLs, CP/GvG/audit/role/permission/member-status behavior, or Vercel env changed.
+
 ## Leaderboard Podium Polish Production Checkpoint
 
 Leaderboard podium polish is live in production.

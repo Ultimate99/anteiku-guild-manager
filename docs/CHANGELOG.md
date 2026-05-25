@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-05-25 - Cosmetics Frame Unlock Hotfix
+
+- Updated `scripts/sync-cosmetics-catalog.mjs` so only `TXK_Arena*` and `TXK_KOF*` frames default to `unlock_type = 'manual'`; all other frames default to `unlock_type = 'free'`.
+- Preserved `_FREE` keys as free and kept `premium` avatar keys manual.
+- Added migration `20260525220522_cosmetics_frame_unlock_hotfix.sql`.
+- Production dry-run showed only the hotfix migration pending.
+- Applied `20260525220522_cosmetics_frame_unlock_hotfix.sql` to production project `mzflfyxxkascrfpteexz`.
+- Read-only production verification found 7 Arena manual frames, 3 KOF manual frames, 10 other free frames, and 0 other locked frames.
+- Active Owner count remains `1`.
+- Production app load smoke passed with no captured console errors.
+- Authenticated Profile cosmetics browser smoke remains pending until a production session is available.
+- No profile equipment rows, CP/GvG/audit/role/permission/member-status behavior, Vercel env, uploads, Supabase Storage, arbitrary URLs, or service-role path changed.
+
 ## 2026-05-25 - Milestone 22F Cosmetics Catalog Sync Script
 
 - Added local developer tooling script `scripts/sync-cosmetics-catalog.mjs`.
@@ -7,7 +20,7 @@
 - Script scans `public/cosmetics/avatars/` and `public/cosmetics/frames/` for `.png` and `.webp` files.
 - Script generates timestamped `supabase/migrations/*_cosmetics_catalog_sync.sql` files that upsert `public.cosmetic_catalog` rows.
 - Generated rows use filename-without-extension keys, repo-backed `/cosmetics/...` asset paths, i18n label keys, deterministic sort order, and `ON CONFLICT (key) DO UPDATE`.
-- Unlock defaults: `_FREE` keys are free, v1 avatars without `_FREE` are free, and frames without `_FREE` are manual.
+- Unlock defaults are now: `_FREE` keys are free, premium avatar keys are manual, other v1 avatars are free, `TXK_Arena*` / `TXK_KOF*` frames are manual, and all other frames are free.
 - Dry-run and normal generation were validated locally; generated migration `20260525193210_cosmetics_catalog_sync.sql` was created but not applied.
 - `npm.cmd run build` passed.
 - No runtime app behavior, Supabase/RLS/RPC behavior, staging, production, deployment, uploads, Supabase Storage, or arbitrary URL behavior changed.
