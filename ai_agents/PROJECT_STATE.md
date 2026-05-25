@@ -1,5 +1,46 @@
 # Project State
 
+## Milestone 22C Frontend Cosmetics Picker Implemented
+
+Milestone 22C is implemented locally on branch `wip/cosmetics-backend-assets` as a frontend cosmetics picker for the locally validated Milestone 22B backend. Build and source/security-path validation passed. Manual authenticated browser validation is still pending.
+
+Implemented locally:
+- Added `src/services/cosmeticsService.js`.
+- Added `src/components/CosmeticPreview.jsx`.
+- Updated `src/pages/Profile.jsx` with a member-facing cosmetics picker.
+- Updated `src/styles/app.css` with mobile-first dark/crimson cosmetics picker and preview styles.
+- Added EN/FR/DE profile cosmetics labels.
+
+Frontend behavior:
+- Profile loads the caller's own cosmetics through `get_my_cosmetics()`.
+- Members can equip only their own avatar through `equip_my_avatar(...)`.
+- Members can equip only their own unlocked/free frame through `equip_my_frame(...)`.
+- The Profile header now renders the equipped avatar and frame when cosmetics load.
+- The picker shows unlocked/equipped/locked states for catalog frames.
+- Locked frames are displayed but cannot be equipped from the frontend.
+- Avatar equip refreshes the auth profile so `profiles.avatar_key` stays in sync with the legacy profile state.
+
+Security/scope:
+- No SQL migrations changed.
+- No Supabase/RLS/RPC logic changed.
+- No direct frontend calls were added for `cosmetic_catalog`, `profile_cosmetic_unlocks`, or `profile_equipped_cosmetics`.
+- No direct frontend calls were added for `member_cp`, `cp_snapshots`, `audit_logs`, or unsafe `gvg_votes` writes.
+- No admin cosmetic grant UI was added.
+- No player uploads, arbitrary image URLs, Supabase Storage use, CP/GvG/audit/role/permission/member-status behavior changes, production changes, Vercel changes, or deploy actions were included.
+- Cosmetics asset rendering is constrained in the service to `/cosmetics/avatars/` and `/cosmetics/frames/` paths.
+
+Validation:
+- `npm.cmd run build` passed.
+- Local Vite dev server is reachable at `http://127.0.0.1:5173`.
+- Static/source validation confirmed the new frontend path uses `get_my_cosmetics`, `equip_my_avatar`, and `equip_my_frame`.
+- Static/source validation found no direct cosmetics table calls in `src`.
+- Static/source validation found no new direct CP/audit/GvG protected table calls in the cosmetics/Profile path.
+
+Rollout boundary:
+- Staging and production do not have `20260525000100_cosmetics_catalog_unlocks.sql` yet.
+- Do not deploy or merge this frontend picker to a target environment until that target DB has the cosmetics migration applied and verified.
+- Manual authenticated local browser validation is still required before marking 22C complete.
+
 ## Milestone 22B.1 Cosmetics Catalog Aligned Locally
 
 Milestone 22B/22B.1 is implemented and locally validated as backend/database-only support for preset avatars, unlocked/equipped frames, and future cosmetic rewards.
@@ -39,7 +80,7 @@ Asset note:
 - Static asset paths now match files under `public/cosmetics/avatars/` and `public/cosmetics/frames/`.
 - A pre-existing untracked `public/cosmetics/` folder was left untouched during this backend-only task.
 
-Recommended next step:
+Historical next step:
 - Milestone 22C frontend cosmetics picker planning/implementation.
 
 ## Milestone 21E Rank Badge / Profile Border Production Rollout Complete

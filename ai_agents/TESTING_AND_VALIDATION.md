@@ -1,5 +1,39 @@
 # Testing And Validation
 
+## Milestone 22C Frontend Cosmetics Picker Build And Source Validation
+
+Milestone 22C frontend cosmetics picker is implemented locally and pending manual authenticated browser validation.
+
+Build:
+- `npm.cmd run build` passed.
+- Vite emitted the existing large chunk warning; build completed successfully.
+
+Local dev server:
+- Vite dev server was started and reached at `http://127.0.0.1:5173`.
+
+Source/security-path validation:
+- `src/services/cosmeticsService.js` calls only:
+  - `get_my_cosmetics`
+  - `equip_my_avatar`
+  - `equip_my_frame`
+- No direct frontend references to `cosmetic_catalog`, `profile_cosmetic_unlocks`, `profile_equipped_cosmetics`, or `admin_grant_cosmetic` were found in `src`.
+- No direct frontend `member_cp`, `cp_snapshots`, `audit_logs`, or unsafe `gvg_votes` paths were added by the Profile/cosmetics picker path.
+- No SQL migrations changed.
+- No Supabase/RLS/RPC logic changed.
+- No production or staging commands were run.
+
+Manual browser validation pending:
+- Approved user can open Profile and load cosmetics.
+- Current avatar/frame preview renders.
+- Avatar grid renders all available avatars.
+- Equipping an avatar updates the Profile header and refreshes legacy `profile.avatar_key`.
+- Free frames can be equipped.
+- Locked frames are visible but disabled until unlocked.
+- Refresh button reloads cosmetics.
+- Network shows only `get_my_cosmetics`, `equip_my_avatar`, and `equip_my_frame` for picker actions.
+- No direct cosmetics table calls or protected CP/audit/GvG table calls appear.
+- Mobile layout is readable.
+
 ## Milestone 22B Cosmetics Backend Local Validation
 
 Milestone 22B backend/database validation passed locally.

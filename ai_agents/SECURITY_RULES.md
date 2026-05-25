@@ -1,5 +1,20 @@
 # Security Rules
 
+## Milestone 22C Frontend Cosmetics Picker Rules
+
+Milestone 22C is frontend-only and local-only until the target database has `20260525000100_cosmetics_catalog_unlocks.sql` applied and verified.
+
+Frontend picker rules:
+- Load cosmetics through `get_my_cosmetics()` only.
+- Equip avatars through `equip_my_avatar(...)` only.
+- Equip frames through `equip_my_frame(...)` only.
+- Do not direct-read or direct-write `cosmetic_catalog`, `profile_cosmetic_unlocks`, or `profile_equipped_cosmetics` from frontend code.
+- Do not expose `admin_grant_cosmetic(...)` in member-facing UI.
+- Do not add upload, arbitrary URL, or Supabase Storage avatar/frame behavior.
+- Render only asset paths constrained to `/cosmetics/avatars/` and `/cosmetics/frames/`.
+- Locked frames may be shown as locked but must not be equip-enabled unless backend marks them unlocked.
+- Do not deploy the picker to staging or production until that target DB has the cosmetics migration applied and verified.
+
 ## Milestone 22B Cosmetics Backend Rules
 
 Milestone 22B is backend/database-only and locally validated. It is not deployed to staging or production yet.

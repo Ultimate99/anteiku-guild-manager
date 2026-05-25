@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-05-25 - Milestone 22C Frontend Cosmetics Picker Implemented
+
+- Added frontend-only Profile cosmetics picker for the locally validated Milestone 22B cosmetics backend.
+- Added `src/services/cosmeticsService.js` using only `get_my_cosmetics`, `equip_my_avatar`, and `equip_my_frame`.
+- Added `src/components/CosmeticPreview.jsx` for static avatar/frame previews.
+- Updated Profile to render equipped avatar/frame visuals, list available avatars, list free/unlocked/locked frames, equip avatars, and equip free/unlocked frames.
+- Locked frames are visible but disabled until unlocked by backend state.
+- Avatar equip refreshes the auth profile so legacy `profiles.avatar_key` stays in sync.
+- Added mobile-first dark/crimson cosmetics picker styles.
+- Added EN/FR/DE cosmetics labels.
+- `npm.cmd run build` passed.
+- Source validation found no direct frontend `cosmetic_catalog`, `profile_cosmetic_unlocks`, or `profile_equipped_cosmetics` calls.
+- Source validation found no admin cosmetic grant UI and no new direct CP/audit/GvG protected table paths.
+- Local Vite dev server reached `http://127.0.0.1:5173`.
+- No SQL migrations, Supabase/RLS/RPC logic, staging, production, Vercel env, deployment, push, or commit action was included.
+- Manual authenticated local browser validation remains pending before marking Milestone 22C complete.
+- Do not deploy this picker to staging or production until the target DB has `20260525000100_cosmetics_catalog_unlocks.sql` applied and verified.
+
 ## 2026-05-25 - Milestone 22B.1 Cosmetics Catalog Asset Alignment
 
 - Aligned the local cosmetics catalog seed with actual files under `public/cosmetics/avatars/` and `public/cosmetics/frames/`.

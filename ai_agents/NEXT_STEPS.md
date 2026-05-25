@@ -2,7 +2,40 @@
 
 ## Current Recommendation
 
-Milestone 22B/22B.1 Cosmetics backend is implemented, aligned to actual repo assets, and locally validated. The next recommended milestone is Milestone 22C frontend cosmetics picker planning/implementation.
+Milestone 22C frontend cosmetics picker is implemented locally on branch `wip/cosmetics-backend-assets`. Build and source/security-path validation passed. Manual authenticated local browser validation is the next required step before marking 22C complete.
+
+Recorded Milestone 22C frontend status:
+- Added `src/services/cosmeticsService.js`.
+- Added `src/components/CosmeticPreview.jsx`.
+- Updated `src/pages/Profile.jsx` with a member-facing avatar/frame picker.
+- Updated `src/styles/app.css` with mobile-first cosmetics picker styles.
+- Added EN/FR/DE cosmetics labels.
+- Profile loads own cosmetics through `get_my_cosmetics()`.
+- Avatar equip uses `equip_my_avatar(...)`.
+- Frame equip uses `equip_my_frame(...)`.
+- No direct cosmetics table calls were added.
+- No admin grant UI was added.
+- `npm.cmd run build` passed.
+- Local Vite is reachable at `http://127.0.0.1:5173`.
+
+Next required manual validation:
+- Sign in locally as an approved Member/Owner against a DB with `20260525000100_cosmetics_catalog_unlocks.sql`.
+- Open Profile.
+- Confirm the current avatar/frame preview renders.
+- Confirm avatar grid renders.
+- Equip a different avatar and verify Profile header updates.
+- Confirm free frames can be equipped.
+- Confirm locked frames are visible but disabled until unlocked.
+- Confirm refresh works.
+- Confirm Network uses only `get_my_cosmetics`, `equip_my_avatar`, and `equip_my_frame` for picker actions.
+- Confirm no direct `cosmetic_catalog`, `profile_cosmetic_unlocks`, `profile_equipped_cosmetics`, `member_cp`, `cp_snapshots`, `audit_logs`, or unsafe `gvg_votes` calls.
+- Confirm mobile layout is readable.
+
+Rollout warning:
+- Staging and production do not have `20260525000100_cosmetics_catalog_unlocks.sql` yet.
+- Do not deploy or merge this picker into any target until that target DB has the cosmetics migration applied and verified.
+
+## Previous Recommendation - Milestone 22B
 
 Recorded Milestone 22B backend status:
 - New local migration: `20260525000100_cosmetics_catalog_unlocks.sql`.

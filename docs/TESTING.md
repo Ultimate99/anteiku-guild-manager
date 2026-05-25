@@ -1,5 +1,39 @@
 # Testing
 
+## Milestone 22C Frontend Cosmetics Picker Validation
+
+Milestone 22C is implemented locally and pending manual authenticated browser validation.
+
+Build/source validation:
+- `npm.cmd run build` passed.
+- Cosmetics service uses only `get_my_cosmetics`, `equip_my_avatar`, and `equip_my_frame`.
+- No direct frontend cosmetics table calls were added.
+- No admin cosmetic grant UI was added.
+- No new direct CP/audit/GvG protected table paths were added by the cosmetics picker.
+
+Manual local browser validation checklist:
+- Sign in as an approved local user.
+- Open Profile.
+- Confirm current avatar/frame preview renders.
+- Confirm avatar picker renders available avatars.
+- Equip a different avatar.
+- Confirm Profile header updates after avatar equip.
+- Confirm free frames can be equipped.
+- Confirm locked frames are visible but disabled until unlocked.
+- Confirm refresh reloads cosmetics.
+- Confirm mobile layout is readable.
+
+Network checklist:
+- Initial/Profile cosmetics load uses `get_my_cosmetics`.
+- Avatar equip uses `equip_my_avatar`.
+- Frame equip uses `equip_my_frame`.
+- No direct `cosmetic_catalog`, `profile_cosmetic_unlocks`, or `profile_equipped_cosmetics` calls.
+- No direct `member_cp`, `cp_snapshots`, `audit_logs`, or unsafe `gvg_votes` calls.
+
+Rollout boundary:
+- Staging and production do not have `20260525000100_cosmetics_catalog_unlocks.sql` yet.
+- Do not deploy or merge the picker to a target environment until that target DB has the cosmetics migration applied and verified.
+
 ## Milestone 22B Cosmetics Backend Local Validation
 
 Milestone 22B backend/database validation passed locally.

@@ -6,6 +6,7 @@
 - `src/components/AppNav.jsx`: Mobile-first page navigation.
 - `src/components/StatusBadge.jsx`: Small status label component.
 - `src/components/RankBadge.jsx`: Member-safe rank badge component for Profile/Dashboard visuals using safe rank summary fields only.
+- `src/components/CosmeticPreview.jsx`: Member avatar/frame preview component using approved static cosmetics asset paths.
 - `src/config/supabaseClient.js`: Supabase env check and client placeholder.
 - `src/context/AuthContext.jsx`: Local Supabase auth/session provider, password recovery state, and safe viewer state.
 - `src/context/LanguageContext.jsx`: Frontend-only language provider, `useLanguage()` hook, `t(key, params?)`, and `agm_language` persistence.
@@ -21,6 +22,7 @@
 - `src/services/adminMemberService.js`: RLS-safe approved primary member roster reads, member-management permission helpers, roster status helpers, roster status RPC wrapper, and admin member IGN/slug/role/guild RPC wrappers.
 - `src/services/cpWindowService.js`: RPC-only CP Update Window service for own CP, member self-submit, selected-guild staff window status, and staff window open/close.
 - `src/services/cpRankBadgeService.js`: RPC-only own CP rank summary wrapper for `get_my_cp_rank_summary`.
+- `src/services/cosmeticsService.js`: RPC-only own cosmetics wrapper for `get_my_cosmetics`, `equip_my_avatar`, and `equip_my_frame`; normalizes asset paths to `/cosmetics/avatars/` and `/cosmetics/frames/`.
 - `src/data/guilds.js`: Core guild list.
 - `src/data/navigation.js`: Navigation items.
 - `src/pages/LoginRegister.jsx`: Local Supabase signin/signup, forgot-password, and registration UI.
@@ -30,7 +32,7 @@
 - `src/pages/SuspendedStatus.jsx`: Suspended account gate.
 - `src/pages/RosterRestrictedStatus.jsx`: Roster lifecycle hard-block gate for suspended/left/kicked members.
 - `src/pages/Dashboard.jsx`: Approved-user safe guild dashboard with roster status display, compact own rank badge, and no CP values.
-- `src/pages/Profile.jsx`: Safe profile display with own roster status, rank badge/profile border from safe own-rank RPC, own CP through safe RPCs only, and own IGN edit mode for approved users.
+- `src/pages/Profile.jsx`: Safe profile display with own roster status, rank badge/profile border from safe own-rank RPC, own cosmetics picker through safe cosmetics RPCs, own CP through safe RPCs only, and own IGN edit mode for approved users.
 - `src/pages/Gvg.jsx`: GvG voting UI with roster-status UX gating for inactive/on_break and hard-blocked statuses.
 - `src/pages/AdminPanel.jsx`: Restricted AdminPanel coordinator for admin permission loading, visible tab calculation, active tab state, lazy section loading, and section action handlers.
 - `src/components/admin/AdminTabs.jsx`: Mobile-first AdminPanel tab bar.
@@ -43,12 +45,36 @@
 - `src/components/admin/AdminToolsSection.jsx`: Planned/future admin tools section.
 - `src/styles/app.css`: Plain mobile-first dark styling.
 
+## Milestone 22C Frontend Cosmetics Picker
+
+Local-only status:
+- Implemented and build/source-security validated.
+- Manual authenticated browser validation is pending.
+- Staging and production do not have `20260525000100_cosmetics_catalog_unlocks.sql` yet, so do not deploy the picker there.
+
+- `src/services/cosmeticsService.js`
+  - Calls only `get_my_cosmetics`, `equip_my_avatar`, and `equip_my_frame`.
+  - Does not direct-read `cosmetic_catalog`, `profile_cosmetic_unlocks`, or `profile_equipped_cosmetics`.
+  - Does not expose `admin_grant_cosmetic`.
+  - Filters rendered asset paths to `/cosmetics/avatars/` and `/cosmetics/frames/`.
+- `src/components/CosmeticPreview.jsx`
+  - Renders equipped avatar and optional frame as static app assets.
+- `src/pages/Profile.jsx`
+  - Adds member-facing avatar and frame picker.
+  - Shows equipped/unlocked/locked states.
+  - Disables locked frames.
+  - Refreshes profile state after avatar equip for `profiles.avatar_key` compatibility.
+- `src/styles/app.css`
+  - Adds mobile-first cosmetics picker and preview styles.
+- `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`
+  - Add Profile cosmetics labels.
+
 ## Milestone 22B Cosmetics Backend
 
 Local-only status:
 - Implemented and locally validated.
 - Staging and production do not have `20260525000100_cosmetics_catalog_unlocks.sql` yet.
-- No frontend picker has been implemented.
+- Frontend picker is now implemented locally in Milestone 22C but is not deployed.
 
 - `supabase/migrations/20260525000100_cosmetics_catalog_unlocks.sql`
   - Adds `cosmetic_catalog`, `profile_cosmetic_unlocks`, and `profile_equipped_cosmetics`.

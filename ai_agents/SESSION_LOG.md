@@ -1,5 +1,22 @@
 # Session Log
 
+## 2026-05-25 - Milestone 22C Frontend Cosmetics Picker Implemented
+
+- Continued work on branch `wip/cosmetics-backend-assets`.
+- Implemented frontend-only member cosmetics picker on Profile.
+- Added `src/services/cosmeticsService.js` using only `get_my_cosmetics`, `equip_my_avatar`, and `equip_my_frame`.
+- Added `src/components/CosmeticPreview.jsx` for static avatar/frame rendering.
+- Updated `src/pages/Profile.jsx` to load own cosmetics, render current avatar/frame preview, equip avatars, equip free/unlocked frames, and show locked frames as disabled.
+- Updated Profile header to show equipped cosmetics when the cosmetics state is loaded.
+- Added mobile-first dark/crimson cosmetics picker styles to `src/styles/app.css`.
+- Added EN/FR/DE cosmetics labels.
+- `npm.cmd run build` passed.
+- Local Vite dev server was started and reached at `http://127.0.0.1:5173`.
+- Static/source validation found no direct frontend cosmetics table calls and no admin grant UI.
+- Static/source validation found no new direct `member_cp`, `cp_snapshots`, `audit_logs`, or unsafe `gvg_votes` paths in the cosmetics/Profile picker path.
+- No SQL migrations, Supabase/RLS/RPC logic, CP logic, GvG logic, audit logic, role/guild management, permission logic, production, Vercel env, deploy, push, or commit action was performed.
+- Manual authenticated local browser validation remains pending before marking Milestone 22C complete.
+
 ## 2026-05-25 - Milestone 22B.1 Cosmetics Catalog Asset Alignment
 
 - Aligned `cosmetic_catalog` seed data with actual files in `public/cosmetics/avatars/` and `public/cosmetics/frames/`.
