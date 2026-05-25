@@ -1,5 +1,20 @@
 # Security Rules
 
+## Owner Cosmetics Grant Tool Rules
+
+Owner Cosmetics is a frontend-only AdminPanel Tools surface for the existing grant RPC.
+
+Rules:
+- UI must be visible only to Owner.
+- Non-owner Admins must not see the Owner Cosmetics section.
+- Members must not access AdminPanel.
+- The form must ask for username/profile slug and must not use IGN/display-name lookup.
+- Cosmetic options may be loaded only through existing safe RPC/read paths.
+- Grants must call only `admin_grant_cosmetic_by_slug(p_profile_slug, p_cosmetic_key, p_reason)`.
+- Frontend must not insert/update/delete `profile_cosmetic_unlocks`, `profile_equipped_cosmetics`, or `cosmetic_catalog`.
+- No uploads, Supabase Storage, arbitrary URLs, service-role key path, or broad catalog-write UI is allowed.
+- Production grant mutation smoke requires explicit approval.
+
 ## Milestone 23D Premium Cosmetics Production Rules
 
 Milestone 23D is live in production. Production has `20260525000300_premium_cosmetics_grant_helper.sql` applied and verified.

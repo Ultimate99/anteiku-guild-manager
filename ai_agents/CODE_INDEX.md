@@ -23,7 +23,7 @@
 - `src/services/adminMemberService.js`: RLS-safe approved primary member roster reads, member-management permission helpers, roster status helpers, roster status RPC wrapper, and admin member IGN/slug/role/guild RPC wrappers.
 - `src/services/cpWindowService.js`: RPC-only CP Update Window service for own CP, member self-submit, selected-guild staff window status, and staff window open/close.
 - `src/services/cpRankBadgeService.js`: RPC-only own CP rank summary wrapper for `get_my_cp_rank_summary`.
-- `src/services/cosmeticsService.js`: RPC-only own cosmetics wrapper for `get_my_cosmetics`, `equip_my_avatar`, and `equip_my_frame`; normalizes asset paths to `/cosmetics/avatars/` and `/cosmetics/frames/`.
+- `src/services/cosmeticsService.js`: RPC-only cosmetics wrapper for `get_my_cosmetics`, `equip_my_avatar`, `equip_my_frame`, active grantable cosmetic option loading, and Owner grant-by-slug through `admin_grant_cosmetic_by_slug`; normalizes asset paths to `/cosmetics/avatars/` and `/cosmetics/frames/`.
 - `src/data/guilds.js`: Core guild list.
 - `src/data/navigation.js`: Navigation items.
 - `src/pages/LoginRegister.jsx`: Local Supabase signin/signup, forgot-password, and registration UI.
@@ -43,7 +43,7 @@
 - `src/components/admin/AdminGvgSection.jsx`: GvG event management/results section.
 - `src/components/admin/AdminAuditSection.jsx`: Read-only audit log viewer section.
 - `src/components/admin/AdminPermissionsSection.jsx`: Admin permission checkbox management section.
-- `src/components/admin/AdminToolsSection.jsx`: Planned/future admin tools section.
+- `src/components/admin/AdminToolsSection.jsx`: Planned/future admin tools section plus Owner-only cosmetics grant UI.
 - `src/styles/app.css`: Plain mobile-first dark styling.
 
 ## Milestone 22F Cosmetics Catalog Sync Script
@@ -76,6 +76,21 @@
 - Production status:
   - Applied to production project `mzflfyxxkascrfpteexz`.
   - Read-only verification confirmed 7 Arena manual frames, 3 KOF manual frames, 10 other free frames, and 0 other locked frames.
+
+## Owner Cosmetics Grant Tool
+
+- `src/components/admin/AdminToolsSection.jsx`
+  - Renders Owner Cosmetics only for `membership.role === 'owner'`.
+  - Uses username/profile slug copy and warns not to use IGN.
+  - Loads dropdown options through the existing cosmetics service RPC path.
+  - Submits grants through `grantCosmeticBySlug(...)`.
+- `src/services/cosmeticsService.js`
+  - `loadGrantableCosmetics()` flattens active avatar/frame catalog data returned by `get_my_cosmetics()`.
+  - `grantCosmeticBySlug(...)` calls only `admin_grant_cosmetic_by_slug`.
+- `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`
+  - Add `ownerCosmetics.*` labels.
+- `src/styles/app.css`
+  - Adds compact Owner Cosmetics Tools panel/form styles.
 
 ## Milestone 22E Cosmetics Production Rollout
 

@@ -2,6 +2,23 @@
 
 ## Current Recommendation
 
+Owner Cosmetics grant tool is live in the production bundle.
+
+Recorded status:
+- Commit `d97fc9f feat: add owner cosmetics grant tool` was pushed to `main`.
+- Vercel production bundle contains the Owner Cosmetics UI.
+- Local browser validation passed for Owner Tools visibility, dropdown rendering, required-field validation, non-owner Admin hidden state, and Member AdminPanel denial.
+- Production app load smoke passed with no captured console errors.
+- Authenticated production Owner/non-owner smoke is pending because the browser was signed out.
+- Grant mutation smoke was not performed; no production cosmetic grants were created.
+
+Recommended next options:
+- Have the user sign in as production Owner and verify AdminPanel -> Tools -> Owner Cosmetics renders.
+- If explicitly approved, perform one controlled production grant to the controlled test member and verify the member can equip it.
+- Otherwise keep grant mutation untested in production and rely on staging/backend validation.
+
+## Previous Recommendation - Cosmetics Frame Unlock Hotfix
+
 Cosmetics frame unlock hotfix is applied in production.
 
 Recorded hotfix status:

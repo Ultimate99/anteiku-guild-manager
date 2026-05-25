@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-05-25 - Owner Cosmetics Grant Tool
+
+- Added AdminPanel -> Tools -> Owner Cosmetics.
+- Tool is visible only for Owner.
+- Non-owner Admins do not see Owner Cosmetics; Members still have no AdminPanel access.
+- Added username/profile slug input, cosmetic dropdown, optional reason input, required-field validation, and grant action.
+- Cosmetic dropdown uses existing `get_my_cosmetics()` data.
+- Grant action uses only existing `admin_grant_cosmetic_by_slug(...)`.
+- Added EN/FR/DE `ownerCosmetics` labels.
+- Added compact dark/crimson Tools styling.
+- `npm.cmd run build` passed.
+- Local browser validation passed for Owner visibility/form validation, non-owner Admin hidden state, and Member AdminPanel denial.
+- Commit `d97fc9f feat: add owner cosmetics grant tool` was pushed and Vercel deployed the production bundle.
+- Production app load smoke passed with no captured console errors.
+- Authenticated production Owner/non-owner smoke remains pending because the browser was signed out.
+- No grant mutation smoke was performed; no production cosmetic grants were created.
+- No SQL migrations, Supabase/RLS/RPC changes, Vercel env changes, uploads, Supabase Storage, arbitrary URLs, or CP/GvG/audit/ranking/role/permission/member-status behavior changes were included.
+
 ## 2026-05-25 - Cosmetics Frame Unlock Hotfix
 
 - Updated `scripts/sync-cosmetics-catalog.mjs` so only `TXK_Arena*` and `TXK_KOF*` frames default to `unlock_type = 'manual'`; all other frames default to `unlock_type = 'free'`.

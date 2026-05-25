@@ -1,5 +1,30 @@
 # Project State
 
+## Owner Cosmetics Grant Tool Live
+
+AdminPanel -> Tools now includes an Owner-only Owner Cosmetics grant tool.
+
+Implemented:
+- Added compact Owner Cosmetics UI inside `AdminToolsSection`.
+- Tool is visible only when the current membership role is `owner`.
+- Non-owner Admins still see only safe Tools content; Members have no AdminPanel access.
+- The form uses username/profile slug wording and warns not to use IGN.
+- Cosmetic dropdown loads active catalog options through the existing `get_my_cosmetics()` RPC path.
+- Grant action uses only `admin_grant_cosmetic_by_slug(p_profile_slug, p_cosmetic_key, p_reason)`.
+- No direct insert/update to `profile_cosmetic_unlocks`, `profile_equipped_cosmetics`, or `cosmetic_catalog` was added.
+
+Validation:
+- `npm.cmd run build` passed.
+- Local browser validation passed for Owner visibility, dropdown rendering, empty slug validation, empty cosmetic validation, non-owner Admin hidden state, and Member AdminPanel denial.
+- Commit `d97fc9f feat: add owner cosmetics grant tool` was pushed to `main`.
+- Vercel production bundle deployed and production app load smoke passed with no captured console errors.
+- Authenticated production Owner/non-owner smoke remains pending because the production browser session was signed out and no passwords were requested.
+- Grant mutation smoke was not performed by design; no production cosmetic grants were created.
+
+Security:
+- Frontend/UI-only change using existing RPCs.
+- No SQL migrations, Supabase/RLS/RPC changes, Vercel env changes, uploads, Supabase Storage, arbitrary URLs, CP/GvG/audit/ranking/role/permission/member-status behavior changes, or production data mutations were included.
+
 ## Cosmetics Frame Unlock Hotfix Production Rollout
 
 Production frame unlock hotfix is applied to production project `mzflfyxxkascrfpteexz`.

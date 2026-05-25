@@ -1,5 +1,42 @@
 # Testing And Validation
 
+## Owner Cosmetics Grant Tool Validation
+
+Owner Cosmetics frontend validation passed locally and production app-load smoke passed after deployment.
+
+Commands:
+- `npm.cmd run build`
+- Local Vite browser validation against local Supabase
+- Production bundle/app load smoke at `https://anteiku-guild-manager.vercel.app`
+
+Results:
+- Build passed with the existing Vite chunk-size warning only.
+- Owner local browser validation:
+  - AdminPanel opened.
+  - Tools tab opened.
+  - Owner Cosmetics section was visible.
+  - Cosmetic dropdown rendered from the existing `get_my_cosmetics()` path.
+  - Empty username/profile slug validation displayed.
+  - Empty cosmetic validation displayed.
+- Non-owner Admin local browser validation:
+  - Tools tab opened.
+  - Owner Cosmetics section was hidden.
+- Member local browser validation:
+  - Member had no Admin navigation.
+  - Owner Cosmetics section was not present.
+- Production deployment:
+  - Commit `d97fc9f feat: add owner cosmetics grant tool` was pushed.
+  - Vercel production bundle deployed.
+  - Production app loaded with no captured console errors.
+
+Not tested:
+- Production authenticated Owner/non-owner UI smoke is pending because the browser was signed out and no passwords were requested.
+- Grant mutation smoke was not performed by design; no production cosmetic grant was created.
+
+Security/source result:
+- Source checks found no SQL/migration changes, no direct cosmetic table writes, no upload/Storage/arbitrary URL path, and no CP/GvG/audit/ranking/member-status behavior changes.
+- Grant UI uses only `admin_grant_cosmetic_by_slug(...)` for writes.
+
 ## Cosmetics Frame Unlock Hotfix Validation
 
 Production rollout/verification passed for the database hotfix.

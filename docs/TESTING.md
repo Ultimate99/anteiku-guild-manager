@@ -1,5 +1,37 @@
 # Testing
 
+## Owner Cosmetics Grant Tool
+
+Frontend validation passed locally and production app-load smoke passed after deployment.
+
+- `npm.cmd run build` passed.
+- Local Owner browser validation:
+  - AdminPanel opened.
+  - Tools tab opened.
+  - Owner Cosmetics section was visible.
+  - Cosmetic dropdown rendered.
+  - Empty username/profile slug validation worked.
+  - Empty cosmetic validation worked.
+- Local non-owner Admin browser validation:
+  - Tools tab opened.
+  - Owner Cosmetics section was hidden.
+- Local Member browser validation:
+  - Member had no Admin navigation.
+  - Owner Cosmetics section was not present.
+- Commit `d97fc9f feat: add owner cosmetics grant tool` was pushed to `main`.
+- Vercel production bundle deployed and production app loaded with no captured console errors.
+
+Not tested:
+- Authenticated production Owner/non-owner smoke remains pending because the browser was signed out and no passwords were requested.
+- Grant mutation smoke was not performed; no production cosmetic grants were created.
+
+Security/source result:
+- No SQL/migration changes.
+- No Supabase/RLS/RPC changes.
+- No direct cosmetic table writes.
+- No upload, Supabase Storage, or arbitrary URL behavior.
+- Grant writes use only existing `admin_grant_cosmetic_by_slug(...)`.
+
 ## Cosmetics Frame Unlock Hotfix
 
 Production database hotfix validation passed.
