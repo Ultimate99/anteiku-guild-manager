@@ -185,7 +185,8 @@ Production status:
   - Does not call admin CP ranking, CP roster, CP leaderboard, or direct CP tables.
 - `src/pages/Leaderboard.jsx`
   - Adds member-facing CP Ranking page with My Guild and Global tabs.
-  - Shows rank, IGN, optional guild label on Global, and current-user highlight.
+  - Shows rank, approved avatar/frame display, IGN, optional guild label on Global, current-user highlight, and the production-polished Top 3 podium.
+  - Podium presentation is frontend-only: desktop visually orders `#2 | #1 | #3`; mobile stacks `#1`, `#2`, `#3`.
   - Does not render CP values, CP history, growth, snapshots, profile ids, usernames, timestamps, or private metadata.
 - `src/data/navigation.js` and `src/App.jsx`
   - Add the member Leaderboard/Ranking navigation item and route.
@@ -209,7 +210,7 @@ Production status:
   - Keeps Global admin leaderboard frontend visibility Owner-only; backend RPC authorization remains authoritative.
 - `src/components/admin/AdminCpLeaderboardSection.jsx`
   - Renders the separate AdminPanel `CP Ranking` tab content.
-  - Shows Guild / Global tabs and compact decorated admin ranking rows with CP values for authorized staff.
+  - Shows Guild / Global tabs, compact decorated admin ranking rows, avatar/frame display, and the production-polished Top 3 podium with CP values for authorized staff only.
 - `src/components/admin/AdminCpSection.jsx`
   - Preserves CP roster, manual CP update, and CP Update Window controls.
 - `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`

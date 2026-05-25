@@ -2,6 +2,26 @@
 
 ## Current Recommendation
 
+Leaderboard podium polish is live in production.
+
+Recorded leaderboard podium polish status:
+- Commit deployed: `3f65052 style: tune leaderboard podium layout`.
+- Desktop podium visually orders `#2 | #1 | #3`.
+- Mobile stacks `#1`, `#2`, `#3`.
+- Rank #1 has stronger gold/center styling and a larger avatar/frame.
+- Rank #2 has silver styling; rank #3 has bronze styling.
+- Build passed and production app load smoke passed with no captured console errors.
+- This was frontend/style-only; ranking logic, backend/RPC behavior, SQL, and CP privacy are unchanged.
+
+Recommended next options:
+- Authenticated production Member/Owner smoke for the final leaderboard polish if the user wants it recorded.
+- Milestone 23E: optional AdminPanel Grant Cosmetic UI planning/implementation.
+- Premium cosmetic seed planning if future avatar/frame rewards should be added to production.
+- Cosmetics picker copy polish for future locked premium avatars, if needed.
+- Relink Supabase CLI deliberately before any staging/local Supabase work; it is currently linked to production `mzflfyxxkascrfpteexz`.
+
+## Previous Recommendation - Milestone 23D
+
 Milestone 23D Premium Cosmetics production rollout is complete. Production now has `20260525000300_premium_cosmetics_grant_helper.sql` applied and verified.
 
 Recorded Milestone 23D production status:

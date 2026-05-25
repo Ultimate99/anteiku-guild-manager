@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-05-25 - Leaderboard Podium Polish Live
+
+- Deployed `3f65052 style: tune leaderboard podium layout`.
+- Desktop leaderboard podium now visually orders `#2 | #1 | #3`.
+- Mobile leaderboard podium stacks `#1`, `#2`, `#3`.
+- Rank #1 has stronger centered gold styling and a larger avatar/frame.
+- Rank #2 has silver styling.
+- Rank #3 has bronze styling.
+- Build passed and production app load smoke passed with no captured console errors.
+- This was frontend/style-only; no ranking logic, backend/RPC, SQL, Supabase/RLS, Vercel env, production data, or CP privacy behavior changed.
+
 ## 2026-05-25 - Milestone 23D Premium Cosmetics Production Rollout Complete
 
 - Applied `20260525000300_premium_cosmetics_grant_helper.sql` to production project `mzflfyxxkascrfpteexz` after dry-run review showed exactly that migration pending.

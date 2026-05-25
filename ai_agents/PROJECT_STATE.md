@@ -1,5 +1,27 @@
 # Project State
 
+## Leaderboard Podium Polish Production Checkpoint
+
+Leaderboard podium polish is live in production at `https://anteiku-guild-manager.vercel.app`.
+
+Production rollout:
+- Commit deployed: `3f65052 style: tune leaderboard podium layout`.
+- Build passed before deployment.
+- Production app load smoke passed with no captured console errors.
+
+UI result:
+- Desktop podium order is visually `#2 | #1 | #3`.
+- Mobile podium stacks `#1`, `#2`, `#3`.
+- Rank #1 has stronger centered gold styling and a larger avatar/frame.
+- Rank #2 has silver styling.
+- Rank #3 has bronze styling.
+
+Scope/security:
+- Frontend/style-only checkpoint.
+- No ranking logic, backend, RPC, SQL, Supabase/RLS, Vercel env, or database behavior changed.
+- Member leaderboard CP privacy is unchanged: member-facing ranking remains rank-only and does not expose CP values.
+- Admin CP Ranking remains permission-protected and unchanged except for podium presentation styling.
+
 ## Milestone 23D Premium Cosmetics Production Rollout Complete
 
 Milestone 23D is complete. Premium cosmetics backend/grant-helper hardening is live in production.

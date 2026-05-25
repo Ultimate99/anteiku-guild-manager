@@ -1,5 +1,18 @@
 # Session Log
 
+## 2026-05-25 - Leaderboard Podium Polish Production Checkpoint
+
+- Recorded production leaderboard podium polish.
+- Commit deployed: `3f65052 style: tune leaderboard podium layout`.
+- Desktop podium visually orders `#2 | #1 | #3`.
+- Mobile podium stacks `#1`, `#2`, `#3`.
+- Rank #1 has stronger centered gold styling and a larger avatar/frame.
+- Rank #2 has silver styling.
+- Rank #3 has bronze styling.
+- `npm.cmd run build` passed before deployment.
+- Production app load smoke passed with no captured console errors.
+- No ranking logic, backend/RPC, SQL, Supabase/RLS, Vercel env, production data, or CP privacy behavior changed.
+
 ## 2026-05-25 - Milestone 23D Premium Cosmetics Production Rollout Complete
 
 - Completed production rollout for premium cosmetics backend/grant helper.
