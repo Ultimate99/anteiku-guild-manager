@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { CosmeticPreview } from '../components/CosmeticPreview.jsx';
 import { StatusBadge } from '../components/StatusBadge.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import { loadMemberCpRankings, normalizeLeaderboardScope } from '../services/cpLeaderboardService.js';
@@ -176,6 +177,13 @@ export function Leaderboard() {
                 <div className="rank-marker" aria-label={`${t('leaderboard.rank')} ${row.rank}`}>
                   <span>{getRankMarker(row.rank)}</span>
                 </div>
+                <CosmeticPreview
+                  avatar={row.avatar}
+                  frame={row.frame}
+                  label={row.ign}
+                  size="small"
+                  className="leaderboard-cosmetic"
+                />
                 <div className="leaderboard-member">
                   <div className="leaderboard-member-line">
                     <strong>{row.ign}</strong>

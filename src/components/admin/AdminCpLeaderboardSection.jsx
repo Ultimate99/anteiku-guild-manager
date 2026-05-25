@@ -1,4 +1,5 @@
 import React from 'react';
+import { CosmeticPreview } from '../CosmeticPreview.jsx';
 import { StatusBadge } from '../StatusBadge.jsx';
 
 function getRankTier(rank) {
@@ -141,6 +142,13 @@ export function AdminCpLeaderboardSection({
                     <div className="rank-marker" aria-label={`${t('admin.cp.rank')} ${item.rank}`}>
                       <span>{getRankMarker(item.rank)}</span>
                     </div>
+                    <CosmeticPreview
+                      avatar={item.avatar}
+                      frame={item.frame}
+                      label={item.ign ?? item.username ?? t('admin.common.unknownIgn')}
+                      size="small"
+                      className="leaderboard-cosmetic"
+                    />
                     <div className="leaderboard-member admin-cp-rank-main">
                       <div className="leaderboard-member-line">
                         <strong>{item.ign ?? t('admin.common.unknownIgn')}</strong>

@@ -8,6 +8,38 @@ function requireSupabase() {
   return supabase;
 }
 
+const SAFE_AVATAR_PREFIX = '/cosmetics/avatars/';
+const SAFE_FRAME_PREFIX = '/cosmetics/frames/';
+
+function safeString(value) {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function normalizeCosmeticAssetPath(value, type) {
+  const assetPath = safeString(value);
+  const expectedPrefix = type === 'frame' ? SAFE_FRAME_PREFIX : SAFE_AVATAR_PREFIX;
+
+  if (!assetPath.startsWith(expectedPrefix) || assetPath.includes('..')) {
+    return '';
+  }
+
+  return assetPath;
+}
+
+function normalizeRankingCosmetic(row, type) {
+  const key = safeString(row?.[`${type}_key`]);
+  const assetPath = normalizeCosmeticAssetPath(row?.[`${type}_asset_path`], type);
+
+  if (!key || !assetPath) {
+    return null;
+  }
+
+  return {
+    key,
+    assetPath,
+  };
+}
+
 export function canViewCp({ membership, permissionKeys = [] }) {
   if (!membership) {
     return false;
@@ -90,6 +122,8 @@ export async function loadAdminCpRankings({ guildId = null, scope = 'guild' }) {
     guildSlug: row.guild_slug,
     cpValue: row.cp_value,
     updatedAt: row.updated_at,
+    avatar: normalizeRankingCosmetic(row, 'avatar'),
+    frame: normalizeRankingCosmetic(row, 'frame'),
   }));
 }
 

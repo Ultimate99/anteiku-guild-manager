@@ -1048,7 +1048,7 @@ textarea {
 
 .leaderboard-row {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: auto auto minmax(0, 1fr);
   align-items: center;
   gap: 10px;
   min-height: 58px;
@@ -1101,6 +1101,13 @@ textarea {
   text-transform: uppercase;
 }
 
+.leaderboard-cosmetic[data-size="small"] {
+  --avatar-frame-size: 48px;
+  --avatar-inner-size: 64%;
+  --avatar-frame-scale: 1.12;
+  --avatar-frame-offset-y: 5%;
+}
+
 .leaderboard-row[data-rank-tier="first"] .rank-marker {
   border-color: rgba(217, 164, 65, 0.56);
   color: #ffe3a0;
@@ -1147,7 +1154,7 @@ textarea {
 }
 
 .admin-cp-rank-row {
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
 }
 
 .admin-cp-rank-value {
@@ -1933,12 +1940,18 @@ textarea {
     justify-content: flex-start;
   }
 
+  .leaderboard-row,
   .admin-cp-rank-row {
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: auto auto minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .leaderboard-cosmetic[data-size="small"] {
+    --avatar-frame-size: 44px;
   }
 
   .admin-cp-rank-value {
-    grid-column: 2;
+    grid-column: 3;
     justify-items: start;
     min-width: 0;
   }

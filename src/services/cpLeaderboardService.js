@@ -14,6 +14,8 @@ const FORBIDDEN_MEMBER_FIELDS = [
   'snapshot',
   'metadata',
 ];
+const SAFE_AVATAR_PREFIX = '/cosmetics/avatars/';
+const SAFE_FRAME_PREFIX = '/cosmetics/frames/';
 
 function requireSupabase() {
   if (!supabase) {
@@ -37,6 +39,35 @@ function assertMemberSafeRows(rows) {
   }
 }
 
+function safeString(value) {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function normalizeCosmeticAssetPath(value, type) {
+  const assetPath = safeString(value);
+  const expectedPrefix = type === 'frame' ? SAFE_FRAME_PREFIX : SAFE_AVATAR_PREFIX;
+
+  if (!assetPath.startsWith(expectedPrefix) || assetPath.includes('..')) {
+    return '';
+  }
+
+  return assetPath;
+}
+
+function normalizeLeaderboardCosmetic(row, type) {
+  const key = safeString(row?.[`${type}_key`]);
+  const assetPath = normalizeCosmeticAssetPath(row?.[`${type}_asset_path`], type);
+
+  if (!key || !assetPath) {
+    return null;
+  }
+
+  return {
+    key,
+    assetPath,
+  };
+}
+
 export async function loadMemberCpRankings(scope = 'guild') {
   const normalizedScope = normalizeLeaderboardScope(scope);
   const client = requireSupabase();
@@ -57,5 +88,7 @@ export async function loadMemberCpRankings(scope = 'guild') {
     guildName: row.guild_name ?? null,
     guildSlug: row.guild_slug ?? null,
     isCurrentUser: Boolean(row.is_current_user),
+    avatar: normalizeLeaderboardCosmetic(row, 'avatar'),
+    frame: normalizeLeaderboardCosmetic(row, 'frame'),
   }));
 }
