@@ -4,6 +4,7 @@ const SAFE_AVATAR_PREFIX = '/cosmetics/avatars/';
 const SAFE_FRAME_PREFIX = '/cosmetics/frames/';
 const VALID_RARITIES = new Set(['common', 'rare', 'epic', 'legendary']);
 const VALID_UNLOCK_TYPES = new Set(['free', 'manual', 'admin_grant', 'rank', 'event', 'gvg', 'founder']);
+const GRANTABLE_UNLOCK_TYPES = new Set(['manual', 'admin_grant']);
 
 function requireSupabase() {
   if (!supabase) {
@@ -112,11 +113,13 @@ export async function loadMyCosmetics() {
 
 export async function loadGrantableCosmetics() {
   const cosmetics = await loadMyCosmetics();
-  const combined = [...cosmetics.avatars, ...cosmetics.frames];
+  const combined = [...cosmetics.avatars, ...cosmetics.frames].filter((cosmetic) =>
+    GRANTABLE_UNLOCK_TYPES.has(cosmetic.unlockType),
+  );
 
   return combined.sort((left, right) => {
-    const leftManual = left.unlockType === 'free' ? 1 : 0;
-    const rightManual = right.unlockType === 'free' ? 1 : 0;
+    const leftManual = left.unlockType === 'manual' ? 0 : 1;
+    const rightManual = right.unlockType === 'manual' ? 0 : 1;
 
     if (leftManual !== rightManual) {
       return leftManual - rightManual;
