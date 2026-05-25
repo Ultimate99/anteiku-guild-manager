@@ -10,13 +10,17 @@ Implemented:
 - Non-owner Admins still see only safe Tools content; Members have no AdminPanel access.
 - The form uses username/profile slug wording and warns not to use IGN.
 - Cosmetic dropdown loads active catalog options through the existing `get_my_cosmetics()` RPC path.
+- Cosmetic dropdown filters by backend `unlock_type` and shows only `manual` / `admin_grant` cosmetics.
+- Free/default and auto-unlocked types (`free`, `rank`, `event`, `gvg`, `founder`) are excluded from the Owner grant dropdown.
 - Grant action uses only `admin_grant_cosmetic_by_slug(p_profile_slug, p_cosmetic_key, p_reason)`.
 - No direct insert/update to `profile_cosmetic_unlocks`, `profile_equipped_cosmetics`, or `cosmetic_catalog` was added.
 
 Validation:
 - `npm.cmd run build` passed.
+- Dropdown hotfix build also passed after filtering free cosmetics from the Owner grant dropdown.
 - Local browser validation passed for Owner visibility, dropdown rendering, empty slug validation, empty cosmetic validation, non-owner Admin hidden state, and Member AdminPanel denial.
 - Commit `d97fc9f feat: add owner cosmetics grant tool` was pushed to `main`.
+- Commit `24287cb fix: hide free cosmetics from owner grant dropdown` was pushed to `main`.
 - Vercel production bundle deployed and production app load smoke passed with no captured console errors.
 - Authenticated production Owner/non-owner smoke remains pending because the production browser session was signed out and no passwords were requested.
 - Grant mutation smoke was not performed by design; no production cosmetic grants were created.

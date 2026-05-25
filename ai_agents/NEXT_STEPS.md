@@ -6,7 +6,10 @@ Owner Cosmetics grant tool is live in the production bundle.
 
 Recorded status:
 - Commit `d97fc9f feat: add owner cosmetics grant tool` was pushed to `main`.
+- Commit `24287cb fix: hide free cosmetics from owner grant dropdown` was pushed to `main`.
 - Vercel production bundle contains the Owner Cosmetics UI.
+- Owner Cosmetics dropdown now filters by backend `unlock_type` and shows only `manual` / `admin_grant` cosmetics.
+- Free/default and auto-unlocked types (`free`, `rank`, `event`, `gvg`, `founder`) are excluded.
 - Local browser validation passed for Owner Tools visibility, dropdown rendering, required-field validation, non-owner Admin hidden state, and Member AdminPanel denial.
 - Production app load smoke passed with no captured console errors.
 - Authenticated production Owner/non-owner smoke is pending because the browser was signed out.
@@ -14,6 +17,7 @@ Recorded status:
 
 Recommended next options:
 - Have the user sign in as production Owner and verify AdminPanel -> Tools -> Owner Cosmetics renders.
+- Verify the dropdown contains only manual/admin-grant cosmetics and no free/default cosmetics.
 - If explicitly approved, perform one controlled production grant to the controlled test member and verify the member can equip it.
 - Otherwise keep grant mutation untested in production and rely on staging/backend validation.
 
