@@ -1,8 +1,29 @@
 # Supabase RLS
 
+## Milestone 23D Premium Cosmetics Production RLS/RPC
+
+Milestone 23D is applied and verified in production.
+
+Migration:
+- `20260525000300_premium_cosmetics_grant_helper.sql`
+
+Production behavior:
+- All current frame catalog rows are `unlock_type = 'free'`.
+- Future premium avatars and frames should use `unlock_type = 'manual'`.
+- `get_my_cosmetics()` returns avatar unlock metadata.
+- `equip_my_avatar(...)` requires active free avatar or caller-owned unlock row for manual avatars.
+- `update_my_profile(...)` applies the same manual-avatar lock rule.
+- `admin_grant_cosmetic_by_slug(...)` grants by exact username/profile slug through the existing grant authority path.
+
+Production verification:
+- RPC and function definitions are present.
+- Direct authenticated insert/write grants to cosmetics unlock/equipped tables remain absent.
+- Normal Member grant attempt was denied.
+- Active Owner count remains `1`.
+
 ## Milestone 23B Premium Cosmetics / Grant Helper RLS/RPC
 
-Milestone 23B is implemented and locally validated only. It has not been applied to staging or production.
+Milestone 23B was implemented and locally validated, then applied to staging in Milestone 23C and production in Milestone 23D.
 
 Migration:
 - `20260525000300_premium_cosmetics_grant_helper.sql`

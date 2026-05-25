@@ -1,5 +1,43 @@
 # Testing
 
+## Milestone 23D Premium Cosmetics Production Validation
+
+Milestone 23D production rollout passed.
+
+Migration:
+- Production dry-run showed only `20260525000300_premium_cosmetics_grant_helper.sql`.
+- Applied only `20260525000300_premium_cosmetics_grant_helper.sql` to production project `mzflfyxxkascrfpteexz`.
+- Remote migration list confirmed `20260525000300` applied.
+
+Production verification:
+- `admin_grant_cosmetic_by_slug(...)` exists.
+- `get_my_cosmetics()` returns avatar `unlock_type`, `is_unlocked`, and `is_equipped`.
+- `equip_my_avatar(...)` and `update_my_profile(...)` include free-or-unlocked/manual-lock enforcement.
+- All current frame rows are free.
+- Normal Member grant attempt was denied.
+- Direct authenticated write grants to cosmetics unlock/equipped tables remain absent.
+- Active Owner count remains `1`.
+
+Production smoke:
+- Production app loaded at `https://anteiku-guild-manager.vercel.app` with title `Anteiku Guild Manager`.
+- No captured console errors were found on load.
+- Authenticated Owner/Member browser smoke and production locked/manual mutation smoke were not run because no credentials/session were available and production mutation was out of scope.
+- Staging Milestone 23C covered locked/manual grant/equip runtime behavior.
+
+## Milestone 23C Premium Cosmetics Staging Validation
+
+Milestone 23C staging rollout and validation passed.
+
+- Staging received `20260525000200_cp_rankings_cosmetics.sql` and `20260525000300_premium_cosmetics_grant_helper.sql` in order.
+- Current frames are free on staging.
+- `get_my_cosmetics()` reports avatar `unlock_type`, `is_unlocked`, and `is_equipped`.
+- `staging_member` could equip free avatar/frame and could not equip locked manual avatar/frame before grant.
+- `staging_owner` granted manual test cosmetics to `staging_member` by profile slug.
+- `staging_member` could equip granted manual avatar/frame.
+- `staging_admin_noperms` and normal member grant attempts were denied.
+- Cosmetic grant audit rows were written.
+- Staging-only manual test rows remain: `staging_premium_avatar_23c`, `staging_premium_frame_23c`.
+
 ## Milestone 23B Premium Cosmetics Backend Local Validation
 
 Milestone 23B backend/database validation passed locally.

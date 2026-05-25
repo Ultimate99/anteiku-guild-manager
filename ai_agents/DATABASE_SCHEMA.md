@@ -2,13 +2,13 @@
 
 ## Current Backend Status
 
-Milestone 23B is implemented and locally validated as backend-only premium cosmetics hardening. It adds a new focused migration for free current frames, premium avatar/frame unlock enforcement, and grant-by-slug support.
+Milestone 23D completed production rollout for premium cosmetics hardening. Production now has current frames free, future manual avatar/frame enforcement, and grant-by-slug support.
 
 Milestone 22E completed production rollout for preset avatar selection, unlocked/equipped frames, and future cosmetic rewards.
 
 Cosmetics migration:
 - `supabase/migrations/20260525000100_cosmetics_catalog_unlocks.sql`
-- `supabase/migrations/20260525000300_premium_cosmetics_grant_helper.sql` (local-only until staging/production rollout)
+- `supabase/migrations/20260525000300_premium_cosmetics_grant_helper.sql`
 
 Staging and production both have this migration applied and verified. Future new target environments must apply and verify `20260525000100_cosmetics_catalog_unlocks.sql` before deploying cosmetics UI there.
 
@@ -48,7 +48,7 @@ Migration `20260525000100_cosmetics_catalog_unlocks.sql` is implemented, locally
 
 Migration `20260525000200_cp_rankings_cosmetics.sql` is implemented and production applied/verified as part of the leaderboard cosmetic display rollout.
 
-Migration `20260525000300_premium_cosmetics_grant_helper.sql` is implemented and locally validated only. It has not been applied to staging or production.
+Migration `20260525000300_premium_cosmetics_grant_helper.sql` is implemented, locally validated, staging validated, and production applied/verified.
 
 Production Member Status verification:
 - Existing production memberships were backfilled to `roster_status = active`.
@@ -153,9 +153,10 @@ Migration:
 - `supabase/migrations/20260525000300_premium_cosmetics_grant_helper.sql`
 
 Status:
-- Backend/database-only implementation complete locally.
+- Backend/database-only implementation complete.
 - Local validation passed.
-- Not yet applied to staging or production.
+- Staging validation passed in Milestone 23C.
+- Production applied/verified in Milestone 23D.
 - Existing deployed migration `20260525000100_cosmetics_catalog_unlocks.sql` was not edited.
 
 Catalog rule changes:

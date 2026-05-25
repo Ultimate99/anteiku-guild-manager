@@ -1,5 +1,28 @@
 # Changelog
 
+## 2026-05-25 - Milestone 23D Premium Cosmetics Production Rollout Complete
+
+- Applied `20260525000300_premium_cosmetics_grant_helper.sql` to production project `mzflfyxxkascrfpteexz` after dry-run review showed exactly that migration pending.
+- Confirmed production already had `20260525000200_cp_rankings_cosmetics.sql` applied.
+- Verified `admin_grant_cosmetic_by_slug(...)` exists in production.
+- Verified `get_my_cosmetics()` returns avatar `unlock_type`, `is_unlocked`, and `is_equipped`.
+- Verified `equip_my_avatar(...)` and `update_my_profile(...)` contain free-or-unlocked/manual-lock enforcement.
+- Verified all 10 current frame rows are now free in production.
+- Verified direct authenticated write grants to cosmetics unlock/equipped tables remain absent.
+- Verified normal Member grant attempt is denied and active Owner count remains `1`.
+- Production app load smoke passed with no captured console errors.
+- Locked/manual grant/equip runtime success was not repeated in production because production has no active manual cosmetics and production mutation smoke was not approved; staging covered that path in Milestone 23C.
+- No frontend deploy, Vercel env change, source edit, SQL edit, new migration, `db reset`, `--include-seed`, service-role key, Supabase Storage, upload path, arbitrary URL path, or CP/GvG/audit/role/permission/member-status behavior change was included.
+- Supabase CLI remains linked to production `mzflfyxxkascrfpteexz`.
+
+## 2026-05-25 - Milestone 23C Premium Cosmetics Staging Rollout Complete
+
+- Applied staging catch-up migrations `20260525000200_cp_rankings_cosmetics.sql` and `20260525000300_premium_cosmetics_grant_helper.sql` to staging project `ckyihuxkioeibzpgwenc` after dry-run showed exactly those two migrations.
+- Verified current frames became free on staging.
+- Verified `get_my_cosmetics()` avatar unlock fields, locked manual avatar/frame denial before grant, owner grant by profile slug, member/admin denial, granted manual avatar/frame equip, and cosmetic grant audit rows.
+- Added staging-only manual test catalog rows `staging_premium_avatar_23c` and `staging_premium_frame_23c` using existing approved repo asset paths.
+- Production was not touched during 23C.
+
 ## 2026-05-25 - Milestone 23B Premium Cosmetics Backend Implemented Locally
 
 - Added new migration `20260525000300_premium_cosmetics_grant_helper.sql`.

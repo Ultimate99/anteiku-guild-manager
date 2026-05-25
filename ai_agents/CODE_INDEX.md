@@ -63,7 +63,7 @@ Security:
 ## Milestone 23B Premium Cosmetics Backend
 
 Status:
-- Backend/database-only implementation complete locally.
+- Backend/database-only implementation complete; staging validated in Milestone 23C and production applied/verified in Milestone 23D.
 - New migration `supabase/migrations/20260525000300_premium_cosmetics_grant_helper.sql`.
 - Existing deployed migration `supabase/migrations/20260525000100_cosmetics_catalog_unlocks.sql` was not edited.
 

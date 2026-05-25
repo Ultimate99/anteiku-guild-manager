@@ -1,6 +1,6 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and validated locally through Milestone 23B. Remote production is live through the current production rollout state, including CP Ranking, Rank Badge / Profile Border, Cosmetics, and leaderboard cosmetic display. Milestone 23B is local-only until staging/production rollout is approved.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and validated through Milestone 23D. Remote production is live through Premium Cosmetics backend/grant-helper hardening.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
@@ -36,7 +36,7 @@ Migration `20260525000100_cosmetics_catalog_unlocks.sql` is locally validated, s
 
 Migration `20260525000200_cp_rankings_cosmetics.sql` is production applied/verified as part of the leaderboard cosmetic display rollout.
 
-Migration `20260525000300_premium_cosmetics_grant_helper.sql` is implemented and locally validated only. It has not been applied to staging or production.
+Migration `20260525000300_premium_cosmetics_grant_helper.sql` is implemented, locally validated, staging validated, and production applied/verified as of Milestone 23D.
 
 Production Member Status rollout:
 - Existing production memberships were backfilled to `roster_status = active`.
@@ -109,9 +109,9 @@ New migration:
 - `supabase/migrations/20260525000300_premium_cosmetics_grant_helper.sql`
 
 Status:
-- Backend/database-only implementation complete locally.
+- Backend/database-only implementation complete.
 - Existing deployed migration `20260525000100_cosmetics_catalog_unlocks.sql` was not edited.
-- Staging and production have not received this migration yet.
+- Staging and production have received and verified this migration.
 
 Changes:
 - All currently existing frame catalog rows become `unlock_type = 'free'`.

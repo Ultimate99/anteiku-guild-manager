@@ -1,5 +1,48 @@
 # Testing And Validation
 
+## Milestone 23D Premium Cosmetics Production Rollout Validation
+
+Milestone 23D production rollout passed.
+
+Migration:
+- Production project `mzflfyxxkascrfpteexz` was explicitly linked.
+- Production migration list showed only `20260525000300_premium_cosmetics_grant_helper.sql` pending.
+- Production dry-run showed only `20260525000300_premium_cosmetics_grant_helper.sql`.
+- Applied only `20260525000300_premium_cosmetics_grant_helper.sql`.
+- Remote migration list confirmed `20260525000300` applied.
+
+Production DB/RPC verification:
+- `admin_grant_cosmetic_by_slug(...)` exists.
+- `get_my_cosmetics()` returns avatar `unlock_type`, `is_unlocked`, and `is_equipped`.
+- `equip_my_avatar(...)` has free-or-unlocked enforcement.
+- `update_my_profile(...)` rejects locked/manual avatars.
+- All 10 current frame rows are free.
+- Normal Member grant attempt was denied.
+- Owner can manage the controlled member's guild; a production Admin without `manage_members` cannot.
+- Direct authenticated insert/write grants to cosmetics unlock/equipped tables remain absent.
+- Active Owner count remains `1`.
+
+Production smoke:
+- Production app loaded at `https://anteiku-guild-manager.vercel.app`.
+- Page title was `Anteiku Guild Manager`.
+- App shell rendered and no captured console errors were found.
+- Authenticated Owner/Member UI smoke was not automated because no credentials/session were available and passwords were not requested.
+- Free equip and locked/manual mutation smoke were not repeated in production because production mutation was out of scope; staging covered these paths in Milestone 23C.
+
+Security/source validation:
+- No frontend source changed.
+- Source check found no frontend Storage/upload/direct cosmetics-table write path.
+- No Vercel env, deployment, service-role key, `db reset`, `--include-seed`, source edit, SQL edit, new migration, CP/GvG/audit/role/permission/member-status behavior change, upload path, or arbitrary URL path was used.
+
+## Milestone 23C Premium Cosmetics Staging Rollout Validation
+
+Milestone 23C staging rollout and validation passed.
+
+- Staging project `ckyihuxkioeibzpgwenc` received `20260525000200_cp_rankings_cosmetics.sql` and `20260525000300_premium_cosmetics_grant_helper.sql` in order after a clean revised dry-run gate.
+- Staging validation passed for current frames free, avatar unlock fields in `get_my_cosmetics()`, locked manual avatar/frame denial before grant, Owner grant by profile slug, member/admin grant denial, granted manual avatar/frame equip, grant audit rows, direct cosmetic write denial, and active Owner count `1`.
+- Added staging-only manual test catalog rows `staging_premium_avatar_23c` and `staging_premium_frame_23c` using existing approved repo asset paths.
+- Production was not touched during 23C.
+
 ## Milestone 23B Premium Cosmetics Backend Local Validation
 
 Milestone 23B backend/database validation passed locally.

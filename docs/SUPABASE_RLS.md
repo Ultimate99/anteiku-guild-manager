@@ -4,9 +4,24 @@ The Supabase RLS/RPC implementation has been validated through Milestone 22E, an
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
 
+## Milestone 23D Premium Cosmetics Production RLS/RPC
+
+Milestone 23D is applied and verified in production.
+
+Migration:
+- `20260525000300_premium_cosmetics_grant_helper.sql`
+
+Rules:
+- All current frame catalog rows are free.
+- Future premium avatars and frames should use `unlock_type = 'manual'`.
+- `get_my_cosmetics()` returns avatar unlock metadata.
+- `equip_my_avatar(...)` and `update_my_profile(...)` enforce free-or-unlocked avatar behavior.
+- `admin_grant_cosmetic_by_slug(...)` grants by exact normalized username/profile slug through existing member-management authority.
+- Direct authenticated insert/write grants to cosmetics unlock/equipped tables remain absent.
+
 ## Milestone 23B Premium Cosmetics RLS/RPC
 
-Milestone 23B is backend-only and locally validated. It is not yet applied to staging or production.
+Milestone 23B is backend-only and locally validated. It was later applied to staging in Milestone 23C and production in Milestone 23D.
 
 Migration:
 - `20260525000300_premium_cosmetics_grant_helper.sql`

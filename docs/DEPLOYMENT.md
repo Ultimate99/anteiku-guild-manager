@@ -78,6 +78,22 @@ Milestone 22E deployed cosmetics to production.
 - `_FREE` frames are free; non-`_FREE` frames are manual unlocks.
 - Players choose avatars and equip only free/unlocked frames through RPCs.
 - No Supabase Storage, arbitrary URLs, or player uploads are part of v1.
+
+## Production Premium Cosmetics
+
+Milestone 23D deployed premium cosmetics backend/grant-helper hardening to production.
+
+- Production migration applied and verified:
+  - `20260525000300_premium_cosmetics_grant_helper.sql`
+- Production already had `20260525000200_cp_rankings_cosmetics.sql` applied before this rollout.
+- All current frame rows are now free in production.
+- Future premium avatars and frames should use `unlock_type = 'manual'`.
+- `get_my_cosmetics()` returns avatar `unlock_type`, `is_unlocked`, and `is_equipped`.
+- `equip_my_avatar(...)` and `update_my_profile(...)` enforce free-or-unlocked avatar behavior.
+- `admin_grant_cosmetic_by_slug(...)` grants by exact username/profile slug, not IGN/display name, through existing member-management authority.
+- Production app load smoke passed.
+- No frontend deploy, Vercel env change, service-role key, Supabase Storage, upload path, or arbitrary URL behavior was introduced.
+- Supabase CLI is currently linked to production project `mzflfyxxkascrfpteexz`; relink deliberately before future staging/local Supabase commands.
 - Supabase CLI is currently linked to production project `mzflfyxxkascrfpteexz`; relink deliberately before future staging/local Supabase commands.
 
 ## Production Supabase Project

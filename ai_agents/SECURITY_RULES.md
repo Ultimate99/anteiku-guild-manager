@@ -1,8 +1,23 @@
 # Security Rules
 
+## Milestone 23D Premium Cosmetics Production Rules
+
+Milestone 23D is live in production. Production has `20260525000300_premium_cosmetics_grant_helper.sql` applied and verified.
+
+Production premium cosmetics rules:
+- Catalog `unlock_type` is the source of truth.
+- `_FREE` filename/key suffixes are only asset/import conventions.
+- All current frame catalog rows are free for approved members.
+- Future premium avatars and frames must use `unlock_type = 'manual'`.
+- Manual avatars and frames require a caller-owned unlock row before equip.
+- `update_my_profile(p_ign, p_avatar_key)` must not bypass manual avatar locks.
+- `admin_grant_cosmetic_by_slug(...)` must use exact normalized `profile_slug` or `username`, not IGN/display name.
+- Normal Members and Admins without member-management authority must not grant cosmetics.
+- No uploads, arbitrary image URLs, or Supabase Storage are allowed.
+
 ## Milestone 23B Premium Cosmetics Backend Rules
 
-Milestone 23B is implemented locally only. Staging and production rollout require separate approval.
+Milestone 23B was implemented locally, then rolled out to staging in Milestone 23C and production in Milestone 23D.
 
 Premium cosmetics rules:
 - Catalog `unlock_type` is the source of truth.

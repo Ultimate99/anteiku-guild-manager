@@ -2,7 +2,25 @@
 
 ## Current Recommendation
 
-Milestone 23B Premium Cosmetics backend is implemented and locally validated only. The next recommended step is Milestone 23C staging rollout/validation for `20260525000300_premium_cosmetics_grant_helper.sql`.
+Milestone 23D Premium Cosmetics production rollout is complete. Production now has `20260525000300_premium_cosmetics_grant_helper.sql` applied and verified.
+
+Recorded Milestone 23D production status:
+- Production dry-run showed exactly one pending migration: `20260525000300_premium_cosmetics_grant_helper.sql`.
+- Production migration push applied that migration only.
+- Remote migration list confirmed `20260525000300` applied.
+- Production verification passed for `admin_grant_cosmetic_by_slug(...)` existence, avatar unlock fields in `get_my_cosmetics()`, free-or-unlocked enforcement markers in `equip_my_avatar(...)`, locked/manual avatar rejection markers in `update_my_profile(...)`, all current frames free, direct cosmetic write grants blocked, normal Member grant denial, and active Owner count `1`.
+- Production app load smoke passed with no captured console errors.
+- Locked/manual runtime denial and grant/equip success were authenticated-validated in staging during Milestone 23C because production currently has no active manual cosmetics and production mutation smoke was not approved.
+
+Recommended next options:
+- Milestone 23E: optional AdminPanel Grant Cosmetic UI planning/implementation.
+- Premium cosmetic seed planning if future avatar/frame rewards should be added to production.
+- Cosmetics picker copy polish for future locked premium avatars, if needed.
+- Relink Supabase CLI deliberately before any staging/local Supabase work; it is currently linked to production `mzflfyxxkascrfpteexz`.
+
+## Previous Recommendation - Milestone 23B/23C
+
+Milestone 23B Premium Cosmetics backend was implemented and locally validated, then staged in Milestone 23C.
 
 Recorded Milestone 23B local status:
 - New migration: `20260525000300_premium_cosmetics_grant_helper.sql`.

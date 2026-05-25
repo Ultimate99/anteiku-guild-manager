@@ -1,8 +1,43 @@
 # Project State
 
+## Milestone 23D Premium Cosmetics Production Rollout Complete
+
+Milestone 23D is complete. Premium cosmetics backend/grant-helper hardening is live in production.
+
+Production rollout:
+- Production project `mzflfyxxkascrfpteexz` was explicitly linked before production migration work.
+- Production migration list showed `20260525000300_premium_cosmetics_grant_helper.sql` as the only pending migration; `20260525000200_cp_rankings_cosmetics.sql` was already applied.
+- Production dry-run showed only `20260525000300_premium_cosmetics_grant_helper.sql`.
+- Applied only `20260525000300_premium_cosmetics_grant_helper.sql` to production.
+- Remote migration list confirmed `20260525000300` applied.
+
+Production verification:
+- `admin_grant_cosmetic_by_slug(...)` exists.
+- `get_my_cosmetics()` returns avatar `unlock_type`, `is_unlocked`, and `is_equipped`.
+- `equip_my_avatar(...)` contains free-or-unlocked enforcement markers.
+- `update_my_profile(...)` contains locked/manual avatar rejection markers.
+- All 10 current frame rows are `unlock_type = 'free'`.
+- Active Owner count remains `1`.
+- Normal Member grant attempt was denied.
+- Owner/member-management authority path remains true for Owner and false for a production Admin without `manage_members`.
+- Direct authenticated insert/write grants to cosmetics unlock/equipped tables remain absent.
+- Production app load smoke passed at `https://anteiku-guild-manager.vercel.app` with no captured console errors.
+
+Validation note:
+- Production currently has `0` active manual cosmetics after this migration because all current frames are now free and current avatars remain free.
+- Locked/manual equip denial and grant/equip success were authenticated-validated in staging during Milestone 23C.
+- Production locked/manual mutation smoke was intentionally not performed because it would require creating or granting manual production cosmetics.
+
+Scope:
+- No frontend deploy, Vercel env change, source edit, SQL edit, new migration, `db reset`, `--include-seed`, service-role key, Supabase Storage, upload path, arbitrary URL path, or CP/GvG/audit/role/permission/member-status behavior change was included.
+- Supabase CLI is currently linked to production `mzflfyxxkascrfpteexz`; relink deliberately before staging/local Supabase commands.
+
+Next recommended step:
+- Milestone 23E planning for optional AdminPanel grant UI, premium locked-state picker copy, or production manual-cosmetic seed planning.
+
 ## Milestone 23B Premium Cosmetics Backend Implemented Locally
 
-Milestone 23B is backend/database-only and locally validated. It prepares premium avatars/frames while keeping the existing production cosmetics rollout untouched.
+Milestone 23B is backend/database-only and locally validated. It prepares premium avatars/frames while keeping the existing production cosmetics rollout untouched. It later rolled out to staging in Milestone 23C and production in Milestone 23D.
 
 Implemented locally:
 - Added new migration `20260525000300_premium_cosmetics_grant_helper.sql`.

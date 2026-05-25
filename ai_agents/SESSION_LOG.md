@@ -1,5 +1,29 @@
 # Session Log
 
+## 2026-05-25 - Milestone 23D Premium Cosmetics Production Rollout Complete
+
+- Completed production rollout for premium cosmetics backend/grant helper.
+- Confirmed clean working tree and latest commit `63a70fa feat: add premium cosmetics grant helper`.
+- Relinked Supabase CLI from staging to production project `mzflfyxxkascrfpteexz`.
+- Production migration list showed only `20260525000300_premium_cosmetics_grant_helper.sql` pending.
+- Production dry-run showed only `20260525000300_premium_cosmetics_grant_helper.sql`.
+- Applied only `20260525000300_premium_cosmetics_grant_helper.sql`.
+- Remote migration list confirmed `20260525000300` applied.
+- Verified production `admin_grant_cosmetic_by_slug(...)`, avatar unlock fields in `get_my_cosmetics()`, current frames free, direct cosmetic write grants blocked, Member grant denial, Owner/member-management authority path, and active Owner count `1`.
+- Production app load smoke passed with title `Anteiku Guild Manager` and no captured console errors.
+- Authenticated browser login/equip smoke was not automated because no credentials/session were available and passwords were not requested.
+- Production locked/manual mutation smoke was not performed; staging Milestone 23C already validated the manual grant/equip runtime path.
+- No frontend deploy, Vercel env change, source edit, SQL edit, new migration, `db reset`, `--include-seed`, service-role key, Storage, upload, arbitrary URL, or CP/GvG/audit/role/permission/member-status behavior change was included.
+- Supabase CLI remains linked to production `mzflfyxxkascrfpteexz`.
+
+## 2026-05-25 - Milestone 23C Premium Cosmetics Staging Rollout Complete
+
+- Applied staging catch-up migrations `20260525000200_cp_rankings_cosmetics.sql` and `20260525000300_premium_cosmetics_grant_helper.sql` to staging project `ckyihuxkioeibzpgwenc`.
+- Dry-run showed exactly those two migrations before push.
+- Verified staging current frames free, avatar unlock fields, locked manual denial before grant, owner grant by slug, normal member/admin denial, granted manual equip, grant audit rows, direct write denial, and active Owner count `1`.
+- Added staging-only manual test catalog rows `staging_premium_avatar_23c` and `staging_premium_frame_23c`.
+- Production was not touched during 23C.
+
 ## 2026-05-25 - Milestone 23B Premium Cosmetics Backend Implemented Locally
 
 - Implemented backend/database-only premium cosmetics support.
