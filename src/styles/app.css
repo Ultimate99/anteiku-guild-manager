@@ -413,6 +413,47 @@ textarea {
   font-size: 0.88rem;
 }
 
+.admin-tools-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.owner-cosmetics-panel {
+  display: grid;
+  gap: 12px;
+  border-color: rgba(197, 22, 39, 0.38);
+  background:
+    linear-gradient(180deg, rgba(197, 22, 39, 0.1), transparent 44%),
+    rgba(15, 15, 20, 0.92);
+}
+
+.owner-cosmetics-form {
+  display: grid;
+  gap: 10px;
+}
+
+.owner-cosmetics-form label {
+  display: grid;
+  gap: 6px;
+  color: #f4f4f6;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.owner-cosmetics-form small {
+  color: #a7a7af;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-transform: none;
+}
+
+.owner-cosmetics-grant {
+  justify-self: start;
+  min-width: min(100%, 180px);
+}
+
 .approval-card {
   display: grid;
   gap: 14px;

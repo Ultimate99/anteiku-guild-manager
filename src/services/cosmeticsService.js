@@ -46,6 +46,7 @@ function normalizeCosmetic(row, type) {
 
   return {
     key,
+    type,
     labelKey: safeString(row?.label_key),
     assetPath,
     rarity: VALID_RARITIES.has(rarity) ? rarity : 'common',
@@ -107,6 +108,41 @@ export async function loadMyCosmetics() {
       isEquipped: frame.key === equippedFrameKey || frame.isEquipped,
     })),
   };
+}
+
+export async function loadGrantableCosmetics() {
+  const cosmetics = await loadMyCosmetics();
+  const combined = [...cosmetics.avatars, ...cosmetics.frames];
+
+  return combined.sort((left, right) => {
+    const leftManual = left.unlockType === 'free' ? 1 : 0;
+    const rightManual = right.unlockType === 'free' ? 1 : 0;
+
+    if (leftManual !== rightManual) {
+      return leftManual - rightManual;
+    }
+
+    if (left.type !== right.type) {
+      return left.type.localeCompare(right.type);
+    }
+
+    return left.key.localeCompare(right.key);
+  });
+}
+
+export async function grantCosmeticBySlug({ profileSlug, cosmeticKey, reason = '' }) {
+  const client = requireSupabase();
+  const { data, error } = await client.rpc('admin_grant_cosmetic_by_slug', {
+    p_profile_slug: profileSlug,
+    p_cosmetic_key: cosmeticKey,
+    p_reason: reason || null,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
 }
 
 export async function equipMyAvatar(avatarKey) {

@@ -1781,7 +1781,7 @@ export function AdminPanel() {
       );
     }
 
-    return <AdminToolsSection plannedSections={plannedSections} t={t} />;
+    return <AdminToolsSection membership={membership} plannedSections={plannedSections} t={t} />;
   }
 
   if (!canViewAdmin) {
