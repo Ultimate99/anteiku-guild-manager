@@ -285,6 +285,14 @@ export function Profile() {
   }
 
   async function equipAvatar(avatarKey) {
+    const selectedAvatar = findCosmeticByKey(cosmeticsState?.avatars, avatarKey);
+
+    if (!selectedAvatar?.isUnlocked) {
+      setCosmeticsError(t('cosmetics.unlockRequired'));
+      setCosmeticsMessage('');
+      return;
+    }
+
     setCosmeticsSavingKey(avatarKey);
     setCosmeticsError('');
     setCosmeticsMessage('');
@@ -300,6 +308,14 @@ export function Profile() {
   }
 
   async function equipFrame(frameKey) {
+    const selectedFrame = findCosmeticByKey(cosmeticsState?.frames, frameKey);
+
+    if (!selectedFrame?.isUnlocked) {
+      setCosmeticsError(t('cosmetics.unlockRequired'));
+      setCosmeticsMessage('');
+      return;
+    }
+
     setCosmeticsSavingKey(frameKey);
     setCosmeticsError('');
     setCosmeticsMessage('');
@@ -462,23 +478,37 @@ export function Profile() {
                 <div className="cosmetic-grid">
                   {(cosmeticsState?.avatars ?? []).map((avatar) => {
                     const isSaving = cosmeticsSavingKey === avatar.key;
+                    const canEquipAvatar = avatar.isUnlocked && !avatar.isEquipped;
                     return (
                       <button
                         type="button"
                         className="cosmetic-card cosmetic-option-card"
                         key={avatar.key}
                         data-equipped={avatar.isEquipped}
+                        data-locked={!avatar.isUnlocked}
                         aria-pressed={avatar.isEquipped}
                         onClick={() => equipAvatar(avatar.key)}
-                        disabled={avatar.isEquipped || cosmeticActionBusy}
+                        disabled={!canEquipAvatar || cosmeticActionBusy}
                       >
                         <CosmeticPreview avatar={avatar} label={formatCosmeticLabel(avatar, t('profile.avatar'))} size="small" />
                         <div className="cosmetic-card-copy">
                           <strong>{formatCosmeticLabel(avatar, t('profile.avatar'))}</strong>
-                          <span>{avatar.isEquipped ? t('cosmetics.equipped') : t('profile.unlocked')}</span>
+                          <span>
+                            {avatar.isEquipped
+                              ? t('cosmetics.equipped')
+                              : avatar.isUnlocked
+                                ? t('profile.unlocked')
+                                : t('cosmetics.locked')}
+                          </span>
                         </div>
                         <span className="cosmetic-card-action">
-                          {isSaving ? t('profile.equipping') : avatar.isEquipped ? t('cosmetics.equipped') : t('profile.equipAvatar')}
+                          {isSaving
+                            ? t('profile.equipping')
+                            : avatar.isEquipped
+                              ? t('cosmetics.equipped')
+                              : avatar.isUnlocked
+                                ? t('profile.equipAvatar')
+                                : t('cosmetics.unlockRequired')}
                         </span>
                       </button>
                     );

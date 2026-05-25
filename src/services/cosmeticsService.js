@@ -3,7 +3,7 @@ import { supabase } from '../config/supabaseClient.js';
 const SAFE_AVATAR_PREFIX = '/cosmetics/avatars/';
 const SAFE_FRAME_PREFIX = '/cosmetics/frames/';
 const VALID_RARITIES = new Set(['common', 'rare', 'epic', 'legendary']);
-const VALID_UNLOCK_TYPES = new Set(['free', 'manual', 'event', 'admin']);
+const VALID_UNLOCK_TYPES = new Set(['free', 'manual', 'admin_grant', 'rank', 'event', 'gvg', 'founder']);
 
 function requireSupabase() {
   if (!supabase) {
@@ -50,7 +50,7 @@ function normalizeCosmetic(row, type) {
     assetPath,
     rarity: VALID_RARITIES.has(rarity) ? rarity : 'common',
     sortOrder: safeNumber(row?.sort_order),
-    unlockType: VALID_UNLOCK_TYPES.has(unlockType) ? unlockType : 'free',
+    unlockType: VALID_UNLOCK_TYPES.has(unlockType) ? unlockType : 'manual',
     isUnlocked: Boolean(row?.is_unlocked),
     isEquipped: Boolean(row?.is_equipped),
   };
@@ -100,7 +100,6 @@ export async function loadMyCosmetics() {
     },
     avatars: avatars.map((avatar) => ({
       ...avatar,
-      isUnlocked: true,
       isEquipped: avatar.key === equippedAvatarKey || avatar.isEquipped,
     })),
     frames: frames.map((frame) => ({
