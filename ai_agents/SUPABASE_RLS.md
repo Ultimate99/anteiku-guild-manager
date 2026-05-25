@@ -1,5 +1,49 @@
 # Supabase RLS
 
+## Milestone 22B Cosmetics Catalog / Unlocks RLS/RPC
+
+Milestone 22B backend is implemented and locally validated only. Staging and production do not have `20260525000100_cosmetics_catalog_unlocks.sql` yet.
+
+New tables:
+- `cosmetic_catalog`
+- `profile_cosmetic_unlocks`
+- `profile_equipped_cosmetics`
+
+RLS/grants:
+- RLS is enabled on all three cosmetics tables.
+- Active catalog rows are readable by authenticated approved users with active primary membership.
+- Unlock/equipped rows are readable only by their owning profile.
+- Direct client writes are not granted to catalog, unlock, or equipped tables.
+- Member writes use RPCs only.
+
+Member-safe RPCs:
+- `get_available_avatars()` returns active avatar catalog rows only.
+- `get_my_cosmetics()` returns the caller's equipped keys plus active avatar/frame catalog data, with frame unlock booleans scoped to the caller.
+- `equip_my_avatar(text)` validates active avatar keys and updates only `auth.uid()`.
+- `equip_my_frame(text)` validates active frame keys and requires `unlock_type = 'free'` or a caller-owned unlock row.
+
+Admin grant RPC:
+- `admin_grant_cosmetic(uuid, text, text)` validates the target member's active primary guild and uses existing member-management authority: Owner, scoped Leader/Vice, or scoped Admin with `manage_members`.
+- Normal Members cannot grant cosmetics, including to themselves.
+
+Legacy avatar hardening:
+- `update_my_profile(p_ign, p_avatar_key)` rejects arbitrary non-empty avatar keys. Keys must match an active `avatar` row in `cosmetic_catalog`.
+
+Asset/security boundary:
+- Database stores keys and static asset paths only.
+- Asset paths are constrained to `/cosmetics/avatars/*.png|webp` or `/cosmetics/frames/*.png|webp`.
+- `_FREE` suffixes are an asset/import convention and are mapped to `unlock_type = 'free'`.
+- Current seed rows match actual local assets: 54 free avatars and 10 frames.
+- Current non-`_FREE` frames use `unlock_type = 'manual'` and require unlock rows.
+- Runtime equip checks use catalog `unlock_type` as source of truth.
+- No player uploads, arbitrary URLs, Supabase Storage, service role usage, or CP/GvG/audit/role/permission/member-status behavior changes were introduced.
+
+Validation:
+- Local Supabase reset passed.
+- Local validation script passed through Docker `psql`.
+- Milestone 22B focused validation result: 19 PASS / 0 FAIL / 0 SKIP.
+- Catalog asset-path verification checked 64 rows with 0 missing files and 0 unlock mapping problems.
+
 ## Milestone 21E Rank Badge Summary RPC
 
 Milestone 21B backend is implemented and locally validated. `20260524000400_cp_rank_badge_summary.sql` is applied and verified in staging through Milestone 21D and production through Milestone 21E.

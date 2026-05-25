@@ -1,5 +1,55 @@
 # Session Log
 
+## 2026-05-25 - Milestone 22C Frontend Cosmetics Picker Implemented
+
+- Continued work on branch `wip/cosmetics-backend-assets`.
+- Implemented frontend-only member cosmetics picker on Profile.
+- Added `src/services/cosmeticsService.js` using only `get_my_cosmetics`, `equip_my_avatar`, and `equip_my_frame`.
+- Added `src/components/CosmeticPreview.jsx` for static avatar/frame rendering.
+- Updated `src/pages/Profile.jsx` to load own cosmetics, render current avatar/frame preview, equip avatars, equip free/unlocked frames, and show locked frames as disabled.
+- Updated Profile header to show equipped cosmetics when the cosmetics state is loaded.
+- Added mobile-first dark/crimson cosmetics picker styles to `src/styles/app.css`.
+- Added EN/FR/DE cosmetics labels.
+- `npm.cmd run build` passed.
+- Local Vite dev server was started and reached at `http://127.0.0.1:5173`.
+- Static/source validation found no direct frontend cosmetics table calls and no admin grant UI.
+- Static/source validation found no new direct `member_cp`, `cp_snapshots`, `audit_logs`, or unsafe `gvg_votes` paths in the cosmetics/Profile picker path.
+- No SQL migrations, Supabase/RLS/RPC logic, CP logic, GvG logic, audit logic, role/guild management, permission logic, production, Vercel env, deploy, push, or commit action was performed.
+- Manual authenticated local browser validation remains pending before marking Milestone 22C complete.
+
+## 2026-05-25 - Milestone 22B.1 Cosmetics Catalog Asset Alignment
+
+- Aligned `cosmetic_catalog` seed data with actual files in `public/cosmetics/avatars/` and `public/cosmetics/frames/`.
+- Seeded 54 avatar rows; all avatars use `unlock_type = 'free'`.
+- Seeded 10 frame rows; `_FREE` frames use `unlock_type = 'free'` and non-`_FREE` frames use `unlock_type = 'manual'`.
+- Selected `1079_head` as the default avatar because no `default_avatar_FREE.png` file exists.
+- Selected `TXK_frame_reOpen_EN_FREE` as the default frame because no `default_frame_FREE.png` file exists.
+- Verified 64 catalog asset paths against local files: 0 missing files, 0 unlock mapping problems.
+- `npx.cmd supabase db reset` passed locally.
+- Full local validation passed through Docker `psql`; Milestone 22B result remained 19 PASS / 0 FAIL / 0 SKIP.
+- Staging and production were not touched.
+
+## 2026-05-25 - Milestone 22B Cosmetics Backend Implemented
+
+- Implemented backend/database-only cosmetics support.
+- Created migration `supabase/migrations/20260525000100_cosmetics_catalog_unlocks.sql`.
+- Added `cosmetic_catalog`, `profile_cosmetic_unlocks`, and `profile_equipped_cosmetics`.
+- Seeded cosmetics from Git/Vercel static asset paths under `public/cosmetics/`.
+- Applied the `_FREE` naming convention so free/default cosmetic keys map to `unlock_type = 'free'`, while catalog `unlock_type` remains the runtime source of truth.
+- Added RPCs `get_available_avatars()`, `get_my_cosmetics()`, `equip_my_avatar(text)`, `equip_my_frame(text)`, and `admin_grant_cosmetic(uuid, text, text)`.
+- Hardened `update_my_profile(p_ign, p_avatar_key)` so arbitrary avatar keys are rejected and active catalog avatars remain valid.
+- `equip_my_avatar(...)` syncs `profiles.avatar_key` for backward compatibility.
+- RLS is enabled on all cosmetics tables; direct client writes are not granted.
+- Member equip RPCs use `auth.uid()` only and accept no target profile id.
+- Admin grants require existing scoped member-management authority.
+- Added Milestone 22B validation coverage to `supabase/tests/local_validation_anteiku.sql`.
+- `npx.cmd supabase db reset` passed locally.
+- Full local validation passed through Docker `psql`; Milestone 22B result was 19 PASS / 0 FAIL / 0 SKIP.
+- `npm.cmd run build` was not run because no frontend/source UI code changed.
+- Staging and production were not touched.
+- A pre-existing untracked `public/cosmetics/` folder was left untouched because 22B is backend-only.
+- Supabase CLI was linked to production before this local-only milestone; relink deliberately before future remote Supabase work.
+
 ## 2026-05-24 - Milestone 21E Rank Badge Production Rollout Complete
 
 - Completed production rollout for Rank Badge / Profile Border.

@@ -2,12 +2,12 @@
 
 ## Current Backend Status
 
-Milestone 21B added backend support for safe own CP rank badge/profile border summaries. It is locally validated and applied/verified in staging through Milestone 21D and production through Milestone 21E.
+Milestone 22B added backend support for preset avatar selection, unlocked/equipped frames, and future cosmetic rewards. It is locally validated only.
 
-Rank badge migration:
-- `supabase/migrations/20260524000400_cp_rank_badge_summary.sql`
+Cosmetics migration:
+- `supabase/migrations/20260525000100_cosmetics_catalog_unlocks.sql`
 
-Future new target environments must apply and verify this migration before deploying rank badge/profile border frontend UI.
+Staging and production do not have this migration yet. Do not deploy future cosmetics picker frontend to any target until the target DB has `20260525000100_cosmetics_catalog_unlocks.sql` applied and verified.
 
 ## Production Deployment Status
 
@@ -29,6 +29,7 @@ Current local migration order:
 12. `20260524000200_cp_update_window_staff_read.sql`
 13. `20260524000300_cp_rankings.sql`
 14. `20260524000400_cp_rank_badge_summary.sql`
+15. `20260525000100_cosmetics_catalog_unlocks.sql`
 
 Migration `20260523000100_member_roster_status_system.sql` is implemented, locally validated, staging validated, and production applied/verified.
 
@@ -37,6 +38,8 @@ Migrations `20260524000100_cp_update_window_self_submit.sql` and `20260524000200
 Migration `20260524000300_cp_rankings.sql` is implemented, locally validated, staging validated, and production applied/verified.
 
 Migration `20260524000400_cp_rank_badge_summary.sql` is implemented, locally validated, staging validated, and production applied/verified.
+
+Migration `20260525000100_cosmetics_catalog_unlocks.sql` is implemented and locally validated only. Staging and production rollout are pending.
 
 Production Member Status verification:
 - Existing production memberships were backfilled to `roster_status = active`.
@@ -87,6 +90,68 @@ Validation:
 - Local Supabase reset passed.
 - Local validation script passed through Docker `psql`.
 - Milestone 20B focused validation result: 14 PASS / 0 FAIL / 0 SKIP.
+
+## Milestone 22B Cosmetics Catalog / Unlocks Backend
+
+Migration:
+- `supabase/migrations/20260525000100_cosmetics_catalog_unlocks.sql`
+
+New tables:
+- `cosmetic_catalog`: approved static cosmetic metadata keyed by stable text keys.
+- `profile_cosmetic_unlocks`: per-profile cosmetic unlock rows for frames and future rewards.
+- `profile_equipped_cosmetics`: per-profile equipped avatar/frame keys.
+
+Catalog columns:
+- `key text primary key`
+- `type text not null`, limited to `avatar` or `frame`
+- `label_key text not null`
+- `asset_path text not null`
+- `rarity text not null default 'common'`
+- `unlock_type text not null default 'free'`
+- `is_active boolean not null default true`
+- `sort_order integer not null default 100`
+- `created_at timestamptz not null default now()`
+- `updated_at timestamptz not null default now()`
+
+Seeded catalog:
+- 54 avatar rows from `public/cosmetics/avatars/*.png`; all avatars use `unlock_type = 'free'`.
+- 10 frame rows from `public/cosmetics/frames/*.png`.
+- Default avatar: `1079_head` -> `/cosmetics/avatars/1079_head.png`.
+- Default frame: `TXK_frame_reOpen_EN_FREE` -> `/cosmetics/frames/TXK_frame_reOpen_EN_FREE.png`.
+- Free frames: frame keys ending `_FREE`, mapped to `unlock_type = 'free'`.
+- Locked/earned frames: non-`_FREE` frame keys, mapped to `unlock_type = 'manual'`.
+
+Free naming convention:
+- Cosmetic keys ending `_FREE` are an asset/import convention and must map to `unlock_type = 'free'`.
+- Catalog `unlock_type` remains the runtime source of truth for equip checks.
+- Frames are equippable when `unlock_type = 'free'` or the caller has a matching unlock row.
+- Runtime security does not inspect filenames; the catalog row is the authority.
+
+RPCs:
+- `get_available_avatars()`
+- `get_my_cosmetics()`
+- `equip_my_avatar(p_avatar_key text)`
+- `equip_my_frame(p_frame_key text)`
+- `admin_grant_cosmetic(p_profile_id uuid, p_cosmetic_key text, p_reason text default null)`
+
+Legacy avatar hardening:
+- `update_my_profile(p_ign, p_avatar_key)` now rejects non-empty avatar keys unless they match an active `avatar` row in `cosmetic_catalog`.
+- `equip_my_avatar(...)` mirrors the equipped avatar to `profiles.avatar_key` for backward compatibility.
+
+RLS/security:
+- RLS enabled on all three cosmetics tables.
+- Authenticated approved users with active primary membership can read active catalog rows and their own unlock/equipped rows.
+- Direct client writes are not granted.
+- Equip RPCs use `auth.uid()` only and accept no target profile id.
+- Locked frames require an unlock row unless `unlock_type = 'free'`.
+- Admin grants require existing member-management authority for the target member's active primary guild.
+- No player uploads, arbitrary image URLs, Supabase Storage, CP/GvG/audit/role/permission/member-status behavior changes, staging, or production changes were included.
+
+Validation:
+- Local Supabase reset passed.
+- Local validation script passed through Docker `psql`.
+- Milestone 22B focused validation result: 19 PASS / 0 FAIL / 0 SKIP.
+- Local asset-path verification checked 64 catalog rows with 0 missing files and 0 unlock mapping problems.
 
 ## Milestone 21B CP Rank Badge Summary RPC
 

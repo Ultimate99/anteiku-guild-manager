@@ -1,8 +1,15 @@
 import React, { useEffect, useState } from 'react';
+import { CosmeticPreview } from '../components/CosmeticPreview.jsx';
 import { RankBadge } from '../components/RankBadge.jsx';
 import { StatusBadge } from '../components/StatusBadge.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import { useAuth } from '../hooks/useAuth.js';
+import {
+  equipMyAvatar,
+  equipMyFrame,
+  formatCosmeticLabel,
+  loadMyCosmetics,
+} from '../services/cosmeticsService.js';
 import { rosterStatusTone } from '../services/adminMemberService.js';
 import { loadMyCpRankSummary } from '../services/cpRankBadgeService.js';
 import {
@@ -13,6 +20,10 @@ import {
   submitMyCpUpdate,
 } from '../services/cpWindowService.js';
 import { updateMyProfile } from '../services/profileService.js';
+
+function findCosmeticByKey(items, key) {
+  return items?.find((item) => item.key === key) ?? null;
+}
 
 export function Profile() {
   const { t } = useLanguage();
@@ -32,6 +43,13 @@ export function Profile() {
   const [rankSummary, setRankSummary] = useState(null);
   const [rankLoading, setRankLoading] = useState(false);
   const [rankError, setRankError] = useState('');
+  const [cosmeticsState, setCosmeticsState] = useState(null);
+  const [cosmeticsLoading, setCosmeticsLoading] = useState(false);
+  const [cosmeticsSavingKey, setCosmeticsSavingKey] = useState('');
+  const [cosmeticsMessage, setCosmeticsMessage] = useState('');
+  const [cosmeticsError, setCosmeticsError] = useState('');
+  const [cosmeticsPickerOpen, setCosmeticsPickerOpen] = useState(false);
+  const [cosmeticsPickerTab, setCosmeticsPickerTab] = useState('avatars');
   const rosterStatus = membership?.roster_status ?? 'active';
   const rankVisualKey = rankSummary?.visualKey ?? 'unranked';
   const canSubmitCp = Boolean(cpWindowState?.can_submit);
@@ -120,6 +138,60 @@ export function Profile() {
     };
   }, [membership?.id, profile?.id]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadCosmeticsPanel() {
+      if (!profile?.id || !membership?.id) {
+        return;
+      }
+
+      setCosmeticsLoading(true);
+      setCosmeticsError('');
+
+      try {
+        const nextCosmeticsState = await loadMyCosmetics();
+
+        if (!cancelled) {
+          setCosmeticsState(nextCosmeticsState);
+        }
+      } catch (loadError) {
+        if (!cancelled) {
+          setCosmeticsState(null);
+          setCosmeticsError(loadError.message || t('profile.cosmeticsLoadError'));
+        }
+      } finally {
+        if (!cancelled) {
+          setCosmeticsLoading(false);
+        }
+      }
+    }
+
+    loadCosmeticsPanel();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [membership?.id, profile?.id, t]);
+
+  useEffect(() => {
+    if (!cosmeticsPickerOpen) {
+      return undefined;
+    }
+
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') {
+        setCosmeticsPickerOpen(false);
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [cosmeticsPickerOpen]);
+
   function startEditing() {
     setIgnDraft(profile?.ign ?? '');
     setProfileMessage('');
@@ -131,6 +203,15 @@ export function Profile() {
     setIgnDraft(profile?.ign ?? '');
     setProfileError('');
     setIsEditing(false);
+  }
+
+  function openCosmeticsPicker(tab = 'avatars') {
+    setCosmeticsPickerTab(tab);
+    setCosmeticsPickerOpen(true);
+
+    if (!cosmeticsState && !cosmeticsLoading) {
+      refreshCosmeticsPanel();
+    }
   }
 
   async function saveProfile(event) {
@@ -183,6 +264,56 @@ export function Profile() {
     }
   }
 
+  async function refreshCosmeticsPanel({ showMessage = false } = {}) {
+    setCosmeticsLoading(true);
+    setCosmeticsError('');
+    if (!showMessage) {
+      setCosmeticsMessage('');
+    }
+
+    try {
+      const nextCosmeticsState = await loadMyCosmetics();
+      setCosmeticsState(nextCosmeticsState);
+      if (showMessage) {
+        setCosmeticsMessage(t('profile.cosmeticsUpdated'));
+      }
+    } catch (loadError) {
+      setCosmeticsError(loadError.message || t('profile.cosmeticsLoadError'));
+    } finally {
+      setCosmeticsLoading(false);
+    }
+  }
+
+  async function equipAvatar(avatarKey) {
+    setCosmeticsSavingKey(avatarKey);
+    setCosmeticsError('');
+    setCosmeticsMessage('');
+
+    try {
+      await equipMyAvatar(avatarKey);
+      await Promise.all([refreshCosmeticsPanel({ showMessage: true }), refreshProfile()]);
+    } catch (equipError) {
+      setCosmeticsError(equipError.message || t('profile.cosmeticsSaveError'));
+    } finally {
+      setCosmeticsSavingKey('');
+    }
+  }
+
+  async function equipFrame(frameKey) {
+    setCosmeticsSavingKey(frameKey);
+    setCosmeticsError('');
+    setCosmeticsMessage('');
+
+    try {
+      await equipMyFrame(frameKey);
+      await refreshCosmeticsPanel({ showMessage: true });
+    } catch (equipError) {
+      setCosmeticsError(equipError.message || t('profile.cosmeticsSaveError'));
+    } finally {
+      setCosmeticsSavingKey('');
+    }
+  }
+
   async function saveCp(event) {
     event.preventDefault();
     const nextCpValue = cpDraft.trim();
@@ -211,22 +342,203 @@ export function Profile() {
     }
   }
 
+  const equippedAvatar = findCosmeticByKey(cosmeticsState?.avatars, cosmeticsState?.equipped?.avatarKey);
+  const equippedFrame = findCosmeticByKey(cosmeticsState?.frames, cosmeticsState?.equipped?.frameKey);
+  const cosmeticActionBusy = Boolean(cosmeticsSavingKey) || cosmeticsLoading;
+
   return (
     <div className="stack">
       <section className="panel profile-panel compact-profile-panel rank-profile-panel" data-rank-visual={rankVisualKey}>
-        <div className="avatar-placeholder rank-avatar" aria-hidden="true">
-          AG
+        <div className="profile-avatar-shell">
+          <CosmeticPreview
+            avatar={equippedAvatar}
+            frame={equippedFrame}
+            label={t('profile.currentCosmetics')}
+            className="rank-avatar"
+          />
         </div>
-        <div>
-          <div className="status-badge-row">
-            <StatusBadge tone="success">{t(`approvalStatus.${profile?.approval_status ?? 'approved'}`)}</StatusBadge>
-            <StatusBadge tone={rosterStatusTone(rosterStatus)}>{t(`roster.status.${rosterStatus}.label`)}</StatusBadge>
+        <div className="profile-summary-main">
+          <div className="profile-identity-stack">
+            <div className="profile-title-block">
+              <h3>{profile?.ign ?? t('dashboard.memberFallback')}</h3>
+              <p>@{profile?.username ?? t('common.unknown')}</p>
+            </div>
+            <div className="status-badge-row">
+              <StatusBadge tone="success">{t(`approvalStatus.${profile?.approval_status ?? 'approved'}`)}</StatusBadge>
+              <StatusBadge tone={rosterStatusTone(rosterStatus)}>{t(`roster.status.${rosterStatus}.label`)}</StatusBadge>
+            </div>
           </div>
-          <h3>{profile?.ign ?? t('dashboard.memberFallback')}</h3>
-          <p>@{profile?.username ?? t('common.unknown')}</p>
-          <RankBadge className="profile-rank-badge" summary={rankSummary} loading={rankLoading} error={rankError} />
+          <div className="profile-identity-actions">
+            <RankBadge className="profile-rank-badge" compact summary={rankSummary} loading={rankLoading} error={rankError} />
+            <button
+              type="button"
+              className="secondary-action compact-action profile-customize-action"
+              onClick={() => openCosmeticsPicker('avatars')}
+              disabled={cosmeticsLoading && !cosmeticsState}
+            >
+              {cosmeticsLoading && !cosmeticsState ? t('common.loading') : t('cosmetics.customize')}
+            </button>
+          </div>
         </div>
       </section>
+
+      {cosmeticsPickerOpen ? (
+        <div
+          className="cosmetic-modal-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setCosmeticsPickerOpen(false);
+            }
+          }}
+        >
+          <section className="cosmetic-modal" role="dialog" aria-modal="true" aria-label={t('cosmetics.customize')}>
+            <div className="cosmetic-modal-header">
+              <div>
+                <StatusBadge tone={cosmeticsState ? 'success' : 'warning'}>
+                  {cosmeticsState ? t('profile.cosmeticsReady') : t('common.loading')}
+                </StatusBadge>
+                <h3>{t('cosmetics.customize')}</h3>
+                <p>{t('profile.cosmeticsBody')}</p>
+              </div>
+              <div className="cosmetic-modal-actions">
+                <button
+                  type="button"
+                  className="secondary-action compact-action"
+                  onClick={() => refreshCosmeticsPanel()}
+                  disabled={cosmeticsLoading || Boolean(cosmeticsSavingKey)}
+                >
+                  {cosmeticsLoading ? t('common.loading') : t('common.refresh')}
+                </button>
+                <button
+                  type="button"
+                  className="secondary-action compact-action"
+                  onClick={() => setCosmeticsPickerOpen(false)}
+                >
+                  {t('cosmetics.close')}
+                </button>
+              </div>
+            </div>
+
+            <div className="cosmetic-current-card cosmetic-current-card-compact">
+              <CosmeticPreview avatar={equippedAvatar} frame={equippedFrame} label={t('profile.currentCosmetics')} size="small" />
+              <div>
+                <span>{t('cosmetics.current')}</span>
+                <strong>{equippedAvatar ? formatCosmeticLabel(equippedAvatar, t('profile.avatar')) : t('common.loading')}</strong>
+                <small>{equippedFrame ? formatCosmeticLabel(equippedFrame, t('profile.frame')) : t('common.loading')}</small>
+              </div>
+            </div>
+
+            {cosmeticsMessage ? <p className="notice-line">{cosmeticsMessage}</p> : null}
+            {cosmeticsError ? <p className="error-line">{cosmeticsError}</p> : null}
+
+            <div className="cosmetic-tab-bar" role="tablist" aria-label={t('profile.cosmetics')}>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={cosmeticsPickerTab === 'avatars'}
+                data-active={cosmeticsPickerTab === 'avatars'}
+                onClick={() => setCosmeticsPickerTab('avatars')}
+              >
+                {t('cosmetics.avatars')}
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={cosmeticsPickerTab === 'frames'}
+                data-active={cosmeticsPickerTab === 'frames'}
+                onClick={() => setCosmeticsPickerTab('frames')}
+              >
+                {t('cosmetics.frames')}
+              </button>
+            </div>
+
+            {cosmeticsPickerTab === 'avatars' ? (
+              <div className="cosmetic-picker-section" role="tabpanel" aria-label={t('profile.avatarPicker')}>
+                <div className="cosmetic-picker-heading">
+                  <h4>{t('cosmetics.chooseAvatar')}</h4>
+                  <span>{t('profile.avatarPickerHint')}</span>
+                </div>
+                <div className="cosmetic-grid">
+                  {(cosmeticsState?.avatars ?? []).map((avatar) => {
+                    const isSaving = cosmeticsSavingKey === avatar.key;
+                    return (
+                      <button
+                        type="button"
+                        className="cosmetic-card cosmetic-option-card"
+                        key={avatar.key}
+                        data-equipped={avatar.isEquipped}
+                        aria-pressed={avatar.isEquipped}
+                        onClick={() => equipAvatar(avatar.key)}
+                        disabled={avatar.isEquipped || cosmeticActionBusy}
+                      >
+                        <CosmeticPreview avatar={avatar} label={formatCosmeticLabel(avatar, t('profile.avatar'))} size="small" />
+                        <div className="cosmetic-card-copy">
+                          <strong>{formatCosmeticLabel(avatar, t('profile.avatar'))}</strong>
+                          <span>{avatar.isEquipped ? t('cosmetics.equipped') : t('profile.unlocked')}</span>
+                        </div>
+                        <span className="cosmetic-card-action">
+                          {isSaving ? t('profile.equipping') : avatar.isEquipped ? t('cosmetics.equipped') : t('profile.equipAvatar')}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="cosmetic-picker-section" role="tabpanel" aria-label={t('profile.framePicker')}>
+                <div className="cosmetic-picker-heading">
+                  <h4>{t('cosmetics.chooseFrame')}</h4>
+                  <span>{t('profile.framePickerHint')}</span>
+                </div>
+                <div className="cosmetic-grid">
+                  {(cosmeticsState?.frames ?? []).map((frame) => {
+                    const isSaving = cosmeticsSavingKey === frame.key;
+                    const canEquipFrame = frame.isUnlocked && !frame.isEquipped;
+                    return (
+                      <button
+                        type="button"
+                        className="cosmetic-card cosmetic-option-card"
+                        key={frame.key}
+                        data-equipped={frame.isEquipped}
+                        data-locked={!frame.isUnlocked}
+                        aria-pressed={frame.isEquipped}
+                        onClick={() => equipFrame(frame.key)}
+                        disabled={!canEquipFrame || cosmeticActionBusy}
+                      >
+                        <CosmeticPreview avatar={equippedAvatar} frame={frame} label={formatCosmeticLabel(frame, t('profile.frame'))} size="small" />
+                        <div className="cosmetic-card-copy">
+                          <strong>{formatCosmeticLabel(frame, t('profile.frame'))}</strong>
+                          <span>
+                            {frame.isEquipped
+                              ? t('cosmetics.equipped')
+                              : frame.isUnlocked
+                                ? t('profile.unlocked')
+                                : t('cosmetics.locked')}
+                          </span>
+                        </div>
+                        <span className="cosmetic-card-action">
+                          {isSaving
+                            ? t('profile.equipping')
+                            : frame.isEquipped
+                              ? t('cosmetics.equipped')
+                              : frame.isUnlocked
+                                ? t('profile.equipFrame')
+                                : t('cosmetics.locked')}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {!cosmeticsLoading && cosmeticsState && !cosmeticsState.avatars.length && !cosmeticsState.frames.length ? (
+              <p className="muted-line compact-state-line">{t('profile.noCosmetics')}</p>
+            ) : null}
+          </section>
+        </div>
+      ) : null}
 
       <section className="panel profile-edit-panel member-compact-panel" aria-label={t('profile.editProfile')}>
         <div className="profile-edit-header">

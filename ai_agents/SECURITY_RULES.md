@@ -1,5 +1,61 @@
 # Security Rules
 
+## Milestone 22C Frontend Cosmetics Picker Rules
+
+Milestone 22C is frontend-only and local-only until the target database has `20260525000100_cosmetics_catalog_unlocks.sql` applied and verified.
+
+Frontend picker rules:
+- Load cosmetics through `get_my_cosmetics()` only.
+- Equip avatars through `equip_my_avatar(...)` only.
+- Equip frames through `equip_my_frame(...)` only.
+- Do not direct-read or direct-write `cosmetic_catalog`, `profile_cosmetic_unlocks`, or `profile_equipped_cosmetics` from frontend code.
+- Do not expose `admin_grant_cosmetic(...)` in member-facing UI.
+- Do not add upload, arbitrary URL, or Supabase Storage avatar/frame behavior.
+- Render only asset paths constrained to `/cosmetics/avatars/` and `/cosmetics/frames/`.
+- Locked frames may be shown as locked but must not be equip-enabled unless backend marks them unlocked.
+- Do not deploy the picker to staging or production until that target DB has the cosmetics migration applied and verified.
+
+## Milestone 22B Cosmetics Backend Rules
+
+Milestone 22B is backend/database-only and locally validated. It is not deployed to staging or production yet.
+
+Cosmetic catalog rules:
+- Cosmetic assets are approved preset keys only.
+- Database stores keys and static asset paths, not image files.
+- Asset paths must stay under `/cosmetics/avatars/` or `/cosmetics/frames/`.
+- No player uploads, arbitrary image URLs, or Supabase Storage are allowed in v1.
+- `_FREE` suffixes are an asset/import convention for free/default cosmetics.
+- All current avatar catalog rows are free for approved players.
+- Current non-`_FREE` frame rows use `unlock_type = 'manual'` and require an unlock row.
+- Catalog `unlock_type = 'free'` is the runtime source of truth; do not rely on filename parsing alone.
+
+Member equip rules:
+- Members equip only their own cosmetics through `equip_my_avatar(...)` and `equip_my_frame(...)`.
+- Equip RPCs use `auth.uid()` and accept no target profile id.
+- Avatars must exist in `cosmetic_catalog`, be active, and have type `avatar`.
+- Frames must exist in `cosmetic_catalog`, be active, have type `frame`, and either be free or unlocked for the caller.
+- Members cannot grant themselves cosmetics.
+
+Admin grant rules:
+- Cosmetic grants use `admin_grant_cosmetic(...)`.
+- Grants require Owner, scoped Leader/Vice, or scoped Admin with `manage_members` for the target member's active primary guild.
+- Grant audit metadata may include cosmetic key/type and whether a reason was provided, but should not expose sensitive data.
+
+Legacy avatar hardening:
+- `update_my_profile(p_ign, p_avatar_key)` must not store arbitrary avatar keys.
+- Non-empty avatar keys now must match an active catalog avatar.
+- `equip_my_avatar(...)` syncs `profiles.avatar_key` for backward compatibility.
+
+RLS/direct access:
+- RLS is enabled on `cosmetic_catalog`, `profile_cosmetic_unlocks`, and `profile_equipped_cosmetics`.
+- Direct catalog reads are limited to active catalog rows for approved users with active primary membership.
+- Direct unlock/equipped reads are caller-owned only.
+- Direct client writes are not granted.
+
+Rollout boundary:
+- Do not deploy future cosmetics picker frontend until `20260525000100_cosmetics_catalog_unlocks.sql` is applied and verified in the target DB.
+- Staging/production rollout remains pending.
+
 ## Milestone 21E Rank Badge / Profile Border Production Rules
 
 Milestone 21B backend, Milestone 21C frontend, Milestone 21D staging validation, and Milestone 21E production rollout are complete. Rank Badge / Profile Border is live in production.

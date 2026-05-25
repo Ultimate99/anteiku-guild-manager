@@ -1,5 +1,53 @@
 # Changelog
 
+## 2026-05-25 - Milestone 22C Frontend Cosmetics Picker Implemented
+
+- Added frontend-only Profile cosmetics picker for the locally validated Milestone 22B cosmetics backend.
+- Added `src/services/cosmeticsService.js` using only `get_my_cosmetics`, `equip_my_avatar`, and `equip_my_frame`.
+- Added `src/components/CosmeticPreview.jsx` for static avatar/frame previews.
+- Updated Profile to render equipped avatar/frame visuals, list available avatars, list free/unlocked/locked frames, equip avatars, and equip free/unlocked frames.
+- Locked frames are visible but disabled until unlocked by backend state.
+- Avatar equip refreshes the auth profile so legacy `profiles.avatar_key` stays in sync.
+- Added mobile-first dark/crimson cosmetics picker styles.
+- Added EN/FR/DE cosmetics labels.
+- `npm.cmd run build` passed.
+- Source validation found no direct frontend `cosmetic_catalog`, `profile_cosmetic_unlocks`, or `profile_equipped_cosmetics` calls.
+- Source validation found no admin cosmetic grant UI and no new direct CP/audit/GvG protected table paths.
+- Local Vite dev server reached `http://127.0.0.1:5173`.
+- No SQL migrations, Supabase/RLS/RPC logic, staging, production, Vercel env, deployment, push, or commit action was included.
+- Manual authenticated local browser validation remains pending before marking Milestone 22C complete.
+- Do not deploy this picker to staging or production until the target DB has `20260525000100_cosmetics_catalog_unlocks.sql` applied and verified.
+
+## 2026-05-25 - Milestone 22B.1 Cosmetics Catalog Asset Alignment
+
+- Aligned the local cosmetics catalog seed with actual files under `public/cosmetics/avatars/` and `public/cosmetics/frames/`.
+- Seeded 54 free avatar keys using file names without extensions, with `1079_head` as the default avatar.
+- Seeded 10 frame keys using file names without extensions, with `TXK_frame_reOpen_EN_FREE` as the default frame.
+- Mapped frame keys ending `_FREE` to `unlock_type = 'free'`.
+- Mapped non-`_FREE` frames to `unlock_type = 'manual'`, so they require profile unlock rows before equip.
+- Verified catalog asset paths against the local filesystem: 64 rows checked, 0 missing files, 0 unlock mapping problems.
+- Local Supabase reset passed and full local validation passed through Docker `psql`, including Milestone 22B result 19 PASS / 0 FAIL / 0 SKIP.
+- Staging and production were not touched.
+
+## 2026-05-25 - Milestone 22B Cosmetics Backend Implemented
+
+- Added backend/database-only support for preset avatars, unlocked/equipped frames, and future cosmetic rewards.
+- Created migration `20260525000100_cosmetics_catalog_unlocks.sql`.
+- Added `cosmetic_catalog`, `profile_cosmetic_unlocks`, and `profile_equipped_cosmetics`.
+- Seeded catalog data for repo static assets under `public/cosmetics/avatars/` and `public/cosmetics/frames/`.
+- Captured the `_FREE` naming convention: `_FREE` catalog keys map to `unlock_type = 'free'`, while catalog `unlock_type` remains the runtime source of truth.
+- Added RPCs `get_available_avatars()`, `get_my_cosmetics()`, `equip_my_avatar(text)`, `equip_my_frame(text)`, and `admin_grant_cosmetic(uuid, text, text)`.
+- Hardened `update_my_profile(p_ign, p_avatar_key)` so arbitrary avatar keys are rejected.
+- `equip_my_avatar(...)` syncs `profiles.avatar_key` for backward compatibility.
+- Added RLS policies for active catalog reads and caller-owned unlock/equipped reads; direct client writes are not granted.
+- Added cosmetic audit actions for avatar equip, frame equip, and admin grant.
+- Updated local validation SQL with Milestone 22B coverage.
+- Local Supabase reset passed.
+- Full local validation passed through Docker `psql`, including Milestone 22B result 19 PASS / 0 FAIL / 0 SKIP.
+- `npm.cmd run build` was not run because no frontend/source UI code changed.
+- Staging and production were not touched.
+- Future cosmetics picker frontend must wait until the target DB has `20260525000100_cosmetics_catalog_unlocks.sql` applied and verified.
+
 ## 2026-05-24 - Milestone 21E Rank Badge / Profile Border Production Rollout Complete
 
 - Applied Rank Badge Summary migration `20260524000400_cp_rank_badge_summary.sql` to production after dry-run review showed only that migration pending.

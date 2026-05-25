@@ -1,5 +1,80 @@
 # Testing
 
+## Milestone 22C Frontend Cosmetics Picker Validation
+
+Milestone 22C is implemented locally and pending manual authenticated browser validation.
+
+Build/source validation:
+- `npm.cmd run build` passed.
+- Cosmetics service uses only `get_my_cosmetics`, `equip_my_avatar`, and `equip_my_frame`.
+- No direct frontend cosmetics table calls were added.
+- No admin cosmetic grant UI was added.
+- No new direct CP/audit/GvG protected table paths were added by the cosmetics picker.
+
+Manual local browser validation checklist:
+- Sign in as an approved local user.
+- Open Profile.
+- Confirm current avatar/frame preview renders.
+- Confirm avatar picker renders available avatars.
+- Equip a different avatar.
+- Confirm Profile header updates after avatar equip.
+- Confirm free frames can be equipped.
+- Confirm locked frames are visible but disabled until unlocked.
+- Confirm refresh reloads cosmetics.
+- Confirm mobile layout is readable.
+
+Network checklist:
+- Initial/Profile cosmetics load uses `get_my_cosmetics`.
+- Avatar equip uses `equip_my_avatar`.
+- Frame equip uses `equip_my_frame`.
+- No direct `cosmetic_catalog`, `profile_cosmetic_unlocks`, or `profile_equipped_cosmetics` calls.
+- No direct `member_cp`, `cp_snapshots`, `audit_logs`, or unsafe `gvg_votes` calls.
+
+Rollout boundary:
+- Staging and production do not have `20260525000100_cosmetics_catalog_unlocks.sql` yet.
+- Do not deploy or merge the picker to a target environment until that target DB has the cosmetics migration applied and verified.
+
+## Milestone 22B Cosmetics Backend Local Validation
+
+Milestone 22B backend/database validation passed locally.
+
+Migration:
+- Local migration `20260525000100_cosmetics_catalog_unlocks.sql` adds cosmetics catalog/unlock/equipped tables and RPCs.
+- No frontend UI was implemented.
+- Staging and production were not touched.
+
+Validation:
+- `npx.cmd supabase db reset` passed.
+- Full local validation script passed through Docker `psql`.
+- Milestone 22B focused validation result: 19 PASS / 0 FAIL / 0 SKIP.
+
+Focused checks:
+- Cosmetics tables and RPCs exist.
+- RLS is enabled on all cosmetics tables.
+- Catalog seed rows match actual local assets: 54 avatars and 10 frames.
+- Default avatar `1079_head` and default frame `TXK_frame_reOpen_EN_FREE` exist.
+- `_FREE` catalog keys map to `unlock_type = 'free'`, and non-`_FREE` frames map to `unlock_type = 'manual'`.
+- Catalog asset paths match local files: 64 rows checked, 0 missing files.
+- Member can read active available avatars and own cosmetics.
+- Member can equip valid avatar and default frame.
+- Invalid avatar and locked frame without unlock are denied.
+- Owner can grant locked frame.
+- Member can equip granted frame.
+- Member cannot grant self cosmetics.
+- Equip RPCs have no target profile argument.
+- `update_my_profile(...)` rejects arbitrary avatar keys.
+- Existing IGN update still works with a valid catalog avatar.
+- Direct unlock writes are denied.
+- Other-member unlocks remain hidden.
+- Cosmetic audit rows are written.
+
+Build:
+- `npm.cmd run build` was not run because 22B changed only database migrations/tests/docs and no frontend code.
+
+Rollout boundary:
+- Staging and production do not have `20260525000100_cosmetics_catalog_unlocks.sql` yet.
+- Future cosmetics picker frontend must not be deployed until the target DB has this migration applied and verified.
+
 ## Milestone 21E Rank Badge Production Validation
 
 Milestone 21E production rollout and smoke validation passed.

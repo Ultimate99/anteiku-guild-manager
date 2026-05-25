@@ -1,5 +1,23 @@
 # Role Permissions
 
+## Milestone 22B Cosmetics Grant Permissions
+
+Member equip:
+- Approved users with active primary membership can read available avatars and their own cosmetics.
+- Members can equip only their own active catalog avatars.
+- Members can equip only free frames or frames unlocked for their own profile.
+- Members cannot grant cosmetics to themselves or others.
+
+Admin grants:
+- Owner can grant active cosmetics globally.
+- Leader/Vice can grant active cosmetics to members in their guild scope.
+- Admin can grant active cosmetics only with scoped `manage_members`.
+- Admin without `manage_members` and normal Members are denied.
+
+Important boundary:
+- Cosmetic grant permission does not grant CP visibility, CP updates, GvG management, audit visibility, role changes, or member-status authority.
+- No admin grant UI exists yet; `admin_grant_cosmetic(...)` is backend support for future tooling.
+
 ## Milestone 20B CP Leaderboard Permissions
 
 Member-safe CP rankings:

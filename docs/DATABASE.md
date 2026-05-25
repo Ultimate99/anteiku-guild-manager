@@ -1,6 +1,6 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and validated through Milestone 21B locally. Remote production is live through Milestone 21E, including CP Ranking and Rank Badge / Profile Border migrations and frontend rollout.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and validated through Milestone 22B locally. Remote production is live through Milestone 21E, including CP Ranking and Rank Badge / Profile Border migrations and frontend rollout.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
@@ -20,6 +20,7 @@ Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION
 12. `20260524000200_cp_update_window_staff_read.sql`
 13. `20260524000300_cp_rankings.sql`
 14. `20260524000400_cp_rank_badge_summary.sql`
+15. `20260525000100_cosmetics_catalog_unlocks.sql`
 
 Migration `20260523000100_member_roster_status_system.sql` is locally validated, staging validated, and production applied/verified as of Milestone 15E.
 
@@ -28,6 +29,8 @@ Migrations `20260524000100_cp_update_window_self_submit.sql` and `20260524000200
 Migration `20260524000300_cp_rankings.sql` is locally validated, staging validated, and production applied/verified.
 
 Migration `20260524000400_cp_rank_badge_summary.sql` is locally validated, staging validated, and production applied/verified.
+
+Migration `20260525000100_cosmetics_catalog_unlocks.sql` is locally validated only. Staging and production rollout are pending.
 
 Production Member Status rollout:
 - Existing production memberships were backfilled to `roster_status = active`.
@@ -38,6 +41,54 @@ Production Member Status rollout:
 - Supabase CLI is currently linked to production `mzflfyxxkascrfpteexz`; relink before future staging/local Supabase commands.
 
 Do not run `supabase db reset` against production. Do not run `supabase/tests/local_validation_anteiku.sql` against production because it inserts fake auth users and local test data.
+
+## Milestone 22B Cosmetics Catalog / Unlocks Backend
+
+New migration:
+- `supabase/migrations/20260525000100_cosmetics_catalog_unlocks.sql`
+
+Adds:
+- `cosmetic_catalog`
+- `profile_cosmetic_unlocks`
+- `profile_equipped_cosmetics`
+- `get_available_avatars()`
+- `get_my_cosmetics()`
+- `equip_my_avatar(p_avatar_key text)`
+- `equip_my_frame(p_frame_key text)`
+- `admin_grant_cosmetic(p_profile_id uuid, p_cosmetic_key text, p_reason text default null)`
+
+Seeded cosmetics:
+- Avatars: 54 rows from `public/cosmetics/avatars/*.png`, all `unlock_type = 'free'`.
+- Frames: 10 rows from `public/cosmetics/frames/*.png`.
+- Default avatar: `1079_head`.
+- Default frame: `TXK_frame_reOpen_EN_FREE`.
+- `_FREE` frames use `unlock_type = 'free'`; non-`_FREE` frames use `unlock_type = 'manual'`.
+
+Asset storage:
+- Database stores keys and static asset paths only.
+- Static assets are expected under `/cosmetics/avatars/` and `/cosmetics/frames/`.
+- No uploads, arbitrary URLs, or Supabase Storage are introduced.
+- Cosmetic keys ending `_FREE` are an asset/import convention and must map to `unlock_type = 'free'`.
+- Runtime access uses catalog `unlock_type` as the source of truth, not filename parsing alone.
+- Catalog asset paths were verified against local files: 64 rows checked, 0 missing files.
+
+Security:
+- RLS is enabled on all cosmetics tables.
+- Members can read active catalog rows and their own unlock/equipped rows.
+- Members equip only their own active avatars and own unlocked/free frames through RPCs.
+- Members cannot grant cosmetics.
+- Admin grants require existing scoped member-management authority.
+- `update_my_profile(p_ign, p_avatar_key)` rejects arbitrary avatar keys and accepts only active catalog avatars.
+
+Validation:
+- Local Supabase reset passed.
+- Local validation script passed through Docker `psql`.
+- Milestone 22B focused validation result: 19 PASS / 0 FAIL / 0 SKIP.
+- Catalog unlock mapping verification passed with 0 mapping problems.
+
+Rollout boundary:
+- Staging and production do not have this migration yet.
+- Do not deploy future cosmetics picker frontend until the target DB has this migration applied and verified.
 
 ## Milestone 20B CP Ranking Backend
 
