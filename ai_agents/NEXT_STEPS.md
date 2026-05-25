@@ -2,6 +2,24 @@
 
 ## Current Recommendation
 
+Milestone 22F Cosmetics Catalog Sync Script is implemented locally.
+
+Recorded 22F tooling status:
+- Added `scripts/sync-cosmetics-catalog.mjs`.
+- Added `npm.cmd run cosmetics:sync`.
+- Dry-run passed and printed SQL preview for 54 avatars and 10 frames.
+- Normal run generated `supabase/migrations/20260525193210_cosmetics_catalog_sync.sql`.
+- `npm.cmd run build` passed.
+- No Supabase commands, staging/prod commands, deploys, uploads, Storage, arbitrary URLs, runtime source behavior changes, or RLS/RPC behavior changes were included.
+
+Recommended next options:
+- Review `20260525193210_cosmetics_catalog_sync.sql` before any migration rollout because it follows the sync default that frame filenames without `_FREE` become `unlock_type = 'manual'`.
+- Decide whether to keep this generated migration as the next catalog sync artifact, regenerate after adding new assets, or add optional override/config support before staging.
+- If approved later, run normal staging dry-run/apply/verification before production.
+- Relink Supabase CLI deliberately before any staging/local Supabase work; it is currently linked to production `mzflfyxxkascrfpteexz`.
+
+## Previous Recommendation - Leaderboard Podium Polish
+
 Leaderboard podium polish is live in production.
 
 Recorded leaderboard podium polish status:

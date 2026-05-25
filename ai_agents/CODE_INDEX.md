@@ -15,6 +15,7 @@
 - `src/i18n/en.js`: English UI translation dictionary.
 - `src/i18n/fr.js`: French UI translation dictionary.
 - `src/i18n/de.js`: German UI translation dictionary.
+- `scripts/sync-cosmetics-catalog.mjs`: Local developer script that scans repo-backed cosmetics assets and generates timestamped `cosmetic_catalog` upsert migrations without running Supabase commands.
 - `src/services/authService.js`: Supabase auth wrappers for session, signin, signup, password reset/update, and signout.
 - `src/services/profileService.js`: Safe own profile/membership/guild loading including `roster_status`, registration RPC call, and own IGN update RPC wrapper.
 - `src/services/guildService.js`: Safe core guild loading for registration.
@@ -44,6 +45,24 @@
 - `src/components/admin/AdminPermissionsSection.jsx`: Admin permission checkbox management section.
 - `src/components/admin/AdminToolsSection.jsx`: Planned/future admin tools section.
 - `src/styles/app.css`: Plain mobile-first dark styling.
+
+## Milestone 22F Cosmetics Catalog Sync Script
+
+- `scripts/sync-cosmetics-catalog.mjs`
+  - Scans `public/cosmetics/avatars/` and `public/cosmetics/frames/`.
+  - Accepts `.png` and `.webp`; ignores hidden files, directories, and unsupported extensions.
+  - Generates cosmetic keys from filenames without extensions.
+  - Generates repo-backed asset paths and label keys.
+  - Defaults `_FREE` keys to `unlock_type = 'free'`, v1 avatars without `_FREE` to `free`, and frames without `_FREE` to `manual`.
+  - Emits deterministic sort orders in increments of `10`.
+  - Supports `--dry-run` for SQL preview without writing.
+  - Writes timestamped `supabase/migrations/*_cosmetics_catalog_sync.sql` files but does not apply them.
+- `package.json`
+  - Adds `cosmetics:sync`.
+- `supabase/migrations/20260525193210_cosmetics_catalog_sync.sql`
+  - Generated locally during validation; not applied to staging or production.
+  - Upserts 54 avatar rows and 10 frame rows into `public.cosmetic_catalog`.
+  - Does not delete or deactivate missing catalog rows.
 
 ## Milestone 22E Cosmetics Production Rollout
 

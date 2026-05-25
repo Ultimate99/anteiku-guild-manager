@@ -1,5 +1,18 @@
 # Session Log
 
+## 2026-05-25 - Milestone 22F Cosmetics Catalog Sync Script Implemented
+
+- Implemented local developer tooling for cosmetics catalog sync.
+- Added `scripts/sync-cosmetics-catalog.mjs`.
+- Added `npm.cmd run cosmetics:sync`.
+- Dry-run validated: detected 54 avatars, 10 frames, 64 total cosmetics, and printed SQL preview without writing.
+- Normal generation validated: created `supabase/migrations/20260525193210_cosmetics_catalog_sync.sql`.
+- Generated migration upserts `public.cosmetic_catalog` rows using repo-backed assets only and does not delete/deactivate missing rows.
+- Generated migration follows current sync defaults: `_FREE` keys are free, v1 avatars without `_FREE` are free, and frames without `_FREE` are manual.
+- `npm.cmd run build` passed.
+- No Supabase commands, staging, production, deployment, runtime app behavior, Supabase/RLS/RPC behavior, uploads, Supabase Storage, arbitrary URLs, CP/GvG/audit/role/permission/member-status behavior, or production data were touched.
+- Generated migration was not applied anywhere and must be reviewed before normal staging/production migration gates.
+
 ## 2026-05-25 - Leaderboard Podium Polish Production Checkpoint
 
 - Recorded production leaderboard podium polish.

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "cosmetics:sync": "node scripts/sync-cosmetics-catalog.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

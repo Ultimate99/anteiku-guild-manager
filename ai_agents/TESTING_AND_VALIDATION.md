@@ -1,5 +1,30 @@
 # Testing And Validation
 
+## Milestone 22F Cosmetics Catalog Sync Script Validation
+
+Milestone 22F local tooling validation passed.
+
+Commands:
+- `npm.cmd run cosmetics:sync -- --dry-run`
+- `npm.cmd run cosmetics:sync`
+- `npm.cmd run build`
+
+Results:
+- Dry-run detected 54 avatars and 10 frames.
+- Dry-run printed SQL preview and did not write a file.
+- Normal run generated `supabase/migrations/20260525193210_cosmetics_catalog_sync.sql`.
+- Generated migration contains 64 `public.cosmetic_catalog` upsert rows: 54 avatars and 10 frames.
+- Generated migration uses `ON CONFLICT (key) DO UPDATE`.
+- Generated migration does not delete or deactivate missing catalog rows.
+- Build passed with the existing Vite chunk-size warning only.
+
+Scope/security:
+- No Supabase commands were run.
+- No staging or production project was touched.
+- No migration was applied.
+- No runtime frontend behavior, Supabase/RLS/RPC behavior, uploads, Supabase Storage, arbitrary URLs, CP/GvG/audit/role/permission/member-status behavior, Vercel env, deployment, or production data changed.
+- Review generated migrations before applying because `unlock_type` is the runtime source of truth.
+
 ## Leaderboard Podium Polish Production Checkpoint
 
 Leaderboard podium polish is live in production.

@@ -23,6 +23,7 @@ Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION
 15. `20260525000100_cosmetics_catalog_unlocks.sql`
 16. `20260525000200_cp_rankings_cosmetics.sql`
 17. `20260525000300_premium_cosmetics_grant_helper.sql`
+18. `20260525193210_cosmetics_catalog_sync.sql` *(generated locally by Milestone 22F tooling; not applied to staging or production)*
 
 Migration `20260523000100_member_roster_status_system.sql` is locally validated, staging validated, and production applied/verified as of Milestone 15E.
 
@@ -37,6 +38,8 @@ Migration `20260525000100_cosmetics_catalog_unlocks.sql` is locally validated, s
 Migration `20260525000200_cp_rankings_cosmetics.sql` is production applied/verified as part of the leaderboard cosmetic display rollout.
 
 Migration `20260525000300_premium_cosmetics_grant_helper.sql` is implemented, locally validated, staging validated, and production applied/verified as of Milestone 23D.
+
+Migration `20260525193210_cosmetics_catalog_sync.sql` was generated locally by `npm.cmd run cosmetics:sync` for Milestone 22F tooling validation. It has not been applied anywhere. Review it before any staging/production migration gate, especially because the sync rules treat frame filenames without `_FREE` as `unlock_type = 'manual'`.
 
 Production Member Status rollout:
 - Existing production memberships were backfilled to `roster_status = active`.
@@ -133,6 +136,39 @@ Validation:
 - Local Supabase reset passed.
 - Local validation script passed through Docker `psql`.
 - Milestone 23B focused validation result: 18 PASS / 0 FAIL / 0 SKIP.
+
+## Milestone 22F Cosmetics Catalog Sync Script
+
+Local developer tooling:
+- Script: `scripts/sync-cosmetics-catalog.mjs`
+- Command: `npm.cmd run cosmetics:sync`
+- Dry-run: `npm.cmd run cosmetics:sync -- --dry-run`
+
+Workflow:
+1. Add approved `.png` or `.webp` assets under `public/cosmetics/avatars/` or `public/cosmetics/frames/`.
+2. Run `npm.cmd run cosmetics:sync -- --dry-run`.
+3. Review the SQL preview.
+4. Run `npm.cmd run cosmetics:sync` to generate a timestamped migration under `supabase/migrations/`.
+5. Review the generated migration.
+6. Apply it only through normal staging and production migration dry-run/apply gates.
+
+Generated catalog rules:
+- Cosmetic key = filename without extension.
+- Avatar asset path = `/cosmetics/avatars/<filename>`.
+- Frame asset path = `/cosmetics/frames/<filename>`.
+- Label key = `cosmetics.avatar.<key>` or `cosmetics.frame.<key>`.
+- Keys ending `_FREE` use `unlock_type = 'free'`.
+- Avatar files without `_FREE` use `unlock_type = 'free'` for v1.
+- Frame files without `_FREE` use `unlock_type = 'manual'`.
+- `free` rows use `rarity = 'common'`; `manual` rows use `rarity = 'rare'`.
+- Sort order is deterministic in increments of `10`: avatars first by filename, then frames by filename.
+
+Safety:
+- The script scans repo-backed files only.
+- The script does not call Supabase, run migrations, deploy, add uploads, use Supabase Storage, or permit arbitrary URLs.
+- Generated migrations upsert rows into `public.cosmetic_catalog` using `ON CONFLICT (key) DO UPDATE`.
+- Generated migrations do not delete or deactivate missing catalog rows by default.
+- Review generated migrations before applying because catalog `unlock_type` is the runtime authority.
 
 ## Milestone 20B CP Ranking Backend
 

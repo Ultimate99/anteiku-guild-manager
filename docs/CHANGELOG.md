@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-05-25 - Milestone 22F Cosmetics Catalog Sync Script
+
+- Added local developer tooling script `scripts/sync-cosmetics-catalog.mjs`.
+- Added npm command `npm.cmd run cosmetics:sync`.
+- Script scans `public/cosmetics/avatars/` and `public/cosmetics/frames/` for `.png` and `.webp` files.
+- Script generates timestamped `supabase/migrations/*_cosmetics_catalog_sync.sql` files that upsert `public.cosmetic_catalog` rows.
+- Generated rows use filename-without-extension keys, repo-backed `/cosmetics/...` asset paths, i18n label keys, deterministic sort order, and `ON CONFLICT (key) DO UPDATE`.
+- Unlock defaults: `_FREE` keys are free, v1 avatars without `_FREE` are free, and frames without `_FREE` are manual.
+- Dry-run and normal generation were validated locally; generated migration `20260525193210_cosmetics_catalog_sync.sql` was created but not applied.
+- `npm.cmd run build` passed.
+- No runtime app behavior, Supabase/RLS/RPC behavior, staging, production, deployment, uploads, Supabase Storage, or arbitrary URL behavior changed.
+
 ## 2026-05-25 - Leaderboard Podium Polish Live
 
 - Deployed `3f65052 style: tune leaderboard podium layout`.

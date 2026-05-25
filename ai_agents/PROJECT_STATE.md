@@ -1,5 +1,43 @@
 # Project State
 
+## Milestone 22F Cosmetics Catalog Sync Script Implemented
+
+Milestone 22F is implemented as local developer tooling only.
+
+Implemented:
+- Added `scripts/sync-cosmetics-catalog.mjs`.
+- Added npm command `cosmetics:sync`.
+- The script scans `public/cosmetics/avatars/` and `public/cosmetics/frames/` for `.png` and `.webp` files.
+- Hidden files, directories, and unsupported extensions are ignored.
+- Cosmetic keys are generated from filenames without extensions.
+- Asset paths are generated as `/cosmetics/avatars/<filename>` or `/cosmetics/frames/<filename>`.
+- Label keys are generated as `cosmetics.avatar.<key>` or `cosmetics.frame.<key>`.
+- Unlock defaults follow the approved local sync rules:
+  - keys ending `_FREE` use `unlock_type = 'free'`;
+  - avatar files without `_FREE` use `unlock_type = 'free'` for v1;
+  - frame files without `_FREE` use `unlock_type = 'manual'`.
+- Rarity defaults to `common` for free cosmetics and `rare` for manual cosmetics.
+- Sort order is deterministic in increments of `10`, with avatars first by filename and frames after by filename.
+- Generated migrations upsert `public.cosmetic_catalog` rows and do not delete/deactivate missing rows.
+
+Validation:
+- `npm.cmd run cosmetics:sync -- --dry-run` passed and printed SQL preview.
+- `npm.cmd run cosmetics:sync` generated `supabase/migrations/20260525193210_cosmetics_catalog_sync.sql`.
+- Generated migration contains 54 avatar rows and 10 frame rows.
+- `npm.cmd run build` passed.
+
+Scope:
+- No runtime app behavior changed.
+- No Supabase commands were run.
+- No staging or production project was touched.
+- No deployment was performed.
+- No uploads, Supabase Storage, arbitrary URLs, CP/GvG/audit/role/permission/member-status behavior, RLS/RPC behavior, or production data were changed.
+- Generated migration has not been applied anywhere and must go through normal staging/production dry-run gates before rollout.
+- Review generated migrations before applying because catalog `unlock_type` remains the runtime authority.
+
+Next recommended step:
+- Milestone 22F.1 or 23E planning: decide whether to keep/apply the generated sync migration as-is, adjust future frame naming/default policy, or add optional config/override support before staging rollout.
+
 ## Leaderboard Podium Polish Production Checkpoint
 
 Leaderboard podium polish is live in production at `https://anteiku-guild-manager.vercel.app`.
