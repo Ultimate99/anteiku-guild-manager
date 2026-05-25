@@ -1,6 +1,6 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and validated through Milestone 22B locally. Remote production is live through Milestone 21E, including CP Ranking and Rank Badge / Profile Border migrations and frontend rollout.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and validated locally through Milestone 23B. Remote production is live through the current production rollout state, including CP Ranking, Rank Badge / Profile Border, Cosmetics, and leaderboard cosmetic display. Milestone 23B is local-only until staging/production rollout is approved.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
@@ -21,6 +21,8 @@ Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION
 13. `20260524000300_cp_rankings.sql`
 14. `20260524000400_cp_rank_badge_summary.sql`
 15. `20260525000100_cosmetics_catalog_unlocks.sql`
+16. `20260525000200_cp_rankings_cosmetics.sql`
+17. `20260525000300_premium_cosmetics_grant_helper.sql`
 
 Migration `20260523000100_member_roster_status_system.sql` is locally validated, staging validated, and production applied/verified as of Milestone 15E.
 
@@ -30,7 +32,11 @@ Migration `20260524000300_cp_rankings.sql` is locally validated, staging validat
 
 Migration `20260524000400_cp_rank_badge_summary.sql` is locally validated, staging validated, and production applied/verified.
 
-Migration `20260525000100_cosmetics_catalog_unlocks.sql` is locally validated only. Staging and production rollout are pending.
+Migration `20260525000100_cosmetics_catalog_unlocks.sql` is locally validated, staging validated, and production applied/verified as of Milestone 22E.
+
+Migration `20260525000200_cp_rankings_cosmetics.sql` is production applied/verified as part of the leaderboard cosmetic display rollout.
+
+Migration `20260525000300_premium_cosmetics_grant_helper.sql` is implemented and locally validated only. It has not been applied to staging or production.
 
 Production Member Status rollout:
 - Existing production memberships were backfilled to `roster_status = active`.
@@ -46,6 +52,13 @@ Do not run `supabase db reset` against production. Do not run `supabase/tests/lo
 
 New migration:
 - `supabase/migrations/20260525000100_cosmetics_catalog_unlocks.sql`
+
+Production status:
+- Applied and verified in production through Milestone 22E.
+- Production catalog contains 54 avatars and 10 frames.
+- Production catalog asset paths exactly match the 64 repo files under `public/cosmetics/`.
+- Active Owner count remained `1`.
+- Direct unsafe anon/authenticated writes are not granted.
 
 Adds:
 - `cosmetic_catalog`
@@ -86,9 +99,40 @@ Validation:
 - Milestone 22B focused validation result: 19 PASS / 0 FAIL / 0 SKIP.
 - Catalog unlock mapping verification passed with 0 mapping problems.
 
-Rollout boundary:
-- Staging and production do not have this migration yet.
-- Do not deploy future cosmetics picker frontend until the target DB has this migration applied and verified.
+Rollout:
+- Staging and production both have this migration applied and verified.
+- Future new target environments must apply and verify this migration before cosmetics UI is deployed there.
+
+## Milestone 23B Premium Cosmetics / Grant Helper Backend
+
+New migration:
+- `supabase/migrations/20260525000300_premium_cosmetics_grant_helper.sql`
+
+Status:
+- Backend/database-only implementation complete locally.
+- Existing deployed migration `20260525000100_cosmetics_catalog_unlocks.sql` was not edited.
+- Staging and production have not received this migration yet.
+
+Changes:
+- All currently existing frame catalog rows become `unlock_type = 'free'`.
+- Current avatars remain free.
+- Future premium avatars and frames should be inserted with `unlock_type = 'manual'`.
+- `get_my_cosmetics()` returns avatar `unlock_type`, `is_unlocked`, and `is_equipped`.
+- `equip_my_avatar(...)` requires active free avatar or active manual avatar with caller-owned unlock row.
+- `update_my_profile(...)` applies the same free-or-unlocked avatar rule for non-empty avatar keys.
+- `admin_grant_cosmetic_by_slug(...)` grants by exact username/profile slug and delegates authority/audit behavior to `admin_grant_cosmetic(...)`.
+
+Security:
+- Members cannot grant themselves cosmetics.
+- Members cannot equip locked/manual avatars or frames without unlock rows.
+- Invalid, inactive, and arbitrary cosmetic keys are denied.
+- Grant lookup does not use IGN/display names.
+- No uploads, arbitrary URLs, or Supabase Storage behavior is added.
+
+Validation:
+- Local Supabase reset passed.
+- Local validation script passed through Docker `psql`.
+- Milestone 23B focused validation result: 18 PASS / 0 FAIL / 0 SKIP.
 
 ## Milestone 20B CP Ranking Backend
 

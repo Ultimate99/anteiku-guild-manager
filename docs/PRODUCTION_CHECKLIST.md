@@ -6,7 +6,7 @@ Current production checkpoint:
 - Production project ref: `mzflfyxxkascrfpteexz`.
 - Project name: `Anteiku Guild Manager Production`.
 - Region: Central EU / Frankfurt.
-- All 14 approved migrations are applied remotely, including `20260523000100_member_roster_status_system.sql`, `20260524000100_cp_update_window_self_submit.sql`, `20260524000200_cp_update_window_staff_read.sql`, `20260524000300_cp_rankings.sql`, and `20260524000400_cp_rank_badge_summary.sql`.
+- All 15 approved production migrations are applied remotely, including `20260523000100_member_roster_status_system.sql`, `20260524000100_cp_update_window_self_submit.sql`, `20260524000200_cp_update_window_staff_read.sql`, `20260524000300_cp_rankings.sql`, `20260524000400_cp_rank_badge_summary.sql`, and `20260525000100_cosmetics_catalog_unlocks.sql`.
 - Production schema/RLS/seed verification passed.
 - Manual Owner bootstrap completed for `ultimatesrb` / `UltimateSRB` in `Anteiku`.
 - Exactly one active Owner membership exists.
@@ -32,8 +32,8 @@ Current production checkpoint:
 - AdminPanel `CP Ranking` is permission-protected and Owner Global ranking was smoke-tested.
 - Milestone 21E Rank Badge / Profile Border is live and production-smoke validated.
 - Rank badge/profile border uses only `get_my_cp_rank_summary()` and does not expose CP values or private CP metadata.
-- Milestone 22B/22B.1 Cosmetics backend is local-only; production does not have `20260525000100_cosmetics_catalog_unlocks.sql` yet.
-- Do not deploy cosmetics picker frontend until production has the cosmetics migration applied and verified.
+- Milestone 22E Cosmetics production rollout is complete. Production has `20260525000100_cosmetics_catalog_unlocks.sql` applied and verified, Vercel serves the cosmetics picker/assets, and production smoke passed.
+- Cosmetics v1 uses approved repo static assets only. Do not add arbitrary URLs, player uploads, or Supabase Storage without a planned security review.
 - Vercel Preview env has not been configured for staging yet.
 
 Controlled guild onboarding checkpoint:

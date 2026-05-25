@@ -1,8 +1,37 @@
 # Supabase RLS
 
+## Milestone 23B Premium Cosmetics / Grant Helper RLS/RPC
+
+Milestone 23B is implemented and locally validated only. It has not been applied to staging or production.
+
+Migration:
+- `20260525000300_premium_cosmetics_grant_helper.sql`
+
+Rules:
+- Current frame catalog rows are updated to `unlock_type = 'free'`.
+- Future premium avatars and frames use `unlock_type = 'manual'`.
+- Catalog `unlock_type` remains the runtime source of truth.
+- `_FREE` suffixes remain an asset/import convention only.
+
+Member-safe RPC behavior:
+- `get_my_cosmetics()` now reports avatar `unlock_type`, `is_unlocked`, and `is_equipped`.
+- `equip_my_avatar(text)` now requires an active free avatar or an active manual avatar with a caller-owned unlock row.
+- `equip_my_frame(text)` remains compatible and already requires free or caller-owned unlock state.
+- `update_my_profile(p_ign, p_avatar_key)` now applies free-or-unlocked validation for non-empty avatar keys.
+
+Admin grant helper:
+- `admin_grant_cosmetic_by_slug(text, text, text)` looks up targets by exact normalized `profile_slug` or `username`, not IGN.
+- It delegates permission, active-membership, idempotent unlock, and audit behavior to `admin_grant_cosmetic(...)`.
+- Execute is granted to `authenticated`, but normal members and admins without existing member-management authority are denied.
+
+Validation:
+- Local Supabase reset passed.
+- Local validation script passed through Docker `psql`.
+- Milestone 23B focused validation result: 18 PASS / 0 FAIL / 0 SKIP.
+
 ## Milestone 22B Cosmetics Catalog / Unlocks RLS/RPC
 
-Milestone 22B backend is implemented and locally validated only. Staging and production do not have `20260525000100_cosmetics_catalog_unlocks.sql` yet.
+Milestone 22B backend is implemented and locally validated. Staging and production both have `20260525000100_cosmetics_catalog_unlocks.sql` applied and verified through Milestones 22D and 22E.
 
 New tables:
 - `cosmetic_catalog`
@@ -43,6 +72,7 @@ Validation:
 - Local validation script passed through Docker `psql`.
 - Milestone 22B focused validation result: 19 PASS / 0 FAIL / 0 SKIP.
 - Catalog asset-path verification checked 64 rows with 0 missing files and 0 unlock mapping problems.
+- Milestone 22E production verification passed for cosmetics tables, RLS, catalog counts, exact repo asset-path match, RPC existence/grants, direct-write denial, active Owner count `1`, and `update_my_profile(...)` avatar hardening.
 
 ## Milestone 21E Rank Badge Summary RPC
 

@@ -1,12 +1,36 @@
 # Supabase RLS
 
-The local Supabase RLS/RPC implementation has been validated through Milestone 22B, and production is applied/verified through Milestone 21E.
+The Supabase RLS/RPC implementation has been validated through Milestone 22E, and production is applied/verified through Milestone 22E.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
 
+## Milestone 23B Premium Cosmetics RLS/RPC
+
+Milestone 23B is backend-only and locally validated. It is not yet applied to staging or production.
+
+Migration:
+- `20260525000300_premium_cosmetics_grant_helper.sql`
+
+Runtime rules:
+- Current frame rows are updated to `unlock_type = 'free'`.
+- Future premium avatars and frames should use `unlock_type = 'manual'`.
+- Catalog `unlock_type` remains the source of truth; `_FREE` is only an asset/import convention.
+
+RPC behavior:
+- `get_my_cosmetics()` returns avatar `unlock_type`, `is_unlocked`, and `is_equipped`.
+- `equip_my_avatar(text)` now requires a free avatar or a caller-owned unlock for manual avatars.
+- `update_my_profile(p_ign, p_avatar_key)` rejects locked manual avatars.
+- `equip_my_frame(text)` remains compatible and continues to require free-or-unlocked frame state.
+- `admin_grant_cosmetic_by_slug(text, text, text)` grants by exact normalized username/profile slug and uses existing member-management authority through the existing grant path.
+
+Validation:
+- Local Supabase reset passed.
+- Local validation passed through Docker `psql`.
+- Milestone 23B focused validation result: 18 PASS / 0 FAIL / 0 SKIP.
+
 ## Milestone 22B Cosmetics RLS/RPC
 
-Milestone 22B is implemented and locally validated only. Staging and production do not have `20260525000100_cosmetics_catalog_unlocks.sql` yet.
+Milestone 22B is implemented and locally validated. Staging and production both have `20260525000100_cosmetics_catalog_unlocks.sql` applied and verified through Milestones 22D and 22E.
 
 New tables:
 - `cosmetic_catalog`
@@ -42,6 +66,7 @@ Security boundary:
 Validation:
 - Milestone 22B local validation passed with 19 PASS / 0 FAIL / 0 SKIP.
 - Catalog asset-path verification checked 64 rows with 0 missing files and 0 unlock mapping problems.
+- Milestone 22E production verification passed for tables, RLS, catalog counts, exact repo asset-path match, RPC existence/grants, direct-write denial, active Owner count `1`, and `update_my_profile(...)` avatar hardening.
 
 ## Milestone 21E Rank Badge Summary RPC
 

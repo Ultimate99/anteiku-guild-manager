@@ -1,45 +1,68 @@
 # Project State
 
-## Milestone 22C Frontend Cosmetics Picker Implemented
+## Milestone 23B Premium Cosmetics Backend Implemented Locally
 
-Milestone 22C is implemented locally on branch `wip/cosmetics-backend-assets` as a frontend cosmetics picker for the locally validated Milestone 22B backend. Build and source/security-path validation passed. Manual authenticated browser validation is still pending.
+Milestone 23B is backend/database-only and locally validated. It prepares premium avatars/frames while keeping the existing production cosmetics rollout untouched.
 
 Implemented locally:
-- Added `src/services/cosmeticsService.js`.
-- Added `src/components/CosmeticPreview.jsx`.
-- Updated `src/pages/Profile.jsx` with a member-facing cosmetics picker.
-- Updated `src/styles/app.css` with mobile-first dark/crimson cosmetics picker and preview styles.
-- Added EN/FR/DE profile cosmetics labels.
-
-Frontend behavior:
-- Profile loads the caller's own cosmetics through `get_my_cosmetics()`.
-- Members can equip only their own avatar through `equip_my_avatar(...)`.
-- Members can equip only their own unlocked/free frame through `equip_my_frame(...)`.
-- The Profile header now renders the equipped avatar and frame when cosmetics load.
-- The picker shows unlocked/equipped/locked states for catalog frames.
-- Locked frames are displayed but cannot be equipped from the frontend.
-- Avatar equip refreshes the auth profile so `profiles.avatar_key` stays in sync with the legacy profile state.
-
-Security/scope:
-- No SQL migrations changed.
-- No Supabase/RLS/RPC logic changed.
-- No direct frontend calls were added for `cosmetic_catalog`, `profile_cosmetic_unlocks`, or `profile_equipped_cosmetics`.
-- No direct frontend calls were added for `member_cp`, `cp_snapshots`, `audit_logs`, or unsafe `gvg_votes` writes.
-- No admin cosmetic grant UI was added.
-- No player uploads, arbitrary image URLs, Supabase Storage use, CP/GvG/audit/role/permission/member-status behavior changes, production changes, Vercel changes, or deploy actions were included.
-- Cosmetics asset rendering is constrained in the service to `/cosmetics/avatars/` and `/cosmetics/frames/` paths.
+- Added new migration `20260525000300_premium_cosmetics_grant_helper.sql`.
+- Did not edit deployed migration `20260525000100_cosmetics_catalog_unlocks.sql`.
+- Updated all 10 currently existing frame catalog rows to `unlock_type = 'free'`.
+- Preserved the rule that catalog `unlock_type` is the runtime source of truth; `_FREE` remains only an asset/import naming convention.
+- Hardened `equip_my_avatar(...)` so active manual avatars require a caller-owned unlock row before equip.
+- Hardened `update_my_profile(p_ign, p_avatar_key)` so active manual avatars require a caller-owned unlock row before legacy avatar-key update.
+- Updated `get_my_cosmetics()` so avatars include `unlock_type`, `is_unlocked`, and `is_equipped`, matching frame-style unlock semantics.
+- Added `admin_grant_cosmetic_by_slug(p_profile_slug text, p_cosmetic_key text, p_reason text default null)` for Owner/scoped member-management grants by exact username/profile slug.
+- Kept `admin_grant_cosmetic(p_profile_id uuid, p_cosmetic_key text, p_reason text default null)` compatible.
 
 Validation:
-- `npm.cmd run build` passed.
-- Local Vite dev server is reachable at `http://127.0.0.1:5173`.
-- Static/source validation confirmed the new frontend path uses `get_my_cosmetics`, `equip_my_avatar`, and `equip_my_frame`.
-- Static/source validation found no direct cosmetics table calls in `src`.
-- Static/source validation found no new direct CP/audit/GvG protected table calls in the cosmetics/Profile path.
+- Local `npx.cmd supabase db reset` passed.
+- Full local validation script passed through Docker `psql`.
+- Milestone 23B focused validation result: 18 PASS / 0 FAIL / 0 SKIP.
+- `npm.cmd run build` was not run because 23B changed only database migrations/tests/docs and no frontend source.
 
-Rollout boundary:
-- Staging and production do not have `20260525000100_cosmetics_catalog_unlocks.sql` yet.
-- Do not deploy or merge this frontend picker to a target environment until that target DB has the cosmetics migration applied and verified.
-- Manual authenticated local browser validation is still required before marking 22C complete.
+Scope:
+- No frontend UI, staging, production, Vercel, deployment, `db push`, service-role key, Supabase Storage, uploads, arbitrary URL path, or CP/GvG/audit/role/permission/member-status behavior change was included.
+- Supabase CLI remains linked to production `mzflfyxxkascrfpteexz`; relink deliberately before any staging/local remote Supabase command.
+
+Next recommended step:
+- Milestone 23C staging rollout/validation for `20260525000300_premium_cosmetics_grant_helper.sql`.
+
+## Milestone 22E Cosmetics Production Rollout Complete
+
+Milestone 22E is complete. Cosmetics backend, static assets, and frontend picker are live in production at `https://anteiku-guild-manager.vercel.app`.
+
+Production rollout:
+- Production Supabase project `mzflfyxxkascrfpteexz` was linked intentionally for the rollout.
+- Production dry-run initially hit a temporary Supabase CLI login/circuit-breaker error, then a retry passed.
+- Dry-run showed exactly one pending migration: `20260525000100_cosmetics_catalog_unlocks.sql`.
+- Production migration push applied only `20260525000100_cosmetics_catalog_unlocks.sql`.
+- Post-push migration list confirmed the cosmetics migration is applied remotely.
+- `wip/cosmetics-backend-assets` was merged into `main` and pushed; Vercel deployed the production build.
+
+Production verification:
+- Cosmetics tables exist: `cosmetic_catalog`, `profile_cosmetic_unlocks`, and `profile_equipped_cosmetics`.
+- RLS is enabled on all cosmetics tables.
+- Production catalog contains 54 avatar rows and 10 frame rows.
+- Production catalog asset paths exactly match the 64 repo files under `public/cosmetics/`.
+- RPCs exist and are granted safely: `get_available_avatars`, `get_my_cosmetics`, `equip_my_avatar`, `equip_my_frame`, and `admin_grant_cosmetic`.
+- Direct unsafe anon/authenticated writes to cosmetics tables are not granted.
+- Active Owner count remains `1`.
+- `update_my_profile(...)` avatar key hardening is active.
+- Production Vercel serves the cosmetics assets and deployed bundle markers.
+
+Production smoke:
+- User-confirmed production cosmetics UI smoke passed.
+- Owner `ultimatesrb` successfully equipped avatar `1147_head` and free frame `TXK_C1121_lock_FREE`; read-only verification confirmed persistence.
+- Controlled production Member `m13bmember21056302` / `krsticmiroslav99+m13b21144225@gmail.com` remains approved/active but did not receive an equipped cosmetics row during this smoke.
+
+Security/scope:
+- Cosmetics use approved repo static assets only.
+- No player uploads, arbitrary image URLs, Supabase Storage, service-role path, or direct cosmetics table write path is part of v1.
+- Players can choose avatars and equip only free/unlocked frames through RPCs.
+- Frontend cosmetics paths use only `get_my_cosmetics`, `equip_my_avatar`, and `equip_my_frame`.
+- No CP/GvG/audit/role/permission/member-status behavior was changed.
+- Supabase CLI is currently linked to production `mzflfyxxkascrfpteexz`; relink deliberately before staging/local Supabase commands.
 
 ## Milestone 22B.1 Cosmetics Catalog Aligned Locally
 
@@ -71,10 +94,10 @@ Validation:
 - Catalog asset-path verification checked 64 rows with 0 missing files and 0 unlock mapping problems.
 - `npm.cmd run build` was not run because 22B changed only database migrations/tests/docs and no frontend code.
 
-Rollout boundary:
-- Staging and production do not have `20260525000100_cosmetics_catalog_unlocks.sql` yet.
-- Do not deploy future cosmetics picker frontend to any target until that target DB has this migration applied and verified.
-- Supabase CLI was linked to production before this local-only milestone; future staging/local remote work must relink deliberately before any remote Supabase command.
+Rollout:
+- Staging and production both have `20260525000100_cosmetics_catalog_unlocks.sql` applied and verified through Milestones 22D and 22E.
+- Future new target environments must apply and verify this migration before cosmetics UI is deployed there.
+- Supabase CLI remains linked to production after Milestone 22E; future staging/local remote work must relink deliberately before any remote Supabase command.
 
 Asset note:
 - Static asset paths now match files under `public/cosmetics/avatars/` and `public/cosmetics/frames/`.

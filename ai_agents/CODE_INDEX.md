@@ -45,12 +45,41 @@
 - `src/components/admin/AdminToolsSection.jsx`: Planned/future admin tools section.
 - `src/styles/app.css`: Plain mobile-first dark styling.
 
+## Milestone 22E Cosmetics Production Rollout
+
+Production status:
+- Cosmetics backend/assets/frontend are live in production.
+- Production migration: `20260525000100_cosmetics_catalog_unlocks.sql`.
+- Production catalog verification passed: 54 avatars, 10 frames, and 64 exact repo asset-path matches.
+- Vercel serves the cosmetics picker and static assets.
+- Owner equip persistence was verified in production.
+
+Security:
+- Frontend cosmetics paths use only `get_my_cosmetics`, `equip_my_avatar`, and `equip_my_frame`.
+- No frontend admin grant UI exists.
+- No direct cosmetics table writes, arbitrary URLs, Supabase Storage, or upload paths are part of v1.
+- Free frames can be equipped by players; manual frames require backend unlock state.
+
+## Milestone 23B Premium Cosmetics Backend
+
+Status:
+- Backend/database-only implementation complete locally.
+- New migration `supabase/migrations/20260525000300_premium_cosmetics_grant_helper.sql`.
+- Existing deployed migration `supabase/migrations/20260525000100_cosmetics_catalog_unlocks.sql` was not edited.
+
+- `supabase/migrations/20260525000300_premium_cosmetics_grant_helper.sql`
+  - Updates the current 10 frame keys to `unlock_type = 'free'`.
+  - Updates `get_my_cosmetics()` so avatar rows include unlock type, unlock state, and equipped state.
+  - Updates `equip_my_avatar(text)` to require free-or-unlocked avatar semantics.
+  - Updates `update_my_profile(text, text)` so manual avatar keys require an unlock row.
+  - Adds `admin_grant_cosmetic_by_slug(text, text, text)` for exact username/profile-slug grants.
+- `supabase/tests/local_validation_anteiku.sql`
+  - Adds Milestone 23B coverage for free current frames, premium manual avatar/frame denial, grant-by-slug, unlocked equip, update-profile hardening, invalid input denial, member/admin denial, and audit rows.
+
 ## Milestone 22C Frontend Cosmetics Picker
 
-Local-only status:
-- Implemented and build/source-security validated.
-- Manual authenticated browser validation is pending.
-- Staging and production do not have `20260525000100_cosmetics_catalog_unlocks.sql` yet, so do not deploy the picker there.
+Status:
+- Implemented, staging-validated, polished, and deployed through Milestone 22E.
 
 - `src/services/cosmeticsService.js`
   - Calls only `get_my_cosmetics`, `equip_my_avatar`, and `equip_my_frame`.
@@ -71,10 +100,8 @@ Local-only status:
 
 ## Milestone 22B Cosmetics Backend
 
-Local-only status:
-- Implemented and locally validated.
-- Staging and production do not have `20260525000100_cosmetics_catalog_unlocks.sql` yet.
-- Frontend picker is now implemented locally in Milestone 22C but is not deployed.
+Status:
+- Implemented, locally validated, applied to staging in Milestone 22D, and applied to production in Milestone 22E.
 
 - `supabase/migrations/20260525000100_cosmetics_catalog_unlocks.sql`
   - Adds `cosmetic_catalog`, `profile_cosmetic_unlocks`, and `profile_equipped_cosmetics`.

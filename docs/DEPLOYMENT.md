@@ -64,17 +64,21 @@ Milestone 21E deployed Rank Badge / Profile Border to production.
 - Production smoke passed for Owner Dashboard/AdminPanel/CP tabs and controlled Member Dashboard/Profile badge state with no Admin navigation.
 - Supabase CLI is currently linked to production project `mzflfyxxkascrfpteexz`; relink deliberately before future staging/local Supabase commands.
 
-## Future Cosmetics Rollout Boundary
+## Production Cosmetics
 
-Milestone 22B/22B.1 cosmetics backend is local-only.
+Milestone 22E deployed cosmetics to production.
 
-- Do not deploy a cosmetics picker frontend until the target Supabase DB has `20260525000100_cosmetics_catalog_unlocks.sql` applied and verified.
-- Current local catalog seed matches repo assets under `public/cosmetics/avatars/` and `public/cosmetics/frames/`.
+- Production migration applied and verified:
+  - `20260525000100_cosmetics_catalog_unlocks.sql`
+- Catalog seed matches repo assets under `public/cosmetics/avatars/` and `public/cosmetics/frames/`.
+- Production catalog verification passed with 54 avatars, 10 frames, and 64 exact asset-path matches.
 - Catalog keys use file names without extension.
 - Default avatar: `1079_head`.
 - Default frame: `TXK_frame_reOpen_EN_FREE`.
 - `_FREE` frames are free; non-`_FREE` frames are manual unlocks.
+- Players choose avatars and equip only free/unlocked frames through RPCs.
 - No Supabase Storage, arbitrary URLs, or player uploads are part of v1.
+- Supabase CLI is currently linked to production project `mzflfyxxkascrfpteexz`; relink deliberately before future staging/local Supabase commands.
 
 ## Production Supabase Project
 

@@ -1,8 +1,49 @@
 # Security Rules
 
+## Milestone 23B Premium Cosmetics Backend Rules
+
+Milestone 23B is implemented locally only. Staging and production rollout require separate approval.
+
+Premium cosmetics rules:
+- Catalog `unlock_type` is the source of truth.
+- `_FREE` filename/key suffixes are only asset/import conventions.
+- All current frame catalog rows are free for approved members after the 23B migration.
+- Future premium avatars and future premium frames must use `unlock_type = 'manual'`.
+- Members can equip manual avatars or frames only when a caller-owned `profile_cosmetic_unlocks` row exists.
+- Members cannot equip inactive, invalid, or arbitrary cosmetic keys.
+- Members cannot grant themselves cosmetics.
+
+Grant rules:
+- Use `admin_grant_cosmetic_by_slug(...)` only for exact normalized `profile_slug` or `username` lookup.
+- Do not grant by IGN/display name.
+- Grant authority remains Owner, scoped Leader/Vice, or scoped Admin with member-management authority through the existing grant path.
+- Grant RPCs write the existing `cosmetic_granted` audit action.
+
+Legacy avatar hardening:
+- `update_my_profile(p_ign, p_avatar_key)` must apply the same free-or-unlocked avatar rule as `equip_my_avatar(...)`.
+- Locked manual avatars must not be accepted through profile edit shortcuts.
+
+Boundary:
+- No uploads, arbitrary image URLs, Supabase Storage, service-role path, frontend grant UI, CP/GvG/audit/role/permission/member-status behavior changes, staging action, or production action were included in 23B.
+
+## Milestone 22E Cosmetics Production Rules
+
+Milestone 22E is live in production. Production has `20260525000100_cosmetics_catalog_unlocks.sql` applied and verified, and the cosmetics picker/assets are deployed.
+
+Production cosmetics rules:
+- Load/equip cosmetics through RPCs only: `get_my_cosmetics`, `equip_my_avatar`, and `equip_my_frame`.
+- Do not direct-read or direct-write `cosmetic_catalog`, `profile_cosmetic_unlocks`, or `profile_equipped_cosmetics` from frontend code.
+- Do not expose `admin_grant_cosmetic(...)` in member-facing UI.
+- Do not add upload, arbitrary URL, or Supabase Storage avatar/frame behavior.
+- Render only approved repo asset paths constrained to `/cosmetics/avatars/` and `/cosmetics/frames/`.
+- Players can equip active avatars and only frames that are free or explicitly unlocked by backend state.
+- Locked/manual frames may be shown as locked but must not be equip-enabled unless the backend marks them unlocked.
+- Production direct unsafe anon/authenticated writes to cosmetics tables are not granted.
+- Any future target environment must receive and verify `20260525000100_cosmetics_catalog_unlocks.sql` before deploying cosmetics UI.
+
 ## Milestone 22C Frontend Cosmetics Picker Rules
 
-Milestone 22C is frontend-only and local-only until the target database has `20260525000100_cosmetics_catalog_unlocks.sql` applied and verified.
+Milestone 22C was frontend-only during implementation and is now deployed through Milestone 22E.
 
 Frontend picker rules:
 - Load cosmetics through `get_my_cosmetics()` only.
@@ -13,11 +54,11 @@ Frontend picker rules:
 - Do not add upload, arbitrary URL, or Supabase Storage avatar/frame behavior.
 - Render only asset paths constrained to `/cosmetics/avatars/` and `/cosmetics/frames/`.
 - Locked frames may be shown as locked but must not be equip-enabled unless backend marks them unlocked.
-- Do not deploy the picker to staging or production until that target DB has the cosmetics migration applied and verified.
+- Staging and production now have the cosmetics migration applied and verified.
 
 ## Milestone 22B Cosmetics Backend Rules
 
-Milestone 22B is backend/database-only and locally validated. It is not deployed to staging or production yet.
+Milestone 22B is backend/database-only implementation work. It is now applied and verified in staging and production through Milestones 22D and 22E.
 
 Cosmetic catalog rules:
 - Cosmetic assets are approved preset keys only.
@@ -53,8 +94,8 @@ RLS/direct access:
 - Direct client writes are not granted.
 
 Rollout boundary:
-- Do not deploy future cosmetics picker frontend until `20260525000100_cosmetics_catalog_unlocks.sql` is applied and verified in the target DB.
-- Staging/production rollout remains pending.
+- `20260525000100_cosmetics_catalog_unlocks.sql` is applied and verified in staging and production.
+- For any future new target environment, apply and verify the cosmetics migration before deploying cosmetics UI.
 
 ## Milestone 21E Rank Badge / Profile Border Production Rules
 

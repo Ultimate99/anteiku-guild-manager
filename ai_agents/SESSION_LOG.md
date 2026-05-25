@@ -1,5 +1,41 @@
 # Session Log
 
+## 2026-05-25 - Milestone 23B Premium Cosmetics Backend Implemented Locally
+
+- Implemented backend/database-only premium cosmetics support.
+- Created new migration `supabase/migrations/20260525000300_premium_cosmetics_grant_helper.sql`.
+- Did not edit deployed migration `20260525000100_cosmetics_catalog_unlocks.sql`.
+- Updated all current frame catalog rows to `unlock_type = 'free'`.
+- Hardened `equip_my_avatar(...)` so manual avatars require caller-owned unlock rows.
+- Hardened `update_my_profile(p_ign, p_avatar_key)` so manual avatars cannot be set through profile edit unless unlocked.
+- Updated `get_my_cosmetics()` so avatar rows include `unlock_type`, `is_unlocked`, and `is_equipped`.
+- Added `admin_grant_cosmetic_by_slug(...)` for exact username/profile-slug grants using the existing grant authority/audit path.
+- Updated local validation SQL with premium avatar/frame, grant-by-slug, denial, unlocked equip, and audit coverage.
+- `npx.cmd supabase db reset` passed locally.
+- Full local validation passed through Docker `psql`; Milestone 23B result was 18 PASS / 0 FAIL / 0 SKIP.
+- `npm.cmd run build` was not run because no frontend/source UI code changed.
+- No staging, production, Vercel, deployment, frontend UI, Supabase Storage, upload path, arbitrary URL path, service role key, `db push`, commit, or CP/GvG/audit/role/permission/member-status behavior change was included.
+- Supabase CLI remains linked to production `mzflfyxxkascrfpteexz`; relink deliberately before future staging/local remote Supabase work.
+
+## 2026-05-25 - Milestone 22E Cosmetics Production Rollout Complete
+
+- Completed production rollout for cosmetics.
+- Confirmed rollout branch `wip/cosmetics-backend-assets` carried cosmetics backend/assets/frontend work.
+- Relinked Supabase CLI to production project `mzflfyxxkascrfpteexz`.
+- Production dry-run initially hit a temporary Supabase CLI login/circuit-breaker error, then retry passed.
+- Clean dry-run showed exactly one pending migration: `20260525000100_cosmetics_catalog_unlocks.sql`.
+- Applied only `20260525000100_cosmetics_catalog_unlocks.sql` to production.
+- Remote migration list confirmed `20260525000100` applied.
+- Verified production cosmetics tables, RLS, catalog counts, exact repo asset-path match, RPC existence/grants, direct-write denial, active Owner count `1`, and `update_my_profile(...)` avatar hardening.
+- Merged `wip/cosmetics-backend-assets` into `main` and pushed.
+- Vercel deployed the production cosmetics frontend/assets.
+- Production assets and bundle markers for cosmetics were verified.
+- User-confirmed production cosmetics UI smoke passed.
+- Owner `ultimatesrb` equipped avatar `1147_head` and free frame `TXK_C1121_lock_FREE`; read-only verification confirmed persistence.
+- Controlled production Member `m13bmember21056302` / `krsticmiroslav99+m13b21144225@gmail.com` remains approved/active but did not receive an equipped cosmetics row during this smoke.
+- No `db reset`, `--include-seed`, local fake-user validation SQL, Owner bootstrap, staging command, service role key, Vercel env change, SQL edit, source edit, Supabase Storage, upload path, arbitrary URL path, or CP/GvG/audit/role/permission/member-status behavior change was included.
+- Supabase CLI remains linked to production `mzflfyxxkascrfpteexz`; relink deliberately before future staging/local Supabase commands.
+
 ## 2026-05-25 - Milestone 22C Frontend Cosmetics Picker Implemented
 
 - Continued work on branch `wip/cosmetics-backend-assets`.
@@ -15,7 +51,7 @@
 - Static/source validation found no direct frontend cosmetics table calls and no admin grant UI.
 - Static/source validation found no new direct `member_cp`, `cp_snapshots`, `audit_logs`, or unsafe `gvg_votes` paths in the cosmetics/Profile picker path.
 - No SQL migrations, Supabase/RLS/RPC logic, CP logic, GvG logic, audit logic, role/guild management, permission logic, production, Vercel env, deploy, push, or commit action was performed.
-- Manual authenticated local browser validation remains pending before marking Milestone 22C complete.
+- Browser validation later passed through staging in Milestone 22D, UI polish passed in Milestones 22D.1-22D.3, and production rollout completed in Milestone 22E.
 
 ## 2026-05-25 - Milestone 22B.1 Cosmetics Catalog Asset Alignment
 

@@ -26,7 +26,9 @@
 - No controlled production CP mutation smoke was performed during Milestone 19E; do not open/close a production CP window or submit production CP test values without explicit approval.
 - Milestone 20F CP Leaderboard production rollout is complete. Production has `20260524000300_cp_rankings.sql` applied, member rank-only leaderboard is live, AdminPanel CP Ranking is permission-protected, and production smoke passed.
 - Milestone 21E Rank Badge / Profile Border production rollout is complete. Production has `20260524000400_cp_rank_badge_summary.sql` applied, Profile/Dashboard rank badge visuals are live, and production smoke passed with no CP value exposure from the badge.
-- Milestone 22B/22B.1 Cosmetics backend is local-only. Staging and production do not have `20260525000100_cosmetics_catalog_unlocks.sql` yet; do not deploy a cosmetics picker frontend until the target DB is migrated and verified.
+- Milestone 22E Cosmetics production rollout is complete. Production has `20260525000100_cosmetics_catalog_unlocks.sql` applied and verified, Vercel serves the cosmetics picker/assets, and cosmetics use approved repo static assets only.
+- Milestone 23B Premium Cosmetics backend is implemented and locally validated only. Staging/production still need an approved rollout before current frames become free and premium avatar unlock enforcement reaches remote environments.
+- Controlled production Member `m13bmember21056302` remains approved/active but did not receive an equipped cosmetics row during the 22E smoke; Owner `ultimatesrb` verified production equip persistence.
 - Staging test data remains intentionally; do not cleanup/delete it unless separately approved.
 - Vercel Preview env has not been configured for staging yet.
 
@@ -52,6 +54,8 @@
 - Member CP Leaderboard rank order intentionally reveals relative CP strength, but exact CP values remain hidden from member API responses and UI.
 - Rank Badge / Profile Border intentionally reveals the caller's own global/guild rank and rank tier only; it must not expose CP values, growth/history/snapshot data, updated-by metadata, profile ids, usernames from the rank RPC, or other-member data.
 - Cosmetics catalog asset keys use repo file names without extension. `_FREE` frames are free; non-`_FREE` frames are manual unlocks. Do not add arbitrary URLs or uploads in v1.
+- Milestone 23B changes the future remote rule so all current frame keys become free and future premium avatars/frames use `unlock_type = 'manual'`; do not assume this is active outside local until `20260525000300_premium_cosmetics_grant_helper.sql` is rolled out to the target environment.
+- Cosmetic frame alignment is handled with shared avatar/frame shell CSS. If future frame PNGs use inconsistent transparent padding, prefer asset normalization or per-frame display metadata in a planned milestone rather than ad hoc frontend hacks.
 - Recovery gate copy was not fully re-tested during Milestone 18F because no live recovery session was triggered; recovery behavior itself was already production-validated in Milestone 17C.
 
 ## Product Gaps

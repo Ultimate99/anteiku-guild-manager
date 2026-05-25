@@ -3997,7 +3997,7 @@ begin
        where key = 'TXK_C1001_lock'
          and type = 'frame'
          and asset_path = '/cosmetics/frames/TXK_C1001_lock.png'
-         and unlock_type = 'manual'
+         and unlock_type = 'free'
      ) then
     insert into milestone22b_cosmetics_results values ('seed', 'catalog_seeded', 'PASS', avatar_count::text || ' avatars and ' || frame_count::text || ' frames are seeded from actual asset filenames.');
   else
@@ -4020,18 +4020,17 @@ begin
     select 1
     from public.cosmetic_catalog c
     where c.type = 'frame'
-      and c.key !~ '_FREE$'
-      and c.unlock_type <> 'manual'
+      and c.unlock_type <> 'free'
   )
   and exists (
     select 1
     from public.cosmetic_catalog c
     where c.key = 'TXK_C1001_lock'
-      and c.unlock_type = 'manual'
+      and c.unlock_type = 'free'
   ) then
-    insert into milestone22b_cosmetics_results values ('seed', 'free_suffix_maps_to_free_unlock_type', 'PASS', 'All avatars are free, _FREE frames are free, and non-_FREE frames are manual unlocks.');
+    insert into milestone22b_cosmetics_results values ('seed', 'current_catalog_cosmetics_are_free', 'PASS', 'All current avatars and frames are free; future premium cosmetics use manual unlock_type.');
   else
-    insert into milestone22b_cosmetics_results values ('seed', 'free_suffix_maps_to_free_unlock_type', 'FAIL', 'Avatar, _FREE frame, or manual locked-frame unlock_type mapping is incorrect.');
+    insert into milestone22b_cosmetics_results values ('seed', 'current_catalog_cosmetics_are_free', 'FAIL', 'Current avatar/frame unlock_type mapping is incorrect.');
   end if;
 
   begin
@@ -4064,7 +4063,15 @@ begin
          select 1
          from jsonb_array_elements(cosmetics_payload -> 'frames') f
          where f ->> 'key' = 'TXK_C1001_lock'
-           and (f ->> 'is_unlocked')::boolean = false
+           and f ->> 'unlock_type' = 'free'
+           and (f ->> 'is_unlocked')::boolean = true
+       )
+       and exists (
+         select 1
+         from jsonb_array_elements(cosmetics_payload -> 'avatars') a
+         where a ->> 'key' = '1079_head'
+           and a ->> 'unlock_type' = 'free'
+           and (a ->> 'is_unlocked')::boolean = true
        ) then
       insert into milestone22b_cosmetics_results values ('rpc', 'member_reads_own_cosmetics', 'PASS', cosmetics_payload::text);
     else
@@ -4120,10 +4127,15 @@ begin
       and cosmetic_key = 'TXK_C1001_lock';
 
     perform set_config('request.jwt.claim.sub', member_id::text, true);
-    perform public.equip_my_frame('TXK_C1001_lock');
-    insert into milestone22b_cosmetics_results values ('rpc', 'locked_frame_without_unlock_denied', 'FAIL', 'Locked frame was equipped without unlock.');
+    equip_payload := public.equip_my_frame('TXK_C1001_lock');
+
+    if equip_payload ->> 'frame_key' = 'TXK_C1001_lock' then
+      insert into milestone22b_cosmetics_results values ('rpc', 'member_equips_current_frame_without_unlock', 'PASS', equip_payload::text);
+    else
+      insert into milestone22b_cosmetics_results values ('rpc', 'member_equips_current_frame_without_unlock', 'FAIL', coalesce(equip_payload::text, 'No equip payload.'));
+    end if;
   exception when others then
-    insert into milestone22b_cosmetics_results values ('rpc', 'locked_frame_without_unlock_denied', 'PASS', sqlerrm);
+    insert into milestone22b_cosmetics_results values ('rpc', 'member_equips_current_frame_without_unlock', 'FAIL', sqlerrm);
   end;
 
   begin
@@ -4137,12 +4149,12 @@ begin
          where pcu.profile_id = member_id
            and pcu.cosmetic_key = 'TXK_C1001_lock'
        ) then
-      insert into milestone22b_cosmetics_results values ('rpc', 'owner_grants_locked_frame', 'PASS', cosmetics_payload::text);
+      insert into milestone22b_cosmetics_results values ('rpc', 'owner_grants_current_frame_compatibility', 'PASS', cosmetics_payload::text);
     else
-      insert into milestone22b_cosmetics_results values ('rpc', 'owner_grants_locked_frame', 'FAIL', coalesce(cosmetics_payload::text, 'No grant payload.'));
+      insert into milestone22b_cosmetics_results values ('rpc', 'owner_grants_current_frame_compatibility', 'FAIL', coalesce(cosmetics_payload::text, 'No grant payload.'));
     end if;
   exception when others then
-    insert into milestone22b_cosmetics_results values ('rpc', 'owner_grants_locked_frame', 'FAIL', sqlerrm);
+    insert into milestone22b_cosmetics_results values ('rpc', 'owner_grants_current_frame_compatibility', 'FAIL', sqlerrm);
   end;
 
   begin
@@ -4150,12 +4162,12 @@ begin
     equip_payload := public.equip_my_frame('TXK_C1001_lock');
 
     if equip_payload ->> 'frame_key' = 'TXK_C1001_lock' then
-      insert into milestone22b_cosmetics_results values ('rpc', 'member_equips_granted_frame', 'PASS', equip_payload::text);
+      insert into milestone22b_cosmetics_results values ('rpc', 'member_equips_granted_or_free_frame', 'PASS', equip_payload::text);
     else
-      insert into milestone22b_cosmetics_results values ('rpc', 'member_equips_granted_frame', 'FAIL', coalesce(equip_payload::text, 'No equip payload.'));
+      insert into milestone22b_cosmetics_results values ('rpc', 'member_equips_granted_or_free_frame', 'FAIL', coalesce(equip_payload::text, 'No equip payload.'));
     end if;
   exception when others then
-    insert into milestone22b_cosmetics_results values ('rpc', 'member_equips_granted_frame', 'FAIL', sqlerrm);
+    insert into milestone22b_cosmetics_results values ('rpc', 'member_equips_granted_or_free_frame', 'FAIL', sqlerrm);
   end;
 
   begin
@@ -4259,5 +4271,319 @@ select count(*) filter (where status = 'PASS') as milestone22b_total_pass,
        count(*) filter (where status = 'FAIL') as milestone22b_total_fail,
        count(*) filter (where status = 'SKIP') as milestone22b_total_skip
 from milestone22b_cosmetics_results;
+
+-- Milestone 23B: Premium cosmetics unlock rules and grant-by-slug helper validation.
+
+create temp table if not exists milestone23b_premium_cosmetics_results (
+  section text not null,
+  test_name text not null,
+  status text not null,
+  details text
+) on commit drop;
+
+do $$
+declare
+  owner_id constant uuid := '10000000-0000-0000-0000-000000000001';
+  admin_no_perm_id constant uuid := '10000000-0000-0000-0000-000000000004';
+  member_id constant uuid := '10000000-0000-0000-0000-000000000006';
+  current_frame_count integer;
+  current_avatar_non_free_count integer;
+  cosmetics_payload jsonb;
+  grant_payload jsonb;
+  equip_payload jsonb;
+  updated_profile public.profiles%rowtype;
+  audit_count integer;
+begin
+  insert into public.cosmetic_catalog (
+    key,
+    type,
+    label_key,
+    asset_path,
+    rarity,
+    unlock_type,
+    is_active,
+    sort_order
+  )
+  values
+    (
+      'premium_avatar_manual',
+      'avatar',
+      'cosmetics.avatar.premium_avatar_manual',
+      '/cosmetics/avatars/1079_head.png',
+      'rare',
+      'manual',
+      true,
+      9000
+    ),
+    (
+      'premium_frame_manual',
+      'frame',
+      'cosmetics.frame.premium_frame_manual',
+      '/cosmetics/frames/TXK_C1001_lock.png',
+      'rare',
+      'manual',
+      true,
+      9010
+    )
+  on conflict (key) do update
+  set
+    type = excluded.type,
+    label_key = excluded.label_key,
+    asset_path = excluded.asset_path,
+    rarity = excluded.rarity,
+    unlock_type = excluded.unlock_type,
+    is_active = excluded.is_active,
+    sort_order = excluded.sort_order,
+    updated_at = now();
+
+  delete from public.profile_cosmetic_unlocks
+  where profile_id = member_id
+    and cosmetic_key in ('premium_avatar_manual', 'premium_frame_manual');
+
+  select count(*) into current_frame_count
+  from public.cosmetic_catalog c
+  where c.type = 'frame'
+    and c.key in (
+      'TXK_frame_reOpen_EN_FREE',
+      'TXK_C1121_lock_FREE',
+      'TXK_C1164_lock_FREE',
+      'TXK_C1168_lock_FREE',
+      'TXK_C1001_lock',
+      'TXK_C1007_lock',
+      'TXK_C1135_lock',
+      'TXK_C1138_lock',
+      'TXK_C1147_lock',
+      'TXK_C1160_lock'
+    )
+    and c.unlock_type = 'free';
+
+  if current_frame_count = 10 then
+    insert into milestone23b_premium_cosmetics_results values ('seed', 'all_current_frames_are_free', 'PASS', 'All 10 current frame rows are free.');
+  else
+    insert into milestone23b_premium_cosmetics_results values ('seed', 'all_current_frames_are_free', 'FAIL', current_frame_count::text || ' current frame rows are free.');
+  end if;
+
+  select count(*) into current_avatar_non_free_count
+  from public.cosmetic_catalog c
+  where c.type = 'avatar'
+    and c.key <> 'premium_avatar_manual'
+    and c.unlock_type <> 'free';
+
+  if current_avatar_non_free_count = 0 then
+    insert into milestone23b_premium_cosmetics_results values ('seed', 'current_avatars_remain_free', 'PASS', 'Current avatar rows remain free.');
+  else
+    insert into milestone23b_premium_cosmetics_results values ('seed', 'current_avatars_remain_free', 'FAIL', current_avatar_non_free_count::text || ' current avatars are not free.');
+  end if;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    cosmetics_payload := public.get_my_cosmetics();
+
+    if exists (
+         select 1
+         from jsonb_array_elements(cosmetics_payload -> 'avatars') a
+         where a ->> 'key' = 'premium_avatar_manual'
+           and a ->> 'unlock_type' = 'manual'
+           and (a ->> 'is_unlocked')::boolean = false
+       )
+       and exists (
+         select 1
+         from jsonb_array_elements(cosmetics_payload -> 'frames') f
+         where f ->> 'key' = 'premium_frame_manual'
+           and f ->> 'unlock_type' = 'manual'
+           and (f ->> 'is_unlocked')::boolean = false
+       ) then
+      insert into milestone23b_premium_cosmetics_results values ('rpc', 'manual_cosmetics_report_locked_before_grant', 'PASS', cosmetics_payload::text);
+    else
+      insert into milestone23b_premium_cosmetics_results values ('rpc', 'manual_cosmetics_report_locked_before_grant', 'FAIL', cosmetics_payload::text);
+    end if;
+  exception when others then
+    insert into milestone23b_premium_cosmetics_results values ('rpc', 'manual_cosmetics_report_locked_before_grant', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.equip_my_avatar('premium_avatar_manual');
+    insert into milestone23b_premium_cosmetics_results values ('rpc', 'manual_avatar_denied_without_unlock', 'FAIL', 'Manual avatar equipped without unlock.');
+  exception when others then
+    insert into milestone23b_premium_cosmetics_results values ('rpc', 'manual_avatar_denied_without_unlock', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.equip_my_frame('premium_frame_manual');
+    insert into milestone23b_premium_cosmetics_results values ('rpc', 'manual_frame_denied_without_unlock', 'FAIL', 'Manual frame equipped without unlock.');
+  exception when others then
+    insert into milestone23b_premium_cosmetics_results values ('rpc', 'manual_frame_denied_without_unlock', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.update_my_profile('Member Locked Avatar Attempt', 'premium_avatar_manual');
+    insert into milestone23b_premium_cosmetics_results values ('security', 'update_my_profile_rejects_locked_manual_avatar', 'FAIL', 'Locked manual avatar_key was accepted.');
+  exception when others then
+    insert into milestone23b_premium_cosmetics_results values ('security', 'update_my_profile_rejects_locked_manual_avatar', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    perform public.admin_grant_cosmetic_by_slug('not_a_real_slug', 'premium_avatar_manual', 'local validation');
+    insert into milestone23b_premium_cosmetics_results values ('rpc', 'grant_by_slug_invalid_slug_denied', 'FAIL', 'Invalid slug was granted.');
+  exception when others then
+    insert into milestone23b_premium_cosmetics_results values ('rpc', 'grant_by_slug_invalid_slug_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    perform public.admin_grant_cosmetic_by_slug('member_local', 'not_a_real_cosmetic', 'local validation');
+    insert into milestone23b_premium_cosmetics_results values ('rpc', 'grant_by_slug_invalid_cosmetic_denied', 'FAIL', 'Invalid cosmetic was granted.');
+  exception when others then
+    insert into milestone23b_premium_cosmetics_results values ('rpc', 'grant_by_slug_invalid_cosmetic_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.admin_grant_cosmetic_by_slug('member_local', 'premium_avatar_manual', 'local validation');
+    insert into milestone23b_premium_cosmetics_results values ('security', 'member_cannot_call_grant_by_slug', 'FAIL', 'Member granted cosmetics by slug.');
+  exception when others then
+    insert into milestone23b_premium_cosmetics_results values ('security', 'member_cannot_call_grant_by_slug', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_no_perm_id::text, true);
+    perform public.admin_grant_cosmetic_by_slug('member_local', 'premium_avatar_manual', 'local validation');
+    insert into milestone23b_premium_cosmetics_results values ('security', 'admin_without_manage_members_denied_grant_by_slug', 'FAIL', 'Admin without manage_members granted cosmetics by slug.');
+  exception when others then
+    insert into milestone23b_premium_cosmetics_results values ('security', 'admin_without_manage_members_denied_grant_by_slug', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    grant_payload := public.admin_grant_cosmetic_by_slug('member_local', 'premium_avatar_manual', 'local validation');
+
+    if grant_payload ->> 'profile_slug' = 'member_local'
+       and grant_payload ->> 'cosmetic_key' = 'premium_avatar_manual'
+       and exists (
+         select 1
+         from public.profile_cosmetic_unlocks pcu
+         where pcu.profile_id = member_id
+           and pcu.cosmetic_key = 'premium_avatar_manual'
+       ) then
+      insert into milestone23b_premium_cosmetics_results values ('rpc', 'owner_grants_manual_avatar_by_slug', 'PASS', grant_payload::text);
+    else
+      insert into milestone23b_premium_cosmetics_results values ('rpc', 'owner_grants_manual_avatar_by_slug', 'FAIL', coalesce(grant_payload::text, 'No grant payload.'));
+    end if;
+  exception when others then
+    insert into milestone23b_premium_cosmetics_results values ('rpc', 'owner_grants_manual_avatar_by_slug', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    grant_payload := public.admin_grant_cosmetic(member_id, 'premium_avatar_manual', 'compatibility validation');
+
+    if grant_payload ->> 'cosmetic_key' = 'premium_avatar_manual' then
+      insert into milestone23b_premium_cosmetics_results values ('rpc', 'existing_admin_grant_cosmetic_still_works', 'PASS', grant_payload::text);
+    else
+      insert into milestone23b_premium_cosmetics_results values ('rpc', 'existing_admin_grant_cosmetic_still_works', 'FAIL', coalesce(grant_payload::text, 'No grant payload.'));
+    end if;
+  exception when others then
+    insert into milestone23b_premium_cosmetics_results values ('rpc', 'existing_admin_grant_cosmetic_still_works', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    equip_payload := public.equip_my_avatar('premium_avatar_manual');
+
+    if equip_payload ->> 'avatar_key' = 'premium_avatar_manual' then
+      insert into milestone23b_premium_cosmetics_results values ('rpc', 'member_equips_granted_manual_avatar', 'PASS', equip_payload::text);
+    else
+      insert into milestone23b_premium_cosmetics_results values ('rpc', 'member_equips_granted_manual_avatar', 'FAIL', coalesce(equip_payload::text, 'No equip payload.'));
+    end if;
+  exception when others then
+    insert into milestone23b_premium_cosmetics_results values ('rpc', 'member_equips_granted_manual_avatar', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    select * into updated_profile
+    from public.update_my_profile('Member Premium Avatar', 'premium_avatar_manual');
+
+    if updated_profile.avatar_key = 'premium_avatar_manual'
+       and updated_profile.ign = 'Member Premium Avatar' then
+      insert into milestone23b_premium_cosmetics_results values ('security', 'update_my_profile_accepts_unlocked_manual_avatar', 'PASS', row_to_json(updated_profile)::text);
+    else
+      insert into milestone23b_premium_cosmetics_results values ('security', 'update_my_profile_accepts_unlocked_manual_avatar', 'FAIL', coalesce(row_to_json(updated_profile)::text, 'No updated profile.'));
+    end if;
+  exception when others then
+    insert into milestone23b_premium_cosmetics_results values ('security', 'update_my_profile_accepts_unlocked_manual_avatar', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    grant_payload := public.admin_grant_cosmetic_by_slug('member_local', 'premium_frame_manual', 'local validation');
+
+    if grant_payload ->> 'profile_slug' = 'member_local'
+       and grant_payload ->> 'cosmetic_key' = 'premium_frame_manual'
+       and exists (
+         select 1
+         from public.profile_cosmetic_unlocks pcu
+         where pcu.profile_id = member_id
+           and pcu.cosmetic_key = 'premium_frame_manual'
+       ) then
+      insert into milestone23b_premium_cosmetics_results values ('rpc', 'owner_grants_manual_frame_by_slug', 'PASS', grant_payload::text);
+    else
+      insert into milestone23b_premium_cosmetics_results values ('rpc', 'owner_grants_manual_frame_by_slug', 'FAIL', coalesce(grant_payload::text, 'No grant payload.'));
+    end if;
+  exception when others then
+    insert into milestone23b_premium_cosmetics_results values ('rpc', 'owner_grants_manual_frame_by_slug', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    equip_payload := public.equip_my_frame('premium_frame_manual');
+
+    if equip_payload ->> 'frame_key' = 'premium_frame_manual' then
+      insert into milestone23b_premium_cosmetics_results values ('rpc', 'member_equips_granted_manual_frame', 'PASS', equip_payload::text);
+    else
+      insert into milestone23b_premium_cosmetics_results values ('rpc', 'member_equips_granted_manual_frame', 'FAIL', coalesce(equip_payload::text, 'No equip payload.'));
+    end if;
+  exception when others then
+    insert into milestone23b_premium_cosmetics_results values ('rpc', 'member_equips_granted_manual_frame', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    equip_payload := public.equip_my_frame('TXK_C1007_lock');
+
+    if equip_payload ->> 'frame_key' = 'TXK_C1007_lock' then
+      insert into milestone23b_premium_cosmetics_results values ('rpc', 'existing_current_frame_equip_still_works', 'PASS', equip_payload::text);
+    else
+      insert into milestone23b_premium_cosmetics_results values ('rpc', 'existing_current_frame_equip_still_works', 'FAIL', coalesce(equip_payload::text, 'No equip payload.'));
+    end if;
+  exception when others then
+    insert into milestone23b_premium_cosmetics_results values ('rpc', 'existing_current_frame_equip_still_works', 'FAIL', sqlerrm);
+  end;
+
+  select count(*) into audit_count
+  from public.audit_logs al
+  where al.action = 'cosmetic_granted'
+    and al.metadata ->> 'cosmetic_key' in ('premium_avatar_manual', 'premium_frame_manual');
+
+  if audit_count >= 2 then
+    insert into milestone23b_premium_cosmetics_results values ('audit', 'premium_grant_audit_rows_written', 'PASS', audit_count::text || ' premium grant audit rows found.');
+  else
+    insert into milestone23b_premium_cosmetics_results values ('audit', 'premium_grant_audit_rows_written', 'FAIL', audit_count::text || ' premium grant audit rows found.');
+  end if;
+end;
+$$;
+
+select section, test_name, status, details
+from milestone23b_premium_cosmetics_results
+order by section, test_name;
+
+select count(*) filter (where status = 'PASS') as milestone23b_total_pass,
+       count(*) filter (where status = 'FAIL') as milestone23b_total_fail,
+       count(*) filter (where status = 'SKIP') as milestone23b_total_skip
+from milestone23b_premium_cosmetics_results;
 
 rollback;

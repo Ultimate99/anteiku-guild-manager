@@ -1,8 +1,64 @@
 # Testing
 
+## Milestone 23B Premium Cosmetics Backend Local Validation
+
+Milestone 23B backend/database validation passed locally.
+
+Migration:
+- Added `20260525000300_premium_cosmetics_grant_helper.sql`.
+- Existing deployed migration `20260525000100_cosmetics_catalog_unlocks.sql` was not edited.
+- Staging and production were not touched.
+
+Validation:
+- `npx.cmd supabase db reset` passed locally.
+- Full local validation script passed through Docker `psql`.
+- Milestone 23B focused validation result: 18 PASS / 0 FAIL / 0 SKIP.
+- `npm.cmd run build` was not run because no frontend source changed.
+
+Focused checks:
+- Current frames become free.
+- Current avatars remain free.
+- Manual premium avatar/frame rows are locked before grant.
+- Manual avatar/frame equip is denied without unlock.
+- Grant-by-slug unlocks premium cosmetics for an approved member.
+- Member can equip granted premium avatar and frame.
+- `update_my_profile(...)` rejects invalid and locked manual avatar keys and accepts unlocked manual avatar keys.
+- Invalid slug/cosmetic key, member grant attempts, and admin-without-authority attempts are denied.
+- Existing `admin_grant_cosmetic(...)` and `equip_my_frame(...)` remain compatible.
+- Cosmetic grant audit rows are written.
+
+## Milestone 22E Cosmetics Production Rollout Validation
+
+Milestone 22E production rollout and smoke validation passed.
+
+Migration:
+- Production dry-run showed only `20260525000100_cosmetics_catalog_unlocks.sql` after a retry from a temporary Supabase CLI login/circuit-breaker issue.
+- Applied only `20260525000100_cosmetics_catalog_unlocks.sql` to production project `mzflfyxxkascrfpteexz`.
+- Remote migration list confirmed `20260525000100` applied.
+- No `db reset`, `--include-seed`, local fake-user validation SQL, Owner bootstrap, service role key, staging command, or Vercel env change was used.
+
+Production DB verification:
+- Cosmetics tables exist and RLS is enabled.
+- Catalog contains 54 avatars and 10 frames.
+- Production catalog asset paths exactly matched the 64 repo files under `public/cosmetics/`.
+- Cosmetics RPCs exist and grants are safe.
+- Direct unsafe anon/authenticated writes to cosmetics tables are not granted.
+- Active Owner count remains `1`.
+- `update_my_profile(...)` avatar key hardening is active.
+
+Production smoke:
+- Vercel deployed the cosmetics frontend/assets.
+- User-confirmed production cosmetics UI smoke passed.
+- Owner `ultimatesrb` equipped avatar `1147_head` and free frame `TXK_C1121_lock_FREE`; read-only verification confirmed persistence.
+- Controlled production Member `m13bmember21056302` remains approved/active but did not receive an equipped cosmetics row during this smoke.
+
+Security:
+- Cosmetics frontend uses only `get_my_cosmetics`, `equip_my_avatar`, and `equip_my_frame`.
+- No direct cosmetics table writes, arbitrary URLs, uploads, Supabase Storage, or CP/GvG/audit/member-status regressions were introduced.
+
 ## Milestone 22C Frontend Cosmetics Picker Validation
 
-Milestone 22C is implemented locally and pending manual authenticated browser validation.
+Milestone 22C was implemented locally, validated through staging in Milestone 22D, polished in Milestones 22D.1-22D.3, and rolled out to production in Milestone 22E.
 
 Build/source validation:
 - `npm.cmd run build` passed.
@@ -11,17 +67,10 @@ Build/source validation:
 - No admin cosmetic grant UI was added.
 - No new direct CP/audit/GvG protected table paths were added by the cosmetics picker.
 
-Manual local browser validation checklist:
-- Sign in as an approved local user.
-- Open Profile.
-- Confirm current avatar/frame preview renders.
-- Confirm avatar picker renders available avatars.
-- Equip a different avatar.
-- Confirm Profile header updates after avatar equip.
-- Confirm free frames can be equipped.
-- Confirm locked frames are visible but disabled until unlocked.
-- Confirm refresh reloads cosmetics.
-- Confirm mobile layout is readable.
+Browser validation:
+- Staging browser validation passed in Milestone 22D.
+- Compact Customize modal, Avatars/Frames tabs, profile header/rank placement, and avatar/frame alignment polish passed in Milestones 22D.1-22D.3.
+- Production smoke passed in Milestone 22E.
 
 Network checklist:
 - Initial/Profile cosmetics load uses `get_my_cosmetics`.
@@ -30,9 +79,9 @@ Network checklist:
 - No direct `cosmetic_catalog`, `profile_cosmetic_unlocks`, or `profile_equipped_cosmetics` calls.
 - No direct `member_cp`, `cp_snapshots`, `audit_logs`, or unsafe `gvg_votes` calls.
 
-Rollout boundary:
-- Staging and production do not have `20260525000100_cosmetics_catalog_unlocks.sql` yet.
-- Do not deploy or merge the picker to a target environment until that target DB has the cosmetics migration applied and verified.
+Rollout:
+- Staging and production both have `20260525000100_cosmetics_catalog_unlocks.sql` applied and verified.
+- Cosmetics picker/assets are live in production as of Milestone 22E.
 
 ## Milestone 22B Cosmetics Backend Local Validation
 
@@ -71,9 +120,8 @@ Focused checks:
 Build:
 - `npm.cmd run build` was not run because 22B changed only database migrations/tests/docs and no frontend code.
 
-Rollout boundary:
-- Staging and production do not have `20260525000100_cosmetics_catalog_unlocks.sql` yet.
-- Future cosmetics picker frontend must not be deployed until the target DB has this migration applied and verified.
+Rollout:
+- Staging and production both have `20260525000100_cosmetics_catalog_unlocks.sql` applied and verified.
 
 ## Milestone 21E Rank Badge Production Validation
 
