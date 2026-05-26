@@ -829,6 +829,39 @@ button.command-card:focus-visible {
   align-items: end;
 }
 
+.analytics-growth-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.analytics-growth-action-row {
+  grid-template-columns: max-content;
+  justify-content: start;
+}
+
+.analytics-confirm-panel {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid rgba(197, 22, 39, 0.36);
+  background:
+    linear-gradient(135deg, rgba(197, 22, 39, 0.12), transparent 72%),
+    rgba(13, 13, 18, 0.94);
+}
+
+.analytics-confirm-panel p {
+  margin: 7px 0 0;
+  color: #c7c7cf;
+  font-size: 0.86rem;
+}
+
+.analytics-confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .analytics-snapshot-scope {
   align-self: center;
   padding: 8px 10px;

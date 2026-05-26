@@ -1,12 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { StatusBadge } from '../StatusBadge.jsx';
 import {
-  captureWeeklyCpSnapshot,
   loadCpAnalytics,
-  loadCpGrowthReport,
-  loadCpSnapshotHistory,
   loadGvgAnalytics,
+  loadLiveCpGrowth,
   loadMemberAnalytics,
+  startNewCpGrowthPeriod,
 } from '../../services/adminAnalyticsService.js';
 
 const ANALYTICS_TABS = ['overview', 'members', 'cp', 'gvg', 'weeklyGrowth', 'attention'];
@@ -216,12 +215,11 @@ export function AdminAnalyticsSection({
   const [memberAnalytics, setMemberAnalytics] = useState(null);
   const [cpAnalytics, setCpAnalytics] = useState(null);
   const [gvgAnalytics, setGvgAnalytics] = useState(null);
-  const [snapshotHistory, setSnapshotHistory] = useState([]);
-  const [growthReport, setGrowthReport] = useState([]);
-  const [selectedSnapshotId, setSelectedSnapshotId] = useState('');
+  const [liveGrowthReport, setLiveGrowthReport] = useState([]);
   const [loading, setLoading] = useState({});
   const [errors, setErrors] = useState({});
   const [snapshotMessage, setSnapshotMessage] = useState('');
+  const [confirmStartWeek, setConfirmStartWeek] = useState(false);
   const [selectedScopeId, setSelectedScopeId] = useState('');
 
   const scopeOptions = useMemo(
@@ -234,8 +232,9 @@ export function AdminAnalyticsSection({
   );
   const guildId = selectedScope?.guildId ?? null;
   const selectedScopeLabel = selectedScope?.scopeLabel ?? t('admin.analytics.globalScope');
-  const hasPreviousSnapshot = growthReport.some((row) => row.hasPreviousSnapshot);
-  const growthRows = growthReport.filter((row) => row.rank !== null && row.profileId);
+  const liveGrowthMeta = liveGrowthReport[0] ?? null;
+  const hasWeeklyBaseline = Boolean(liveGrowthMeta?.hasBaseline);
+  const growthRows = liveGrowthReport.filter((row) => row.rank !== null && row.profileId);
   const attentionCount =
     (memberAnalytics?.pendingApprovals ?? 0) +
     (memberAnalytics?.inactiveMembers ?? 0) +
@@ -255,10 +254,9 @@ export function AdminAnalyticsSection({
     setMemberAnalytics(null);
     setCpAnalytics(null);
     setGvgAnalytics(null);
-    setSnapshotHistory([]);
-    setGrowthReport([]);
-    setSelectedSnapshotId('');
+    setLiveGrowthReport([]);
     setSnapshotMessage('');
+    setConfirmStartWeek(false);
     setErrors({});
   }, [selectedScopeId]);
 
@@ -359,42 +357,17 @@ export function AdminAnalyticsSection({
     return nextGvgAnalytics;
   }
 
-  async function loadSnapshotHistory() {
+  async function loadGrowthData() {
     if (!canViewCpAnalytics) {
       setErrors((current) => ({ ...current, weeklyGrowth: 'permission' }));
-      return [];
-    }
-
-    const nextHistory = await runLoader('snapshotHistory', () => loadCpSnapshotHistory({ guildId }));
-    if (nextHistory) {
-      setSnapshotHistory(nextHistory);
-      setSelectedSnapshotId((current) =>
-        current && nextHistory.some((snapshot) => snapshot.id === current) ? current : nextHistory[0]?.id ?? '',
-      );
-      return nextHistory;
-    }
-
-    return [];
-  }
-
-  async function loadGrowthData({ snapshotId = selectedSnapshotId, historyOverride = null } = {}) {
-    if (!canViewCpAnalytics) {
-      setErrors((current) => ({ ...current, weeklyGrowth: 'permission' }));
-      setGrowthReport([]);
+      setLiveGrowthReport([]);
       return;
     }
 
-    const nextHistory = historyOverride ?? (snapshotHistory.length > 0 ? snapshotHistory : await loadSnapshotHistory());
-    const effectiveSnapshotId =
-      snapshotId && nextHistory.some((snapshot) => snapshot.id === snapshotId)
-        ? snapshotId
-        : nextHistory[0]?.id ?? '';
-    const nextGrowthReport = await runLoader('weeklyGrowth', () =>
-      loadCpGrowthReport({ guildId, snapshotId: effectiveSnapshotId || null }),
-    );
+    const nextGrowthReport = await runLoader('weeklyGrowth', () => loadLiveCpGrowth({ guildId }));
 
     if (nextGrowthReport) {
-      setGrowthReport(nextGrowthReport);
+      setLiveGrowthReport(nextGrowthReport);
     }
   }
 
@@ -406,28 +379,32 @@ export function AdminAnalyticsSection({
     await Promise.all([loadMemberData(), canViewCpAnalytics ? loadCpData() : null, canViewGvgAnalytics ? loadGvgData() : null]);
   }
 
-  async function handleSelectSnapshot(snapshotId) {
-    setSelectedSnapshotId(snapshotId);
-    await loadGrowthData({ snapshotId });
-  }
-
-  async function handleCaptureSnapshot() {
+  async function handleStartNewCpWeek() {
     setSnapshotMessage('');
-    const captured = await runLoader('captureSnapshot', () => captureWeeklyCpSnapshot({ guildId }));
+
+    if (!confirmStartWeek) {
+      setConfirmStartWeek(true);
+      return;
+    }
+
+    const captured = await runLoader('startNewCpWeek', () => startNewCpGrowthPeriod({ guildId }));
 
     if (!captured) {
       return;
     }
 
     setSnapshotMessage(
-      t('admin.analytics.snapshotCaptured', {
+      t('admin.analytics.weekStarted', {
         count: captured.capturedCount,
       }),
     );
-    const nextHistory = await loadSnapshotHistory();
-    const latestSnapshotId = nextHistory[0]?.id ?? '';
-    setSelectedSnapshotId(latestSnapshotId);
-    await loadGrowthData({ snapshotId: latestSnapshotId, historyOverride: nextHistory });
+    setConfirmStartWeek(false);
+    await loadGrowthData();
+  }
+
+  function handleCancelStartNewCpWeek() {
+    setConfirmStartWeek(false);
+    setSnapshotMessage('');
   }
 
   function renderPermissionError(key, titleKey) {
@@ -620,49 +597,80 @@ export function AdminAnalyticsSection({
       );
     }
 
+    const resetDayLabel =
+      liveGrowthMeta?.resetDayOfWeek === 0 || liveGrowthMeta?.resetDayOfWeek === null || liveGrowthMeta?.resetDayOfWeek === undefined
+        ? t('admin.analytics.resetDaySunday')
+        : liveGrowthMeta?.resetDayLabel ?? t('admin.analytics.resetDaySunday');
+    const baselineValue = hasWeeklyBaseline
+      ? formatDate(liveGrowthMeta?.baselineCapturedAt)
+      : t('admin.analytics.noWeeklyBaseline');
+    const baselineHelper = hasWeeklyBaseline
+      ? liveGrowthMeta?.baselineLabel
+      : t('admin.analytics.startNewCpWeek');
+
     return (
       <section className="analytics-section-stack">
-        <div className="analytics-action-row">
-          <label>
-            {t('admin.analytics.snapshotHistory')}
-            <select
-              value={selectedSnapshotId}
-              onChange={(event) => handleSelectSnapshot(event.target.value)}
-              disabled={loading.weeklyGrowth || loading.snapshotHistory || snapshotHistory.length === 0}
-            >
-              {snapshotHistory.length === 0 ? <option value="">{t('admin.analytics.noSnapshots')}</option> : null}
-              {snapshotHistory.map((snapshot) => (
-                <option key={snapshot.id} value={snapshot.id}>
-                  {snapshot.label || `${formatDate(snapshot.capturedAt)} - ${snapshot.memberCount}`}
-                </option>
-              ))}
-            </select>
-          </label>
-          <span className="analytics-snapshot-scope">
-            {t('admin.analytics.snapshotScope', { scope: selectedScopeLabel })}
-          </span>
+        <div className="analytics-growth-summary">
+          <StatCard label={t('admin.analytics.resetDay')} value={resetDayLabel} tone="crimson" />
+          <StatCard label={t('admin.analytics.baseline')} value={baselineValue} helper={baselineHelper} />
+          <StatCard label={t('admin.analytics.scope')} value={selectedScopeLabel} helper={t('admin.analytics.liveGrowth')} />
+        </div>
+
+        <div className="analytics-action-row analytics-growth-action-row">
           <button
             type="button"
             className="primary-action compact-action"
-            onClick={handleCaptureSnapshot}
-            disabled={loading.captureSnapshot}
+            onClick={handleStartNewCpWeek}
+            disabled={loading.startNewCpWeek}
           >
-            {loading.captureSnapshot ? t('common.working') : t('admin.analytics.captureSnapshot')}
+            {loading.startNewCpWeek ? t('common.working') : t('admin.analytics.startNewCpWeek')}
           </button>
         </div>
 
-        {snapshotMessage ? <p className="notice-line">{snapshotMessage}</p> : null}
-        {loading.weeklyGrowth || loading.snapshotHistory ? <p className="muted-line">{t('admin.analytics.loading')}</p> : null}
-        {renderPermissionError('weeklyGrowth', 'admin.analytics.weeklyGrowth')}
-
-        {!hasPreviousSnapshot ? (
-          <section className="compact-empty-state">
-            <StatusBadge tone="warning">{t('admin.analytics.noPreviousSnapshot')}</StatusBadge>
-            <h3>{t('admin.analytics.noPreviousSnapshot')}</h3>
+        {confirmStartWeek ? (
+          <section className="analytics-confirm-panel">
+            <div>
+              <StatusBadge tone="warning">{t('admin.analytics.confirmStartNewCpWeek')}</StatusBadge>
+              <p>{t('admin.analytics.confirmStartNewCpWeekBody', { scope: selectedScopeLabel })}</p>
+            </div>
+            <div className="analytics-confirm-actions">
+              <button
+                type="button"
+                className="primary-action compact-action"
+                onClick={handleStartNewCpWeek}
+                disabled={loading.startNewCpWeek}
+              >
+                {loading.startNewCpWeek ? t('common.working') : t('admin.analytics.confirmStart')}
+              </button>
+              <button
+                type="button"
+                className="secondary-action compact-action"
+                onClick={handleCancelStartNewCpWeek}
+                disabled={loading.startNewCpWeek}
+              >
+                {t('admin.analytics.cancelStartWeek')}
+              </button>
+            </div>
           </section>
         ) : null}
 
-        {hasPreviousSnapshot && growthRows.length === 0 ? (
+        {snapshotMessage ? <p className="notice-line">{snapshotMessage}</p> : null}
+        {loading.weeklyGrowth ? <p className="muted-line">{t('admin.analytics.loading')}</p> : null}
+        {renderPermissionError('weeklyGrowth', 'admin.analytics.weeklyGrowth')}
+        {errors.startNewCpWeek === 'permission' ? (
+          <LockedPanel title={t('admin.analytics.weeklyGrowth')} body={t('admin.analytics.weeklyGrowthPermissionRequired')} />
+        ) : errors.startNewCpWeek ? (
+          <p className="error-line">{errors.startNewCpWeek}</p>
+        ) : null}
+
+        {!loading.weeklyGrowth && !hasWeeklyBaseline ? (
+          <section className="compact-empty-state">
+            <StatusBadge tone="warning">{t('admin.analytics.noWeeklyBaseline')}</StatusBadge>
+            <h3>{t('admin.analytics.noWeeklyBaseline')}</h3>
+          </section>
+        ) : null}
+
+        {hasWeeklyBaseline && growthRows.length === 0 ? (
           <section className="compact-empty-state">
             <StatusBadge>{t('admin.common.empty')}</StatusBadge>
             <h3>{t('admin.analytics.noGrowthRows')}</h3>
@@ -675,22 +683,28 @@ export function AdminAnalyticsSection({
               <span>{t('admin.cp.rank')}</span>
               <span>{t('admin.common.members')}</span>
               <span>{t('admin.common.guild')}</span>
-              <span>{t('admin.analytics.previousCp')}</span>
+              <span>{t('admin.analytics.baselineCp')}</span>
               <span>{t('admin.analytics.currentCp')}</span>
               <span>{t('admin.analytics.growth')}</span>
               <span>{t('admin.analytics.growthPercent')}</span>
               <span>{t('admin.common.updated')}</span>
             </div>
             {growthRows.map((row) => (
-              <article className="analytics-growth-row" role="row" key={`${row.profileId}-${row.currentSnapshotId}`}>
+              <article className="analytics-growth-row" role="row" key={`${row.profileId}-${row.baselineBatchId ?? 'live'}`}>
                 <span>#{row.rank}</span>
                 <strong>{row.ign ?? row.username ?? t('admin.common.unknownMember')}</strong>
                 <span>{row.guildName ?? t('admin.common.selectedGuild')}</span>
-                <span>{formatCpValue(row.previousCp)}</span>
+                <span>{formatCpValue(row.baselineCp)}</span>
                 <span>{formatCpValue(row.currentCp)}</span>
                 <span>{formatCpValue(row.growthAmount)}</span>
                 <span>{formatPercent(row.growthPercent)}</span>
-                <span>{row.missingUpdate ? t('admin.analytics.missingUpdate') : formatDate(row.lastUpdated)}</span>
+                <span>
+                  {row.missingBaseline
+                    ? t('admin.analytics.missingBaseline')
+                    : row.missingCurrentCp
+                      ? t('admin.analytics.missingCurrentCp')
+                      : formatDate(row.lastUpdated)}
+                </span>
               </article>
             ))}
           </div>

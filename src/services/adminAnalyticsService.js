@@ -141,6 +141,32 @@ function mapGrowthRow(row) {
   };
 }
 
+function mapLiveGrowthRow(row) {
+  return {
+    hasBaseline: Boolean(row.has_baseline),
+    baselineBatchId: row.baseline_batch_id,
+    baselineCapturedAt: row.baseline_captured_at,
+    baselineLabel: row.baseline_label,
+    baselineWeekStart: row.baseline_week_start,
+    baselineWeekEnd: row.baseline_week_end,
+    resetDayOfWeek: normalizeNumber(row.reset_day_of_week),
+    resetDayLabel: row.reset_day_label,
+    rank: normalizeNumber(row.rank),
+    profileId: row.profile_id,
+    username: row.username,
+    ign: row.ign,
+    guildId: row.guild_id,
+    guildName: row.guild_name,
+    baselineCp: normalizeNumber(row.baseline_cp),
+    currentCp: normalizeNumber(row.current_cp),
+    growthAmount: normalizeNumber(row.growth_amount),
+    growthPercent: normalizeNumber(row.growth_percent),
+    lastUpdated: row.last_updated,
+    missingBaseline: Boolean(row.missing_baseline),
+    missingCurrentCp: Boolean(row.missing_current_cp),
+  };
+}
+
 export async function loadMemberAnalytics({ guildId = null } = {}) {
   const client = requireSupabase();
   const { data, error } = await client.rpc('get_admin_member_analytics', {
@@ -227,4 +253,44 @@ export async function loadCpGrowthReport({ guildId = null, snapshotId = null } =
   }
 
   return (data ?? []).map(mapGrowthRow);
+}
+
+export async function loadLiveCpGrowth({ guildId = null } = {}) {
+  const client = requireSupabase();
+  const { data, error } = await client.rpc('get_admin_live_cp_growth', {
+    p_guild_id: normalizeGuildId(guildId),
+  });
+
+  if (error) {
+    throw normalizeAnalyticsError(error, 'ANALYTICS_LIVE_GROWTH_DENIED');
+  }
+
+  return (data ?? []).map(mapLiveGrowthRow);
+}
+
+export async function startNewCpGrowthPeriod({ guildId = null, label = null } = {}) {
+  const client = requireSupabase();
+  const { data, error } = await client.rpc('start_new_cp_growth_period', {
+    p_guild_id: normalizeGuildId(guildId),
+    p_label: label || null,
+  });
+
+  if (error) {
+    throw normalizeAnalyticsError(error, 'ANALYTICS_START_GROWTH_PERIOD_DENIED');
+  }
+
+  const row = data?.[0];
+
+  return row
+    ? {
+        batchId: row.batch_id,
+        guildId: row.guild_id,
+        capturedAt: row.captured_at,
+        capturedCount: normalizeNumber(row.captured_count) ?? 0,
+        weekStart: row.week_start,
+        weekEnd: row.week_end,
+        resetDayOfWeek: normalizeNumber(row.reset_day_of_week),
+        resetDayLabel: row.reset_day_label,
+      }
+    : null;
 }

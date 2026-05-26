@@ -4617,6 +4617,8 @@ declare
   owner_count integer;
   growth_has_previous boolean;
   growth_amount integer;
+  live_row record;
+  live_count integer;
 begin
   update public.profiles
   set approval_status = 'approved',
@@ -4907,6 +4909,119 @@ begin
     end if;
   exception when others then
     insert into milestone24b_admin_analytics_results values ('weekly_growth', 'snapshot_history_lists_batches', 'FAIL', sqlerrm);
+  end;
+
+  delete from public.cp_snapshot_entries;
+  delete from public.cp_snapshot_batches;
+
+  update public.member_cp
+  set cp_value = 700000,
+      updated_by = admin_cp_id,
+      updated_at = clock_timestamp()
+  where profile_id = member_id
+    and guild_id = anteiku_id;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_cp_id::text, true);
+    select * into live_row
+    from public.get_admin_live_cp_growth(anteiku_id)
+    limit 1;
+
+    if live_row.has_baseline = false then
+      insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'no_baseline_safe_state', 'PASS', row_to_json(live_row)::text);
+    else
+      insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'no_baseline_safe_state', 'FAIL', coalesce(row_to_json(live_row)::text, 'No live row.'));
+    end if;
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'no_baseline_safe_state', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_no_cp_id::text, true);
+    perform public.get_admin_live_cp_growth(anteiku_id);
+    insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'admin_without_view_cp_denied_live_growth', 'FAIL', 'Admin without view_cp fetched live growth.');
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'admin_without_view_cp_denied_live_growth', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.get_admin_live_cp_growth(anteiku_id);
+    insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'member_denied_live_growth', 'FAIL', 'Member fetched live growth.');
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'member_denied_live_growth', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_cp_id::text, true);
+    perform public.get_admin_live_cp_growth(anteiku_re_id);
+    insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'wrong_guild_live_growth_denied', 'FAIL', 'Admin fetched wrong-guild live growth.');
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'wrong_guild_live_growth_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_no_cp_id::text, true);
+    perform public.start_new_cp_growth_period(anteiku_id);
+    insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'start_period_denied_without_view_cp', 'FAIL', 'Admin without view_cp started live growth period.');
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'start_period_denied_without_view_cp', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_cp_id::text, true);
+    select * into snapshot_row
+    from public.start_new_cp_growth_period(anteiku_id);
+
+    if snapshot_row.batch_id is not null
+       and snapshot_row.captured_count >= 3
+       and snapshot_row.reset_day_of_week = 0
+       and extract(dow from snapshot_row.week_start)::integer = 0 then
+      insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'start_period_creates_sunday_baseline', 'PASS', row_to_json(snapshot_row)::text);
+    else
+      insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'start_period_creates_sunday_baseline', 'FAIL', coalesce(row_to_json(snapshot_row)::text, 'No start row.'));
+    end if;
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'start_period_creates_sunday_baseline', 'FAIL', sqlerrm);
+  end;
+
+  update public.member_cp
+  set cp_value = cp_value + 1234,
+      updated_by = admin_cp_id,
+      updated_at = clock_timestamp()
+  where profile_id = member_id
+    and guild_id = anteiku_id;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_cp_id::text, true);
+    select * into live_row
+    from public.get_admin_live_cp_growth(anteiku_id)
+    where profile_id = member_id;
+
+    if live_row.has_baseline = true
+       and live_row.baseline_cp = 700000
+       and live_row.current_cp = 701234
+       and live_row.growth_amount = 1234 then
+      insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'live_growth_current_minus_baseline', 'PASS', row_to_json(live_row)::text);
+    else
+      insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'live_growth_current_minus_baseline', 'FAIL', coalesce(row_to_json(live_row)::text, 'No member live growth row.'));
+    end if;
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'live_growth_current_minus_baseline', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    select count(*) into live_count
+    from public.get_admin_live_cp_growth(null);
+
+    if live_count >= 1 then
+      insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'owner_global_live_growth_safe_state', 'PASS', live_count::text || ' live growth metadata/rows visible.');
+    else
+      insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'owner_global_live_growth_safe_state', 'FAIL', 'Owner global live growth returned no rows.');
+    end if;
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'owner_global_live_growth_safe_state', 'FAIL', sqlerrm);
   end;
 
   begin
