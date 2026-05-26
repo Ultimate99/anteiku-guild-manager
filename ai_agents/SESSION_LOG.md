@@ -1312,4 +1312,7 @@
 - Source checks confirmed Profile still uses only `get_my_cp`, `get_active_cp_update_window_for_me`, and `submit_my_cp_update` for own CP.
 - Source checks found no Profile calls to admin CP RPCs, direct `member_cp`, or direct `cp_snapshots`.
 - Local browser validation passed for desktop column balance, 390px mobile no-overflow layout, bottom-nav clearance, inline edit behavior, local Save IGN, and no captured console errors.
+- Follow-up placement polish moved the Edit action into the IGN row itself and removed the header Edit button.
+- Commit `160c6e9 style: move profile edit action inline` was pushed to `main` and deployed by Vercel.
+- Authenticated production Profile smoke passed: signed-in Profile opened, IGN row Edit worked inline, Save IGN worked, Cancel worked, Customize opened, `Your CP` showed only own CP, and no visible UI blocker was found.
 - No SQL migrations, Supabase/RLS/RPC changes, service behavior changes, public/other-player profile viewing, uploads, Storage, production data mutation, or CP/GvG/audit/role/permission/member-status behavior changes were included.

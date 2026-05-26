@@ -2,12 +2,12 @@
 
 ## Current Recommendation
 
-Profile mobile + inline edit polish is implemented locally and build/browser validated.
+Profile mobile + inline edit polish is complete in production.
 
 Recommended next options:
-- Commit `style: polish mobile profile edit layout`.
-- Push `main` and wait for the Vercel production deployment.
-- Run authenticated production smoke for Member/Owner Profile, Customize, own CP card, inline IGN row edit, EN/FR/DE labels, mobile layout, and console checks.
+- No immediate Profile follow-up is required.
+- Continue with the next user-prioritized frontend polish or planned milestone.
+- Keep any public/other-player profile viewing in a separately planned backend-safe milestone.
 
 ## Previous Recommendation - Own Profile Polish
 

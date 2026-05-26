@@ -1,8 +1,8 @@
 # Project State
 
-## Profile Mobile + Inline Edit Polish Implemented Locally
+## Profile Mobile + Inline Edit Polish Complete In Production
 
-Profile mobile + inline edit polish is implemented as a frontend-only UI/layout/copy pass on top of the compact Member Profile card.
+Profile mobile + inline edit polish is implemented, deployed, and authenticated-smoke validated in production as a frontend-only UI/layout/copy pass on top of the compact Member Profile card.
 
 Implemented:
 - Kept the approved identity header with avatar/frame, IGN, username, status badges, rank badge, and Customize action.
@@ -21,6 +21,8 @@ Validation:
 - Local browser validation confirmed Profile loads, unified Member Profile card renders, Edit toggles the IGN detail row into an input, Save IGN works against local Supabase, Customize opens, and no console errors were captured.
 - Desktop validation confirmed the CP and Profile Details columns stay equal height in edit mode.
 - Mobile 390px validation passed with no horizontal overflow and verified bottom-nav clearance at page bottom.
+- Commit `160c6e9 style: move profile edit action inline` was pushed to `main` and deployed by Vercel.
+- Authenticated production smoke passed: signed-in Profile opens, IGN row Edit works inline, Save IGN works, Cancel works, Customize opens, `Your CP` shows only own CP, and no visible UI blocker was found.
 
 Scope/security:
 - Frontend UI/copy/layout only.

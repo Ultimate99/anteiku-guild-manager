@@ -29,6 +29,17 @@ Local browser validation:
 - Mobile 390px viewport had no horizontal overflow and bottom-nav clearance was verified at page bottom.
 - No captured console errors were found.
 
+Production smoke:
+- Commit `160c6e9 style: move profile edit action inline` was pushed to `main` and Vercel served the updated production bundle.
+- Authenticated production Profile smoke passed.
+- Signed-in Profile opened.
+- IGN row Edit worked inline.
+- Save IGN worked.
+- Cancel worked.
+- Customize opened.
+- `Your CP` still showed only the signed-in user's own CP.
+- No visible UI blocker was found.
+
 ## Own Profile Polish Validation
 
 Frontend-only Own Profile polish build, source checks, and local browser validation passed.
