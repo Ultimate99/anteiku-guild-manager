@@ -1686,10 +1686,29 @@ button.command-card:focus-visible {
 .profile-cp-panel {
   display: grid;
   gap: 12px;
+  border-left: 3px solid rgba(197, 22, 39, 0.44);
 }
 
 .profile-cp-heading {
   align-items: start;
+}
+
+.profile-cp-heading > div {
+  display: grid;
+  gap: 7px;
+}
+
+.profile-cp-heading h3,
+.profile-cp-heading p,
+.profile-details-heading h3 {
+  margin: 0;
+}
+
+.profile-cp-heading p {
+  max-width: 58ch;
+  color: #b8b8c2;
+  font-size: 0.88rem;
+  line-height: 1.45;
 }
 
 .profile-cp-meta {
@@ -1699,6 +1718,15 @@ button.command-card:focus-visible {
 .profile-cp-form {
   display: grid;
   gap: 10px;
+}
+
+.profile-details-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.profile-details-heading {
+  align-items: start;
 }
 
 .cosmetic-current-card {

@@ -1,8 +1,31 @@
 # Project State
 
-## Frontend Command Center Polish Validated
+## Own Profile Polish Implemented Locally
 
-Frontend-only Command Center polish is implemented and manually validated locally.
+Own Profile polish is implemented as a frontend-only layout/copy pass.
+
+Implemented:
+- Reordered Profile into a clearer self identity flow: identity card, private own-CP card, member profile edit card, and compact account/details card.
+- Kept avatar/frame, rank badge, approval/status badges, and Customize action in the identity card.
+- Moved the `Your CP` card higher on the page and labeled it as private self CP.
+- Added short copy clarifying that only the signed-in user's own CP is shown on their profile.
+- Added compact account/details rows for username, IGN, guild, role, roster status, and profile status.
+- Added EN/FR/DE labels for private self CP, update window, profile/account status, and account details.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source checks confirmed Profile still uses only `get_my_cp`, `get_active_cp_update_window_for_me`, and `submit_my_cp_update` through `cpWindowService`.
+- Source checks found no Profile calls to `get_current_cp_roster`, `get_cp_leaderboard`, `get_admin_cp_rankings`, `update_member_cp`, direct `member_cp`, or direct `cp_snapshots`.
+- Local browser validation confirmed Profile loads, the private `Your CP` card renders, Customize opens/closes, and no console errors were captured.
+
+Scope/security:
+- Frontend UI/copy/layout only.
+- No SQL migrations, Supabase/RLS/RPC changes, service behavior changes, auth behavior changes, public profile routing, other-player profile viewing, deployment, production data, or CP/GvG/audit/role/permission/member-status behavior changes.
+- Dashboard still does not show CP values.
+
+## Frontend Command Center Polish Complete
+
+Frontend-only Command Center polish is live in production.
 
 Implemented:
 - Member Dashboard now presents a compact guild command identity panel, safe status badges, quick action cards for Profile/GvG, and a guild status card.
@@ -15,6 +38,9 @@ Implemented:
 Validation:
 - `npm.cmd run build` passed with the existing Vite chunk-size warning only.
 - Manual browser validation passed for Member Dashboard, Profile/GvG quick actions, Member AdminPanel denial, AdminPanel Overview, Overview shortcut switching, CP/Audit/GvG lazy loading, Owner Tools shortcut visibility, non-owner Admin hidden Owner Tools shortcut, existing AdminPanel tabs, mobile nav/header, EN/FR/DE copy, console checks, and network checks.
+- Commit `7f7227a feat: polish command center frontend` was pushed to `main`.
+- Vercel deployed the production bundle.
+- Production smoke passed for Member Dashboard with no CP values, Profile/GvG quick actions, Member AdminPanel denial, Owner/Admin Overview, Overview shortcut switching, CP/Audit/GvG lazy loading, Owner/non-owner Admin shortcut visibility, existing AdminPanel tabs, mobile nav/header, EN/FR/DE copy, console checks, network checks, and backend/RPC/SQL/security regression checks.
 
 Security/scope:
 - Frontend polish only.

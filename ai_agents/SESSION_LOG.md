@@ -1,5 +1,18 @@
 # Session Log
 
+## 2026-05-26 - Own Profile Polish Implemented
+
+- Implemented frontend-only Own Profile polish.
+- Reordered Profile into identity, private own-CP, member profile edit, and account/details sections.
+- Kept avatar/frame, rank badge, approval/status badges, and Customize in the identity card.
+- Clarified the `Your CP` card as private self CP and kept the existing own-CP RPC flow unchanged.
+- Added compact profile/account status rows and EN/FR/DE labels for the new copy.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source checks confirmed Profile uses only `get_my_cp`, `get_active_cp_update_window_for_me`, and `submit_my_cp_update` for own CP.
+- Source checks found no Profile calls to admin CP RPCs, direct `member_cp`, or direct `cp_snapshots`.
+- Local browser validation confirmed Profile loads, Customize opens/closes, the private `Your CP` card renders, and no console errors were captured.
+- No SQL migrations, Supabase/RLS/RPC logic, service behavior, auth behavior, public profile routing, other-player profile viewing, deployment, production data, or CP/GvG/audit/role/permission/member-status behavior changed.
+
 ## 2026-05-25 - Frontend Command Center Polish Implemented
 
 - Implemented frontend-only Command Center polish.
@@ -11,6 +24,7 @@
 - Added EN/FR/DE labels for Dashboard quick actions and Admin Overview copy.
 - `npm.cmd run build` passed with the existing Vite chunk-size warning only.
 - Manual browser validation passed for Member Dashboard, Profile/GvG quick actions, Member AdminPanel denial, AdminPanel Overview shortcut switching, CP/Audit/GvG lazy-loading behavior, Owner/non-owner Admin shortcut visibility, existing AdminPanel tabs, mobile nav/header, EN/FR/DE copy, console checks, and network checks.
+- Commit `7f7227a feat: polish command center frontend` was pushed to `main`, Vercel deployed it, and production smoke passed with no console errors, unexpected network calls, CP exposure, or backend/RPC/SQL/security regressions.
 - No SQL migrations, Supabase/RLS/RPC logic, package/dependency files, service behavior, CP/GvG/audit/ranking/role/permission/member-status behavior, cosmetics backend behavior, Vercel/deployment, or production data were changed.
 
 ## 2026-05-25 - Owner Cosmetics Grant Tool

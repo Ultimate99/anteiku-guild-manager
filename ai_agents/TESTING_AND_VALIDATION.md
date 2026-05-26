@@ -1,8 +1,36 @@
 # Testing And Validation
 
+## Own Profile Polish Validation
+
+Frontend-only Own Profile polish build, source checks, and local browser validation passed.
+
+Command:
+- `npm.cmd run build`
+
+Result:
+- Build passed with the existing Vite chunk-size warning only.
+
+Source/scope result:
+- No SQL migrations, Supabase/RLS/RPC logic, package/dependency files, deployment config, or backend service behavior were changed.
+- Profile still uses only the existing own-CP service wrappers: `get_my_cp`, `get_active_cp_update_window_for_me`, and `submit_my_cp_update`.
+- Source checks found no Profile calls to `get_current_cp_roster`, `get_cp_leaderboard`, `get_admin_cp_rankings`, `update_member_cp`, direct `member_cp`, or direct `cp_snapshots`.
+- No public profile route, other-player profile service, or direct table query was added.
+- Dashboard still does not show CP values.
+
+Local browser validation:
+- Own Profile loaded on the local app.
+- Avatar/frame identity card and Customize action remained visible.
+- Customize modal opened and closed.
+- `Your CP` rendered as a private self-CP card with current own CP and update-window status.
+- Member profile edit and account/details sections rendered.
+- No captured console errors were found.
+
+Not fully tested:
+- Narrow/mobile viewport was not resized through browser automation in this pass; responsive CSS was preserved and should still receive manual mobile review before production rollout.
+
 ## Frontend Command Center Polish Validation
 
-Frontend-only Command Center polish build and manual browser validation passed.
+Frontend-only Command Center polish build, manual browser validation, and production smoke passed.
 
 Command:
 - `npm.cmd run build`
@@ -32,6 +60,22 @@ Manual validation:
 - EN/FR/DE copy rendered without raw keys.
 - No console errors or unexpected network calls were found.
 - No backend/RPC/SQL/package/security behavior changed.
+
+Production smoke:
+- Commit `7f7227a feat: polish command center frontend` was deployed.
+- Member Dashboard loaded and showed no CP values.
+- Profile quick action opened Profile.
+- GvG quick action opened GvG.
+- Member had no AdminPanel access.
+- Owner/Admin opened AdminPanel on Overview.
+- Overview cards switched to existing allowed tabs.
+- CP/Audit/GvG did not load until their tabs were opened.
+- Owner saw Owner Tools shortcut.
+- Non-owner Admin did not see Owner Tools shortcut.
+- Existing AdminPanel tabs still worked.
+- Mobile nav/header were readable and tappable.
+- EN/FR/DE copy rendered without raw keys.
+- No console errors, unexpected network calls, or backend/RPC/SQL/security regressions were found.
 
 ## Owner Cosmetics Grant Tool Validation
 

@@ -2,12 +2,20 @@
 
 ## Current Recommendation
 
-Frontend Command Center Polish is implemented, build-passed, and manually browser-validated.
+Own Profile polish is implemented locally and build/browser validated.
 
 Recommended next options:
-- Commit the frontend/docs polish when approved.
-- Plan a normal production rollout for the Command Center polish if the user wants it live.
-- Optional next frontend milestone: polish profile/member identity surfaces further, or add production rollout checkpoint docs after deploy.
+- Review the local Profile layout in-browser, especially the `Your CP` private/self copy and mobile spacing.
+- If approved, commit the frontend-only Profile polish and optionally deploy through the normal main/Vercel flow.
+- Keep public/other-player profile viewing out of this milestone; plan a backend-safe public profile RPC separately if needed.
+
+## Previous Recommendation - Frontend Command Center Polish
+
+Frontend Command Center Polish is complete in production.
+
+Recommended next options:
+- Optional next frontend milestone: profile/member identity polish, Owner Tools confirmation/preview polish, or another user-prioritized UX pass.
+- Keep backend/security-impacting work in separate planned milestones with staging/production gates.
 
 ## Previous Recommendation - Owner Cosmetics Grant Tool
 

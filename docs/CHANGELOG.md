@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-05-26 - Own Profile Polish
+
+- Reorganized the logged-in user's own Profile page into identity, private own-CP, member profile edit, and account/details sections.
+- Clarified the `Your CP` card as private self CP while preserving the existing safe own-user RPC path.
+- Added compact account/profile status details and EN/FR/DE labels for the new Profile copy.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source checks confirmed Profile still uses only `get_my_cp`, `get_active_cp_update_window_for_me`, and `submit_my_cp_update` for own CP.
+- Source checks found no Profile calls to admin CP RPCs, direct `member_cp`, or direct `cp_snapshots`.
+- Local browser validation confirmed Profile loads, Customize opens/closes, the private `Your CP` card renders, and no console errors were captured.
+- No SQL migrations, Supabase/RLS/RPC changes, service behavior changes, auth behavior changes, public profile routing, other-player profile viewing, deployment, production data, or CP/GvG/audit/role/permission/member-status behavior changes were included.
+
 ## 2026-05-25 - Frontend Command Center Polish
 
 - Added a frontend-only Member Dashboard polish pass with a compact guild command identity panel, safe status badges, Profile/GvG quick action cards, and a guild status card.
@@ -10,6 +21,8 @@
 - Added EN/FR/DE labels for the new Dashboard and Admin Overview copy.
 - `npm.cmd run build` passed with the existing Vite chunk-size warning only.
 - Manual browser validation passed for Member Dashboard, Profile/GvG quick actions, Member AdminPanel denial, AdminPanel Overview shortcut switching, CP/Audit/GvG lazy loading, Owner/non-owner Admin shortcut visibility, existing AdminPanel tabs, mobile nav/header, EN/FR/DE copy, console checks, and network checks.
+- Commit `7f7227a feat: polish command center frontend` was pushed and deployed to production.
+- Production smoke passed for Member Dashboard, Profile/GvG quick actions, Member AdminPanel denial, Owner/Admin Overview, Overview shortcut switching, CP/Audit/GvG lazy loading, Owner/non-owner Admin shortcut visibility, existing AdminPanel tabs, mobile nav/header, EN/FR/DE copy, console checks, network checks, and backend/RPC/SQL/security regression checks.
 - No SQL migrations, Supabase/RLS/RPC logic, package/dependency files, service behavior, CP/GvG/audit/ranking/role/permission/member-status behavior, cosmetics backend behavior, deployment config, or production data changed.
 
 ## 2026-05-25 - Owner Cosmetics Grant Tool

@@ -570,6 +570,61 @@ export function Profile() {
         </div>
       ) : null}
 
+      <section className="panel member-compact-panel profile-cp-panel" aria-label={t('profile.yourCp')}>
+        <div className="section-heading-row profile-cp-heading">
+          <div>
+            <div className="status-badge-row">
+              <StatusBadge tone="muted">{t('profile.privateSelfCp')}</StatusBadge>
+              <StatusBadge tone={canSubmitCp ? 'success' : 'warning'}>
+                {canSubmitCp ? t('admin.cp.windowOpen') : t('admin.cp.windowClosed')}
+              </StatusBadge>
+            </div>
+            <h3>{t('profile.yourCp')}</h3>
+            <p>{t('profile.privateCpBody')}</p>
+          </div>
+          <button type="button" className="secondary-action compact-action" onClick={() => refreshCpPanel()} disabled={cpLoading || cpSubmitting}>
+            {cpLoading ? t('common.loading') : t('common.refresh')}
+          </button>
+        </div>
+
+        <div className="approval-meta compact-meta profile-cp-meta">
+          <div>
+            <span>{t('profile.currentCp')}</span>
+            <strong>{formatCpDisplayValue(cpState?.cp_value, t('profile.cpNotEntered'))}</strong>
+          </div>
+          <div>
+            <span>{t('profile.cpWindowStatus')}</span>
+            <strong>{canSubmitCp ? t('admin.cp.windowOpen') : t('admin.cp.windowClosed')}</strong>
+          </div>
+        </div>
+
+        {cpMessage ? <p className="notice-line">{cpMessage}</p> : null}
+        {cpError ? <p className="error-line">{cpError}</p> : null}
+
+        {canSubmitCp ? (
+          <form className="profile-cp-form" onSubmit={saveCp}>
+            <label>
+              {t('profile.updateCp')}
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={cpDraft}
+                placeholder={t('profile.currentCp')}
+                onChange={(event) => setCpDraft(event.target.value)}
+                disabled={cpLoading || cpSubmitting}
+                required
+              />
+            </label>
+            <button type="submit" className="primary-action" disabled={cpLoading || cpSubmitting}>
+              {cpSubmitting ? t('common.working') : t('profile.submitCp')}
+            </button>
+          </form>
+        ) : (
+          <p className="muted-line compact-state-line">{cpWindowMessage}</p>
+        )}
+      </section>
+
       <section className="panel profile-edit-panel member-compact-panel" aria-label={t('profile.editProfile')}>
         <div className="profile-edit-header">
           <div>
@@ -615,81 +670,42 @@ export function Profile() {
         ) : null}
       </section>
 
-      <section className="panel detail-list compact-detail-list" aria-label={t('profile.details')}>
-        <div>
-          <span>{t('profile.username')}</span>
-          <strong>{profile?.profile_slug ?? profile?.username ?? t('common.unknown')}</strong>
-          <small>{t('profile.lockedUsername')}</small>
-        </div>
-        <div>
-          <span>{t('profile.ign')}</span>
-          <strong>{profile?.ign ?? t('common.notSet')}</strong>
-          <small>{t('profile.editableIgn')}</small>
-        </div>
-        <div>
-          <span>{t('profile.guild')}</span>
-          <strong>{guild?.name ?? t('guild.unknown')}</strong>
-        </div>
-        <div>
-          <span>{t('profile.role')}</span>
-          <strong>{t(`roles.${membership?.role ?? 'member'}`)}</strong>
-        </div>
-        <div>
-          <span>{t('profile.rosterStatus')}</span>
-          <strong>{t(`roster.status.${rosterStatus}.label`)}</strong>
-          <small>{t(`roster.status.${rosterStatus}.summary`)}</small>
-        </div>
-      </section>
-
-      <section className="panel member-compact-panel profile-cp-panel" aria-label={t('profile.yourCp')}>
-        <div className="section-heading-row profile-cp-heading">
+      <section className="panel profile-details-panel" aria-label={t('profile.details')}>
+        <div className="section-heading-row profile-details-heading">
           <div>
-            <StatusBadge tone={canSubmitCp ? 'success' : 'warning'}>
-              {canSubmitCp ? t('admin.cp.windowOpen') : t('admin.cp.windowClosed')}
-            </StatusBadge>
-            <h3>{t('profile.yourCp')}</h3>
-          </div>
-          <button type="button" className="secondary-action compact-action" onClick={() => refreshCpPanel()} disabled={cpLoading || cpSubmitting}>
-            {cpLoading ? t('common.loading') : t('common.refresh')}
-          </button>
-        </div>
-
-        <div className="approval-meta compact-meta profile-cp-meta">
-          <div>
-            <span>{t('profile.currentCp')}</span>
-            <strong>{formatCpDisplayValue(cpState?.cp_value, t('profile.cpNotEntered'))}</strong>
-          </div>
-          <div>
-            <span>{t('admin.cp.windowStatus')}</span>
-            <strong>{canSubmitCp ? t('admin.cp.windowOpen') : t('admin.cp.windowClosed')}</strong>
+            <StatusBadge tone="muted">{t('profile.account')}</StatusBadge>
+            <h3>{t('profile.details')}</h3>
           </div>
         </div>
-
-        {cpMessage ? <p className="notice-line">{cpMessage}</p> : null}
-        {cpError ? <p className="error-line">{cpError}</p> : null}
-
-        {canSubmitCp ? (
-          <form className="profile-cp-form" onSubmit={saveCp}>
-            <label>
-              {t('profile.updateCp')}
-              <input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                value={cpDraft}
-                placeholder={t('profile.currentCp')}
-                onChange={(event) => setCpDraft(event.target.value)}
-                disabled={cpLoading || cpSubmitting}
-                required
-              />
-            </label>
-            <button type="submit" className="primary-action" disabled={cpLoading || cpSubmitting}>
-              {cpSubmitting ? t('common.working') : t('profile.submitCp')}
-            </button>
-          </form>
-        ) : (
-          <p className="muted-line compact-state-line">{cpWindowMessage}</p>
-        )}
+        <div className="detail-list compact-detail-list">
+          <div>
+            <span>{t('profile.username')}</span>
+            <strong>{profile?.profile_slug ?? profile?.username ?? t('common.unknown')}</strong>
+            <small>{t('profile.lockedUsername')}</small>
+          </div>
+          <div>
+            <span>{t('profile.ign')}</span>
+            <strong>{profile?.ign ?? t('common.notSet')}</strong>
+            <small>{t('profile.editableIgn')}</small>
+          </div>
+          <div>
+            <span>{t('profile.guild')}</span>
+            <strong>{guild?.name ?? t('guild.unknown')}</strong>
+          </div>
+          <div>
+            <span>{t('profile.role')}</span>
+            <strong>{t(`roles.${membership?.role ?? 'member'}`)}</strong>
+          </div>
+          <div>
+            <span>{t('profile.rosterStatus')}</span>
+            <strong>{t(`roster.status.${rosterStatus}.label`)}</strong>
+            <small>{t(`roster.status.${rosterStatus}.summary`)}</small>
+          </div>
+          <div>
+            <span>{t('profile.profileStatus')}</span>
+            <strong>{t(`approvalStatus.${profile?.approval_status ?? 'approved'}`)}</strong>
+          </div>
+        </div>
       </section>
     </div>
   );
