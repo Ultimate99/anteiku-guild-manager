@@ -1728,7 +1728,8 @@ button.command-card:focus-visible {
 }
 
 .profile-mini-stat-grid > div,
-.profile-detail-grid > div {
+.profile-detail-grid > div,
+.profile-detail-grid > form {
   display: grid;
   gap: 3px;
   min-width: 0;
@@ -1739,7 +1740,8 @@ button.command-card:focus-visible {
 
 .profile-mini-stat-grid span,
 .profile-detail-grid span,
-.profile-detail-grid small {
+.profile-detail-grid small,
+.profile-detail-edit-row label > span {
   color: #a9a9b3;
   font-size: 0.74rem;
   font-weight: 800;
@@ -1756,6 +1758,37 @@ button.command-card:focus-visible {
 
 .profile-private-cp-note {
   margin: 0;
+}
+
+.profile-detail-edit-row {
+  border-color: rgba(197, 22, 39, 0.28);
+  background: rgba(197, 22, 39, 0.06);
+}
+
+.profile-detail-edit-row label {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.profile-detail-edit-row input {
+  min-height: 36px;
+  padding: 8px 9px;
+  font-size: 0.92rem;
+}
+
+.profile-inline-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 5px;
+}
+
+.profile-inline-row-actions .compact-action {
+  width: auto;
+  min-width: 76px;
+  min-height: 34px;
+  padding: 7px 10px;
 }
 
 .profile-refresh-action,
@@ -2405,6 +2438,11 @@ button.command-card:focus-visible {
 }
 
 @media (max-width: 520px) {
+  .member-profile-card {
+    gap: 10px;
+    padding-inline: 12px;
+  }
+
   .profile-panel {
     grid-template-columns: 1fr;
     justify-items: center;
@@ -2438,11 +2476,55 @@ button.command-card:focus-visible {
   .member-profile-card-header,
   .member-profile-block-heading {
     align-items: start;
+    gap: 8px;
+    text-align: left;
+  }
+
+  .member-profile-block {
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .member-profile-content-grid,
+  .profile-detail-grid {
+    gap: 8px;
+  }
+
+  .profile-detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .profile-detail-grid > div:first-child,
+  .profile-detail-grid > div:nth-child(2),
+  .profile-detail-grid > div:nth-child(5),
+  .profile-detail-grid > form {
+    grid-column: 1 / -1;
   }
 
   .member-profile-edit-button,
   .profile-refresh-action {
     justify-self: start;
+  }
+
+  .profile-mini-stat-grid > div,
+  .profile-detail-grid > div,
+  .profile-detail-grid > form {
+    padding: 8px;
+  }
+
+  .profile-cp-form {
+    gap: 8px;
+  }
+
+  .profile-cp-form label {
+    margin: 0;
+  }
+
+  .profile-inline-row-actions .compact-action,
+  .compact-profile-submit {
+    min-width: 0;
+    min-height: 36px;
+    padding-inline: 10px;
   }
 
   .member-id-panel {
@@ -2489,6 +2571,15 @@ button.command-card:focus-visible {
 
   .profile-mini-stat-grid {
     grid-template-columns: 1fr;
+  }
+
+  .profile-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-detail-grid > div,
+  .profile-detail-grid > form {
+    grid-column: auto;
   }
 
   .approval-card-header {

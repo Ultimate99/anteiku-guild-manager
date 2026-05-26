@@ -1,14 +1,16 @@
 # Project State
 
-## Profile Redesign / Compact Member Profile Card Implemented Locally
+## Profile Mobile + Inline Edit Polish Implemented Locally
 
-Profile redesign is implemented as a frontend-only UI/layout/copy pass.
+Profile mobile + inline edit polish is implemented as a frontend-only UI/layout/copy pass on top of the compact Member Profile card.
 
 Implemented:
 - Kept the approved identity header with avatar/frame, IGN, username, status badges, rank badge, and Customize action.
 - Replaced the separate `Your CP`, Member profile, and Profile details panels with one compact Member Profile card.
 - The unified card includes a compact own-CP block, account/details block, and inline IGN edit flow.
-- Edit now expands only a small IGN input with Save IGN / Cancel controls inside the card.
+- Edit now converts the existing IGN detail row into a small inline text field with compact Save IGN / Cancel controls.
+- Removed the separate edit form so desktop CP/details columns stay balanced in edit mode.
+- Tightened mobile spacing and account/details layout; compact read-only fields share rows on phone widths while username/IGN/roster remain readable.
 - Cosmetic modal active tabs now use a flatter crimson active style; Admin tabs also keep a flatter active crimson style.
 - Added EN/FR/DE keys for `Save IGN`, `Cancel`, short private-own-CP copy, and update-window label.
 
@@ -16,8 +18,9 @@ Validation:
 - `npm.cmd run build` passed with the existing Vite chunk-size warning only.
 - Source checks confirmed Profile still uses only `get_my_cp`, `get_active_cp_update_window_for_me`, and `submit_my_cp_update` through `cpWindowService`.
 - Source checks found no Profile calls to `get_current_cp_roster`, `get_cp_leaderboard`, `get_admin_cp_rankings`, `update_member_cp`, direct `member_cp`, or direct `cp_snapshots`.
-- Local browser validation confirmed Profile loads, unified Member Profile card renders, inline IGN edit controls appear, Customize opens, and no console errors were captured.
-- Mobile 390px validation passed with no horizontal overflow.
+- Local browser validation confirmed Profile loads, unified Member Profile card renders, Edit toggles the IGN detail row into an input, Save IGN works against local Supabase, Customize opens, and no console errors were captured.
+- Desktop validation confirmed the CP and Profile Details columns stay equal height in edit mode.
+- Mobile 390px validation passed with no horizontal overflow and verified bottom-nav clearance at page bottom.
 
 Scope/security:
 - Frontend UI/copy/layout only.

@@ -655,11 +655,35 @@ export function Profile() {
                 <strong>{profile?.profile_slug ?? profile?.username ?? t('common.unknown')}</strong>
                 <small>{t('profile.lockedUsername')}</small>
               </div>
-              <div>
-                <span>{t('profile.ign')}</span>
-                <strong>{profile?.ign ?? t('common.notSet')}</strong>
-                <small>{t('profile.editableIgn')}</small>
-              </div>
+              {isEditing ? (
+                <form className="profile-detail-edit-row" onSubmit={saveProfile}>
+                  <label>
+                    <span>{t('profile.ign')}</span>
+                    <input
+                      type="text"
+                      value={ignDraft}
+                      placeholder={t('auth.ignPlaceholder')}
+                      onChange={(event) => setIgnDraft(event.target.value)}
+                      disabled={saving}
+                      required
+                    />
+                  </label>
+                  <div className="profile-inline-row-actions">
+                    <button type="submit" className="primary-action compact-action" disabled={saving}>
+                      {saving ? t('profile.saving') : t('profile.saveIgn')}
+                    </button>
+                    <button type="button" className="secondary-action compact-action" onClick={cancelEditing} disabled={saving}>
+                      {t('profile.cancelEdit')}
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div>
+                  <span>{t('profile.ign')}</span>
+                  <strong>{profile?.ign ?? t('common.notSet')}</strong>
+                  <small>{t('profile.editableIgn')}</small>
+                </div>
+              )}
               <div>
                 <span>{t('profile.guild')}</span>
                 <strong>{guild?.name ?? t('guild.unknown')}</strong>
@@ -679,29 +703,6 @@ export function Profile() {
               </div>
             </div>
 
-            {isEditing ? (
-              <form className="profile-inline-edit-form" onSubmit={saveProfile}>
-                <label>
-                  {t('profile.ign')}
-                  <input
-                    type="text"
-                    value={ignDraft}
-                    placeholder={t('auth.ignPlaceholder')}
-                    onChange={(event) => setIgnDraft(event.target.value)}
-                    disabled={saving}
-                    required
-                  />
-                </label>
-                <div className="profile-inline-edit-actions">
-                  <button type="submit" className="primary-action compact-action" disabled={saving}>
-                    {saving ? t('profile.saving') : t('profile.saveIgn')}
-                  </button>
-                  <button type="button" className="secondary-action compact-action" onClick={cancelEditing} disabled={saving}>
-                    {t('profile.cancelEdit')}
-                  </button>
-                </div>
-              </form>
-            ) : null}
           </div>
         </div>
       </section>

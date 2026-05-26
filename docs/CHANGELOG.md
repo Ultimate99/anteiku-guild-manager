@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-05-26 - Profile Mobile + Inline Edit Polish
+
+- Replaced the remaining separate Profile IGN edit form with a true inline edit row inside Profile Details.
+- Clicking Edit now turns the existing IGN value into a compact input with Save IGN / Cancel controls.
+- Desktop edit mode keeps the CP and Profile Details columns visually balanced.
+- Tightened mobile Member Profile spacing and made compact account fields share rows at phone widths where safe.
+- Verified 390px mobile layout with no horizontal overflow and bottom navigation clearance at page bottom.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source checks confirmed Profile still uses only `get_my_cp`, `get_active_cp_update_window_for_me`, and `submit_my_cp_update` for own CP.
+- Source checks found no Profile admin CP RPCs, direct `member_cp`, direct `cp_snapshots`, public profile route, or other-player profile service.
+- No SQL migrations, Supabase/RLS/RPC changes, service behavior changes, production data mutation, uploads, Supabase Storage, public profile viewing, or CP/GvG/audit/role/permission/member-status behavior changes were included.
+
 ## 2026-05-26 - Profile Redesign / Compact Member Profile Card
 
 - Merged the lower Profile content into one compact Member Profile card.

@@ -1,8 +1,8 @@
 # Testing And Validation
 
-## Profile Redesign / Compact Member Profile Card Validation
+## Profile Mobile + Inline Edit Polish Validation
 
-Frontend-only Profile redesign build, source checks, and local browser validation passed.
+Frontend-only Profile mobile + inline edit polish build, source checks, and local browser validation passed.
 
 Command:
 - `npm.cmd run build`
@@ -21,9 +21,12 @@ Local browser validation:
 - Approved identity header still rendered with avatar/frame, rank badge, status badges, and Customize.
 - Unified Member Profile card rendered with compact own-CP block and account/details block.
 - `Your CP` displayed own CP/update-window state with short private self-CP copy.
-- Edit expanded only inline IGN input plus Save IGN / Cancel controls.
+- Edit converted the existing IGN detail row into an inline input with compact Save IGN / Cancel controls.
+- The old separate edit form was removed.
+- Desktop CP and Profile Details columns stayed equal height in edit mode.
+- Save IGN worked against local Supabase and exited edit mode.
 - Customize modal opened.
-- Mobile 390px viewport had no horizontal overflow.
+- Mobile 390px viewport had no horizontal overflow and bottom-nav clearance was verified at page bottom.
 - No captured console errors were found.
 
 ## Own Profile Polish Validation

@@ -2,12 +2,12 @@
 
 ## Current Recommendation
 
-Profile redesign / compact Member Profile card is implemented locally and build/browser validated.
+Profile mobile + inline edit polish is implemented locally and build/browser validated.
 
 Recommended next options:
-- Commit `style: redesign own profile layout`.
+- Commit `style: polish mobile profile edit layout`.
 - Push `main` and wait for the Vercel production deployment.
-- Run authenticated production smoke for Member/Owner Profile, Customize, own CP card, inline IGN edit, EN/FR/DE labels, mobile layout, and console checks.
+- Run authenticated production smoke for Member/Owner Profile, Customize, own CP card, inline IGN row edit, EN/FR/DE labels, mobile layout, and console checks.
 
 ## Previous Recommendation - Own Profile Polish
 

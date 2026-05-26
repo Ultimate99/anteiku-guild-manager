@@ -1,14 +1,15 @@
 # Testing
 
-## Profile Redesign / Compact Member Profile Card
+## Profile Mobile + Inline Edit Polish
 
-Frontend-only Profile redesign build, source checks, and local browser validation passed.
+Frontend-only Profile mobile + inline edit polish build, source checks, and local browser validation passed.
 
 - `npm.cmd run build` passed with the existing Vite chunk-size warning only.
 - Profile keeps the approved identity header with avatar/frame, rank badge, status badges, and Customize.
 - Separate `Your CP`, Member profile, and Profile details panels were replaced by one compact Member Profile card.
 - The unified card contains own CP, account/details, and inline IGN edit sections.
-- Edit expands only an inline IGN input with Save IGN / Cancel controls.
+- Edit converts the existing IGN detail row into an inline input with compact Save IGN / Cancel controls.
+- The old separate edit form was removed so desktop CP/Profile Details columns remain balanced.
 - Cosmetic modal active tabs and Admin active tabs use flatter crimson styling.
 
 Source/security checks:
@@ -21,9 +22,10 @@ Local browser validation:
 - Own Profile loaded.
 - Unified Member Profile card rendered.
 - `Your CP` showed own CP/update-window state with short private self-CP copy.
-- Inline IGN edit controls appeared after clicking Edit.
+- Inline IGN edit controls appeared in the IGN detail row after clicking Edit.
+- Save IGN worked against local Supabase and exited edit mode.
 - Customize modal opened.
-- Mobile 390px viewport had no horizontal overflow.
+- Mobile 390px viewport had no horizontal overflow and bottom-nav clearance was verified at page bottom.
 - No captured console errors were found.
 
 ## Own Profile Polish

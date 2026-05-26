@@ -1,7 +1,7 @@
 {
   "project": "Anteiku Guild Manager",
-  "currentMilestone": "Profile redesign / compact Member Profile card implemented locally",
-  "status": "profile_redesign_compact_member_card_implemented_local",
+  "currentMilestone": "Profile mobile + inline edit polish implemented locally",
+  "status": "profile_mobile_inline_edit_polish_implemented_local",
   "milestone7BackendStatus": "SQL/RPC migration created for hardened role assignment and Owner-only guild transfer; local Supabase validation passed.",
   "milestone7ValidationStatus": "npx.cmd supabase db reset passed; local_validation_anteiku.sql passed; role assignment and guild transfer tests passed.",
   "milestone7FrontendStatus": "Admin member role-change and Owner-only guild-transfer UI browser validated; network writes used assign_member_role and transfer_member_guild; no CP/GvG calls observed.",

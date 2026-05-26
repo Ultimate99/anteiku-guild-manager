@@ -1301,3 +1301,15 @@
 - `npm.cmd run build` passed.
 - Static checks found no Supabase migration changes, no service changes, and no new direct protected table calls in frontend source.
 - Authenticated staging browser validation remains the next gate.
+
+## 2026-05-26 - Profile Mobile + Inline Edit Polish Implemented
+
+- Implemented frontend-only Profile mobile + inline edit polish.
+- Replaced the separate IGN edit form with an inline edit row inside Profile Details.
+- Edit mode now converts the existing IGN detail row into an input with compact Save IGN / Cancel controls.
+- Tightened mobile Member Profile spacing and compact account/detail rows.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source checks confirmed Profile still uses only `get_my_cp`, `get_active_cp_update_window_for_me`, and `submit_my_cp_update` for own CP.
+- Source checks found no Profile calls to admin CP RPCs, direct `member_cp`, or direct `cp_snapshots`.
+- Local browser validation passed for desktop column balance, 390px mobile no-overflow layout, bottom-nav clearance, inline edit behavior, local Save IGN, and no captured console errors.
+- No SQL migrations, Supabase/RLS/RPC changes, service behavior changes, public/other-player profile viewing, uploads, Storage, production data mutation, or CP/GvG/audit/role/permission/member-status behavior changes were included.
