@@ -236,14 +236,14 @@ export function AdminAnalyticsSection({
     return [];
   }
 
-  async function loadGrowthData({ snapshotId = selectedSnapshotId } = {}) {
+  async function loadGrowthData({ snapshotId = selectedSnapshotId, historyOverride = null } = {}) {
     if (!canViewCpAnalytics) {
       setErrors((current) => ({ ...current, weeklyGrowth: 'permission' }));
       setGrowthReport([]);
       return;
     }
 
-    const nextHistory = snapshotHistory.length > 0 ? snapshotHistory : await loadSnapshotHistory();
+    const nextHistory = historyOverride ?? (snapshotHistory.length > 0 ? snapshotHistory : await loadSnapshotHistory());
     const effectiveSnapshotId =
       snapshotId && nextHistory.some((snapshot) => snapshot.id === snapshotId)
         ? snapshotId
@@ -284,7 +284,9 @@ export function AdminAnalyticsSection({
       }),
     );
     const nextHistory = await loadSnapshotHistory();
-    await loadGrowthData({ snapshotId: nextHistory[0]?.id ?? '' });
+    const latestSnapshotId = nextHistory[0]?.id ?? '';
+    setSelectedSnapshotId(latestSnapshotId);
+    await loadGrowthData({ snapshotId: latestSnapshotId, historyOverride: nextHistory });
   }
 
   function renderPermissionError(key, titleKey) {

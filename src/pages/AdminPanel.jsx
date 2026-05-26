@@ -448,6 +448,8 @@ export function AdminPanel() {
   const canViewGlobalCpLeaderboard = membership?.role === 'owner';
   const canViewAuditSection = canViewAuditLogs({ membership, permissionKeys });
   const canViewAnalyticsMemberData = canViewMembers || canReviewQueue;
+  const canViewAnalyticsSection =
+    canViewAnalyticsMemberData || canViewCpSection || canManageGvgEvents || canViewAuditSection;
   const allowedMemberRoles = useMemo(
     () => getAllowedMemberRoleOptions({ membership, permissionKeys }),
     [membership, permissionKeys],
@@ -585,7 +587,7 @@ export function AdminPanel() {
         return true;
       }
       if (tab.id === 'analytics') {
-        return true;
+        return canViewAnalyticsSection;
       }
       if (tab.id === 'approvals') {
         return canReviewQueue;
@@ -617,6 +619,7 @@ export function AdminPanel() {
     canManageGvgEvents,
     canManagePermissions,
     canReviewQueue,
+    canViewAnalyticsSection,
     canViewAdmin,
     canViewAuditSection,
     canViewCpSection,
