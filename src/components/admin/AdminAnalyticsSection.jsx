@@ -221,6 +221,7 @@ export function AdminAnalyticsSection({
   const [snapshotMessage, setSnapshotMessage] = useState('');
   const [confirmStartWeek, setConfirmStartWeek] = useState(false);
   const [selectedScopeId, setSelectedScopeId] = useState('');
+  const [selectedBaselineId, setSelectedBaselineId] = useState('');
 
   const scopeOptions = useMemo(
     () => buildAnalyticsScopeOptions({ membership, currentGuild, guildOptions, t }),
@@ -357,17 +358,23 @@ export function AdminAnalyticsSection({
     return nextGvgAnalytics;
   }
 
-  async function loadGrowthData() {
+  async function loadGrowthData({ baselineBatchId = selectedBaselineId } = {}) {
     if (!canViewCpAnalytics) {
       setErrors((current) => ({ ...current, weeklyGrowth: 'permission' }));
       setLiveGrowthReport([]);
       return;
     }
 
-    const nextGrowthReport = await runLoader('weeklyGrowth', () => loadLiveCpGrowth({ guildId }));
+    const nextGrowthReport = await runLoader('weeklyGrowth', () =>
+      loadLiveCpGrowth({ guildId, baselineBatchId: baselineBatchId || null }),
+    );
 
     if (nextGrowthReport) {
       setLiveGrowthReport(nextGrowthReport);
+      const nextBaselineId = nextGrowthReport.find((row) => row.baselineBatchId)?.baselineBatchId ?? '';
+      if (!baselineBatchId && !selectedBaselineId && nextBaselineId) {
+        setSelectedBaselineId(nextBaselineId);
+      }
     }
   }
 
@@ -399,7 +406,8 @@ export function AdminAnalyticsSection({
       }),
     );
     setConfirmStartWeek(false);
-    await loadGrowthData();
+    setSelectedBaselineId(captured.batchId ?? '');
+    await loadGrowthData({ baselineBatchId: captured.batchId ?? '' });
   }
 
   function handleCancelStartNewCpWeek() {

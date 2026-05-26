@@ -4612,6 +4612,8 @@ declare
   snapshot_row record;
   batch_one_id uuid;
   batch_two_id uuid;
+  global_batch_id uuid;
+  scoped_batch_id uuid;
   direct_count integer;
   history_count integer;
   owner_count integer;
@@ -5022,6 +5024,96 @@ begin
     end if;
   exception when others then
     insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'owner_global_live_growth_safe_state', 'FAIL', sqlerrm);
+  end;
+
+  delete from public.cp_snapshot_entries;
+  delete from public.cp_snapshot_batches;
+
+  update public.member_cp
+  set cp_value = 700000,
+      updated_by = admin_cp_id,
+      updated_at = clock_timestamp()
+  where profile_id = member_id
+    and guild_id = anteiku_id;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    select * into snapshot_row
+    from public.start_new_cp_growth_period(null, 'Global validation baseline');
+    global_batch_id := snapshot_row.batch_id;
+
+    update public.member_cp
+    set cp_value = cp_value + 5002,
+        updated_by = admin_cp_id,
+        updated_at = clock_timestamp()
+    where profile_id = member_id
+      and guild_id = anteiku_id;
+
+    select * into live_row
+    from public.get_admin_live_cp_growth(anteiku_id, global_batch_id)
+    where profile_id = member_id;
+
+    if live_row.baseline_batch_id = global_batch_id
+       and live_row.guild_id = anteiku_id
+       and live_row.growth_amount = 5002 then
+      insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'guild_scope_can_use_owner_global_baseline', 'PASS', row_to_json(live_row)::text);
+    else
+      insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'guild_scope_can_use_owner_global_baseline', 'FAIL', coalesce(row_to_json(live_row)::text, 'No global-baseline guild row.'));
+    end if;
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'guild_scope_can_use_owner_global_baseline', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    select * into snapshot_row
+    from public.start_new_cp_growth_period(anteiku_id, 'Anteiku later validation baseline');
+    scoped_batch_id := snapshot_row.batch_id;
+
+    select * into live_row
+    from public.get_admin_live_cp_growth(anteiku_id, global_batch_id)
+    where profile_id = member_id;
+
+    if live_row.baseline_batch_id = global_batch_id
+       and live_row.growth_amount = 5002 then
+      insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'explicit_global_baseline_survives_later_guild_baseline', 'PASS', row_to_json(live_row)::text);
+    else
+      insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'explicit_global_baseline_survives_later_guild_baseline', 'FAIL', coalesce(row_to_json(live_row)::text, 'No preserved global-baseline row.'));
+    end if;
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'explicit_global_baseline_survives_later_guild_baseline', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    perform public.get_admin_live_cp_growth(null, scoped_batch_id);
+    insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'guild_baseline_not_valid_for_global_scope', 'FAIL', 'Owner used a guild baseline for global live growth.');
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'guild_baseline_not_valid_for_global_scope', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_cp_id::text, true);
+    perform public.get_admin_live_cp_growth(anteiku_id, global_batch_id);
+    insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'scoped_admin_denied_global_baseline', 'FAIL', 'Scoped Admin used global baseline for guild live growth.');
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'scoped_admin_denied_global_baseline', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_cp_id::text, true);
+    select * into live_row
+    from public.get_admin_live_cp_growth(anteiku_id, scoped_batch_id)
+    where profile_id = member_id;
+
+    if live_row.baseline_batch_id = scoped_batch_id
+       and live_row.guild_id = anteiku_id then
+      insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'scoped_admin_can_use_guild_baseline', 'PASS', row_to_json(live_row)::text);
+    else
+      insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'scoped_admin_can_use_guild_baseline', 'FAIL', coalesce(row_to_json(live_row)::text, 'No scoped-admin guild-baseline row.'));
+    end if;
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('live_weekly_growth', 'scoped_admin_can_use_guild_baseline', 'FAIL', sqlerrm);
   end;
 
   begin

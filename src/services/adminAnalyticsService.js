@@ -255,10 +255,11 @@ export async function loadCpGrowthReport({ guildId = null, snapshotId = null } =
   return (data ?? []).map(mapGrowthRow);
 }
 
-export async function loadLiveCpGrowth({ guildId = null } = {}) {
+export async function loadLiveCpGrowth({ guildId = null, baselineBatchId = null } = {}) {
   const client = requireSupabase();
   const { data, error } = await client.rpc('get_admin_live_cp_growth', {
     p_guild_id: normalizeGuildId(guildId),
+    p_baseline_batch_id: baselineBatchId || null,
   });
 
   if (error) {
