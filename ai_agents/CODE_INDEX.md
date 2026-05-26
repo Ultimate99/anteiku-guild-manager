@@ -1,5 +1,12 @@
 # Code Index
 
+## Analytics UI Polish
+
+- `src/components/admin/AdminAnalyticsSection.jsx`: Frontend-only Analytics UI polish. Adds grouped member stat sections, tighter stat-card variants, visual Weekly Growth row states, and labeled mobile row cells while preserving existing analytics loading, scope, baseline, and RPC behavior.
+- `src/styles/app.css`: Adds compact Analytics scope/sub-tab/card/group/table styles, flat crimson active states, mobile scroll-safe scope/tabs, and mobile labeled Weekly Growth cards.
+- `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`: Add Members grouping labels for Analytics.
+- Production status: Commit `1db36d3 style: polish admin analytics UI` is deployed. No SQL, Supabase/RLS/RPC, analytics service, or security behavior changed.
+
 ## Weekly Growth Baseline Scope Fix
 
 - `supabase/migrations/20260526000300_live_cp_growth_baseline_scope.sql`: Applied and verified in production. Adds `get_admin_live_cp_growth(p_guild_id uuid, p_baseline_batch_id uuid)` so an Owner-selected Global baseline can be reused while filtering rows to a selected guild scope.

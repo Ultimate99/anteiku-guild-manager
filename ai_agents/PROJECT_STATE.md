@@ -1,5 +1,37 @@
 # Project State
 
+## Analytics UI Polish Complete
+
+Frontend-only AdminPanel Analytics UI polish is live in production.
+
+Production rollout:
+- Commit `1db36d3 style: polish admin analytics UI` was pushed to `main` and deployed.
+- Production now serves a polished Analytics UI bundle.
+- No SQL migrations, Supabase/RLS/RPC changes, analytics service behavior changes, Vercel env changes, Supabase commands, or production data mutations were performed.
+
+Implemented:
+- Analytics scope selector is tighter and remains mobile-scroll safe.
+- Analytics sub-tabs keep a flat crimson active style and compact scrollable layout.
+- Overview stat cards are tighter with clearer value hierarchy.
+- Members tab groups statuses into ready/watch/restricted/approval sections.
+- CP, GvG, Weekly Growth, and Attention cards are visually tighter and easier to scan.
+- Weekly Growth rows now visually distinguish positive, zero, missing, and negative growth states without changing calculations.
+- Mobile growth rows become labeled cards instead of squeezed columns.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation confirmed no SQL/migration changes, no Supabase/RLS/RPC changes, no analytics service changes, no direct protected CP/snapshot table reads, and no unsafe GvG writes.
+- Production Owner smoke passed for AdminPanel -> Analytics, Global and guild scope chips, all Analytics sub-tabs, and Weekly Growth baseline preservation.
+- Global and Anteiku Weekly Growth still show the preserved Global baseline behavior.
+- Start New CP Week was not clicked.
+- No captured console errors were observed.
+
+Security/scope:
+- CP Analytics and Weekly Growth remain backend-gated by scoped `view_cp`.
+- Members still have no AdminPanel/Analytics access.
+- CP values remain only in authorized Analytics/Admin surfaces.
+- CP Update Window, CP Ranking privacy, GvG, audit, role, permission, cosmetics, and member-status behavior were unchanged.
+
 ## Weekly Growth Baseline Scope Fix Complete
 
 Weekly Growth baseline scope fix is live in production.

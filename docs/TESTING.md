@@ -1,5 +1,24 @@
 # Testing
 
+## Analytics UI Polish
+
+Production validation passed for frontend-only AdminPanel Analytics UI polish.
+
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Commit `1db36d3 style: polish admin analytics UI` was pushed to `main`.
+- Production served the updated Analytics UI bundle.
+- Owner production smoke passed:
+  - AdminPanel opened.
+  - Analytics opened.
+  - Global and guild scope chips loaded.
+  - Overview, Members, CP, GvG, Weekly Growth, and Attention rendered.
+  - Weekly Growth live growth still rendered.
+  - Baseline preservation behavior remained intact.
+  - Start New CP Week was not clicked.
+  - no captured console errors
+- Source validation confirmed no SQL/migration changes, no Supabase/RLS/RPC changes, no analytics service behavior changes, no direct protected CP/snapshot table reads, no unsafe `gvg_votes` writes, and no CP/GvG/audit/role/permission/member-status behavior changes.
+- Mobile layout source validation confirmed scroll-safe scope chips/sub-tabs and labeled card-style Weekly Growth rows.
+
 ## Weekly Growth Baseline Scope Fix
 
 Production validation passed for the Weekly Growth baseline scope fix.

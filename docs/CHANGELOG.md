@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-05-26 - Analytics UI Polish
+
+- Polished AdminPanel -> Analytics as a frontend-only UI/layout/style pass.
+- Tightened Analytics scope selector and sub-tab bar with flat crimson active states.
+- Grouped Members stats into ready/watch/restricted/approval sections.
+- Tightened Overview, CP, GvG, Weekly Growth, and Attention cards.
+- Weekly Growth rows now visually distinguish positive and zero growth without changing calculations.
+- Mobile Weekly Growth rows now use labeled card-style cells instead of squeezed table columns.
+- Added EN/FR/DE labels for the new Analytics Members grouping headings.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Commit `1db36d3 style: polish admin analytics UI` was pushed and deployed.
+- Production Owner smoke passed for Analytics scope switching, all sub-tabs, Weekly Growth live growth, and preserved baseline behavior.
+- Start New CP Week was not clicked.
+- No SQL migrations, Supabase/RLS/RPC, analytics service behavior, Vercel env, production data, CP privacy, GvG, audit, role, permission, cosmetics, or member-status behavior changed.
+
 ## 2026-05-26 - Weekly Growth Baseline Scope Fix
 
 - Fixed Weekly Growth scope switching so a selected baseline is preserved when switching Analytics scope if backend scoping permits it.

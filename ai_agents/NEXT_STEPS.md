@@ -2,13 +2,22 @@
 
 ## Current Recommendation
 
-Weekly Growth baseline scope fix is live in production.
+Analytics UI polish is live in production.
 
 Recommended next options:
-- Plan the next user-prioritized milestone, likely Analytics polish after live usage, a production-safe Weekly Growth operating procedure, or another frontend UX pass.
+- Plan the next user-prioritized milestone, likely a production-safe Weekly Growth operating procedure, additional Analytics insights, or another frontend UX pass.
 - Keep production Start New CP Week / baseline capture behind explicit approval because it intentionally creates `cp_snapshot_batches` and `cp_snapshot_entries` rows.
 - Keep Analytics staff-only and permission-aware; CP Analytics and Weekly Growth must remain backend-gated by scoped `view_cp`.
 - Relink Supabase CLI deliberately before staging/local Supabase commands because it is currently linked to production `mzflfyxxkascrfpteexz`.
+
+Recorded Analytics UI polish:
+- Commit `1db36d3 style: polish admin analytics UI` was pushed to `main` and deployed.
+- Frontend-only polish tightened the Analytics scope selector, sub-tab bar, stat cards, Members grouping, CP/GvG cards, Weekly Growth table/card layout, and Attention cards.
+- No SQL migrations, Supabase/RLS/RPC changes, analytics service behavior changes, Supabase commands, Vercel env changes, or production data mutations were performed.
+- `npm.cmd run build` passed.
+- Production Owner smoke passed for Analytics, scope switching, all sub-tabs, Weekly Growth live growth, baseline preservation, and no captured console errors.
+- Start New CP Week was not clicked.
+- CP privacy remains `view_cp` gated.
 
 Recorded Weekly Growth baseline scope fix:
 - Commit `0130ac6 fix: preserve analytics baseline across guild scope` is deployed.

@@ -1,5 +1,22 @@
 # Session Log
 
+## 2026-05-26 - Analytics UI Polish
+
+- Implemented frontend-only AdminPanel Analytics UI polish.
+- Tightened Analytics scope selector spacing and flat crimson active chip styling.
+- Tightened Analytics sub-tabs and kept them horizontally scrollable for mobile.
+- Added grouped Members stats for ready/watch/restricted/approval sections.
+- Tightened Overview, CP, GvG, Weekly Growth, and Attention stat cards.
+- Added visual growth states for Weekly Growth rows: positive, zero, missing, and negative.
+- Updated mobile Weekly Growth rows to render as labeled cards instead of squeezed table columns.
+- Added EN/FR/DE labels for the Members grouping headings.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no SQL/migration changes, no Supabase/RLS/RPC changes, no analytics service behavior changes, no direct protected CP/snapshot table reads, and no unsafe GvG writes.
+- Pushed commit `1db36d3 style: polish admin analytics UI` to `main`.
+- Production smoke passed for Owner AdminPanel -> Analytics, scope chips, all sub-tabs, Weekly Growth live growth, and preserved Global baseline behavior.
+- Start New CP Week was not clicked.
+- No captured browser console errors were observed.
+
 ## 2026-05-26 - Weekly Growth Baseline Scope Fix
 
 - Investigated production Weekly Growth mismatch where Global showed `安定区×Ulti` growth `+5,002` but Anteiku showed `0`.
