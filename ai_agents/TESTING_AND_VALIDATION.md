@@ -1,5 +1,31 @@
 # Testing And Validation
 
+## Weekly Growth Baseline Scope Fix Production Validation
+
+Weekly Growth baseline scope fix is live and production-smoke validated.
+
+Result:
+- Commit `0130ac6 fix: preserve analytics baseline across guild scope` was deployed.
+- Production migration `20260526000300_live_cp_growth_baseline_scope.sql` was applied after a clean dry-run showing only that migration pending.
+- Production DB verification confirmed both `get_admin_live_cp_growth` overloads exist, authenticated execute is granted, anon execute is denied, and active Owner count remains `1`.
+- Local validation passed with Milestone 24B/Live Growth result `36 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+
+Production browser smoke:
+- Owner opened AdminPanel -> Analytics -> Weekly Growth.
+- Global Weekly Growth used baseline `Global weekly snapshot 2026-05-25` and showed `安定区×Ulti` growth `+5,002`.
+- Switching scope to Anteiku preserved the same Global baseline and showed `安定区×Ulti` growth `+5,002` filtered to Anteiku.
+- Start New CP Week was not clicked.
+- No new production snapshot/baseline was created.
+- No captured console errors were observed.
+
+Security/source validation:
+- CP Analytics and Weekly Growth remain backend-gated by scoped `view_cp`.
+- Members and non-authorized users cannot access CP/growth data.
+- Frontend Analytics uses RPCs only.
+- No direct `member_cp`, `cp_snapshots`, `cp_snapshot_batches`, or `cp_snapshot_entries` reads were added.
+- No CP Update Window, CP Ranking privacy, GvG, audit, role, permission, cosmetics, or member-status behavior changed.
+
 ## Live CP Growth Production Validation
 
 Live CP Growth production rollout passed local, production DB, source, build, and Owner read-only browser smoke validation.

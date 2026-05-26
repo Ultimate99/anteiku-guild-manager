@@ -1,6 +1,6 @@
 # Supabase RLS
 
-The Supabase RLS/RPC implementation has been validated through Live CP Growth. Production is applied/verified through `20260526000200_live_cp_growth.sql`.
+The Supabase RLS/RPC implementation has been validated through the Weekly Growth baseline scope fix. Production is applied/verified through `20260526000300_live_cp_growth_baseline_scope.sql`.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
 
@@ -10,14 +10,19 @@ Live CP Growth is implemented and production applied/verified.
 
 Migration:
 - `20260526000200_live_cp_growth.sql`
+- `20260526000300_live_cp_growth_baseline_scope.sql`
 
 Rules:
 - `get_admin_live_cp_growth(...)` requires backend-enforced scoped `view_cp`.
+- `get_admin_live_cp_growth(p_guild_id uuid, p_baseline_batch_id uuid)` preserves explicitly selected baselines across scope changes when backend scoping permits it.
+- Owner can use a Global baseline while filtering rows to a selected guild scope.
+- Scoped staff cannot use Global baselines for guild analytics.
 - `start_new_cp_growth_period(...)` requires backend-enforced scoped `view_cp` or Owner global authority.
 - Start New CP Week captures baseline values only; it does not reset player CP.
 - Members, pending users, admins without `view_cp`, and wrong-guild staff are denied.
 - No direct client grants are added for `member_cp`, `cp_snapshots`, `cp_snapshot_batches`, or `cp_snapshot_entries`.
 - Production Start New CP Week mutation smoke was not performed by design; explicit approval is required before creating a production baseline.
+- Production baseline scope smoke confirmed Global and Anteiku both show `安定区×Ulti` growth `+5,002` from the same Global baseline, without creating a new production snapshot.
 
 ## Milestone 24B Admin Analytics RLS/RPC
 

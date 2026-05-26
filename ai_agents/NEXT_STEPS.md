@@ -2,13 +2,23 @@
 
 ## Current Recommendation
 
-Live CP Growth for AdminPanel Analytics is live in production.
+Weekly Growth baseline scope fix is live in production.
 
 Recommended next options:
 - Plan the next user-prioritized milestone, likely Analytics polish after live usage, a production-safe Weekly Growth operating procedure, or another frontend UX pass.
 - Keep production Start New CP Week / baseline capture behind explicit approval because it intentionally creates `cp_snapshot_batches` and `cp_snapshot_entries` rows.
 - Keep Analytics staff-only and permission-aware; CP Analytics and Weekly Growth must remain backend-gated by scoped `view_cp`.
 - Relink Supabase CLI deliberately before staging/local Supabase commands because it is currently linked to production `mzflfyxxkascrfpteexz`.
+
+Recorded Weekly Growth baseline scope fix:
+- Commit `0130ac6 fix: preserve analytics baseline across guild scope` is deployed.
+- Production received `20260526000300_live_cp_growth_baseline_scope.sql`.
+- Scope switching now preserves the selected baseline when applicable.
+- Added safe RPC overload `get_admin_live_cp_growth(p_guild_id uuid, p_baseline_batch_id uuid)`.
+- Owner can use a Global baseline while filtering rows to a guild scope.
+- Production smoke confirmed Global and Anteiku both show `安定区×Ulti` growth `+5,002` from the same baseline.
+- Start New CP Week was not clicked and no new production snapshot/baseline was created.
+- CP privacy remains `view_cp` gated; Members and non-authorized users cannot access CP/growth data.
 
 Recorded Live CP Growth status:
 - Production received `20260526000200_live_cp_growth.sql` after a clean dry-run showing exactly that one pending migration.

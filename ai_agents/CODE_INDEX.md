@@ -1,5 +1,12 @@
 # Code Index
 
+## Weekly Growth Baseline Scope Fix
+
+- `supabase/migrations/20260526000300_live_cp_growth_baseline_scope.sql`: Applied and verified in production. Adds `get_admin_live_cp_growth(p_guild_id uuid, p_baseline_batch_id uuid)` so an Owner-selected Global baseline can be reused while filtering rows to a selected guild scope.
+- `src/services/adminAnalyticsService.js`: `loadLiveCpGrowth(...)` accepts `baselineBatchId` and passes it to the RPC.
+- `src/components/admin/AdminAnalyticsSection.jsx`: Preserves the selected baseline id across Analytics scope changes and refreshes live growth against that baseline when applicable.
+- `supabase/tests/local_validation_anteiku.sql`: Adds validation for Global baseline reuse under guild scope, explicit baseline preservation after a later guild baseline, scoped admin denial for Global baseline reuse, and same-guild baseline access for scoped CP staff.
+
 ## Live CP Growth Production Status
 
 - `supabase/migrations/20260526000200_live_cp_growth.sql`: Applied and verified in production. Adds `start_new_cp_growth_period(...)`, `get_admin_live_cp_growth(...)`, and compatibility delegation for `capture_weekly_cp_snapshot(...)`.

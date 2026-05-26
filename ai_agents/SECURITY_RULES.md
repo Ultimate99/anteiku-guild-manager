@@ -2,17 +2,20 @@
 
 ## Live CP Growth Security Rules
 
-Live CP Growth is live in production through `20260526000200_live_cp_growth.sql`.
+Live CP Growth is live in production through `20260526000300_live_cp_growth_baseline_scope.sql`.
 
 Rules:
 - Live CP Growth is AdminPanel Analytics only.
 - Members, pending users, restricted users, and admins without scoped `view_cp` must not receive CP growth values.
 - `get_admin_live_cp_growth(...)` is the only frontend read path for live weekly growth.
+- `get_admin_live_cp_growth(p_guild_id uuid, p_baseline_batch_id uuid)` allows an explicitly selected baseline to be preserved across Analytics scope changes when backend scoping permits it.
+- Owner may use a Global baseline while filtering rows to a guild scope. Scoped staff may not use Global baselines for guild analytics.
 - `start_new_cp_growth_period(...)` is the approved reset/start-week path. It captures baseline CP values only; it must not reset player CP.
 - Production Start New CP Week is a mutation and requires explicit approval before use.
 - Frontend must not direct-read `member_cp`, `cp_snapshots`, `cp_snapshot_batches`, or `cp_snapshot_entries`.
 - Wrong-guild staff must be denied by backend/RPC.
 - Owner can view global live growth; scoped staff can view only authorized guild scope.
+- Production baseline scope fix smoke confirmed Global and Anteiku can show the same Owner-selected Global baseline filtered by guild without creating a new snapshot.
 
 ## Milestone 24B Admin Analytics Security Rules
 

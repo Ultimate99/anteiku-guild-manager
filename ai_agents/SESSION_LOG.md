@@ -1,5 +1,24 @@
 # Session Log
 
+## 2026-05-26 - Weekly Growth Baseline Scope Fix
+
+- Investigated production Weekly Growth mismatch where Global showed `安定区×Ulti` growth `+5,002` but Anteiku showed `0`.
+- Confirmed root cause: switching Analytics scope auto-selected the latest baseline for that scope, so Anteiku used a later guild-only baseline instead of the selected Global baseline.
+- Added migration `20260526000300_live_cp_growth_baseline_scope.sql`.
+- Added safe RPC overload `get_admin_live_cp_growth(p_guild_id uuid, p_baseline_batch_id uuid)`.
+- Preserved selected baseline id in `AdminAnalyticsSection` across scope changes when applicable.
+- Updated `adminAnalyticsService.loadLiveCpGrowth(...)` to pass `p_baseline_batch_id`.
+- Added local validation coverage for Owner global baseline reuse filtered to guild, later guild baseline not overriding explicit global baseline, scoped admin denial for global baseline, and scoped admin same-guild baseline access.
+- Local validation passed with Milestone 24B/Live Growth result `36 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production dry-run showed only `20260526000300_live_cp_growth_baseline_scope.sql` pending.
+- Applied the production migration and confirmed remote migration list includes `20260526000300`.
+- Production DB verification confirmed both `get_admin_live_cp_growth` overloads exist, authenticated execute is granted, anon execute is denied, and active Owner count remains `1`.
+- Pushed commit `0130ac6 fix: preserve analytics baseline across guild scope` to `main`.
+- Production smoke confirmed Global and Anteiku both show `安定区×Ulti` growth `+5,002` from the same Global baseline.
+- Start New CP Week was not clicked and no new production snapshot/baseline was created.
+- No captured browser console errors were observed.
+
 ## 2026-05-26 - Live CP Growth Production Rollout
 
 - Implemented Live CP Growth on top of the existing Analytics snapshot foundation.

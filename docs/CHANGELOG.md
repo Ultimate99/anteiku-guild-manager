@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-05-26 - Weekly Growth Baseline Scope Fix
+
+- Fixed Weekly Growth scope switching so a selected baseline is preserved when switching Analytics scope if backend scoping permits it.
+- Added production migration `20260526000300_live_cp_growth_baseline_scope.sql`.
+- Added safe RPC overload `get_admin_live_cp_growth(p_guild_id uuid, p_baseline_batch_id uuid)`.
+- Owner can use a Global baseline while filtering rows to a guild scope.
+- Production smoke confirmed Global and Anteiku both show `安定区×Ulti` growth `+5,002` from the same Global baseline.
+- Start New CP Week was not clicked and no new production snapshot/baseline was created.
+- CP Analytics and Weekly Growth remain backend-gated by scoped `view_cp`.
+- Members and non-authorized users cannot access CP/growth data.
+- No CP Update Window, CP Ranking privacy, GvG, audit, role, permission, cosmetics, or member-status behavior changed.
+
 ## 2026-05-26 - Live CP Growth Production Rollout
 
 - Added production migration `20260526000200_live_cp_growth.sql`.
