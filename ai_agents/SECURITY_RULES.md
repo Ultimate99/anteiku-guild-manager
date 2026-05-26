@@ -2,7 +2,13 @@
 
 ## Milestone 24B Admin Analytics Security Rules
 
-Admin Analytics backend support is local-only until staging/production rollout.
+Admin Analytics backend support is live in production as of Milestone 24E.
+
+Production status:
+- Production has `20260526000100_admin_analytics_foundation.sql` applied and verified.
+- `cp_snapshot_batches` and `cp_snapshot_entries` have RLS enabled and no direct anon/authenticated table grants.
+- AdminPanel Analytics is live in production.
+- Weekly Growth is live in production, but production snapshot capture must be treated as a mutation and requires explicit approval before use.
 
 Rules:
 - Admin Analytics must remain staff-only.

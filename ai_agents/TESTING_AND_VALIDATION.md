@@ -1,5 +1,53 @@
 # Testing And Validation
 
+## Milestone 24E Admin Analytics Production Validation
+
+AdminPanel Analytics production rollout passed migration, DB, source, and Owner browser smoke validation.
+
+Commands:
+- `npx.cmd supabase projects list`
+- `npx.cmd supabase link --project-ref mzflfyxxkascrfpteexz`
+- `npx.cmd supabase migration list`
+- `npx.cmd supabase db push --dry-run`
+- `npx.cmd supabase db push`
+- `npx.cmd supabase migration list`
+- Read-only `npx.cmd supabase db query --linked --output json ...` verification queries
+- `git push origin main`
+
+Result:
+- Dry-run showed exactly one pending production migration: `20260526000100_admin_analytics_foundation.sql`.
+- Migration push applied `20260526000100_admin_analytics_foundation.sql`.
+- Remote migration list shows `20260526000100` applied.
+- Production app loads and serves an Analytics-capable bundle.
+
+Production DB verification:
+- `cp_snapshot_batches` exists with RLS enabled.
+- `cp_snapshot_entries` exists with RLS enabled.
+- No direct anon/authenticated table grants exist for the new snapshot tables.
+- Analytics RPCs exist and authenticated execute grants are present where expected:
+  - `get_admin_member_analytics`
+  - `get_admin_cp_analytics`
+  - `get_admin_gvg_analytics`
+  - `capture_weekly_cp_snapshot`
+  - `get_admin_cp_snapshot_history`
+  - `get_admin_cp_growth_report`
+- Active Owner count remains `1`.
+- Simulated authenticated non-member read of `member_cp` and `cp_snapshots` returned zero visible rows.
+- Direct authenticated read of `cp_snapshot_batches` was permission denied.
+
+Production browser smoke:
+- Owner opened AdminPanel -> Analytics.
+- Analytics tab was visible.
+- Overview, Members, CP, GvG, Weekly Growth, and Attention rendered with no captured console errors.
+- CP Analytics rendered CP stats for Owner.
+- Weekly Growth rendered snapshot history controls and the safe `No previous snapshot yet` state.
+- Snapshot capture mutation smoke was not performed by design; no production snapshot was created.
+
+Source/security validation:
+- `src/services/adminAnalyticsService.js` uses only the six analytics RPCs.
+- Source checks found no direct `member_cp`, `cp_snapshots`, `cp_snapshot_batches`, `cp_snapshot_entries`, unsafe `gvg_votes`, service-role, Storage, upload, or arbitrary URL paths in Analytics UI/service paths.
+- Existing CP/GvG/member-status behavior was not changed during rollout.
+
 ## Milestone 24C Admin Analytics UI Build And Source Validation
 
 Frontend-only AdminPanel Analytics UI implementation passed build and source validation locally.

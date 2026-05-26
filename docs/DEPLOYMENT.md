@@ -4,6 +4,24 @@ Vercel is the production hosting target.
 
 Milestone 13B completed Vercel setup, Supabase Auth URL configuration, deployment, and production smoke/security validation.
 
+## Production Admin Analytics
+
+Milestone 24E deployed AdminPanel Analytics and Weekly Growth to production.
+
+- Commit deployed: `cc2a32b feat: add admin analytics UI`.
+- Production migration applied and verified:
+  - `20260526000100_admin_analytics_foundation.sql`
+- New production snapshot tables:
+  - `cp_snapshot_batches`
+  - `cp_snapshot_entries`
+- Production DB verification passed for snapshot table existence, RLS enabled, no direct anon/authenticated grants, Analytics RPC existence/authenticated execute grants, protected-read denial, and active Owner count `1`.
+- AdminPanel -> Analytics is live in production with Overview, Members, CP, GvG, Weekly Growth, and Attention sub-tabs.
+- CP Analytics and Weekly Growth remain gated by backend scoped `view_cp` permission.
+- Members have no AdminPanel/Analytics access.
+- Weekly Growth snapshot capture is available to authorized staff but creates persistent production snapshot rows; do not capture production snapshots without explicit approval.
+- Milestone 24E production smoke did not perform snapshot capture mutation by design.
+- Supabase CLI is currently linked to production project `mzflfyxxkascrfpteexz`; relink deliberately before future staging/local Supabase commands.
+
 ## Production Member-Facing UI Cleanup
 
 Milestone 16H deployed the frontend-only member-facing compact UI/copy pass to production.

@@ -1,5 +1,26 @@
 # Session Log
 
+## 2026-05-26 - Milestone 24E Admin Analytics Production Rollout
+
+- Deliberately linked Supabase CLI to production project `mzflfyxxkascrfpteexz`.
+- Production migration list showed only `20260526000100_admin_analytics_foundation.sql` pending.
+- Production dry-run showed exactly one migration would be pushed: `20260526000100_admin_analytics_foundation.sql`.
+- Applied the production migration and confirmed remote migration list now includes `20260526000100`.
+- Verified `cp_snapshot_batches` and `cp_snapshot_entries` exist with RLS enabled.
+- Verified no direct anon/authenticated grants exist for the new snapshot tables.
+- Verified Analytics RPCs exist and authenticated execute grants are present.
+- Verified active Owner count remains `1`.
+- Verified simulated authenticated non-member reads of `member_cp` and `cp_snapshots` return zero rows.
+- Verified direct authenticated read of `cp_snapshot_batches` is permission denied.
+- Pushed commit `cc2a32b feat: add admin analytics UI` to `main`.
+- Confirmed production serves a bundle containing Analytics UI and RPC wrapper strings.
+- Owner production browser smoke passed for AdminPanel -> Analytics and sub-tabs Overview, Members, CP, GvG, Weekly Growth, and Attention.
+- Weekly Growth showed snapshot history controls and safe `No previous snapshot yet` state.
+- Production snapshot capture mutation smoke was not performed by design.
+- No captured browser console errors were observed during Analytics smoke.
+- Source checks found Analytics paths use only the six analytics RPCs and contain no direct CP/snapshot table reads, unsafe `gvg_votes`, Storage/upload, service-role, or arbitrary URL paths.
+- Supabase CLI remains linked to production; relink deliberately before future staging/local Supabase commands.
+
 ## 2026-05-26 - Milestone 24C Admin Analytics UI
 
 - Implemented frontend-only AdminPanel Analytics UI locally.

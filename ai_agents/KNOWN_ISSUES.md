@@ -28,6 +28,7 @@
 - Milestone 21E Rank Badge / Profile Border production rollout is complete. Production has `20260524000400_cp_rank_badge_summary.sql` applied, Profile/Dashboard rank badge visuals are live, and production smoke passed with no CP value exposure from the badge.
 - Milestone 22E Cosmetics production rollout is complete. Production has `20260525000100_cosmetics_catalog_unlocks.sql` applied and verified, Vercel serves the cosmetics picker/assets, and cosmetics use approved repo static assets only.
 - Milestone 23D Premium Cosmetics production rollout is complete. Production has `20260525000300_premium_cosmetics_grant_helper.sql` applied and verified.
+- Milestone 24E AdminPanel Analytics production rollout is complete. Production has `20260526000100_admin_analytics_foundation.sql` applied and verified, Analytics is live, Weekly Growth is live, and Owner production smoke passed.
 - Controlled production Member `m13bmember21056302` remains approved/active but did not receive an equipped cosmetics row during the 22E smoke; Owner `ultimatesrb` verified production equip persistence.
 - Staging test data remains intentionally; do not cleanup/delete it unless separately approved.
 - Vercel Preview env has not been configured for staging yet.
@@ -51,6 +52,7 @@
 - Supabase CLI is currently linked to production `mzflfyxxkascrfpteexz`; future staging/local work must explicitly relink before Supabase commands.
 - Optional production roster-status mutation smoke must use the controlled production test member only, require explicit approval, and restore to `active`.
 - Optional production CP Update Window mutation smoke must use a controlled production test member only, require explicit approval, and document whether test CP/window data is restored or retained.
+- Optional production Weekly Growth snapshot capture must require explicit approval because it creates persistent `cp_snapshot_batches` and `cp_snapshot_entries` rows. Milestone 24E production smoke intentionally did not capture a production snapshot.
 - Member CP Leaderboard rank order intentionally reveals relative CP strength, but exact CP values remain hidden from member API responses and UI.
 - Rank Badge / Profile Border intentionally reveals the caller's own global/guild rank and rank tier only; it must not expose CP values, growth/history/snapshot data, updated-by metadata, profile ids, usernames from the rank RPC, or other-member data.
 - Cosmetics catalog asset keys use repo file names without extension. `_FREE` frames are free; non-`_FREE` frames are manual unlocks. Do not add arbitrary URLs or uploads in v1.
@@ -66,7 +68,7 @@
 - Avatar editing is not implemented.
 - Normal users cannot edit username/profile slug by design.
 - Controlled production CP mutation smoke for CP Update Window / Member CP Self-Submit has not been run. The feature is live and read-only-smoke validated; mutation smoke remains optional and requires explicit approval.
-- Weekly CP snapshot/growth report UI is not implemented.
+- Weekly CP snapshot/growth report UI is implemented in AdminPanel Analytics and is staff-only / `view_cp` gated for CP values. Production snapshot capture still requires explicit approval before use.
 - Guild/subguild management UI is not implemented.
 - French/German wording review by native-speaking admins is recommended for the language pack.
 

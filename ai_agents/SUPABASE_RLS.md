@@ -2,7 +2,7 @@
 
 ## Milestone 24B Admin Analytics RLS/RPC
 
-Milestone 24B is implemented and locally validated only. It is not applied to staging or production yet.
+Milestone 24B/24E Admin Analytics is implemented, locally validated, staging validated, and production applied/verified.
 
 Migration:
 - `20260526000100_admin_analytics_foundation.sql`
@@ -15,6 +15,8 @@ RLS/grants:
 - RLS is enabled on both new snapshot tables.
 - No direct anon/authenticated table grants are provided.
 - Snapshot capture and reads are RPC-only.
+- Production verification confirmed direct authenticated reads of the new snapshot tables are denied.
+- Production snapshot capture mutation smoke was not performed by design; explicit approval is required before creating production snapshot rows.
 
 Analytics RPCs:
 - `get_admin_member_analytics(p_guild_id uuid default null)`

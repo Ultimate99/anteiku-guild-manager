@@ -1,5 +1,47 @@
 # Project State
 
+## Milestone 24E Admin Analytics Production Rollout Complete
+
+Milestone 24E is complete. AdminPanel Analytics and Weekly Growth are live in production after the production database received and verified `20260526000100_admin_analytics_foundation.sql`.
+
+Production rollout:
+- Production Supabase project `mzflfyxxkascrfpteexz` was deliberately linked before migration actions.
+- Migration dry-run showed exactly one pending migration: `20260526000100_admin_analytics_foundation.sql`.
+- `npx.cmd supabase db push` applied only that migration.
+- Remote migration list now shows `20260526000100` applied.
+- `git push origin main` pushed commit `cc2a32b feat: add admin analytics UI`; production now serves a bundle containing the Analytics UI and analytics RPC wrappers.
+
+Production DB verification:
+- `cp_snapshot_batches` and `cp_snapshot_entries` exist.
+- RLS is enabled on both new snapshot tables.
+- No direct anon/authenticated table grants exist for the new snapshot tables.
+- Analytics RPCs exist and are executable by authenticated users with internal permission gates:
+  - `get_admin_member_analytics`
+  - `get_admin_cp_analytics`
+  - `get_admin_gvg_analytics`
+  - `capture_weekly_cp_snapshot`
+  - `get_admin_cp_snapshot_history`
+  - `get_admin_cp_growth_report`
+- Active Owner count remains `1`.
+- Simulated authenticated non-member read of `member_cp` and `cp_snapshots` returned zero visible rows.
+- Direct authenticated read of `cp_snapshot_batches` was permission denied.
+
+Production smoke:
+- Production app loads at `https://anteiku-guild-manager.vercel.app`.
+- Owner authenticated smoke passed for AdminPanel -> Analytics.
+- Analytics sub-tabs rendered: Overview, Members, CP, GvG, Weekly Growth, and Attention.
+- Owner CP Analytics rendered CP stats.
+- Weekly Growth rendered snapshot history controls and the safe `No previous snapshot yet` state.
+- Snapshot capture mutation smoke was not performed by design; do not capture production snapshots without explicit approval.
+- No captured browser console errors were observed during the Analytics production smoke.
+
+Security/scope:
+- CP Analytics and Weekly Growth remain backend-gated by scoped `view_cp`.
+- Members have no AdminPanel/Analytics access.
+- Analytics frontend uses the six analytics RPCs only.
+- No direct frontend `member_cp`, `cp_snapshots`, `cp_snapshot_batches`, `cp_snapshot_entries`, unsafe `gvg_votes`, Storage/upload, service-role, or arbitrary URL path was found in the Analytics UI/service paths.
+- Supabase CLI is currently linked to production `mzflfyxxkascrfpteexz`; relink deliberately before future staging/local Supabase commands.
+
 ## Milestone 24C Admin Analytics UI Implemented Locally
 
 Milestone 24C is implemented locally as a frontend-only AdminPanel Analytics UI on top of the Milestone 24B backend/RPC foundation.

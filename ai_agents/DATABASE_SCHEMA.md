@@ -2,7 +2,7 @@
 
 ## Current Backend Status
 
-Milestone 24B is implemented locally. It adds Admin Analytics RPCs and a new manual Weekly Growth snapshot batch model for future AdminPanel Analytics UI work. It is not applied to staging or production yet.
+Milestone 24E is complete in production. Admin Analytics RPCs and the manual Weekly Growth snapshot batch model are applied and verified in production through `20260526000100_admin_analytics_foundation.sql`.
 
 Milestone 23D completed production rollout for premium cosmetics hardening. Production now has current frames free, future manual avatar/frame enforcement, and grant-by-slug support.
 
@@ -16,7 +16,7 @@ Staging and production both have this migration applied and verified. Future new
 
 ## Production Deployment Status
 
-Production Supabase is live and migrated through Milestone 22E. Member Status, CP Update Window / Member CP Self-Submit, CP Leaderboard, Rank Badge / Profile Border, and Cosmetics are applied, verified, and live in production.
+Production Supabase is live and migrated through Milestone 24E. Member Status, CP Update Window / Member CP Self-Submit, CP Leaderboard, Rank Badge / Profile Border, Cosmetics, Premium Cosmetics, Owner Cosmetics, and Admin Analytics are applied, verified, and live in production.
 
 Current local migration order:
 
@@ -57,7 +57,7 @@ Migration `20260525000200_cp_rankings_cosmetics.sql` is implemented and producti
 
 Migration `20260525000300_premium_cosmetics_grant_helper.sql` is implemented, locally validated, staging validated, and production applied/verified.
 
-Migration `20260526000100_admin_analytics_foundation.sql` is implemented and locally validated only. It adds `cp_snapshot_batches`, `cp_snapshot_entries`, Admin Analytics RPCs, and manual Weekly Growth RPCs. Staging/production rollout is pending.
+Migration `20260526000100_admin_analytics_foundation.sql` is implemented, locally validated, staging validated, and production applied/verified. It adds `cp_snapshot_batches`, `cp_snapshot_entries`, Admin Analytics RPCs, and manual Weekly Growth RPCs.
 
 Production Member Status verification:
 - Existing production memberships were backfilled to `roster_status = active`.

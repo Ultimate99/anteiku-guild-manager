@@ -1,5 +1,12 @@
 # Code Index
 
+## Milestone 24E Admin Analytics Production Status
+
+- `src/pages/AdminPanel.jsx`: Production AdminPanel exposes the Analytics tab for staff through existing AdminPanel access/permission gates.
+- `src/components/admin/AdminAnalyticsSection.jsx`: Production Analytics UI for Overview, Members, CP, GvG, Weekly Growth, and Attention. Weekly Growth includes snapshot history/report loading and a manual snapshot capture control; production snapshot capture requires explicit approval before use.
+- `src/services/adminAnalyticsService.js`: Production RPC-only Analytics service. Uses only `get_admin_member_analytics`, `get_admin_cp_analytics`, `get_admin_gvg_analytics`, `capture_weekly_cp_snapshot`, `get_admin_cp_snapshot_history`, and `get_admin_cp_growth_report`.
+- `supabase/migrations/20260526000100_admin_analytics_foundation.sql`: Applied and verified in production. Adds `cp_snapshot_batches`, `cp_snapshot_entries`, and the Analytics/Weekly Growth RPC foundation.
+
 - `src/main.jsx`: React root.
 - `src/App.jsx`: Local page state, auth/approval gates, password recovery gate, and roster hard-block gate routing.
 - `src/layouts/AppShell.jsx`: Header, content frame, sign-out action, and bottom navigation container.

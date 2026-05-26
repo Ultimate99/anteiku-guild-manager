@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-05-26 - Milestone 24E Admin Analytics Production Rollout
+
+- Applied production migration `20260526000100_admin_analytics_foundation.sql` after a clean dry-run showing exactly that one pending migration.
+- Verified production `cp_snapshot_batches` and `cp_snapshot_entries` exist with RLS enabled and no direct anon/authenticated table grants.
+- Verified Analytics RPCs exist with authenticated execute grants and internal permission gates.
+- Verified active Owner count remains `1`.
+- Pushed commit `cc2a32b feat: add admin analytics UI` to `main`; production now serves AdminPanel Analytics.
+- Owner production smoke passed for AdminPanel -> Analytics and sub-tabs Overview, Members, CP, GvG, Weekly Growth, and Attention.
+- Weekly Growth rendered snapshot history controls and the safe `No previous snapshot yet` state.
+- Production snapshot capture mutation smoke was not performed by design.
+- Source validation confirmed Analytics frontend uses analytics RPCs only and has no direct CP/snapshot table reads, unsafe `gvg_votes`, Storage/upload, service-role, or arbitrary URL paths.
+- CP Analytics and Weekly Growth remain backend-gated by scoped `view_cp`.
+
 ## 2026-05-26 - Milestone 24C Admin Analytics UI
 
 - Added local frontend-only AdminPanel Analytics UI.

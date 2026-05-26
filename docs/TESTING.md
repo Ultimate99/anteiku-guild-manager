@@ -1,5 +1,32 @@
 # Testing
 
+## Milestone 24E Admin Analytics Production Validation
+
+Production rollout validation passed for AdminPanel Analytics.
+
+Commands:
+- `npx.cmd supabase migration list`
+- `npx.cmd supabase db push --dry-run`
+- `npx.cmd supabase db push`
+- `npx.cmd supabase migration list`
+- Read-only production verification queries through `npx.cmd supabase db query --linked --output json ...`
+- `git push origin main`
+
+Result:
+- Dry-run showed exactly `20260526000100_admin_analytics_foundation.sql` pending.
+- Production migration push applied exactly `20260526000100_admin_analytics_foundation.sql`.
+- Remote migration list confirmed `20260526000100` applied.
+- Production DB verification passed for snapshot tables, RLS, no direct client grants, Analytics RPC existence/grants, active Owner count `1`, and direct protected-read denial.
+- Production bundle contains AdminPanel Analytics UI and analytics RPC wrappers.
+- Owner authenticated smoke passed for AdminPanel -> Analytics: Overview, Members, CP, GvG, Weekly Growth, and Attention rendered with no captured console errors.
+- Weekly Growth displayed snapshot history controls and safe empty/no-previous state.
+- Production snapshot capture mutation smoke was not performed by design.
+
+Security result:
+- Analytics frontend uses only Analytics RPCs.
+- Source checks found no direct `member_cp`, `cp_snapshots`, `cp_snapshot_batches`, `cp_snapshot_entries`, unsafe `gvg_votes`, service-role, Storage, upload, or arbitrary URL paths.
+- CP Analytics and Weekly Growth remain backend-gated by scoped `view_cp`.
+
 ## Milestone 24C Admin Analytics UI
 
 Frontend-only AdminPanel Analytics UI build/source validation passed locally.

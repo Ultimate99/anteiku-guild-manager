@@ -1,12 +1,12 @@
 # Supabase RLS
 
-The Supabase RLS/RPC implementation has been locally validated through Milestone 24B. Production is applied/verified through the current production migration set; Milestone 24B remains local-only until staging/production rollout.
+The Supabase RLS/RPC implementation has been validated through Milestone 24E Admin Analytics. Production is applied/verified through `20260526000100_admin_analytics_foundation.sql`.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
 
 ## Milestone 24B Admin Analytics RLS/RPC
 
-Milestone 24B is implemented and locally validated only.
+Milestone 24B/24E Admin Analytics is implemented, locally validated, staging validated, and production applied/verified.
 
 Migration:
 - `20260526000100_admin_analytics_foundation.sql`
@@ -15,6 +15,8 @@ RLS/grants:
 - `cp_snapshot_batches` and `cp_snapshot_entries` have RLS enabled.
 - No direct anon/authenticated table grants are provided.
 - Snapshot capture and snapshot reads are exposed through permission-checked RPCs only.
+- Production verification confirmed direct authenticated reads of the new snapshot tables are denied.
+- Production snapshot capture mutation smoke was not performed by design; explicit approval is required before creating production snapshot rows.
 
 Permission model:
 - Members and pending users are denied.

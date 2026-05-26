@@ -2,13 +2,23 @@
 
 ## Current Recommendation
 
-Milestone 24C AdminPanel Analytics UI is implemented locally and build/source validated.
+Milestone 24E AdminPanel Analytics production rollout is complete.
 
 Recommended next options:
-- Milestone 24D: staging migration rollout plus authenticated AdminPanel Analytics browser/network validation.
-- Apply and verify `20260526000100_admin_analytics_foundation.sql` on staging before validating the Analytics UI there.
+- Plan the next user-prioritized milestone, likely Analytics polish after live usage, production-safe Weekly Growth snapshot operating procedure, or another frontend UX pass.
+- Keep production Weekly Growth snapshot capture behind explicit approval because it intentionally creates `cp_snapshot_batches` and `cp_snapshot_entries` rows.
 - Keep Analytics staff-only and permission-aware; CP Analytics and Weekly Growth must remain backend-gated by scoped `view_cp`.
-- Do not deploy the 24C frontend to production until the target database has the 24B analytics migration applied and verified.
+- Relink Supabase CLI deliberately before staging/local Supabase commands because it is currently linked to production `mzflfyxxkascrfpteexz`.
+
+Recorded 24E status:
+- Production received `20260526000100_admin_analytics_foundation.sql` after a clean dry-run showing exactly that one pending migration.
+- Production DB verification passed for `cp_snapshot_batches`, `cp_snapshot_entries`, RLS, no direct client grants, Analytics RPC existence/grants, direct protected-read denial, and active Owner count `1`.
+- Commit `cc2a32b feat: add admin analytics UI` was pushed to `main` and production serves the Analytics UI bundle.
+- Owner production smoke passed for AdminPanel -> Analytics, Overview, Members, CP, GvG, Weekly Growth, and Attention.
+- Weekly Growth snapshot capture mutation smoke was not performed by design.
+- Source validation confirmed Analytics frontend uses analytics RPCs only and no direct CP/snapshot table reads.
+
+## Previous Recommendation - Milestone 24C Admin Analytics UI
 
 Recorded 24C status:
 - Added AdminPanel `Analytics` tab with Overview, Members, CP, GvG, Weekly Growth, and Attention sub-tabs.

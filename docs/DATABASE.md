@@ -1,6 +1,6 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and validated locally through Milestone 24B Admin Analytics. Remote production is live through the frame unlock catalog correction; Milestone 24B is local-only and pending staging/production rollout.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented through Milestone 24E Admin Analytics. Remote production is live through `20260526000100_admin_analytics_foundation.sql`.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
@@ -43,7 +43,7 @@ Migration `20260525000200_cp_rankings_cosmetics.sql` is production applied/verif
 
 Migration `20260525000300_premium_cosmetics_grant_helper.sql` is implemented, locally validated, staging validated, and production applied/verified as of Milestone 23D.
 
-Migration `20260526000100_admin_analytics_foundation.sql` is implemented and locally validated only. It adds `cp_snapshot_batches`, `cp_snapshot_entries`, Admin Analytics RPCs, and manual Weekly Growth RPCs for future AdminPanel Analytics UI work.
+Migration `20260526000100_admin_analytics_foundation.sql` is implemented, locally validated, staging validated, and production applied/verified as of Milestone 24E. It adds `cp_snapshot_batches`, `cp_snapshot_entries`, Admin Analytics RPCs, and manual Weekly Growth RPCs for AdminPanel Analytics.
 
 Cosmetics catalog sync migrations `20260525213531`, `20260525213537`, and `20260525213900` are applied in production. Migration `20260525220522_cosmetics_frame_unlock_hotfix.sql` is applied in production and corrects frame unlock types so only `TXK_Arena*` and `TXK_KOF*` frames are manual while all other frames are free.
 
@@ -65,10 +65,11 @@ New RPCs:
 - `get_admin_cp_growth_report(p_guild_id uuid default null, p_snapshot_id uuid default null)`
 
 Status:
-- Locally implemented and validated only.
-- Not applied to staging or production.
+- Locally implemented/validated, staging validated, and production applied/verified.
 - Existing `cp_snapshots` and older CP snapshot/growth RPCs are preserved.
 - Snapshot batch tables are RPC-only with RLS enabled and no direct client grants.
+- Production Owner smoke passed for AdminPanel Analytics Overview, Members, CP, GvG, Weekly Growth, and Attention.
+- Production snapshot capture mutation smoke was not performed by design; require explicit approval before creating production snapshot rows.
 
 Production Member Status rollout:
 - Existing production memberships were backfilled to `roster_status = active`.
