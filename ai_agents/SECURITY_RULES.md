@@ -13,7 +13,8 @@ Rules:
 - Grants must call only `admin_grant_cosmetic_by_slug(p_profile_slug, p_cosmetic_key, p_reason)`.
 - Frontend must not insert/update/delete `profile_cosmetic_unlocks`, `profile_equipped_cosmetics`, or `cosmetic_catalog`.
 - No uploads, Supabase Storage, arbitrary URLs, service-role key path, or broad catalog-write UI is allowed.
-- Production grant mutation smoke requires explicit approval.
+- Production grant mutation smoke requires explicit approval and must use only the Owner Cosmetics UI / `admin_grant_cosmetic_by_slug(...)` path.
+- Controlled production grant smoke has passed for locked avatar/frame grant by exact profile slug / username and member equip after grant.
 
 ## Milestone 23D Premium Cosmetics Production Rules
 

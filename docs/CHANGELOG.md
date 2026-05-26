@@ -72,7 +72,7 @@
 - Commit `24287cb fix: hide free cosmetics from owner grant dropdown` was pushed and Vercel served the dropdown hotfix.
 - Production app load smoke passed with no captured console errors.
 - Authenticated production smoke passed for Owner visibility, dropdown filtering, empty-field validation, non-owner Admin hidden state, Member AdminPanel denial, no console errors, no unexpected network calls, and no CP/GvG/audit/ranking/member-status regression.
-- No grant mutation smoke was performed; no production cosmetic grants were created.
+- Controlled production grant smoke passed after explicit approval: a locked avatar/frame grant by exact profile slug / username succeeded, and the granted member could equip it.
 - No SQL migrations, Supabase/RLS/RPC changes, Vercel env changes, uploads, Supabase Storage, arbitrary URLs, or CP/GvG/audit/ranking/role/permission/member-status behavior changes were included.
 
 ## 2026-05-25 - Cosmetics Frame Unlock Hotfix

@@ -34,6 +34,7 @@ Current production checkpoint:
 - Rank badge/profile border uses only `get_my_cp_rank_summary()` and does not expose CP values or private CP metadata.
 - Milestone 22E Cosmetics production rollout is complete. Production has `20260525000100_cosmetics_catalog_unlocks.sql` applied and verified, Vercel serves the cosmetics picker/assets, and production smoke passed.
 - Milestone 23D Premium Cosmetics production rollout is complete. Production has `20260525000300_premium_cosmetics_grant_helper.sql` applied and verified.
+- Owner Cosmetics is live in AdminPanel -> Tools, visible only to Owner, and production-smoke validated for locked avatar/frame grant by exact profile slug / username plus member equip after grant.
 - Cosmetics v1 uses approved repo static assets only. Do not add arbitrary URLs, player uploads, or Supabase Storage without a planned security review.
 - Vercel Preview env has not been configured for staging yet.
 

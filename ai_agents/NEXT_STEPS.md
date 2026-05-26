@@ -39,12 +39,12 @@ Recorded status:
 - Local browser validation passed for Owner Tools visibility, dropdown rendering, required-field validation, non-owner Admin hidden state, and Member AdminPanel denial.
 - Production app load smoke passed with no captured console errors.
 - Authenticated production smoke passed for Owner visibility, dropdown filtering, empty username/profile slug validation, empty cosmetic validation, non-owner Admin hidden state, Member AdminPanel denial, no console errors, no unexpected network calls, and no CP/GvG/audit/ranking/member-status regression.
-- Grant mutation smoke was not performed; no production cosmetic grants were created.
+- Controlled production grant smoke passed after explicit approval: a locked avatar/frame grant by exact profile slug / username succeeded, and the granted member could equip it.
 
 Recommended next options:
 - No immediate Owner Cosmetics follow-up is required.
-- If explicitly approved later, perform one controlled production grant to the controlled test member and verify the member can equip it.
-- Otherwise keep production grant mutation untested and rely on staging/backend validation for grant/equip mutation behavior.
+- Continue to use Owner Cosmetics only for intentional Owner-approved grants.
+- Keep all grant operations on the existing `admin_grant_cosmetic_by_slug(...)` RPC path.
 
 ## Previous Recommendation - Cosmetics Frame Unlock Hotfix
 

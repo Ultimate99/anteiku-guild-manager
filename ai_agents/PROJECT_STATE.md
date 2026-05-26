@@ -99,12 +99,13 @@ Validation:
 - Commit `24287cb fix: hide free cosmetics from owner grant dropdown` was pushed to `main`.
 - Vercel production bundle deployed and production app load smoke passed with no captured console errors.
 - Authenticated production smoke passed: Owner sees AdminPanel -> Tools -> Owner Cosmetics; dropdown shows only `manual` / `admin_grant` cosmetics; free/default cosmetics are absent; empty username/profile slug and empty cosmetic validation work; non-owner Admin does not see Owner Cosmetics; Member has no AdminPanel access.
-- No console errors, unexpected network calls, or CP/GvG/audit/ranking/member-status regressions were found during the authenticated production smoke.
-- Grant mutation smoke was not performed by design; no production cosmetic grants were created.
+- Controlled production grant smoke passed after explicit approval: a locked avatar/frame grant by exact profile slug / username succeeded, and the granted member could equip the cosmetic afterward.
+- No console errors, unexpected network calls, or CP/GvG/audit/ranking/role/member-status regressions were found during authenticated production smoke.
 
 Security:
 - Frontend/UI-only change using existing RPCs.
-- No SQL migrations, Supabase/RLS/RPC changes, Vercel env changes, uploads, Supabase Storage, arbitrary URLs, CP/GvG/audit/ranking/role/permission/member-status behavior changes, or production data mutations were included.
+- Owner Cosmetics grants use only `admin_grant_cosmetic_by_slug(...)`; the frontend does not directly insert/update `profile_cosmetic_unlocks`, `profile_equipped_cosmetics`, or `cosmetic_catalog`.
+- No SQL migrations, Supabase/RLS/RPC changes, Vercel env changes, uploads, Supabase Storage, arbitrary URLs, or CP/GvG/audit/ranking/role/member-status behavior changes were included.
 
 ## Cosmetics Frame Unlock Hotfix Production Rollout
 

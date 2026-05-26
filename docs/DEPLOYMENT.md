@@ -92,6 +92,9 @@ Milestone 23D deployed premium cosmetics backend/grant-helper hardening to produ
 - `equip_my_avatar(...)` and `update_my_profile(...)` enforce free-or-unlocked avatar behavior.
 - `admin_grant_cosmetic_by_slug(...)` grants by exact username/profile slug, not IGN/display name, through existing member-management authority.
 - Production app load smoke passed.
+- AdminPanel -> Tools -> Owner Cosmetics is live in production and Owner-only.
+- Owner Cosmetics production smoke passed for non-owner Admin hidden state, Member AdminPanel denial, controlled locked avatar/frame grant by exact profile slug / username, and member equip after grant.
+- Owner Cosmetics frontend grants use only `admin_grant_cosmetic_by_slug(...)`; no direct cosmetic table writes, uploads, Supabase Storage, or arbitrary URLs are part of the flow.
 - No frontend deploy, Vercel env change, service-role key, Supabase Storage, upload path, or arbitrary URL behavior was introduced.
 - Supabase CLI is currently linked to production project `mzflfyxxkascrfpteexz`; relink deliberately before future staging/local Supabase commands.
 - Supabase CLI is currently linked to production project `mzflfyxxkascrfpteexz`; relink deliberately before future staging/local Supabase commands.

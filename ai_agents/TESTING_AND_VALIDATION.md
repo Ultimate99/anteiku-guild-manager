@@ -155,9 +155,8 @@ Results:
   - Non-owner Admin did not see Owner Cosmetics.
   - Member had no AdminPanel access.
   - No console errors, unexpected network calls, or CP/GvG/audit/ranking/member-status regressions were found.
-
-Not tested:
-- Grant mutation smoke was not performed by design; no production cosmetic grant was created.
+  - Controlled locked avatar/frame grant by exact profile slug / username passed after explicit approval.
+  - Granted member could equip the cosmetic after the grant.
 
 Security/source result:
 - Source checks found no SQL/migration changes, no direct cosmetic table writes, no upload/Storage/arbitrary URL path, and no CP/GvG/audit/ranking/member-status behavior changes.

@@ -58,7 +58,7 @@
 - Vercel production bundle deployed and production app load smoke passed with no captured console errors.
 - Authenticated production smoke passed: Owner sees AdminPanel -> Tools -> Owner Cosmetics; dropdown shows only `manual` / `admin_grant` cosmetics; free/default cosmetics are absent; empty username/profile slug and empty cosmetic validation work; non-owner Admin does not see Owner Cosmetics; Member has no AdminPanel access.
 - No console errors, unexpected network calls, or CP/GvG/audit/ranking/member-status regressions were found.
-- Grant mutation smoke was not performed; no production cosmetic grants were created.
+- Controlled production grant smoke passed after explicit approval: a locked avatar/frame grant by exact profile slug / username succeeded, and the granted member could equip it.
 
 ## 2026-05-25 - Cosmetics Frame Unlock Hotfix Production Rollout
 

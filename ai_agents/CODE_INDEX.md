@@ -91,6 +91,10 @@
   - Add `ownerCosmetics.*` labels.
 - `src/styles/app.css`
   - Adds compact Owner Cosmetics Tools panel/form styles.
+- Production validation:
+  - Owner Cosmetics is live under AdminPanel -> Tools for Owner only.
+  - Controlled locked avatar/frame grant by exact profile slug / username passed, and the granted member could equip afterward.
+  - Frontend grants use only the RPC wrapper; no direct cosmetic table writes, uploads, Storage, or arbitrary URLs are part of the flow.
 
 ## Milestone 22E Cosmetics Production Rollout
 

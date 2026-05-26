@@ -136,9 +136,8 @@ Frontend validation passed locally, production app-load smoke passed after deplo
   - Non-owner Admin did not see Owner Cosmetics.
   - Member had no AdminPanel access.
   - No console errors, unexpected network calls, or CP/GvG/audit/ranking/member-status regressions were found.
-
-Not tested:
-- Grant mutation smoke was not performed; no production cosmetic grants were created.
+  - Controlled locked avatar/frame grant by exact profile slug / username passed after explicit approval.
+  - Granted member could equip the cosmetic after the grant.
 
 Security/source result:
 - No SQL/migration changes.
