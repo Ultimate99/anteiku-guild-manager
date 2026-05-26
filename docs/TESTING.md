@@ -1,5 +1,31 @@
 # Testing
 
+## Profile Redesign / Compact Member Profile Card
+
+Frontend-only Profile redesign build, source checks, and local browser validation passed.
+
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Profile keeps the approved identity header with avatar/frame, rank badge, status badges, and Customize.
+- Separate `Your CP`, Member profile, and Profile details panels were replaced by one compact Member Profile card.
+- The unified card contains own CP, account/details, and inline IGN edit sections.
+- Edit expands only an inline IGN input with Save IGN / Cancel controls.
+- Cosmetic modal active tabs and Admin active tabs use flatter crimson styling.
+
+Source/security checks:
+- Profile still uses only `get_my_cp`, `get_active_cp_update_window_for_me`, and `submit_my_cp_update` for own CP.
+- Profile does not call `get_current_cp_roster`, `get_cp_leaderboard`, `get_admin_cp_rankings`, or `update_member_cp`.
+- No direct `member_cp` or `cp_snapshots` calls were found in the Profile own-CP path.
+- No public profile route, other-player profile service, uploads, Supabase Storage, or direct table query was added.
+
+Local browser validation:
+- Own Profile loaded.
+- Unified Member Profile card rendered.
+- `Your CP` showed own CP/update-window state with short private self-CP copy.
+- Inline IGN edit controls appeared after clicking Edit.
+- Customize modal opened.
+- Mobile 390px viewport had no horizontal overflow.
+- No captured console errors were found.
+
 ## Own Profile Polish
 
 Frontend-only Own Profile polish build, source checks, and local browser validation passed.

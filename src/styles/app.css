@@ -689,7 +689,7 @@ button.command-card:focus-visible {
   border-color: rgba(255, 255, 255, 0.18);
   background: #c51627;
   color: #fff;
-  box-shadow: 0 8px 22px rgba(197, 22, 39, 0.24);
+  box-shadow: none;
 }
 
 .admin-tab-content {
@@ -1661,6 +1661,131 @@ button.command-card:focus-visible {
   justify-self: start;
 }
 
+.member-profile-card {
+  display: grid;
+  gap: 12px;
+  border-left: 3px solid rgba(197, 22, 39, 0.58);
+  background:
+    linear-gradient(90deg, rgba(197, 22, 39, 0.1), transparent 54%),
+    rgba(16, 16, 22, 0.94);
+}
+
+.member-profile-card-header,
+.member-profile-block-heading {
+  display: grid;
+  gap: 10px;
+}
+
+.member-profile-card-header > div,
+.member-profile-block-heading > div {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.member-profile-card-header h3,
+.member-profile-card-header p,
+.member-profile-block-heading h4 {
+  margin: 0;
+}
+
+.member-profile-card-header p,
+.profile-private-cp-note {
+  color: #b8b8c2;
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+.member-profile-content-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.member-profile-block {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(7, 7, 11, 0.58);
+}
+
+.member-profile-cp-block {
+  border-left: 2px solid rgba(197, 22, 39, 0.55);
+}
+
+.member-profile-account-block {
+  border-left: 2px solid rgba(255, 255, 255, 0.12);
+}
+
+.profile-mini-stat-grid,
+.profile-detail-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.profile-mini-stat-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.profile-mini-stat-grid > div,
+.profile-detail-grid > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.23);
+}
+
+.profile-mini-stat-grid span,
+.profile-detail-grid span,
+.profile-detail-grid small {
+  color: #a9a9b3;
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.profile-mini-stat-grid strong,
+.profile-detail-grid strong {
+  min-width: 0;
+  color: #fff;
+  font-size: 0.96rem;
+  overflow-wrap: anywhere;
+}
+
+.profile-private-cp-note {
+  margin: 0;
+}
+
+.profile-refresh-action,
+.member-profile-edit-button {
+  min-width: 78px;
+  min-height: 36px;
+  padding: 8px 11px;
+}
+
+.profile-inline-edit-form {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid rgba(197, 22, 39, 0.22);
+  background: rgba(197, 22, 39, 0.06);
+}
+
+.profile-inline-edit-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profile-inline-edit-actions .compact-action,
+.compact-profile-submit {
+  width: auto;
+  min-width: 96px;
+  min-height: 38px;
+}
+
 .profile-edit-panel,
 .profile-edit-form {
   display: grid;
@@ -1872,8 +1997,8 @@ button.command-card:focus-visible {
 }
 
 .cosmetic-tab-bar button[data-active="true"] {
-  border-color: rgba(197, 22, 39, 0.72);
-  background: rgba(197, 22, 39, 0.24);
+  border-color: #c51627;
+  background: #c51627;
   color: #fff;
 }
 
@@ -2310,6 +2435,16 @@ button.command-card:focus-visible {
     justify-content: center;
   }
 
+  .member-profile-card-header,
+  .member-profile-block-heading {
+    align-items: start;
+  }
+
+  .member-profile-edit-button,
+  .profile-refresh-action {
+    justify-self: start;
+  }
+
   .member-id-panel {
     align-items: flex-start;
   }
@@ -2349,6 +2484,10 @@ button.command-card:focus-visible {
   }
 
   .compact-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-mini-stat-grid {
     grid-template-columns: 1fr;
   }
 
@@ -2431,6 +2570,20 @@ button.command-card:focus-visible {
   .profile-edit-header {
     grid-template-columns: 1fr auto;
     align-items: start;
+  }
+
+  .member-profile-card-header,
+  .member-profile-block-heading {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+
+  .member-profile-content-grid {
+    grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr);
+  }
+
+  .profile-detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .profile-edit-actions {

@@ -570,73 +570,14 @@ export function Profile() {
         </div>
       ) : null}
 
-      <section className="panel member-compact-panel profile-cp-panel" aria-label={t('profile.yourCp')}>
-        <div className="section-heading-row profile-cp-heading">
+      <section className="panel member-profile-card" aria-label={t('profile.memberProfile')}>
+        <div className="member-profile-card-header">
           <div>
-            <div className="status-badge-row">
-              <StatusBadge tone="muted">{t('profile.privateSelfCp')}</StatusBadge>
-              <StatusBadge tone={canSubmitCp ? 'success' : 'warning'}>
-                {canSubmitCp ? t('admin.cp.windowOpen') : t('admin.cp.windowClosed')}
-              </StatusBadge>
-            </div>
-            <h3>{t('profile.yourCp')}</h3>
-            <p>{t('profile.privateCpBody')}</p>
-          </div>
-          <button type="button" className="secondary-action compact-action" onClick={() => refreshCpPanel()} disabled={cpLoading || cpSubmitting}>
-            {cpLoading ? t('common.loading') : t('common.refresh')}
-          </button>
-        </div>
-
-        <div className="approval-meta compact-meta profile-cp-meta">
-          <div>
-            <span>{t('profile.currentCp')}</span>
-            <strong>{formatCpDisplayValue(cpState?.cp_value, t('profile.cpNotEntered'))}</strong>
-          </div>
-          <div>
-            <span>{t('profile.cpWindowStatus')}</span>
-            <strong>{canSubmitCp ? t('admin.cp.windowOpen') : t('admin.cp.windowClosed')}</strong>
-          </div>
-        </div>
-
-        {cpMessage ? <p className="notice-line">{cpMessage}</p> : null}
-        {cpError ? <p className="error-line">{cpError}</p> : null}
-
-        {canSubmitCp ? (
-          <form className="profile-cp-form" onSubmit={saveCp}>
-            <label>
-              {t('profile.updateCp')}
-              <input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                value={cpDraft}
-                placeholder={t('profile.currentCp')}
-                onChange={(event) => setCpDraft(event.target.value)}
-                disabled={cpLoading || cpSubmitting}
-                required
-              />
-            </label>
-            <button type="submit" className="primary-action" disabled={cpLoading || cpSubmitting}>
-              {cpSubmitting ? t('common.working') : t('profile.submitCp')}
-            </button>
-          </form>
-        ) : (
-          <p className="muted-line compact-state-line">{cpWindowMessage}</p>
-        )}
-      </section>
-
-      <section className="panel profile-edit-panel member-compact-panel" aria-label={t('profile.editProfile')}>
-        <div className="profile-edit-header">
-          <div>
-            <StatusBadge tone={isEditing ? 'warning' : 'success'}>
-              {isEditing ? t('profile.editingIgn') : t('profile.profileLocked')}
-            </StatusBadge>
             <h3>{t('profile.memberProfile')}</h3>
             <p>{t('profile.lockedFields')}</p>
-            {rosterStatus !== 'active' ? <p className="muted-copy">{t(`roster.status.${rosterStatus}.summary`)}</p> : null}
           </div>
           {!isEditing ? (
-            <button type="button" className="secondary-action compact-action" onClick={startEditing}>
+            <button type="button" className="secondary-action compact-action member-profile-edit-button" onClick={startEditing}>
               {t('profile.edit')}
             </button>
           ) : null}
@@ -644,66 +585,123 @@ export function Profile() {
 
         {profileMessage ? <p className="notice-line">{profileMessage}</p> : null}
         {profileError ? <p className="error-line">{profileError}</p> : null}
+        {cpMessage ? <p className="notice-line">{cpMessage}</p> : null}
+        {cpError ? <p className="error-line">{cpError}</p> : null}
 
-        {isEditing ? (
-          <form className="profile-edit-form" onSubmit={saveProfile}>
-            <label>
-              {t('profile.ign')}
-              <input
-                type="text"
-                value={ignDraft}
-                placeholder={t('auth.ignPlaceholder')}
-                onChange={(event) => setIgnDraft(event.target.value)}
-                disabled={saving}
-                required
-              />
-            </label>
-            <div className="profile-edit-actions">
-              <button type="submit" className="primary-action" disabled={saving}>
-                {saving ? t('profile.saving') : t('common.save')}
-              </button>
-              <button type="button" className="secondary-action" onClick={cancelEditing} disabled={saving}>
-                {t('common.cancel')}
+        <div className="member-profile-content-grid">
+          <div className="member-profile-block member-profile-cp-block">
+            <div className="member-profile-block-heading">
+              <div>
+                <StatusBadge tone={canSubmitCp ? 'success' : 'warning'}>
+                  {canSubmitCp ? t('admin.cp.windowOpen') : t('admin.cp.windowClosed')}
+                </StatusBadge>
+                <h4>{t('profile.yourCp')}</h4>
+              </div>
+              <button type="button" className="secondary-action compact-action profile-refresh-action" onClick={() => refreshCpPanel()} disabled={cpLoading || cpSubmitting}>
+                {cpLoading ? t('common.loading') : t('common.refresh')}
               </button>
             </div>
-          </form>
-        ) : null}
-      </section>
 
-      <section className="panel profile-details-panel" aria-label={t('profile.details')}>
-        <div className="section-heading-row profile-details-heading">
-          <div>
-            <StatusBadge tone="muted">{t('profile.account')}</StatusBadge>
-            <h3>{t('profile.details')}</h3>
+            <div className="profile-mini-stat-grid">
+              <div>
+                <span>{t('profile.currentCp')}</span>
+                <strong>{formatCpDisplayValue(cpState?.cp_value, t('profile.cpNotEntered'))}</strong>
+              </div>
+              <div>
+                <span>{t('profile.updateWindow')}</span>
+                <strong>{canSubmitCp ? t('admin.cp.windowOpen') : t('admin.cp.windowClosed')}</strong>
+              </div>
+            </div>
+
+            <p className="profile-private-cp-note">{t('profile.privateSelfCpShort')}</p>
+
+            {canSubmitCp ? (
+              <form className="profile-cp-form" onSubmit={saveCp}>
+                <label>
+                  {t('profile.updateCp')}
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={cpDraft}
+                    placeholder={t('profile.currentCp')}
+                    onChange={(event) => setCpDraft(event.target.value)}
+                    disabled={cpLoading || cpSubmitting}
+                    required
+                  />
+                </label>
+                <button type="submit" className="primary-action compact-profile-submit" disabled={cpLoading || cpSubmitting}>
+                  {cpSubmitting ? t('common.working') : t('profile.submitCp')}
+                </button>
+              </form>
+            ) : (
+              <p className="muted-line compact-state-line">{cpWindowMessage}</p>
+            )}
           </div>
-        </div>
-        <div className="detail-list compact-detail-list">
-          <div>
-            <span>{t('profile.username')}</span>
-            <strong>{profile?.profile_slug ?? profile?.username ?? t('common.unknown')}</strong>
-            <small>{t('profile.lockedUsername')}</small>
-          </div>
-          <div>
-            <span>{t('profile.ign')}</span>
-            <strong>{profile?.ign ?? t('common.notSet')}</strong>
-            <small>{t('profile.editableIgn')}</small>
-          </div>
-          <div>
-            <span>{t('profile.guild')}</span>
-            <strong>{guild?.name ?? t('guild.unknown')}</strong>
-          </div>
-          <div>
-            <span>{t('profile.role')}</span>
-            <strong>{t(`roles.${membership?.role ?? 'member'}`)}</strong>
-          </div>
-          <div>
-            <span>{t('profile.rosterStatus')}</span>
-            <strong>{t(`roster.status.${rosterStatus}.label`)}</strong>
-            <small>{t(`roster.status.${rosterStatus}.summary`)}</small>
-          </div>
-          <div>
-            <span>{t('profile.profileStatus')}</span>
-            <strong>{t(`approvalStatus.${profile?.approval_status ?? 'approved'}`)}</strong>
+
+          <div className="member-profile-block member-profile-account-block">
+            <div className="member-profile-block-heading">
+              <div>
+                <StatusBadge tone={isEditing ? 'warning' : 'muted'}>
+                  {isEditing ? t('profile.editingIgn') : t('profile.account')}
+                </StatusBadge>
+                <h4>{t('profile.details')}</h4>
+              </div>
+            </div>
+
+            <div className="profile-detail-grid">
+              <div>
+                <span>{t('profile.username')}</span>
+                <strong>{profile?.profile_slug ?? profile?.username ?? t('common.unknown')}</strong>
+                <small>{t('profile.lockedUsername')}</small>
+              </div>
+              <div>
+                <span>{t('profile.ign')}</span>
+                <strong>{profile?.ign ?? t('common.notSet')}</strong>
+                <small>{t('profile.editableIgn')}</small>
+              </div>
+              <div>
+                <span>{t('profile.guild')}</span>
+                <strong>{guild?.name ?? t('guild.unknown')}</strong>
+              </div>
+              <div>
+                <span>{t('profile.role')}</span>
+                <strong>{t(`roles.${membership?.role ?? 'member'}`)}</strong>
+              </div>
+              <div>
+                <span>{t('profile.rosterStatus')}</span>
+                <strong>{t(`roster.status.${rosterStatus}.label`)}</strong>
+                <small>{t(`roster.status.${rosterStatus}.summary`)}</small>
+              </div>
+              <div>
+                <span>{t('profile.profileStatus')}</span>
+                <strong>{t(`approvalStatus.${profile?.approval_status ?? 'approved'}`)}</strong>
+              </div>
+            </div>
+
+            {isEditing ? (
+              <form className="profile-inline-edit-form" onSubmit={saveProfile}>
+                <label>
+                  {t('profile.ign')}
+                  <input
+                    type="text"
+                    value={ignDraft}
+                    placeholder={t('auth.ignPlaceholder')}
+                    onChange={(event) => setIgnDraft(event.target.value)}
+                    disabled={saving}
+                    required
+                  />
+                </label>
+                <div className="profile-inline-edit-actions">
+                  <button type="submit" className="primary-action compact-action" disabled={saving}>
+                    {saving ? t('profile.saving') : t('profile.saveIgn')}
+                  </button>
+                  <button type="button" className="secondary-action compact-action" onClick={cancelEditing} disabled={saving}>
+                    {t('profile.cancelEdit')}
+                  </button>
+                </div>
+              </form>
+            ) : null}
           </div>
         </div>
       </section>

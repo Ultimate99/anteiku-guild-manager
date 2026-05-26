@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-05-26 - Profile Redesign / Compact Member Profile Card
+
+- Merged the lower Profile content into one compact Member Profile card.
+- Kept the approved identity header with avatar/frame, rank badge, status badges, and Customize action.
+- Combined own CP, account/details, and inline IGN edit into the unified card.
+- Replaced the large separate CP/profile/details panels with compact in-card sections.
+- Edit now reveals a small inline IGN input with Save IGN / Cancel controls.
+- Cosmetic modal active tabs and Admin active tabs use a flatter crimson active style.
+- Added EN/FR/DE labels for Save IGN, Cancel, short private-own-CP copy, and update-window label.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source checks confirmed Profile still uses only `get_my_cp`, `get_active_cp_update_window_for_me`, and `submit_my_cp_update` for own CP.
+- Source checks found no Profile admin CP RPCs, direct `member_cp`, direct `cp_snapshots`, public profile route, or other-player profile service.
+- Local browser validation passed, including 390px mobile viewport with no horizontal overflow.
+- No SQL migrations, Supabase/RLS/RPC changes, service behavior changes, auth behavior changes, Vercel env changes, production data mutation, uploads, Supabase Storage, public profile viewing, or CP/GvG/audit/role/permission/member-status behavior changes were included.
+
 ## 2026-05-26 - Own Profile Polish
 
 - Reorganized the logged-in user's own Profile page into identity, private own-CP, member profile edit, and account/details sections.

@@ -1,5 +1,20 @@
 # Session Log
 
+## 2026-05-26 - Profile Redesign / Compact Member Profile Card
+
+- Implemented frontend-only Profile redesign.
+- Kept the approved identity header with avatar/frame, IGN, username, status badges, rank badge, and Customize action.
+- Merged the separate `Your CP`, Member profile, and Profile details panels into one compact Member Profile card.
+- Added compact own-CP, account/details, and inline IGN edit sections inside the unified card.
+- Edit now reveals only an inline IGN input with Save IGN / Cancel controls.
+- Flattened cosmetic modal active tab styling and Admin tab active styling back toward the crimson Anteiku look.
+- Added EN/FR/DE labels for Save IGN, Cancel, short private-own-CP copy, and update-window label.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source checks confirmed Profile uses only `get_my_cp`, `get_active_cp_update_window_for_me`, and `submit_my_cp_update` for own CP.
+- Source checks found no Profile admin CP RPCs, direct `member_cp`, direct `cp_snapshots`, public profile route, or other-player profile service.
+- Local browser validation confirmed Profile loads, unified card renders, inline edit appears, Customize opens, mobile 390px has no horizontal overflow, and no console errors were captured.
+- No SQL migrations, Supabase/RLS/RPC logic, service behavior, auth behavior, production data, Vercel env, uploads, Supabase Storage, public profile viewing, or CP/GvG/audit/role/permission/member-status behavior changed.
+
 ## 2026-05-26 - Own Profile Polish Implemented
 
 - Implemented frontend-only Own Profile polish.

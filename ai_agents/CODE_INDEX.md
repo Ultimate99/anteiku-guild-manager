@@ -33,7 +33,7 @@
 - `src/pages/SuspendedStatus.jsx`: Suspended account gate.
 - `src/pages/RosterRestrictedStatus.jsx`: Roster lifecycle hard-block gate for suspended/left/kicked members.
 - `src/pages/Dashboard.jsx`: Approved-user safe guild dashboard with roster status display, compact own rank badge, and no CP values.
-- `src/pages/Profile.jsx`: Safe polished own-profile display with identity card, own roster status, rank badge/profile border from safe own-rank RPC, own cosmetics picker through safe cosmetics RPCs, private own CP through safe RPCs only, compact own IGN edit card, and account/details rows for approved users.
+- `src/pages/Profile.jsx`: Safe polished own-profile display with identity header, own roster status, rank badge/profile border from safe own-rank RPC, own cosmetics picker through safe cosmetics RPCs, and a unified compact Member Profile card containing private own CP through safe RPCs only, inline own IGN edit controls, and account/details rows for approved users.
 - `src/pages/Gvg.jsx`: GvG voting UI with roster-status UX gating for inactive/on_break and hard-blocked statuses.
 - `src/pages/AdminPanel.jsx`: Restricted AdminPanel coordinator for admin permission loading, visible tab calculation, active tab state, lazy section loading, and section action handlers.
 - `src/components/admin/AdminTabs.jsx`: Mobile-first AdminPanel tab bar.

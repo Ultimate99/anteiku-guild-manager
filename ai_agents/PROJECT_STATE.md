@@ -1,5 +1,28 @@
 # Project State
 
+## Profile Redesign / Compact Member Profile Card Implemented Locally
+
+Profile redesign is implemented as a frontend-only UI/layout/copy pass.
+
+Implemented:
+- Kept the approved identity header with avatar/frame, IGN, username, status badges, rank badge, and Customize action.
+- Replaced the separate `Your CP`, Member profile, and Profile details panels with one compact Member Profile card.
+- The unified card includes a compact own-CP block, account/details block, and inline IGN edit flow.
+- Edit now expands only a small IGN input with Save IGN / Cancel controls inside the card.
+- Cosmetic modal active tabs now use a flatter crimson active style; Admin tabs also keep a flatter active crimson style.
+- Added EN/FR/DE keys for `Save IGN`, `Cancel`, short private-own-CP copy, and update-window label.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source checks confirmed Profile still uses only `get_my_cp`, `get_active_cp_update_window_for_me`, and `submit_my_cp_update` through `cpWindowService`.
+- Source checks found no Profile calls to `get_current_cp_roster`, `get_cp_leaderboard`, `get_admin_cp_rankings`, `update_member_cp`, direct `member_cp`, or direct `cp_snapshots`.
+- Local browser validation confirmed Profile loads, unified Member Profile card renders, inline IGN edit controls appear, Customize opens, and no console errors were captured.
+- Mobile 390px validation passed with no horizontal overflow.
+
+Scope/security:
+- Frontend UI/copy/layout only.
+- No SQL migrations, Supabase/RLS/RPC changes, service behavior changes, auth behavior changes, public profile routing, other-player profile viewing, production data mutation, Vercel env change, uploads, Supabase Storage, or CP/GvG/audit/role/permission/member-status behavior changes.
+
 ## Own Profile Polish Implemented Locally
 
 Own Profile polish is implemented as a frontend-only layout/copy pass.

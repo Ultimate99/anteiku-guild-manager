@@ -1,5 +1,31 @@
 # Testing And Validation
 
+## Profile Redesign / Compact Member Profile Card Validation
+
+Frontend-only Profile redesign build, source checks, and local browser validation passed.
+
+Command:
+- `npm.cmd run build`
+
+Result:
+- Build passed with the existing Vite chunk-size warning only.
+
+Source/scope result:
+- No SQL migrations, Supabase/RLS/RPC logic, package/dependency files, deployment config, or backend service behavior were changed.
+- Profile still uses only the existing own-CP service wrappers: `get_my_cp`, `get_active_cp_update_window_for_me`, and `submit_my_cp_update`.
+- Source checks found no Profile calls to `get_current_cp_roster`, `get_cp_leaderboard`, `get_admin_cp_rankings`, `update_member_cp`, direct `member_cp`, or direct `cp_snapshots`.
+- No public profile route, other-player profile service, direct table query, uploads, or Supabase Storage path was added.
+
+Local browser validation:
+- Own Profile loaded.
+- Approved identity header still rendered with avatar/frame, rank badge, status badges, and Customize.
+- Unified Member Profile card rendered with compact own-CP block and account/details block.
+- `Your CP` displayed own CP/update-window state with short private self-CP copy.
+- Edit expanded only inline IGN input plus Save IGN / Cancel controls.
+- Customize modal opened.
+- Mobile 390px viewport had no horizontal overflow.
+- No captured console errors were found.
+
 ## Own Profile Polish Validation
 
 Frontend-only Own Profile polish build, source checks, and local browser validation passed.
