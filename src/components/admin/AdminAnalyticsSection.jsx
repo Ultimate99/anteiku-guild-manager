@@ -10,6 +10,7 @@ import {
 } from '../../services/adminAnalyticsService.js';
 
 const ANALYTICS_TABS = ['overview', 'members', 'cp', 'gvg', 'weeklyGrowth', 'attention'];
+const CORE_GUILD_SCOPE_ORDER = ['anteiku', 'anteiku-re', 'anteiku-rose', 'anteiku-goat'];
 
 function formatCompactNumber(value) {
   if (value === null || value === undefined) {
@@ -54,12 +55,76 @@ function formatGvgStatus(t, status) {
   return translated === `admin.gvg.status.${status}` ? status || t('admin.common.notRecorded') : translated;
 }
 
-function getAnalyticsScope({ membership }) {
-  if (membership?.role === 'owner') {
+function normalizeGuildOption(guild, fallbackName) {
+  if (!guild?.id) {
     return null;
   }
 
-  return membership?.guild_id ?? null;
+  return {
+    id: guild.id,
+    name: guild.name ?? fallbackName,
+    slug: guild.slug ?? '',
+  };
+}
+
+function buildAnalyticsScopeOptions({ membership, currentGuild, guildOptions = [], t }) {
+  if (!membership) {
+    return [];
+  }
+
+  if (membership.role === 'owner') {
+    const normalizedGuilds = guildOptions
+      .map((guild) => normalizeGuildOption(guild, t('admin.common.unknownGuild')))
+      .filter(Boolean)
+      .sort((a, b) => {
+        const aOrder = CORE_GUILD_SCOPE_ORDER.indexOf(a.slug);
+        const bOrder = CORE_GUILD_SCOPE_ORDER.indexOf(b.slug);
+
+        if (aOrder !== -1 || bOrder !== -1) {
+          return (aOrder === -1 ? Number.MAX_SAFE_INTEGER : aOrder) - (bOrder === -1 ? Number.MAX_SAFE_INTEGER : bOrder);
+        }
+
+        return a.name.localeCompare(b.name);
+      });
+
+    return [
+      {
+        id: 'global',
+        guildId: null,
+        name: t('admin.analytics.globalScope'),
+        scopeLabel: t('admin.analytics.globalScope'),
+        isGlobal: true,
+      },
+      ...normalizedGuilds.map((guild) => ({
+        id: guild.id,
+        guildId: guild.id,
+        name: guild.name,
+        scopeLabel: guild.name,
+        isGlobal: false,
+      })),
+    ];
+  }
+
+  const assignedGuild = normalizeGuildOption(
+    {
+      id: membership.guild_id,
+      name: currentGuild?.name ?? membership.guild?.name ?? membership.guild_name,
+      slug: currentGuild?.slug ?? membership.guild?.slug,
+    },
+    t('admin.common.assignedGuild'),
+  );
+
+  return assignedGuild
+    ? [
+        {
+          id: assignedGuild.id,
+          guildId: assignedGuild.id,
+          name: assignedGuild.name,
+          scopeLabel: assignedGuild.name,
+          isGlobal: false,
+        },
+      ]
+    : [];
 }
 
 function StatCard({ label, value, tone = 'neutral', helper }) {
@@ -101,8 +166,44 @@ function AnalyticsSubTabs({ activeTab, onChange, t }) {
   );
 }
 
+function AnalyticsScopeSelector({ scopeOptions, selectedScopeId, selectedScope, onChange, t }) {
+  if (scopeOptions.length === 0) {
+    return (
+      <section className="analytics-scope-panel">
+        <StatusBadge tone="warning">{t('admin.analytics.scope')}</StatusBadge>
+        <p>{t('admin.analytics.scopeDenied')}</p>
+      </section>
+    );
+  }
+
+  return (
+    <section className="analytics-scope-panel" aria-label={t('admin.analytics.scope')}>
+      <div>
+        <StatusBadge tone="crimson">{t('admin.analytics.scope')}</StatusBadge>
+        <strong>{t('admin.analytics.viewingScope', { scope: selectedScope?.scopeLabel ?? '-' })}</strong>
+      </div>
+      <div className="analytics-scope-options">
+        {scopeOptions.map((scopeOption) => (
+          <button
+            key={scopeOption.id}
+            type="button"
+            className="analytics-scope-chip"
+            data-active={selectedScopeId === scopeOption.id}
+            onClick={() => onChange(scopeOption.id)}
+            disabled={scopeOptions.length === 1}
+          >
+            {scopeOption.isGlobal ? t('admin.analytics.globalScope') : scopeOption.name}
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export function AdminAnalyticsSection({
   membership,
+  currentGuild,
+  guildOptions = [],
   canViewMemberAnalytics,
   canViewCpAnalytics,
   canViewGvgAnalytics,
@@ -121,8 +222,18 @@ export function AdminAnalyticsSection({
   const [loading, setLoading] = useState({});
   const [errors, setErrors] = useState({});
   const [snapshotMessage, setSnapshotMessage] = useState('');
+  const [selectedScopeId, setSelectedScopeId] = useState('');
 
-  const guildId = useMemo(() => getAnalyticsScope({ membership }), [membership]);
+  const scopeOptions = useMemo(
+    () => buildAnalyticsScopeOptions({ membership, currentGuild, guildOptions, t }),
+    [currentGuild, guildOptions, membership, t],
+  );
+  const selectedScope = useMemo(
+    () => scopeOptions.find((scopeOption) => scopeOption.id === selectedScopeId) ?? scopeOptions[0] ?? null,
+    [scopeOptions, selectedScopeId],
+  );
+  const guildId = selectedScope?.guildId ?? null;
+  const selectedScopeLabel = selectedScope?.scopeLabel ?? t('admin.analytics.globalScope');
   const hasPreviousSnapshot = growthReport.some((row) => row.hasPreviousSnapshot);
   const growthRows = growthReport.filter((row) => row.rank !== null && row.profileId);
   const attentionCount =
@@ -135,6 +246,27 @@ export function AdminAnalyticsSection({
     (canViewGvgAnalytics ? gvgAnalytics?.noVoteCount ?? 0 : 0);
 
   useEffect(() => {
+    setSelectedScopeId((current) =>
+      current && scopeOptions.some((scopeOption) => scopeOption.id === current) ? current : scopeOptions[0]?.id ?? '',
+    );
+  }, [scopeOptions]);
+
+  useEffect(() => {
+    setMemberAnalytics(null);
+    setCpAnalytics(null);
+    setGvgAnalytics(null);
+    setSnapshotHistory([]);
+    setGrowthReport([]);
+    setSelectedSnapshotId('');
+    setSnapshotMessage('');
+    setErrors({});
+  }, [selectedScopeId]);
+
+  useEffect(() => {
+    if (!selectedScopeId || scopeOptions.length === 0) {
+      return;
+    }
+
     if (activeSubTab === 'overview') {
       void loadOverviewData();
     }
@@ -158,7 +290,16 @@ export function AdminAnalyticsSection({
     if (activeSubTab === 'attention') {
       void loadAttentionData();
     }
-  }, [activeSubTab, guildId, canViewMemberAnalytics, canViewCpAnalytics, canViewGvgAnalytics, refreshSignal]);
+  }, [
+    activeSubTab,
+    guildId,
+    selectedScopeId,
+    scopeOptions.length,
+    canViewMemberAnalytics,
+    canViewCpAnalytics,
+    canViewGvgAnalytics,
+    refreshSignal,
+  ]);
 
   async function runLoader(key, loader) {
     setLoading((current) => ({ ...current, [key]: true }));
@@ -497,6 +638,9 @@ export function AdminAnalyticsSection({
               ))}
             </select>
           </label>
+          <span className="analytics-snapshot-scope">
+            {t('admin.analytics.snapshotScope', { scope: selectedScopeLabel })}
+          </span>
           <button
             type="button"
             className="primary-action compact-action"
@@ -625,6 +769,13 @@ export function AdminAnalyticsSection({
           </div>
         </div>
 
+        <AnalyticsScopeSelector
+          scopeOptions={scopeOptions}
+          selectedScopeId={selectedScope?.id ?? ''}
+          selectedScope={selectedScope}
+          onChange={setSelectedScopeId}
+          t={t}
+        />
         <AnalyticsSubTabs activeTab={activeSubTab} onChange={setActiveSubTab} t={t} />
         {renderActiveAnalyticsTab()}
       </div>

@@ -429,6 +429,7 @@ export function AdminPanel() {
   const [auditError, setAuditError] = useState('');
   const [auditNotAuthorized, setAuditNotAuthorized] = useState(false);
   const [analyticsRefreshSignal, setAnalyticsRefreshSignal] = useState(0);
+  const [analyticsGuildOptions, setAnalyticsGuildOptions] = useState([]);
   const [activeAction, setActiveAction] = useState(null);
   const [confirmAction, setConfirmAction] = useState(null);
 
@@ -820,6 +821,17 @@ export function AdminPanel() {
     } else if (tabId === 'permissions') {
       await loadPermissionManagementSection({ clearMessage });
     } else if (tabId === 'analytics') {
+      if (membership?.role === 'owner') {
+        try {
+          setAnalyticsGuildOptions(await loadCpGuildOptions());
+        } catch (analyticsGuildError) {
+          setAnalyticsGuildOptions([]);
+          setAdminError(analyticsGuildError.message);
+        }
+      } else {
+        setAnalyticsGuildOptions([]);
+      }
+
       if (force) {
         setAnalyticsRefreshSignal((current) => current + 1);
       }
@@ -1787,6 +1799,8 @@ export function AdminPanel() {
       return (
         <AdminAnalyticsSection
           membership={membership}
+          currentGuild={guild}
+          guildOptions={analyticsGuildOptions}
           canViewMemberAnalytics={canViewAnalyticsMemberData}
           canViewCpAnalytics={canViewCpSection}
           canViewGvgAnalytics={canManageGvgEvents}
