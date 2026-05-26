@@ -126,13 +126,22 @@ function buildAnalyticsScopeOptions({ membership, currentGuild, guildOptions = [
     : [];
 }
 
-function StatCard({ label, value, tone = 'neutral', helper }) {
+function StatCard({ label, value, tone = 'neutral', helper, variant = 'default' }) {
   return (
-    <article className="analytics-stat-card">
+    <article className="analytics-stat-card" data-tone={tone} data-variant={variant}>
       <StatusBadge tone={tone}>{label}</StatusBadge>
       <strong>{value}</strong>
       {helper ? <span>{helper}</span> : null}
     </article>
+  );
+}
+
+function StatGroup({ title, tone = 'neutral', children }) {
+  return (
+    <section className="analytics-stat-group" data-tone={tone}>
+      <h4>{title}</h4>
+      <div className="analytics-stat-grid analytics-stat-grid-compact">{children}</div>
+    </section>
   );
 }
 
@@ -434,6 +443,7 @@ export function AdminAnalyticsSection({
             label={t('admin.analytics.totalMembers')}
             value={formatCompactNumber(memberAnalytics?.totalMembers)}
             tone="success"
+            variant="hero"
           />
           <StatCard
             label={t('admin.analytics.activeMembers')}
@@ -460,6 +470,7 @@ export function AdminAnalyticsSection({
             label={t('admin.analytics.attention')}
             value={formatCompactNumber(attentionCount)}
             tone={attentionCount > 0 ? 'warning' : 'success'}
+            variant="hero"
           />
         </div>
         {!canViewCpAnalytics ? (
@@ -478,24 +489,34 @@ export function AdminAnalyticsSection({
       <section className="analytics-section-stack">
         {loading.members ? <p className="muted-line">{t('admin.analytics.loading')}</p> : null}
         {renderPermissionError('members', 'admin.analytics.members')}
-        <div className="analytics-stat-grid">
-          <StatCard label={t('admin.analytics.totalMembers')} value={formatCompactNumber(memberAnalytics?.totalMembers)} />
-          <StatCard label={t('admin.analytics.activeMembers')} value={formatCompactNumber(memberAnalytics?.activeMembers)} />
-          <StatCard label={t('admin.analytics.trial')} value={formatCompactNumber(memberAnalytics?.trialMembers)} />
-          <StatCard
-            label={t('admin.analytics.pendingTransfer')}
-            value={formatCompactNumber(memberAnalytics?.pendingTransferMembers)}
-          />
-          <StatCard label={t('admin.analytics.inactive')} value={formatCompactNumber(memberAnalytics?.inactiveMembers)} />
-          <StatCard label={t('admin.analytics.onBreak')} value={formatCompactNumber(memberAnalytics?.onBreakMembers)} />
-          <StatCard label={t('admin.analytics.suspended')} value={formatCompactNumber(memberAnalytics?.suspendedMembers)} />
-          <StatCard label={t('admin.analytics.left')} value={formatCompactNumber(memberAnalytics?.leftMembers)} />
-          <StatCard label={t('admin.analytics.kicked')} value={formatCompactNumber(memberAnalytics?.kickedMembers)} />
-          <StatCard
-            label={t('admin.analytics.pendingApprovals')}
-            value={formatCompactNumber(memberAnalytics?.pendingApprovals)}
-            tone={memberAnalytics?.pendingApprovals > 0 ? 'warning' : 'neutral'}
-          />
+        <div className="analytics-group-grid">
+          <StatGroup title={t('admin.analytics.rosterReady')} tone="success">
+            <StatCard label={t('admin.analytics.totalMembers')} value={formatCompactNumber(memberAnalytics?.totalMembers)} />
+            <StatCard label={t('admin.analytics.activeMembers')} value={formatCompactNumber(memberAnalytics?.activeMembers)} tone="success" />
+            <StatCard label={t('admin.analytics.trial')} value={formatCompactNumber(memberAnalytics?.trialMembers)} />
+            <StatCard
+              label={t('admin.analytics.pendingTransfer')}
+              value={formatCompactNumber(memberAnalytics?.pendingTransferMembers)}
+              tone={memberAnalytics?.pendingTransferMembers > 0 ? 'warning' : 'neutral'}
+            />
+          </StatGroup>
+          <StatGroup title={t('admin.analytics.rosterWatch')} tone="warning">
+            <StatCard label={t('admin.analytics.inactive')} value={formatCompactNumber(memberAnalytics?.inactiveMembers)} />
+            <StatCard label={t('admin.analytics.onBreak')} value={formatCompactNumber(memberAnalytics?.onBreakMembers)} />
+          </StatGroup>
+          <StatGroup title={t('admin.analytics.rosterRestricted')} tone="danger">
+            <StatCard label={t('admin.analytics.suspended')} value={formatCompactNumber(memberAnalytics?.suspendedMembers)} />
+            <StatCard label={t('admin.analytics.left')} value={formatCompactNumber(memberAnalytics?.leftMembers)} />
+            <StatCard label={t('admin.analytics.kicked')} value={formatCompactNumber(memberAnalytics?.kickedMembers)} />
+          </StatGroup>
+          <StatGroup title={t('admin.analytics.approvalQueue')} tone={memberAnalytics?.pendingApprovals > 0 ? 'warning' : 'success'}>
+            <StatCard
+              label={t('admin.analytics.pendingApprovals')}
+              value={formatCompactNumber(memberAnalytics?.pendingApprovals)}
+              tone={memberAnalytics?.pendingApprovals > 0 ? 'warning' : 'success'}
+              variant="hero"
+            />
+          </StatGroup>
         </div>
         {memberAnalytics?.membersByGuild?.length > 0 ? (
           <div className="analytics-list-panel">
@@ -524,9 +545,9 @@ export function AdminAnalyticsSection({
         {loading.cp ? <p className="muted-line">{t('admin.analytics.loading')}</p> : null}
         {renderPermissionError('cp', 'admin.analytics.cp')}
         <div className="analytics-stat-grid">
-          <StatCard label={t('admin.analytics.totalCp')} value={formatCpValue(cpAnalytics?.totalCp)} tone="success" />
-          <StatCard label={t('admin.analytics.averageCp')} value={formatCpValue(cpAnalytics?.averageCp)} />
-          <StatCard label={t('admin.analytics.highestCp')} value={formatCpValue(cpAnalytics?.highestCp)} />
+          <StatCard label={t('admin.analytics.totalCp')} value={formatCpValue(cpAnalytics?.totalCp)} tone="success" variant="hero" />
+          <StatCard label={t('admin.analytics.averageCp')} value={formatCpValue(cpAnalytics?.averageCp)} variant="hero" />
+          <StatCard label={t('admin.analytics.highestCp')} value={formatCpValue(cpAnalytics?.highestCp)} tone="success" />
           <StatCard label={t('admin.analytics.lowestCp')} value={formatCpValue(cpAnalytics?.lowestCp)} />
           <StatCard
             label={t('admin.analytics.missingCp')}
@@ -571,13 +592,14 @@ export function AdminAnalyticsSection({
             value={formatGvgStatus(t, gvgAnalytics?.latestEventStatus)}
             tone={gvgAnalytics?.latestEventStatus === 'active' ? 'success' : 'warning'}
           />
-          <StatCard label={t('admin.analytics.present')} value={formatCompactNumber(gvgAnalytics?.presentCount)} />
-          <StatCard label={t('admin.analytics.absent')} value={formatCompactNumber(gvgAnalytics?.absentCount)} />
-          <StatCard label={t('admin.analytics.noVote')} value={formatCompactNumber(gvgAnalytics?.noVoteCount)} />
+          <StatCard label={t('admin.analytics.present')} value={formatCompactNumber(gvgAnalytics?.presentCount)} tone="success" />
+          <StatCard label={t('admin.analytics.absent')} value={formatCompactNumber(gvgAnalytics?.absentCount)} tone="warning" />
+          <StatCard label={t('admin.analytics.noVote')} value={formatCompactNumber(gvgAnalytics?.noVoteCount)} tone="danger" />
           <StatCard
             label={t('admin.analytics.participation')}
             value={formatPercent(gvgAnalytics?.participationPercent)}
             tone="success"
+            variant="hero"
           />
         </div>
         {gvgAnalytics?.absenceReasons?.length > 0 ? (
@@ -620,7 +642,7 @@ export function AdminAnalyticsSection({
       <section className="analytics-section-stack">
         <div className="analytics-growth-summary">
           <StatCard label={t('admin.analytics.resetDay')} value={resetDayLabel} tone="crimson" />
-          <StatCard label={t('admin.analytics.baseline')} value={baselineValue} helper={baselineHelper} />
+          <StatCard label={t('admin.analytics.baseline')} value={baselineValue} helper={baselineHelper} variant="hero" />
           <StatCard label={t('admin.analytics.scope')} value={selectedScopeLabel} helper={t('admin.analytics.liveGrowth')} />
         </div>
 
@@ -697,24 +719,41 @@ export function AdminAnalyticsSection({
               <span>{t('admin.analytics.growthPercent')}</span>
               <span>{t('admin.common.updated')}</span>
             </div>
-            {growthRows.map((row) => (
-              <article className="analytics-growth-row" role="row" key={`${row.profileId}-${row.baselineBatchId ?? 'live'}`}>
-                <span>#{row.rank}</span>
-                <strong>{row.ign ?? row.username ?? t('admin.common.unknownMember')}</strong>
-                <span>{row.guildName ?? t('admin.common.selectedGuild')}</span>
-                <span>{formatCpValue(row.baselineCp)}</span>
-                <span>{formatCpValue(row.currentCp)}</span>
-                <span>{formatCpValue(row.growthAmount)}</span>
-                <span>{formatPercent(row.growthPercent)}</span>
-                <span>
-                  {row.missingBaseline
-                    ? t('admin.analytics.missingBaseline')
-                    : row.missingCurrentCp
-                      ? t('admin.analytics.missingCurrentCp')
-                      : formatDate(row.lastUpdated)}
-                </span>
-              </article>
-            ))}
+            {growthRows.map((row) => {
+              const growthState = row.missingBaseline || row.missingCurrentCp
+                ? 'missing'
+                : row.growthAmount > 0
+                  ? 'positive'
+                  : row.growthAmount < 0
+                    ? 'negative'
+                    : 'zero';
+
+              return (
+                <article
+                  className="analytics-growth-row"
+                  role="row"
+                  key={`${row.profileId}-${row.baselineBatchId ?? 'live'}`}
+                  data-growth={growthState}
+                >
+                  <span data-label={t('admin.cp.rank')}>#{row.rank}</span>
+                  <strong data-label={t('admin.common.members')}>{row.ign ?? row.username ?? t('admin.common.unknownMember')}</strong>
+                  <span data-label={t('admin.common.guild')}>{row.guildName ?? t('admin.common.selectedGuild')}</span>
+                  <span data-label={t('admin.analytics.baselineCp')}>{formatCpValue(row.baselineCp)}</span>
+                  <span data-label={t('admin.analytics.currentCp')}>{formatCpValue(row.currentCp)}</span>
+                  <span className="analytics-growth-value" data-label={t('admin.analytics.growth')}>
+                    {formatCpValue(row.growthAmount)}
+                  </span>
+                  <span data-label={t('admin.analytics.growthPercent')}>{formatPercent(row.growthPercent)}</span>
+                  <span data-label={t('admin.common.updated')}>
+                    {row.missingBaseline
+                      ? t('admin.analytics.missingBaseline')
+                      : row.missingCurrentCp
+                        ? t('admin.analytics.missingCurrentCp')
+                        : formatDate(row.lastUpdated)}
+                  </span>
+                </article>
+              );
+            })}
           </div>
         ) : null}
       </section>
@@ -725,7 +764,7 @@ export function AdminAnalyticsSection({
     return (
       <section className="analytics-section-stack">
         {loading.members || loading.cp || loading.gvg ? <p className="muted-line">{t('admin.analytics.loading')}</p> : null}
-        <div className="analytics-stat-grid">
+        <div className="analytics-attention-grid">
           <StatCard
             label={t('admin.analytics.pendingApprovals')}
             value={formatCompactNumber(memberAnalytics?.pendingApprovals)}
@@ -752,6 +791,12 @@ export function AdminAnalyticsSection({
             value={canViewGvgAnalytics ? formatCompactNumber(gvgAnalytics?.noVoteCount) : '-'}
           />
         </div>
+        {!loading.members && !loading.cp && !loading.gvg && attentionCount === 0 ? (
+          <section className="compact-empty-state">
+            <StatusBadge tone="success">{t('admin.common.empty')}</StatusBadge>
+            <h3>{t('admin.analytics.attention')}</h3>
+          </section>
+        ) : null}
       </section>
     );
   }
