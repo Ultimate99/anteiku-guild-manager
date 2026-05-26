@@ -1,8 +1,9 @@
 {
   "project": "Anteiku Guild Manager",
-  "currentMilestone": "Milestone 24B Admin Analytics backend implemented locally",
-  "status": "milestone24b_admin_analytics_backend_validated",
+  "currentMilestone": "Milestone 24C AdminPanel Analytics UI implemented locally",
+  "status": "milestone24c_admin_analytics_ui_build_source_validated",
   "milestone24BStatus": "Admin Analytics backend/RPC foundation implemented locally. New migration 20260526000100_admin_analytics_foundation.sql adds cp_snapshot_batches, cp_snapshot_entries, get_admin_member_analytics, get_admin_cp_analytics, get_admin_gvg_analytics, capture_weekly_cp_snapshot, get_admin_cp_snapshot_history, and get_admin_cp_growth_report. CP Analytics and Weekly Growth require scoped view_cp; Members, pending users, wrong-guild staff, and admins without view_cp are denied CP/growth data. Snapshot tables have RLS enabled and no direct anon/authenticated grants. npx.cmd supabase db reset passed and local_validation_anteiku.sql passed through Docker psql with Milestone 24B result 23 PASS / 0 FAIL / 0 SKIP. No frontend UI, staging, production, Vercel, deployment, or commit action was included.",
+  "milestone24CStatus": "AdminPanel Analytics UI implemented locally as frontend-only work. Added src/services/adminAnalyticsService.js, src/components/admin/AdminAnalyticsSection.jsx, and an AdminPanel Analytics tab with Overview, Members, CP, GvG, Weekly Growth, and Attention sub-tabs. The service uses only the 24B analytics RPCs. npm.cmd run build passed. Source validation found no SQL/migration/RLS/RPC changes, no direct member_cp/cp_snapshots/cp_snapshot_batches/cp_snapshot_entries/unsafe gvg_votes calls, and no Storage/upload/service-role/arbitrary URL paths. Local authenticated browser validation is pending because Vite was not running on 127.0.0.1:5173. Do not deploy this frontend until 20260526000100_admin_analytics_foundation.sql is applied and verified in the target DB.",
   "milestone7BackendStatus": "SQL/RPC migration created for hardened role assignment and Owner-only guild transfer; local Supabase validation passed.",
   "milestone7ValidationStatus": "npx.cmd supabase db reset passed; local_validation_anteiku.sql passed; role assignment and guild transfer tests passed.",
   "milestone7FrontendStatus": "Admin member role-change and Owner-only guild-transfer UI browser validated; network writes used assign_member_role and transfer_member_guild; no CP/GvG calls observed.",
@@ -657,7 +658,8 @@
     "For any future new target environment, do not deploy CP leaderboard frontend UI until 20260524000300_cp_rankings.sql has been applied and verified in that target DB.",
     "For any future new target environment, do not deploy rank badge/profile border frontend UI until 20260524000400_cp_rank_badge_summary.sql has been applied and verified in that target DB.",
     "For any future new target environment, do not deploy cosmetics picker frontend UI until 20260525000100_cosmetics_catalog_unlocks.sql has been applied and verified in that target DB.",
-    "Milestone 23D premium cosmetics migration 20260525000300_premium_cosmetics_grant_helper.sql is applied in production. Production currently has no active manual cosmetics, so locked/manual production mutation smoke was intentionally not run."
+    "Milestone 23D premium cosmetics migration 20260525000300_premium_cosmetics_grant_helper.sql is applied in production. Production currently has no active manual cosmetics, so locked/manual production mutation smoke was intentionally not run.",
+    "Do not deploy the AdminPanel Analytics frontend until 20260526000100_admin_analytics_foundation.sql is applied and verified in the target database."
   ],
   "localToolingNote": "Supabase CLI was installed locally as dev tooling during Milestone 13A, and the CLI tooling/package changes were committed before Milestone 13B planning/execution.",
   "localTestingNote": "After local DB reset, stale browser auth can cause profiles_id_fkey registration errors; clear localStorage/sessionStorage before retesting auth/registration.",
@@ -730,7 +732,8 @@
     "Rank Badge production rollout/smoke validation",
     "Cosmetics catalog/unlocks/equip backend local implementation and validation",
     "frontend cosmetics avatar/frame picker build and source validation",
-    "Premium cosmetics backend local implementation and validation"
+    "Premium cosmetics backend local implementation and validation",
+    "AdminPanel Analytics UI local implementation and build/source validation"
   ],
   "notImplemented": [
     "normal-user username/profile slug editing",
@@ -740,7 +743,7 @@
     "weekly CP snapshot/growth report UI",
     "guild/subguild management UI"
   ],
-  "securityStatus": "locally validated in Supabase, production catalog-verified, production smoke/security validated, Milestone 14C AdminPanel tabs production-smoke validated, Milestone 14E staging schema/RLS/seed verified, Milestone 14F staging Owner bootstrap verified, Milestone 14G staging users/permissions verified, Milestone 14H staging CP redaction/GvG smoke validated, Member Status, CP Update Window, CP Leaderboard, Rank Badge, and Cosmetics production rollouts all verified. Milestone 22E cosmetics production verification passed for RLS/RPC grants, exact asset paths, direct-write denial, and RPC-only frontend paths. Deferred production-only GvG and CP redaction scenarios are covered in staging.",
+  "securityStatus": "locally validated in Supabase, production catalog-verified, production smoke/security validated, Milestone 14C AdminPanel tabs production-smoke validated, Milestone 14E staging schema/RLS/seed verified, Milestone 14F staging Owner bootstrap verified, Milestone 14G staging users/permissions verified, Milestone 14H staging CP redaction/GvG smoke validated, Member Status, CP Update Window, CP Leaderboard, Rank Badge, and Cosmetics production rollouts all verified. Milestone 22E cosmetics production verification passed for RLS/RPC grants, exact asset paths, direct-write denial, and RPC-only frontend paths. Milestone 24C Admin Analytics UI source validation passed locally with RPC-only service usage and no direct analytics table reads; staging browser validation remains pending. Deferred production-only GvG and CP redaction scenarios are covered in staging.",
   "schemaSpecStatus": "migrations created and validated through the Cosmetics Frame Unlock Hotfix. Production includes 20260525000100_cosmetics_catalog_unlocks.sql, 20260525000200_cp_rankings_cosmetics.sql, 20260525000300_premium_cosmetics_grant_helper.sql, catalog sync migrations, and 20260525220522_cosmetics_frame_unlock_hotfix.sql applied and verified. Member Status, CP Update Window / Member CP Self-Submit, CP Leaderboard, Rank Badge / Profile Border, Cosmetics, Premium Cosmetics grant helper, and the Arena/KOF-only frame lock rule are live in production.",
   "cpDecision": "CP stored outside profiles in member_cp and cp_snapshots; member direct SELECT forbidden. Milestone 19B adds safe auth.uid()-scoped get_my_cp and submit_my_cp_update RPCs for own CP only during an open guild CP Update Window. Milestone 20B adds member-safe CP rank order through get_member_cp_rankings without returning CP values; admin CP rankings with values require get_admin_cp_rankings permission checks. Milestone 21B adds get_my_cp_rank_summary for safe own rank/tier badge keys without CP values. Members must not see other members' CP values, CP snapshots, CP history, or private CP metadata.",
   "roleDecision": "Owner global CP access; Leader/Vice automatic guild-scoped CP access; Admin explicit CP permissions granted only by Owner.",
@@ -748,7 +751,7 @@
   "gvgDecision": "supports guild-specific and global events; v1 vote correction by admins/leaders is not allowed. Milestone 15A excludes inactive/on_break roster statuses from active GvG event visibility/voting while preserving active membership.",
   "supabaseValidationStatus": "Local validation passed through Milestone 23B for premium cosmetics, staging validation passed through Milestone 23C, and production validation passed through Milestone 23D. Production has premium cosmetics grant helper applied and verified with current frames free, safe grant-by-slug helper, direct-write denial, normal Member grant denial, and active Owner count 1.",
   "securityIssueFixed": "Private helper parameter shadowing caused CP/RPC permission leakage during validation; fixed with p_* helper parameters and validated successfully.",
-  "validationStatus": "Milestone 23D premium cosmetics production rollout passed. Production DB verification and app-load smoke passed; locked/manual grant/equip runtime behavior was validated in staging because production has no active manual cosmetics and mutation smoke was not approved.",
+  "validationStatus": "Milestone 24C Admin Analytics UI build/source validation passed locally. Browser validation is pending until Milestone 24D staging migration and authenticated Analytics smoke. Do not deploy the 24C frontend before the 24B analytics migration is applied and verified in the target DB.",
   "auditStatus": "Do not run npm audit fix --force; it would install Vite 8.0.13 as a breaking major upgrade.",
   "milestone22B1Status": "Cosmetics catalog seed aligned to actual repo assets. Catalog keys use file names without extension, asset_path values match public paths, all avatars are free, _FREE frames are free, non-_FREE frames are manual unlocks, and catalog unlock_type remains the runtime authority.",
   "milestone22DStatus": "Cosmetics staging rollout and authenticated browser validation passed. Staging project ckyihuxkioeibzpgwenc received 20260525000100_cosmetics_catalog_unlocks.sql, catalog asset paths were verified, staging_member equipped avatar 1168_head and frame TXK_frame_reOpen_EN_FREE, refresh persistence passed, RPC/security validation passed, and .env.local was restored to local Supabase.",

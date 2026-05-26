@@ -2,12 +2,21 @@
 
 ## Current Recommendation
 
-Milestone 24B Admin Analytics backend/RPC foundation is implemented and locally validated.
+Milestone 24C AdminPanel Analytics UI is implemented locally and build/source validated.
 
 Recommended next options:
-- Milestone 24C: plan/implement the AdminPanel Analytics UI against the new RPCs.
-- Keep the Analytics UI staff-only and permission-aware; CP and Weekly Growth views must call only the CP-gated analytics RPCs.
-- Stage the 24B migration before any production rollout; production has not been touched.
+- Milestone 24D: staging migration rollout plus authenticated AdminPanel Analytics browser/network validation.
+- Apply and verify `20260526000100_admin_analytics_foundation.sql` on staging before validating the Analytics UI there.
+- Keep Analytics staff-only and permission-aware; CP Analytics and Weekly Growth must remain backend-gated by scoped `view_cp`.
+- Do not deploy the 24C frontend to production until the target database has the 24B analytics migration applied and verified.
+
+Recorded 24C status:
+- Added AdminPanel `Analytics` tab with Overview, Members, CP, GvG, Weekly Growth, and Attention sub-tabs.
+- Added `src/services/adminAnalyticsService.js` using only the 24B analytics RPCs.
+- Added `src/components/admin/AdminAnalyticsSection.jsx`.
+- `npm.cmd run build` passed.
+- Source validation passed with no SQL/migration/RLS/RPC changes and no direct analytics table reads.
+- Local authenticated browser validation is pending because the local Vite dev server was not running during the checkpoint.
 
 ## Previous Recommendation - Profile Mobile + Inline Edit Polish
 

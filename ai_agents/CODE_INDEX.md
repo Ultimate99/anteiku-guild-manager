@@ -24,6 +24,7 @@
 - `src/services/cpWindowService.js`: RPC-only CP Update Window service for own CP, member self-submit, selected-guild staff window status, and staff window open/close.
 - `src/services/cpRankBadgeService.js`: RPC-only own CP rank summary wrapper for `get_my_cp_rank_summary`.
 - `src/services/cosmeticsService.js`: RPC-only cosmetics wrapper for `get_my_cosmetics`, `equip_my_avatar`, `equip_my_frame`, active grantable cosmetic option loading, and Owner grant-by-slug through `admin_grant_cosmetic_by_slug`; normalizes asset paths to `/cosmetics/avatars/` and `/cosmetics/frames/`.
+- `src/services/adminAnalyticsService.js`: RPC-only Admin Analytics service for member analytics, CP analytics, GvG analytics, manual Weekly Growth snapshot capture, snapshot history, and growth report reads.
 - `src/data/guilds.js`: Core guild list.
 - `src/data/navigation.js`: Navigation items.
 - `src/pages/LoginRegister.jsx`: Local Supabase signin/signup, forgot-password, and registration UI.
@@ -35,7 +36,7 @@
 - `src/pages/Dashboard.jsx`: Approved-user safe guild dashboard with roster status display, compact own rank badge, and no CP values.
 - `src/pages/Profile.jsx`: Safe polished own-profile display with identity header, own roster status, rank badge/profile border from safe own-rank RPC, own cosmetics picker through safe cosmetics RPCs, and a unified compact Member Profile card containing private own CP through safe RPCs only, inline own IGN row editing, and compact account/details rows for approved users.
 - `src/pages/Gvg.jsx`: GvG voting UI with roster-status UX gating for inactive/on_break and hard-blocked statuses.
-- `src/pages/AdminPanel.jsx`: Restricted AdminPanel coordinator for admin permission loading, visible tab calculation, active tab state, lazy section loading, and section action handlers.
+- `src/pages/AdminPanel.jsx`: Restricted AdminPanel coordinator for admin permission loading, visible tab calculation, active tab state, lazy section loading, Analytics tab wiring, and section action handlers.
 - `src/components/admin/AdminTabs.jsx`: Mobile-first AdminPanel tab bar.
 - `src/components/admin/AdminApprovalsSection.jsx`: Registration approval/rejection queue section.
 - `src/components/admin/AdminMembersSection.jsx`: Approved primary member management section with compact roster rows, roster status badges/filter, and expandable Manage controls for status/IGN/username/role/guild actions.
@@ -44,7 +45,26 @@
 - `src/components/admin/AdminAuditSection.jsx`: Read-only audit log viewer section.
 - `src/components/admin/AdminPermissionsSection.jsx`: Admin permission checkbox management section.
 - `src/components/admin/AdminToolsSection.jsx`: Planned/future admin tools section plus Owner-only cosmetics grant UI.
+- `src/components/admin/AdminAnalyticsSection.jsx`: AdminPanel Analytics UI section with Overview, Members, CP, GvG, Weekly Growth, and Attention sub-tabs backed only by the 24B analytics RPCs.
 - `src/styles/app.css`: Plain mobile-first dark styling.
+
+## Milestone 24C Admin Analytics UI
+
+- `src/services/adminAnalyticsService.js`
+  - Calls only the Milestone 24B analytics RPCs.
+  - Does not direct-read `member_cp`, `cp_snapshots`, `cp_snapshot_batches`, `cp_snapshot_entries`, or `gvg_votes`.
+  - Provides wrappers for member analytics, CP analytics, GvG analytics, snapshot capture, snapshot history, and CP growth reports.
+- `src/components/admin/AdminAnalyticsSection.jsx`
+  - Renders AdminPanel Analytics sub-tabs: Overview, Members, CP, GvG, Weekly Growth, and Attention.
+  - Displays compact stat cards, locked/permission states, snapshot controls, and growth report rows.
+  - Depends on backend/RPC permission enforcement for CP Analytics and Weekly Growth.
+- `src/pages/AdminPanel.jsx`
+  - Adds the `Analytics` tab and lazy-renders `AdminAnalyticsSection` only when active.
+  - Passes current membership, permission hints, formatting helpers, and refresh signal to the analytics section.
+- `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`
+  - Add `admin.analytics.*` labels.
+- `src/styles/app.css`
+  - Adds compact Analytics sub-tabs, stat cards, locked panels, action rows, and mobile growth-table styles.
 
 ## Milestone 24B Admin Analytics Backend
 

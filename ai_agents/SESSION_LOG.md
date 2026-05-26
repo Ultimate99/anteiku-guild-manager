@@ -1,5 +1,21 @@
 # Session Log
 
+## 2026-05-26 - Milestone 24C Admin Analytics UI
+
+- Implemented frontend-only AdminPanel Analytics UI locally.
+- Added `src/services/adminAnalyticsService.js` with RPC-only wrappers for `get_admin_member_analytics`, `get_admin_cp_analytics`, `get_admin_gvg_analytics`, `capture_weekly_cp_snapshot`, `get_admin_cp_snapshot_history`, and `get_admin_cp_growth_report`.
+- Added `src/components/admin/AdminAnalyticsSection.jsx`.
+- Added AdminPanel `Analytics` tab and Overview, Members, CP, GvG, Weekly Growth, and Attention sub-tabs.
+- Analytics tab is lazy-rendered like other AdminPanel sections and does not load CP/GvG analytics until the Analytics UI requests those sub-tabs.
+- Added compact locked states for CP Analytics and Weekly Growth permission denial.
+- Added manual snapshot capture UI using the existing 24B snapshot RPC.
+- Added EN/FR/DE Analytics i18n keys and dark/crimson compact Analytics styles.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no SQL/migration/RLS/RPC changes, no direct `member_cp`, `cp_snapshots`, `cp_snapshot_batches`, `cp_snapshot_entries`, unsafe `gvg_votes`, service-role, Storage, upload, or arbitrary URL paths.
+- Local authenticated browser validation is pending because Vite was not running on `127.0.0.1:5173` during the checkpoint.
+- No staging, production, Vercel, deployment, commit, Supabase command, production data mutation, or CP/GvG/audit/role/permission/member-status behavior change was included.
+- Rollout warning: do not deploy this frontend until `20260526000100_admin_analytics_foundation.sql` is applied and verified in the target DB.
+
 ## 2026-05-26 - Milestone 24B Admin Analytics Backend
 
 - Implemented backend/RPC-only Admin Analytics foundation.

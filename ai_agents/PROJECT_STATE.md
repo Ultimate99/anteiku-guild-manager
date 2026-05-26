@@ -1,5 +1,39 @@
 # Project State
 
+## Milestone 24C Admin Analytics UI Implemented Locally
+
+Milestone 24C is implemented locally as a frontend-only AdminPanel Analytics UI on top of the Milestone 24B backend/RPC foundation.
+
+Implemented:
+- Added `src/services/adminAnalyticsService.js` with RPC-only wrappers for the six 24B analytics RPCs.
+- Added `src/components/admin/AdminAnalyticsSection.jsx`.
+- Added an `Analytics` AdminPanel tab with sub-tabs for Overview, Members, CP, GvG, Weekly Growth, and Attention.
+- Wired AdminPanel to lazy-render Analytics only when the Analytics tab is active.
+- Added permission-aware locked states for CP Analytics and Weekly Growth.
+- Added manual Weekly Growth snapshot UI through the existing `capture_weekly_cp_snapshot(...)` RPC.
+- Added EN/FR/DE translation keys for Admin Analytics labels, locked states, snapshot controls, stat cards, and growth table labels.
+- Added compact dark/crimson analytics cards, sub-tabs, locked panels, and mobile growth-table styles.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no SQL migration changes.
+- Source validation found no Supabase/RLS/RPC changes.
+- `adminAnalyticsService` uses only RPC calls and no direct table reads.
+- No direct frontend `member_cp`, `cp_snapshots`, `cp_snapshot_batches`, `cp_snapshot_entries`, unsafe `gvg_votes`, service-role, Storage, upload, or arbitrary URL paths were added.
+- No Profile/Dashboard/member-facing CP behavior changed.
+
+Browser validation status:
+- Local authenticated browser validation is pending.
+- The local Vite dev server was not running on `127.0.0.1:5173` during this checkpoint, so in-browser validation was not completed in 24C.
+
+Scope/security:
+- Frontend-only local implementation.
+- No SQL migrations, Supabase commands, staging action, production action, Vercel env change, deployment, commit, CP/GvG/audit/role/permission/member-status behavior change, or production data mutation was performed.
+- Do not deploy this frontend to any target until `20260526000100_admin_analytics_foundation.sql` is applied and verified on that target database.
+
+Next gate:
+- Milestone 24D: apply the 24B migration to staging, run authenticated Analytics browser/network validation, and verify CP/Weekly Growth permission behavior before any production rollout.
+
 ## Milestone 24B Admin Analytics Backend Implemented Locally
 
 Milestone 24B is implemented and locally validated as a backend/RPC foundation for a future AdminPanel Analytics tab.

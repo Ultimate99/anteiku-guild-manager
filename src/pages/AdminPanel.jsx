@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { AdminAnalyticsSection } from '../components/admin/AdminAnalyticsSection.jsx';
 import { AdminApprovalsSection } from '../components/admin/AdminApprovalsSection.jsx';
 import { AdminCpLeaderboardSection } from '../components/admin/AdminCpLeaderboardSection.jsx';
 import { AdminAuditSection } from '../components/admin/AdminAuditSection.jsx';
@@ -87,6 +88,7 @@ import {
 
 const ADMIN_TABS = [
   { id: 'overview', label: 'Overview', labelKey: 'admin.tabs.overview' },
+  { id: 'analytics', label: 'Analytics', labelKey: 'admin.tabs.analytics' },
   { id: 'approvals', label: 'Approvals', labelKey: 'admin.tabs.approvals' },
   { id: 'members', label: 'Members', labelKey: 'admin.tabs.members' },
   { id: 'cp', label: 'CP', labelKey: 'admin.tabs.cp' },
@@ -426,6 +428,7 @@ export function AdminPanel() {
   const [auditLoading, setAuditLoading] = useState(false);
   const [auditError, setAuditError] = useState('');
   const [auditNotAuthorized, setAuditNotAuthorized] = useState(false);
+  const [analyticsRefreshSignal, setAnalyticsRefreshSignal] = useState(0);
   const [activeAction, setActiveAction] = useState(null);
   const [confirmAction, setConfirmAction] = useState(null);
 
@@ -444,6 +447,7 @@ export function AdminPanel() {
   const canUpdateCpValues = canUpdateCp({ membership, permissionKeys });
   const canViewGlobalCpLeaderboard = membership?.role === 'owner';
   const canViewAuditSection = canViewAuditLogs({ membership, permissionKeys });
+  const canViewAnalyticsMemberData = canViewMembers || canReviewQueue;
   const allowedMemberRoles = useMemo(
     () => getAllowedMemberRoleOptions({ membership, permissionKeys }),
     [membership, permissionKeys],
@@ -580,6 +584,9 @@ export function AdminPanel() {
       if (tab.id === 'overview') {
         return true;
       }
+      if (tab.id === 'analytics') {
+        return true;
+      }
       if (tab.id === 'approvals') {
         return canReviewQueue;
       }
@@ -625,6 +632,12 @@ export function AdminPanel() {
         title: t('admin.tabs.approvals'),
         body: t('admin.overview.approvalsBody'),
         tone: 'warning',
+      },
+      analytics: {
+        badge: t('admin.overview.analyticsBadge'),
+        title: t('admin.tabs.analytics'),
+        body: t('admin.overview.analyticsBody'),
+        tone: 'crimson',
       },
       members: {
         badge: t('admin.overview.membersBadge'),
@@ -773,6 +786,7 @@ export function AdminPanel() {
     setAuditLogs([]);
     setAuditError('');
     setAuditNotAuthorized(false);
+    setAnalyticsRefreshSignal(0);
     setConfirmAction(null);
   }
 
@@ -802,6 +816,11 @@ export function AdminPanel() {
       await loadAuditLogPage({ append: false, clearMessage });
     } else if (tabId === 'permissions') {
       await loadPermissionManagementSection({ clearMessage });
+    } else if (tabId === 'analytics') {
+      if (force) {
+        setAnalyticsRefreshSignal((current) => current + 1);
+      }
+      markTabLoaded('analytics');
     } else if (tabId === 'overview') {
       markTabLoaded('overview');
     } else {
@@ -1756,6 +1775,21 @@ export function AdminPanel() {
           }
           rosterStatusTone={rosterStatusTone}
           statusTone={statusTone}
+          t={t}
+        />
+      );
+    }
+
+    if (activeTab === 'analytics') {
+      return (
+        <AdminAnalyticsSection
+          membership={membership}
+          canViewMemberAnalytics={canViewAnalyticsMemberData}
+          canViewCpAnalytics={canViewCpSection}
+          canViewGvgAnalytics={canManageGvgEvents}
+          refreshSignal={analyticsRefreshSignal}
+          formatDate={formatAdminDate}
+          formatCpValue={formatCpValue}
           t={t}
         />
       );

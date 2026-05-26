@@ -1,5 +1,37 @@
 # Testing And Validation
 
+## Milestone 24C Admin Analytics UI Build And Source Validation
+
+Frontend-only AdminPanel Analytics UI implementation passed build and source validation locally.
+
+Command:
+- `npm.cmd run build`
+
+Result:
+- Build passed with the existing Vite chunk-size warning only.
+
+Implemented validation target:
+- AdminPanel now has an `Analytics` tab.
+- Analytics sub-tabs are Overview, Members, CP, GvG, Weekly Growth, and Attention.
+- Analytics UI is local-only and depends on the Milestone 24B RPC foundation.
+
+Source/scope result:
+- No SQL migrations, Supabase/RLS/RPC logic, Supabase commands, package/dependency files, staging actions, production actions, Vercel env changes, deployment, or commits were included.
+- `src/services/adminAnalyticsService.js` uses RPC calls only.
+- Source checks found no direct `member_cp`, `cp_snapshots`, `cp_snapshot_batches`, `cp_snapshot_entries`, unsafe `gvg_votes`, service-role, Storage, upload, or arbitrary URL paths in the Analytics service/component.
+- Profile/Dashboard/member-facing CP behavior was unchanged.
+- CP Analytics and Weekly Growth surfaces rely on backend permission enforcement and show compact locked states on permission denial.
+
+Browser validation:
+- Local authenticated browser validation is pending.
+- `127.0.0.1:5173` was not serving Vite during this checkpoint, so no in-browser Analytics validation was completed.
+
+Rollout warning:
+- Do not deploy the 24C Analytics frontend to staging or production until `20260526000100_admin_analytics_foundation.sql` is applied and verified in the target database.
+
+Next validation gate:
+- Milestone 24D staging migration + authenticated browser/network validation for Owner, CP-authorized staff, CP-denied staff, and Member AdminPanel denial.
+
 ## Milestone 24B Admin Analytics Backend Validation
 
 Backend/RPC-only Admin Analytics foundation validation passed locally.
