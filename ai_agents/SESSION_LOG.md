@@ -1,5 +1,26 @@
 # Session Log
 
+## 2026-05-26 - Live CP Growth Production Rollout
+
+- Implemented Live CP Growth on top of the existing Analytics snapshot foundation.
+- Added migration `20260526000200_live_cp_growth.sql`.
+- Added `start_new_cp_growth_period(...)` for manual Sunday-baseline capture.
+- Added `get_admin_live_cp_growth(...)` for current CP minus latest baseline reporting.
+- Updated `capture_weekly_cp_snapshot(...)` to delegate to the new start-period RPC for compatibility.
+- Updated AdminPanel -> Analytics -> Weekly Growth to show Reset day Sunday, baseline state, selected scope, Start New CP Week confirmation, and live growth rows.
+- Added EN/FR/DE i18n keys and compact styling for Live CP Growth.
+- Local Docker migration apply succeeded.
+- Local validation passed with Milestone 24B/Live Growth result `31 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production dry-run showed exactly one pending migration: `20260526000200_live_cp_growth.sql`.
+- Applied the production migration and confirmed remote migration list includes `20260526000200`.
+- Production DB verification confirmed new RPCs exist with authenticated execute and anon denied, snapshot tables remain RLS-enabled, no direct anon/authenticated snapshot table grants exist, and active Owner count remains `1`.
+- Pushed commit `426a720 feat: add live cp growth analytics` to `main`.
+- Production Owner read-only smoke passed for Weekly Growth Global and Anteiku scope views.
+- Production Start New CP Week mutation smoke was not performed by design.
+- No captured browser console errors were observed.
+- Supabase CLI remains linked to production; relink deliberately before future staging/local Supabase commands.
+
 ## 2026-05-26 - Milestone 24E Admin Analytics Production Rollout
 
 - Deliberately linked Supabase CLI to production project `mzflfyxxkascrfpteexz`.

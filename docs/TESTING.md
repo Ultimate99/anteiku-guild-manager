@@ -1,5 +1,30 @@
 # Testing
 
+## Live CP Growth Production Validation
+
+Production Live CP Growth validation passed.
+
+- Migration `20260526000200_live_cp_growth.sql` was applied to production after a clean dry-run showing exactly that one pending migration.
+- Local validation passed with Milestone 24B/Live Growth result `31 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production DB verification confirmed:
+  - migration `20260526000200` is applied
+  - `get_admin_live_cp_growth` exists
+  - `start_new_cp_growth_period` exists
+  - new RPCs allow authenticated execute and deny anon execute
+  - `cp_snapshot_batches` and `cp_snapshot_entries` remain RLS-enabled
+  - no direct anon/authenticated grants exist for snapshot tables
+  - active Owner count remains `1`
+- Owner production read-only smoke passed:
+  - AdminPanel -> Analytics -> Weekly Growth opens
+  - Reset day Sunday is shown
+  - baseline date is shown
+  - Global scope live growth table renders
+  - Anteiku scope live growth table renders
+  - no captured console errors
+- Production Start New CP Week mutation smoke was not performed by design.
+- Source checks found no direct `member_cp`, `cp_snapshots`, `cp_snapshot_batches`, `cp_snapshot_entries`, unsafe `gvg_votes`, service-role, Storage, upload, or arbitrary URL paths in Analytics UI/service paths.
+
 ## Milestone 24E Admin Analytics Production Validation
 
 Production rollout validation passed for AdminPanel Analytics.

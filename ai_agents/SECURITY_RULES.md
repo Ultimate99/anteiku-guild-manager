@@ -1,5 +1,19 @@
 # Security Rules
 
+## Live CP Growth Security Rules
+
+Live CP Growth is live in production through `20260526000200_live_cp_growth.sql`.
+
+Rules:
+- Live CP Growth is AdminPanel Analytics only.
+- Members, pending users, restricted users, and admins without scoped `view_cp` must not receive CP growth values.
+- `get_admin_live_cp_growth(...)` is the only frontend read path for live weekly growth.
+- `start_new_cp_growth_period(...)` is the approved reset/start-week path. It captures baseline CP values only; it must not reset player CP.
+- Production Start New CP Week is a mutation and requires explicit approval before use.
+- Frontend must not direct-read `member_cp`, `cp_snapshots`, `cp_snapshot_batches`, or `cp_snapshot_entries`.
+- Wrong-guild staff must be denied by backend/RPC.
+- Owner can view global live growth; scoped staff can view only authorized guild scope.
+
 ## Milestone 24B Admin Analytics Security Rules
 
 Admin Analytics backend support is live in production as of Milestone 24E.
@@ -8,7 +22,7 @@ Production status:
 - Production has `20260526000100_admin_analytics_foundation.sql` applied and verified.
 - `cp_snapshot_batches` and `cp_snapshot_entries` have RLS enabled and no direct anon/authenticated table grants.
 - AdminPanel Analytics is live in production.
-- Weekly Growth is live in production, but production snapshot capture must be treated as a mutation and requires explicit approval before use.
+- Weekly Growth is live in production. Start New CP Week / baseline capture must be treated as a mutation and requires explicit approval before use.
 
 Rules:
 - Admin Analytics must remain staff-only.
@@ -20,7 +34,7 @@ Rules:
 - Owner can view global analytics and capture global snapshots.
 - Scoped staff can view/capture only authorized guild scope.
 - Frontend must not direct-read `member_cp`, `cp_snapshots`, `cp_snapshot_batches`, or `cp_snapshot_entries`.
-- Snapshot writes must go through `capture_weekly_cp_snapshot(...)` only.
+- Snapshot/baseline writes must go through `start_new_cp_growth_period(...)` or the compatibility `capture_weekly_cp_snapshot(...)` RPC only.
 - No service-role path, direct table grant, or member-facing analytics route is allowed.
 
 ## Owner Cosmetics Grant Tool Rules

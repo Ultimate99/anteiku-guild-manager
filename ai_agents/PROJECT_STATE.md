@@ -1,5 +1,36 @@
 # Project State
 
+## Live CP Growth Production Rollout Complete
+
+Live CP Growth for AdminPanel -> Analytics -> Weekly Growth is implemented and live in production.
+
+Production rollout:
+- New migration `20260526000200_live_cp_growth.sql` was applied to production project `mzflfyxxkascrfpteexz` after a clean dry-run showing exactly that one pending migration.
+- Commit `426a720 feat: add live cp growth analytics` was pushed to `main`; production serves the Live CP Growth UI bundle.
+- Supabase CLI remains linked to production; relink deliberately before future staging/local commands.
+
+Backend/RPC:
+- Added `start_new_cp_growth_period(p_guild_id uuid default null, p_label text default null)`.
+- Added `get_admin_live_cp_growth(p_guild_id uuid default null)`.
+- `capture_weekly_cp_snapshot(p_guild_id uuid default null)` now delegates to the new start-period RPC for compatibility.
+- Live Growth compares current `member_cp.cp_value` against the latest authorized baseline batch for the selected scope.
+- Reset day is Sunday. Starting a new week captures a baseline only; it does not reset player CP.
+- No settings table was added in v1.
+
+Validation:
+- Local migration apply and full local validation passed through Docker `psql`; Milestone 24B/Live Growth result is 31 PASS / 0 FAIL / 0 SKIP.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production DB verification confirmed the migration is applied, new RPCs exist with authenticated execute and anon denied, snapshot tables keep RLS, no direct anon/authenticated snapshot table grants exist, and active Owner count remains `1`.
+- Owner production read-only smoke passed: Weekly Growth shows Reset day Sunday, current baseline date, selected scope, and a live table with Baseline CP, Current CP, Growth, and Growth %. Global and Anteiku scoped views loaded.
+- No captured browser console errors were observed.
+- Production Start New CP Week mutation smoke was NOT performed by design; do not click it without explicit approval.
+
+Security/scope:
+- CP Analytics and Weekly Growth remain backend-gated by scoped `view_cp`.
+- Members and admins without `view_cp` must not receive CP/growth data.
+- Frontend Analytics uses RPCs only and does not direct-read `member_cp`, `cp_snapshots`, `cp_snapshot_batches`, or `cp_snapshot_entries`.
+- No CP Update Window, CP ranking privacy, GvG, audit, role, permission, cosmetics, or member-status behavior was changed.
+
 ## Milestone 24E Admin Analytics Production Rollout Complete
 
 Milestone 24E is complete. AdminPanel Analytics and Weekly Growth are live in production after the production database received and verified `20260526000100_admin_analytics_foundation.sql`.

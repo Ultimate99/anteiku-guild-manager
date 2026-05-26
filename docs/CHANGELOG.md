@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-05-26 - Live CP Growth Production Rollout
+
+- Added production migration `20260526000200_live_cp_growth.sql`.
+- Added `get_admin_live_cp_growth(...)` for view_cp-gated live current-minus-baseline Weekly Growth.
+- Added `start_new_cp_growth_period(...)` for manual Sunday baseline capture; starting a new week does not reset player CP.
+- Updated AdminPanel -> Analytics -> Weekly Growth to show Reset day Sunday, current baseline, selected scope, and live growth rows.
+- Added confirmation UI before Start New CP Week.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Local validation passed with Milestone 24B/Live Growth result `31 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed exactly one pending migration and production migration push applied only `20260526000200_live_cp_growth.sql`.
+- Pushed commit `426a720 feat: add live cp growth analytics` to `main`; production serves the Live CP Growth UI bundle.
+- Owner production read-only smoke passed for Global and Anteiku Weekly Growth views with no captured console errors.
+- Production Start New CP Week mutation smoke was not performed by design.
+- CP Analytics and Weekly Growth remain backend-gated by scoped `view_cp`.
+- No CP Update Window, CP Ranking, GvG, audit, role, permission, cosmetics, or member-status behavior changed.
+
 ## 2026-05-26 - Milestone 24E Admin Analytics Production Rollout
 
 - Applied production migration `20260526000100_admin_analytics_foundation.sql` after a clean dry-run showing exactly that one pending migration.

@@ -2,13 +2,27 @@
 
 ## Current Recommendation
 
-Milestone 24E AdminPanel Analytics production rollout is complete.
+Live CP Growth for AdminPanel Analytics is live in production.
 
 Recommended next options:
-- Plan the next user-prioritized milestone, likely Analytics polish after live usage, production-safe Weekly Growth snapshot operating procedure, or another frontend UX pass.
-- Keep production Weekly Growth snapshot capture behind explicit approval because it intentionally creates `cp_snapshot_batches` and `cp_snapshot_entries` rows.
+- Plan the next user-prioritized milestone, likely Analytics polish after live usage, a production-safe Weekly Growth operating procedure, or another frontend UX pass.
+- Keep production Start New CP Week / baseline capture behind explicit approval because it intentionally creates `cp_snapshot_batches` and `cp_snapshot_entries` rows.
 - Keep Analytics staff-only and permission-aware; CP Analytics and Weekly Growth must remain backend-gated by scoped `view_cp`.
 - Relink Supabase CLI deliberately before staging/local Supabase commands because it is currently linked to production `mzflfyxxkascrfpteexz`.
+
+Recorded Live CP Growth status:
+- Production received `20260526000200_live_cp_growth.sql` after a clean dry-run showing exactly that one pending migration.
+- Live Growth compares current `member_cp.cp_value` to the latest baseline snapshot for the selected Analytics scope.
+- Reset day is Sunday; starting a new CP week captures baseline values only and does not reset player CP.
+- Commit `426a720 feat: add live cp growth analytics` was pushed to `main`.
+- `npm.cmd run build` passed and production serves the Live CP Growth UI bundle.
+- Owner production read-only smoke passed for Global and Anteiku Weekly Growth views.
+- Production Start New CP Week mutation smoke was not performed by design.
+- Source validation confirmed Analytics UI/service paths do not direct-read protected CP/snapshot tables.
+
+## Previous Recommendation - Milestone 24E AdminPanel Analytics
+
+Milestone 24E AdminPanel Analytics production rollout is complete.
 
 Recorded 24E status:
 - Production received `20260526000100_admin_analytics_foundation.sql` after a clean dry-run showing exactly that one pending migration.

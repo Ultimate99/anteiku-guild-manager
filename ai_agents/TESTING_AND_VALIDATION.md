@@ -1,5 +1,48 @@
 # Testing And Validation
 
+## Live CP Growth Production Validation
+
+Live CP Growth production rollout passed local, production DB, source, build, and Owner read-only browser smoke validation.
+
+Commands:
+- Applied the migration locally through Docker `psql`.
+- Ran `supabase/tests/local_validation_anteiku.sql` through local Docker `psql`.
+- `npm.cmd run build`
+- `npx.cmd supabase link --project-ref mzflfyxxkascrfpteexz`
+- `npx.cmd supabase migration list`
+- `npx.cmd supabase db push --dry-run`
+- `npx.cmd supabase db push`
+- `git push origin main`
+
+Result:
+- Local validation passed with Milestone 24B/Live Growth result `31 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed exactly one pending migration: `20260526000200_live_cp_growth.sql`.
+- Production migration push applied `20260526000200_live_cp_growth.sql`.
+- Commit `426a720 feat: add live cp growth analytics` was pushed to `main`.
+- Production serves the Live CP Growth UI bundle.
+
+Production DB verification:
+- Migration `20260526000200` is applied.
+- `get_admin_live_cp_growth(p_guild_id uuid default null)` exists.
+- `start_new_cp_growth_period(p_guild_id uuid default null, p_label text default null)` exists.
+- New RPCs grant execute to `authenticated` and deny `anon`.
+- `cp_snapshot_batches` and `cp_snapshot_entries` remain RLS-enabled.
+- No direct anon/authenticated table grants exist for `cp_snapshot_batches` or `cp_snapshot_entries`.
+- Active Owner count remains `1`.
+
+Production browser smoke:
+- Owner opened AdminPanel -> Analytics -> Weekly Growth.
+- Global Weekly Growth rendered Reset day Sunday, baseline date, selected scope, and live growth table columns: Baseline CP, Current CP, Growth, Growth %.
+- Anteiku guild-scoped Weekly Growth loaded and showed scoped rows.
+- No captured console errors were observed.
+- Start New CP Week was NOT clicked; production baseline mutation smoke was not performed by design.
+
+Security/source validation:
+- Analytics UI/service paths use RPCs only.
+- Source checks found no direct `member_cp`, `cp_snapshots`, `cp_snapshot_batches`, `cp_snapshot_entries`, unsafe `gvg_votes`, service-role, Storage, upload, or arbitrary URL paths in the Analytics UI/service paths.
+- CP Analytics and Weekly Growth remain backend-gated by scoped `view_cp`.
+- No CP Update Window, CP Ranking, GvG, audit, role, permission, cosmetics, or member-status behavior changed.
+
 ## Milestone 24E Admin Analytics Production Validation
 
 AdminPanel Analytics production rollout passed migration, DB, source, and Owner browser smoke validation.

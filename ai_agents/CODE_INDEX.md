@@ -1,10 +1,19 @@
 # Code Index
 
+## Live CP Growth Production Status
+
+- `supabase/migrations/20260526000200_live_cp_growth.sql`: Applied and verified in production. Adds `start_new_cp_growth_period(...)`, `get_admin_live_cp_growth(...)`, and compatibility delegation for `capture_weekly_cp_snapshot(...)`.
+- `src/services/adminAnalyticsService.js`: Adds RPC-only wrappers for `get_admin_live_cp_growth` and `start_new_cp_growth_period`.
+- `src/components/admin/AdminAnalyticsSection.jsx`: Weekly Growth now renders live current-minus-baseline growth, Reset day Sunday, baseline metadata, selected scope, and a guarded Start New CP Week confirmation.
+- `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`: Add Live CP Growth labels.
+- `src/styles/app.css`: Adds compact Live CP Growth summary and confirmation styles.
+- `supabase/tests/local_validation_anteiku.sql`: Adds Live CP Growth validation coverage for permission denial, no-baseline state, Sunday baseline creation, live growth calculation, and Owner global safe state.
+
 ## Milestone 24E Admin Analytics Production Status
 
 - `src/pages/AdminPanel.jsx`: Production AdminPanel exposes the Analytics tab for staff through existing AdminPanel access/permission gates.
-- `src/components/admin/AdminAnalyticsSection.jsx`: Production Analytics UI for Overview, Members, CP, GvG, Weekly Growth, and Attention. Weekly Growth includes snapshot history/report loading and a manual snapshot capture control; production snapshot capture requires explicit approval before use.
-- `src/services/adminAnalyticsService.js`: Production RPC-only Analytics service. Uses only `get_admin_member_analytics`, `get_admin_cp_analytics`, `get_admin_gvg_analytics`, `capture_weekly_cp_snapshot`, `get_admin_cp_snapshot_history`, and `get_admin_cp_growth_report`.
+- `src/components/admin/AdminAnalyticsSection.jsx`: Production Analytics UI for Overview, Members, CP, GvG, Weekly Growth, and Attention. Weekly Growth now uses live current-minus-baseline growth; production Start New CP Week requires explicit approval before use.
+- `src/services/adminAnalyticsService.js`: Production RPC-only Analytics service. Uses only Analytics RPCs for member analytics, CP analytics, GvG analytics, live CP growth, snapshot compatibility, and start-week baseline capture.
 - `supabase/migrations/20260526000100_admin_analytics_foundation.sql`: Applied and verified in production. Adds `cp_snapshot_batches`, `cp_snapshot_entries`, and the Analytics/Weekly Growth RPC foundation.
 
 - `src/main.jsx`: React root.

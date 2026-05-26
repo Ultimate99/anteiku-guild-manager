@@ -1,6 +1,6 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented through Milestone 24E Admin Analytics. Remote production is live through `20260526000100_admin_analytics_foundation.sql`.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented through Live CP Growth. Remote production is live through `20260526000200_live_cp_growth.sql`.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
@@ -28,6 +28,7 @@ Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION
 20. `20260525213900_cosmetics_catalog_sync.sql`
 21. `20260525220522_cosmetics_frame_unlock_hotfix.sql`
 22. `20260526000100_admin_analytics_foundation.sql`
+23. `20260526000200_live_cp_growth.sql`
 
 Migration `20260523000100_member_roster_status_system.sql` is locally validated, staging validated, and production applied/verified as of Milestone 15E.
 
@@ -44,6 +45,8 @@ Migration `20260525000200_cp_rankings_cosmetics.sql` is production applied/verif
 Migration `20260525000300_premium_cosmetics_grant_helper.sql` is implemented, locally validated, staging validated, and production applied/verified as of Milestone 23D.
 
 Migration `20260526000100_admin_analytics_foundation.sql` is implemented, locally validated, staging validated, and production applied/verified as of Milestone 24E. It adds `cp_snapshot_batches`, `cp_snapshot_entries`, Admin Analytics RPCs, and manual Weekly Growth RPCs for AdminPanel Analytics.
+
+Migration `20260526000200_live_cp_growth.sql` is implemented, locally validated, and production applied/verified. It adds live current-minus-baseline Weekly Growth RPC support, Sunday-baseline start-week capture, and compatibility delegation for `capture_weekly_cp_snapshot(...)`.
 
 Cosmetics catalog sync migrations `20260525213531`, `20260525213537`, and `20260525213900` are applied in production. Migration `20260525220522_cosmetics_frame_unlock_hotfix.sql` is applied in production and corrects frame unlock types so only `TXK_Arena*` and `TXK_KOF*` frames are manual while all other frames are free.
 
@@ -70,6 +73,31 @@ Status:
 - Snapshot batch tables are RPC-only with RLS enabled and no direct client grants.
 - Production Owner smoke passed for AdminPanel Analytics Overview, Members, CP, GvG, Weekly Growth, and Attention.
 - Production snapshot capture mutation smoke was not performed by design; require explicit approval before creating production snapshot rows.
+
+## Live CP Growth Backend
+
+Migration:
+- `supabase/migrations/20260526000200_live_cp_growth.sql`
+
+RPCs:
+- `get_admin_live_cp_growth(p_guild_id uuid default null)`
+- `start_new_cp_growth_period(p_guild_id uuid default null, p_label text default null)`
+
+Compatibility:
+- `capture_weekly_cp_snapshot(p_guild_id uuid default null)` now delegates to `start_new_cp_growth_period(...)`.
+
+Behavior:
+- Live Growth is calculated as current `member_cp.cp_value` minus the latest baseline snapshot value for the selected Analytics scope.
+- Reset day is Sunday.
+- Starting a new CP week captures baseline CP values into `cp_snapshot_batches` / `cp_snapshot_entries`; it does not reset player CP.
+- Owner can use global scope. Scoped CP staff can use only authorized guild scope.
+- No settings table was added in v1.
+
+Security:
+- Live Growth requires backend-enforced scoped `view_cp`.
+- Members, pending users, admins without `view_cp`, and wrong-guild staff are denied.
+- No direct client table grants were added for `member_cp`, `cp_snapshots`, `cp_snapshot_batches`, or `cp_snapshot_entries`.
+- Production Start New CP Week mutation smoke was not performed by design.
 
 Production Member Status rollout:
 - Existing production memberships were backfilled to `roster_status = active`.

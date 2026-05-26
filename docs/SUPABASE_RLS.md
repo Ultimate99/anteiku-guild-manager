@@ -1,8 +1,23 @@
 # Supabase RLS
 
-The Supabase RLS/RPC implementation has been validated through Milestone 24E Admin Analytics. Production is applied/verified through `20260526000100_admin_analytics_foundation.sql`.
+The Supabase RLS/RPC implementation has been validated through Live CP Growth. Production is applied/verified through `20260526000200_live_cp_growth.sql`.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
+
+## Live CP Growth RLS/RPC
+
+Live CP Growth is implemented and production applied/verified.
+
+Migration:
+- `20260526000200_live_cp_growth.sql`
+
+Rules:
+- `get_admin_live_cp_growth(...)` requires backend-enforced scoped `view_cp`.
+- `start_new_cp_growth_period(...)` requires backend-enforced scoped `view_cp` or Owner global authority.
+- Start New CP Week captures baseline values only; it does not reset player CP.
+- Members, pending users, admins without `view_cp`, and wrong-guild staff are denied.
+- No direct client grants are added for `member_cp`, `cp_snapshots`, `cp_snapshot_batches`, or `cp_snapshot_entries`.
+- Production Start New CP Week mutation smoke was not performed by design; explicit approval is required before creating a production baseline.
 
 ## Milestone 24B Admin Analytics RLS/RPC
 
