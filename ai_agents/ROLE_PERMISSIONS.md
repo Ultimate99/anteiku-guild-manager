@@ -1,5 +1,24 @@
 # Role Permissions
 
+## Milestone 24B Admin Analytics Permissions
+
+Member analytics:
+- Owner can view global or selected-guild member analytics.
+- Leader/Vice can view scoped member analytics for their guild.
+- Admin can view scoped member analytics with existing member-management style authority such as `manage_members`, `approve_members`, or `manage_roles`.
+- Members, pending users, and wrong-guild staff are denied.
+
+CP analytics and Weekly Growth:
+- Owner can view global or selected-guild CP analytics and capture snapshots.
+- Leader/Vice can view/capture scoped CP analytics through existing `view_cp` authority.
+- Admin requires scoped `view_cp`.
+- Admin without `view_cp`, Members, pending users, and wrong-guild staff are denied.
+
+GvG analytics:
+- Owner can view global/selected GvG analytics.
+- Scoped Leader/Vice or Admin with `manage_gvg` can view scoped GvG analytics.
+- Members and wrong-guild staff are denied.
+
 ## Milestone 22B Cosmetics Grant Permissions
 
 Member equip:

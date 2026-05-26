@@ -1,5 +1,32 @@
 # Project State
 
+## Milestone 24B Admin Analytics Backend Implemented Locally
+
+Milestone 24B is implemented and locally validated as a backend/RPC foundation for a future AdminPanel Analytics tab.
+
+Implemented:
+- Added new migration `20260526000100_admin_analytics_foundation.sql`.
+- Added RPC-only snapshot batch storage with `cp_snapshot_batches` and `cp_snapshot_entries`.
+- Added `get_admin_member_analytics(p_guild_id uuid default null)` for non-CP member status/approval/guild breakdowns.
+- Added `get_admin_cp_analytics(p_guild_id uuid default null)` for CP summary data gated by scoped `view_cp`.
+- Added `get_admin_gvg_analytics(p_guild_id uuid default null)` for latest-event participation/absence analytics gated by GvG authority.
+- Added `capture_weekly_cp_snapshot(p_guild_id uuid default null)`, `get_admin_cp_snapshot_history(...)`, and `get_admin_cp_growth_report(...)` for manual Weekly Growth v1.
+- Existing legacy `cp_snapshots` and older CP snapshot/growth RPCs are preserved.
+
+Validation:
+- `npx.cmd supabase db reset` passed locally.
+- Full local validation passed through Docker `psql`.
+- Milestone 24B focused validation result: 23 PASS / 0 FAIL / 0 SKIP.
+- `npm.cmd run build` was skipped because no frontend/runtime source files changed.
+
+Security/scope:
+- Backend/database/RPC only.
+- No AdminPanel frontend UI, React source edit, staging action, production action, Vercel env change, deploy, or commit was performed.
+- CP analytics and Weekly Growth require backend-enforced scoped `view_cp`.
+- Members, pending users, wrong-guild staff, and admins without `view_cp` are denied CP analytics/growth.
+- Snapshot tables have RLS enabled and no direct anon/authenticated table grants.
+- No direct frontend `member_cp`/`cp_snapshots`/snapshot table access is introduced.
+
 ## Profile Mobile + Inline Edit Polish Complete In Production
 
 Profile mobile + inline edit polish is implemented, deployed, and authenticated-smoke validated in production as a frontend-only UI/layout/copy pass on top of the compact Member Profile card.

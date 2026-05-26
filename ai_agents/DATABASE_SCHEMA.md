@@ -2,6 +2,8 @@
 
 ## Current Backend Status
 
+Milestone 24B is implemented locally. It adds Admin Analytics RPCs and a new manual Weekly Growth snapshot batch model for future AdminPanel Analytics UI work. It is not applied to staging or production yet.
+
 Milestone 23D completed production rollout for premium cosmetics hardening. Production now has current frames free, future manual avatar/frame enforcement, and grant-by-slug support.
 
 Milestone 22E completed production rollout for preset avatar selection, unlocked/equipped frames, and future cosmetic rewards.
@@ -35,6 +37,11 @@ Current local migration order:
 15. `20260525000100_cosmetics_catalog_unlocks.sql`
 16. `20260525000200_cp_rankings_cosmetics.sql`
 17. `20260525000300_premium_cosmetics_grant_helper.sql`
+18. `20260525213531_cosmetics_catalog_sync.sql`
+19. `20260525213537_cosmetics_catalog_sync.sql`
+20. `20260525213900_cosmetics_catalog_sync.sql`
+21. `20260525220522_cosmetics_frame_unlock_hotfix.sql`
+22. `20260526000100_admin_analytics_foundation.sql`
 
 Migration `20260523000100_member_roster_status_system.sql` is implemented, locally validated, staging validated, and production applied/verified.
 
@@ -49,6 +56,8 @@ Migration `20260525000100_cosmetics_catalog_unlocks.sql` is implemented, locally
 Migration `20260525000200_cp_rankings_cosmetics.sql` is implemented and production applied/verified as part of the leaderboard cosmetic display rollout.
 
 Migration `20260525000300_premium_cosmetics_grant_helper.sql` is implemented, locally validated, staging validated, and production applied/verified.
+
+Migration `20260526000100_admin_analytics_foundation.sql` is implemented and locally validated only. It adds `cp_snapshot_batches`, `cp_snapshot_entries`, Admin Analytics RPCs, and manual Weekly Growth RPCs. Staging/production rollout is pending.
 
 Production Member Status verification:
 - Existing production memberships were backfilled to `roster_status = active`.

@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-05-26 - Milestone 24B Admin Analytics Backend
+
+- Added local-only backend/RPC foundation for future AdminPanel Analytics.
+- Added migration `20260526000100_admin_analytics_foundation.sql`.
+- Added `cp_snapshot_batches` and `cp_snapshot_entries` for manual Weekly Growth snapshot batches without changing legacy `cp_snapshots`.
+- Added RPCs for member analytics, CP analytics, GvG analytics, weekly snapshot capture, snapshot history, and CP growth reports.
+- CP Analytics and Weekly Growth require backend-enforced scoped `view_cp`; members, pending users, wrong-guild staff, and admins without `view_cp` are denied.
+- Snapshot tables have RLS enabled and no direct anon/authenticated grants.
+- Added Milestone 24B local validation coverage.
+- `npx.cmd supabase db reset` passed.
+- Full local validation through Docker `psql` passed; Milestone 24B result: 23 PASS / 0 FAIL / 0 SKIP.
+- No AdminPanel frontend UI, React source edit, staging action, production action, Vercel env change, deployment, service-role key, or commit was included.
+
 ## 2026-05-26 - Profile Mobile + Inline Edit Polish
 
 - Replaced the remaining separate Profile IGN edit form with a true inline edit row inside Profile Details.

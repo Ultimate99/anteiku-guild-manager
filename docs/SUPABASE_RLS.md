@@ -1,8 +1,27 @@
 # Supabase RLS
 
-The Supabase RLS/RPC implementation has been validated through Milestone 22E, and production is applied/verified through Milestone 22E.
+The Supabase RLS/RPC implementation has been locally validated through Milestone 24B. Production is applied/verified through the current production migration set; Milestone 24B remains local-only until staging/production rollout.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
+
+## Milestone 24B Admin Analytics RLS/RPC
+
+Milestone 24B is implemented and locally validated only.
+
+Migration:
+- `20260526000100_admin_analytics_foundation.sql`
+
+RLS/grants:
+- `cp_snapshot_batches` and `cp_snapshot_entries` have RLS enabled.
+- No direct anon/authenticated table grants are provided.
+- Snapshot capture and snapshot reads are exposed through permission-checked RPCs only.
+
+Permission model:
+- Members and pending users are denied.
+- Wrong-guild staff are denied.
+- CP Analytics and Weekly Growth require scoped `view_cp`.
+- Admins without `view_cp` receive no CP values, growth values, or snapshot data.
+- Owner can use global analytics; scoped staff must use an authorized guild scope.
 
 ## Milestone 23D Premium Cosmetics Production RLS/RPC
 

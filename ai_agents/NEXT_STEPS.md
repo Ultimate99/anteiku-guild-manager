@@ -2,6 +2,15 @@
 
 ## Current Recommendation
 
+Milestone 24B Admin Analytics backend/RPC foundation is implemented and locally validated.
+
+Recommended next options:
+- Milestone 24C: plan/implement the AdminPanel Analytics UI against the new RPCs.
+- Keep the Analytics UI staff-only and permission-aware; CP and Weekly Growth views must call only the CP-gated analytics RPCs.
+- Stage the 24B migration before any production rollout; production has not been touched.
+
+## Previous Recommendation - Profile Mobile + Inline Edit Polish
+
 Profile mobile + inline edit polish is complete in production.
 
 Recommended next options:

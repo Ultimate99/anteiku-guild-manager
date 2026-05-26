@@ -1,5 +1,18 @@
 # Session Log
 
+## 2026-05-26 - Milestone 24B Admin Analytics Backend
+
+- Implemented backend/RPC-only Admin Analytics foundation.
+- Added migration `20260526000100_admin_analytics_foundation.sql`.
+- Added RPC-only `cp_snapshot_batches` and `cp_snapshot_entries` with RLS enabled and no direct client grants.
+- Added member, CP, GvG, snapshot capture, snapshot history, and CP growth report analytics RPCs.
+- Preserved existing legacy `cp_snapshots` and older CP snapshot/growth RPCs.
+- Added Milestone 24B coverage to `supabase/tests/local_validation_anteiku.sql`.
+- `npx.cmd supabase db reset` passed locally.
+- Full local validation passed through Docker `psql`; Milestone 24B result was 23 PASS / 0 FAIL / 0 SKIP.
+- `npm.cmd run build` was skipped because no frontend source changed.
+- No AdminPanel frontend UI, React source edit, staging action, production action, Vercel env change, deployment, service-role path, or commit was performed.
+
 ## 2026-05-26 - Profile Redesign / Compact Member Profile Card
 
 - Implemented frontend-only Profile redesign.

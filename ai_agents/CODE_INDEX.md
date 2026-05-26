@@ -46,6 +46,16 @@
 - `src/components/admin/AdminToolsSection.jsx`: Planned/future admin tools section plus Owner-only cosmetics grant UI.
 - `src/styles/app.css`: Plain mobile-first dark styling.
 
+## Milestone 24B Admin Analytics Backend
+
+- `supabase/migrations/20260526000100_admin_analytics_foundation.sql`
+  - Adds `cp_snapshot_batches` and `cp_snapshot_entries`.
+  - Adds RPC-only Admin Analytics functions for member, CP, GvG, manual snapshot capture, snapshot history, and CP growth reports.
+  - Enforces backend permission gates for staff access, scoped `view_cp`, wrong-guild denial, and member/pending denial.
+  - Keeps existing legacy `cp_snapshots` and older CP snapshot/growth RPCs intact.
+- `supabase/tests/local_validation_anteiku.sql`
+  - Adds Milestone 24B local validation for schema/RLS, permission denials, CP privacy, snapshot capture, growth calculation, GvG analytics gates, direct table denial, and active Owner count.
+
 ## Milestone 22F Cosmetics Catalog Sync Script
 
 - `scripts/sync-cosmetics-catalog.mjs`

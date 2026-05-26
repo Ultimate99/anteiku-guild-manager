@@ -1,5 +1,29 @@
 # Testing
 
+## Milestone 24B Admin Analytics Backend
+
+Backend/RPC-only local validation passed for Admin Analytics.
+
+Commands:
+- `npx.cmd supabase db reset`
+- `Get-Content supabase/tests/local_validation_anteiku.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres`
+
+Result:
+- Local migration stack applied from scratch.
+- Full local validation script passed.
+- Milestone 24B focused result: 23 PASS / 0 FAIL / 0 SKIP.
+- `npm.cmd run build` was skipped because no frontend source files changed.
+
+Validated:
+- `cp_snapshot_batches` and `cp_snapshot_entries` exist, have RLS enabled, and have no direct anon/authenticated grants.
+- Owner global member analytics, Leader scoped member analytics, Admin scoped CP analytics, and authorized GvG analytics pass.
+- Members, pending users, wrong-guild staff, and admins without `view_cp` are denied where appropriate.
+- Snapshot capture creates batch/entry rows only through RPC.
+- Snapshot capture is denied without `view_cp`.
+- Growth report calculates latest-vs-previous snapshot growth.
+- Direct member reads of snapshot tables are denied.
+- Active Owner count remains one in the 24B validation fixture.
+
 ## Profile Mobile + Inline Edit Polish
 
 Frontend-only Profile mobile + inline edit polish build, source checks, and local browser validation passed.

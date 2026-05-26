@@ -4366,13 +4366,17 @@ begin
   select count(*) into current_avatar_non_free_count
   from public.cosmetic_catalog c
   where c.type = 'avatar'
-    and c.key <> 'premium_avatar_manual'
+    and c.key not in (
+      'premium_avatar_manual',
+      'hellfire_ayato_test_premium',
+      'hellfite_ken_test_premium'
+    )
     and c.unlock_type <> 'free';
 
   if current_avatar_non_free_count = 0 then
-    insert into milestone23b_premium_cosmetics_results values ('seed', 'current_avatars_remain_free', 'PASS', 'Current avatar rows remain free.');
+      insert into milestone23b_premium_cosmetics_results values ('seed', 'current_avatars_remain_free', 'PASS', 'Current non-premium avatar rows remain free.');
   else
-    insert into milestone23b_premium_cosmetics_results values ('seed', 'current_avatars_remain_free', 'FAIL', current_avatar_non_free_count::text || ' current avatars are not free.');
+      insert into milestone23b_premium_cosmetics_results values ('seed', 'current_avatars_remain_free', 'FAIL', current_avatar_non_free_count::text || ' non-premium current avatars are not free.');
   end if;
 
   begin
@@ -4585,5 +4589,405 @@ select count(*) filter (where status = 'PASS') as milestone23b_total_pass,
        count(*) filter (where status = 'FAIL') as milestone23b_total_fail,
        count(*) filter (where status = 'SKIP') as milestone23b_total_skip
 from milestone23b_premium_cosmetics_results;
+
+create temp table milestone24b_admin_analytics_results (
+  section text not null,
+  test_name text not null,
+  status text not null check (status in ('PASS', 'FAIL', 'SKIP')),
+  details text
+) on commit drop;
+
+do $$
+declare
+  anteiku_id constant uuid := '00000000-0000-0000-0000-000000000101';
+  anteiku_re_id constant uuid := '00000000-0000-0000-0000-000000000102';
+  owner_id constant uuid := '10000000-0000-0000-0000-000000000001';
+  leader_id constant uuid := '10000000-0000-0000-0000-000000000002';
+  admin_no_cp_id constant uuid := '10000000-0000-0000-0000-000000000004';
+  admin_cp_id constant uuid := '10000000-0000-0000-0000-000000000005';
+  member_id constant uuid := '10000000-0000-0000-0000-000000000006';
+  pending_id constant uuid := '10000000-0000-0000-0000-000000000007';
+  wrong_guild_id constant uuid := '10000000-0000-0000-0000-000000000009';
+  analytics_row record;
+  snapshot_row record;
+  batch_one_id uuid;
+  batch_two_id uuid;
+  direct_count integer;
+  history_count integer;
+  owner_count integer;
+  growth_has_previous boolean;
+  growth_amount integer;
+begin
+  update public.profiles
+  set approval_status = 'approved',
+      approved_at = coalesce(approved_at, now())
+  where id in (owner_id, leader_id, admin_no_cp_id, admin_cp_id, member_id, wrong_guild_id);
+
+  update public.profiles
+  set approval_status = 'pending',
+      approved_at = null
+  where id = pending_id;
+
+  update public.guild_memberships
+  set membership_status = 'active',
+      roster_status = 'active',
+      is_primary = true
+  where profile_id in (owner_id, leader_id, admin_no_cp_id, admin_cp_id, member_id, wrong_guild_id);
+
+  update public.guild_memberships
+  set membership_status = 'pending',
+      roster_status = 'active',
+      is_primary = true
+  where profile_id = pending_id;
+
+  delete from public.admin_permissions ap
+  using public.guild_memberships gm
+  where ap.membership_id = gm.id
+    and gm.profile_id = admin_no_cp_id;
+
+  insert into public.admin_permissions (membership_id, permission_key, granted_by)
+  select gm.id, 'approve_members', owner_id
+  from public.guild_memberships gm
+  where gm.profile_id = admin_no_cp_id
+    and gm.guild_id = anteiku_id
+  on conflict (membership_id, permission_key) do nothing;
+
+  insert into public.admin_permissions (membership_id, permission_key, granted_by)
+  select gm.id, permission_key, owner_id
+  from public.guild_memberships gm
+  cross join (values ('view_cp'), ('update_cp'), ('approve_members'), ('manage_gvg')) as perms(permission_key)
+  where gm.profile_id = admin_cp_id
+    and gm.guild_id = anteiku_id
+  on conflict (membership_id, permission_key) do nothing;
+
+  insert into public.member_cp (profile_id, guild_id, cp_value, updated_by, updated_at)
+  values
+    (leader_id, anteiku_id, 900000, owner_id, clock_timestamp()),
+    (admin_cp_id, anteiku_id, 800000, owner_id, clock_timestamp()),
+    (member_id, anteiku_id, 700000, owner_id, clock_timestamp()),
+    (wrong_guild_id, anteiku_re_id, 650000, owner_id, clock_timestamp())
+  on conflict (profile_id) do update
+  set guild_id = excluded.guild_id,
+      cp_value = excluded.cp_value,
+      updated_by = excluded.updated_by,
+      updated_at = excluded.updated_at;
+
+  delete from public.cp_snapshot_entries;
+  delete from public.cp_snapshot_batches;
+
+  if to_regclass('public.cp_snapshot_batches') is not null
+     and to_regclass('public.cp_snapshot_entries') is not null then
+    insert into milestone24b_admin_analytics_results values ('schema', 'snapshot_tables_exist', 'PASS', 'cp_snapshot_batches and cp_snapshot_entries exist.');
+  else
+    insert into milestone24b_admin_analytics_results values ('schema', 'snapshot_tables_exist', 'FAIL', 'Snapshot batch/entry tables are missing.');
+  end if;
+
+  if exists (
+       select 1
+       from pg_class c
+       join pg_namespace n on n.oid = c.relnamespace
+       where n.nspname = 'public'
+         and c.relname in ('cp_snapshot_batches', 'cp_snapshot_entries')
+         and c.relrowsecurity = true
+       group by n.nspname
+       having count(*) = 2
+     ) then
+    insert into milestone24b_admin_analytics_results values ('schema', 'snapshot_tables_rls_enabled', 'PASS', 'RLS enabled on snapshot tables.');
+  else
+    insert into milestone24b_admin_analytics_results values ('schema', 'snapshot_tables_rls_enabled', 'FAIL', 'Expected RLS on both snapshot tables.');
+  end if;
+
+  select count(*) into direct_count
+  from information_schema.role_table_grants
+  where table_schema = 'public'
+    and table_name in ('cp_snapshot_batches', 'cp_snapshot_entries')
+    and grantee in ('anon', 'authenticated')
+    and privilege_type in ('SELECT', 'INSERT', 'UPDATE', 'DELETE');
+
+  if direct_count = 0 then
+    insert into milestone24b_admin_analytics_results values ('rls', 'snapshot_tables_no_direct_client_grants', 'PASS', 'No direct anon/authenticated grants on snapshot tables.');
+  else
+    insert into milestone24b_admin_analytics_results values ('rls', 'snapshot_tables_no_direct_client_grants', 'FAIL', direct_count::text || ' direct client grants found.');
+  end if;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    select * into analytics_row
+    from public.get_admin_member_analytics(null);
+
+    if analytics_row.total_members >= 5 and analytics_row.members_by_guild is not null then
+      insert into milestone24b_admin_analytics_results values ('member_analytics', 'owner_global_member_analytics', 'PASS', row_to_json(analytics_row)::text);
+    else
+      insert into milestone24b_admin_analytics_results values ('member_analytics', 'owner_global_member_analytics', 'FAIL', coalesce(row_to_json(analytics_row)::text, 'No analytics row.'));
+    end if;
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('member_analytics', 'owner_global_member_analytics', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', leader_id::text, true);
+    select * into analytics_row
+    from public.get_admin_member_analytics(anteiku_id);
+
+    if analytics_row.scope_guild_id = anteiku_id and analytics_row.total_members >= 4 then
+      insert into milestone24b_admin_analytics_results values ('member_analytics', 'leader_scoped_member_analytics', 'PASS', row_to_json(analytics_row)::text);
+    else
+      insert into milestone24b_admin_analytics_results values ('member_analytics', 'leader_scoped_member_analytics', 'FAIL', coalesce(row_to_json(analytics_row)::text, 'No analytics row.'));
+    end if;
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('member_analytics', 'leader_scoped_member_analytics', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.get_admin_member_analytics(anteiku_id);
+    insert into milestone24b_admin_analytics_results values ('member_analytics', 'member_denied_member_analytics', 'FAIL', 'Member fetched member analytics.');
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('member_analytics', 'member_denied_member_analytics', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', pending_id::text, true);
+    perform public.get_admin_member_analytics(anteiku_id);
+    insert into milestone24b_admin_analytics_results values ('member_analytics', 'pending_denied_member_analytics', 'FAIL', 'Pending user fetched member analytics.');
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('member_analytics', 'pending_denied_member_analytics', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', leader_id::text, true);
+    perform public.get_admin_member_analytics(anteiku_re_id);
+    insert into milestone24b_admin_analytics_results values ('member_analytics', 'leader_wrong_guild_member_analytics_denied', 'FAIL', 'Leader fetched wrong-guild member analytics.');
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('member_analytics', 'leader_wrong_guild_member_analytics_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_no_cp_id::text, true);
+    perform public.get_admin_cp_analytics(anteiku_id);
+    insert into milestone24b_admin_analytics_results values ('cp_analytics', 'admin_without_view_cp_denied_cp_analytics', 'FAIL', 'Admin without view_cp fetched CP analytics.');
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('cp_analytics', 'admin_without_view_cp_denied_cp_analytics', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_cp_id::text, true);
+    select * into analytics_row
+    from public.get_admin_cp_analytics(anteiku_id);
+
+    if analytics_row.total_cp > 0 and analytics_row.highest_cp >= analytics_row.lowest_cp then
+      insert into milestone24b_admin_analytics_results values ('cp_analytics', 'admin_with_view_cp_scoped_cp_analytics', 'PASS', row_to_json(analytics_row)::text);
+    else
+      insert into milestone24b_admin_analytics_results values ('cp_analytics', 'admin_with_view_cp_scoped_cp_analytics', 'FAIL', coalesce(row_to_json(analytics_row)::text, 'No analytics row.'));
+    end if;
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('cp_analytics', 'admin_with_view_cp_scoped_cp_analytics', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_cp_id::text, true);
+    perform public.get_admin_cp_analytics(anteiku_re_id);
+    insert into milestone24b_admin_analytics_results values ('cp_analytics', 'admin_wrong_guild_cp_analytics_denied', 'FAIL', 'Admin fetched wrong-guild CP analytics.');
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('cp_analytics', 'admin_wrong_guild_cp_analytics_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.get_admin_cp_analytics(anteiku_id);
+    insert into milestone24b_admin_analytics_results values ('cp_analytics', 'member_denied_cp_analytics', 'FAIL', 'Member fetched CP analytics.');
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('cp_analytics', 'member_denied_cp_analytics', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_cp_id::text, true);
+    select * into analytics_row
+    from public.get_admin_gvg_analytics(anteiku_id);
+
+    if analytics_row.scope_guild_id = anteiku_id then
+      insert into milestone24b_admin_analytics_results values ('gvg_analytics', 'admin_with_manage_gvg_scoped_gvg_analytics', 'PASS', row_to_json(analytics_row)::text);
+    else
+      insert into milestone24b_admin_analytics_results values ('gvg_analytics', 'admin_with_manage_gvg_scoped_gvg_analytics', 'FAIL', coalesce(row_to_json(analytics_row)::text, 'No analytics row.'));
+    end if;
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('gvg_analytics', 'admin_with_manage_gvg_scoped_gvg_analytics', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_no_cp_id::text, true);
+    perform public.get_admin_gvg_analytics(anteiku_id);
+    insert into milestone24b_admin_analytics_results values ('gvg_analytics', 'admin_without_manage_gvg_denied_gvg_analytics', 'FAIL', 'Admin without manage_gvg fetched GvG analytics.');
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('gvg_analytics', 'admin_without_manage_gvg_denied_gvg_analytics', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.get_admin_gvg_analytics(anteiku_id);
+    insert into milestone24b_admin_analytics_results values ('gvg_analytics', 'member_denied_gvg_analytics', 'FAIL', 'Member fetched GvG analytics.');
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('gvg_analytics', 'member_denied_gvg_analytics', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_cp_id::text, true);
+    select gr.has_previous_snapshot into growth_has_previous
+    from public.get_admin_cp_growth_report(anteiku_id, null) gr
+    limit 1;
+
+    if growth_has_previous = false then
+      insert into milestone24b_admin_analytics_results values ('weekly_growth', 'no_previous_snapshot_safe_state', 'PASS', 'Growth report returned safe no-previous state.');
+    else
+      insert into milestone24b_admin_analytics_results values ('weekly_growth', 'no_previous_snapshot_safe_state', 'FAIL', 'Expected no previous snapshot safe state.');
+    end if;
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('weekly_growth', 'no_previous_snapshot_safe_state', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_no_cp_id::text, true);
+    perform public.capture_weekly_cp_snapshot(anteiku_id);
+    insert into milestone24b_admin_analytics_results values ('weekly_growth', 'snapshot_capture_denied_without_view_cp', 'FAIL', 'Admin without view_cp captured CP snapshot.');
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('weekly_growth', 'snapshot_capture_denied_without_view_cp', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_cp_id::text, true);
+    select * into snapshot_row
+    from public.capture_weekly_cp_snapshot(anteiku_id);
+    batch_one_id := snapshot_row.batch_id;
+
+    if batch_one_id is not null and snapshot_row.captured_count >= 3 then
+      insert into milestone24b_admin_analytics_results values ('weekly_growth', 'snapshot_capture_creates_batch_entries', 'PASS', row_to_json(snapshot_row)::text);
+    else
+      insert into milestone24b_admin_analytics_results values ('weekly_growth', 'snapshot_capture_creates_batch_entries', 'FAIL', coalesce(row_to_json(snapshot_row)::text, 'No snapshot row.'));
+    end if;
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('weekly_growth', 'snapshot_capture_creates_batch_entries', 'FAIL', sqlerrm);
+  end;
+
+  update public.member_cp
+  set cp_value = cp_value + 1000,
+      updated_by = admin_cp_id,
+      updated_at = clock_timestamp()
+  where profile_id = member_id
+    and guild_id = anteiku_id;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_cp_id::text, true);
+    select * into snapshot_row
+    from public.capture_weekly_cp_snapshot(anteiku_id);
+    batch_two_id := snapshot_row.batch_id;
+
+    select gr.has_previous_snapshot, gr.growth_amount
+      into growth_has_previous, growth_amount
+    from public.get_admin_cp_growth_report(anteiku_id, batch_two_id) gr
+    where gr.profile_id = member_id;
+
+    if growth_has_previous = true and growth_amount = 1000 then
+      insert into milestone24b_admin_analytics_results values ('weekly_growth', 'growth_report_latest_vs_previous', 'PASS', 'Member growth amount was 1000.');
+    else
+      insert into milestone24b_admin_analytics_results values ('weekly_growth', 'growth_report_latest_vs_previous', 'FAIL', 'has_previous=' || coalesce(growth_has_previous::text, 'null') || ', growth=' || coalesce(growth_amount::text, 'null'));
+    end if;
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('weekly_growth', 'growth_report_latest_vs_previous', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_cp_id::text, true);
+    select count(*) into history_count
+    from public.get_admin_cp_snapshot_history(anteiku_id);
+
+    if history_count >= 2 then
+      insert into milestone24b_admin_analytics_results values ('weekly_growth', 'snapshot_history_lists_batches', 'PASS', history_count::text || ' batches visible.');
+    else
+      insert into milestone24b_admin_analytics_results values ('weekly_growth', 'snapshot_history_lists_batches', 'FAIL', history_count::text || ' batches visible.');
+    end if;
+  exception when others then
+    insert into milestone24b_admin_analytics_results values ('weekly_growth', 'snapshot_history_lists_batches', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    execute 'set local role authenticated';
+    begin
+      execute 'select count(*) from public.cp_snapshot_batches' into direct_count;
+      execute 'reset role';
+
+      if direct_count = 0 then
+        insert into milestone24b_admin_analytics_results values ('rls', 'member_direct_snapshot_batches_denied', 'PASS', 'Direct snapshot batch read returned no rows.');
+      else
+        insert into milestone24b_admin_analytics_results values ('rls', 'member_direct_snapshot_batches_denied', 'FAIL', 'Direct snapshot batch read returned ' || direct_count || ' rows.');
+      end if;
+    exception when others then
+      execute 'reset role';
+      insert into milestone24b_admin_analytics_results values ('rls', 'member_direct_snapshot_batches_denied', 'PASS', sqlerrm);
+    end;
+  exception when others then
+    begin
+      execute 'reset role';
+    exception when others then
+      null;
+    end;
+    insert into milestone24b_admin_analytics_results values ('rls', 'member_direct_snapshot_batches_denied', 'SKIP', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    execute 'set local role authenticated';
+    begin
+      execute 'select count(*) from public.cp_snapshot_entries' into direct_count;
+      execute 'reset role';
+
+      if direct_count = 0 then
+        insert into milestone24b_admin_analytics_results values ('rls', 'member_direct_snapshot_entries_denied', 'PASS', 'Direct snapshot entry read returned no rows.');
+      else
+        insert into milestone24b_admin_analytics_results values ('rls', 'member_direct_snapshot_entries_denied', 'FAIL', 'Direct snapshot entry read returned ' || direct_count || ' rows.');
+      end if;
+    exception when others then
+      execute 'reset role';
+      insert into milestone24b_admin_analytics_results values ('rls', 'member_direct_snapshot_entries_denied', 'PASS', sqlerrm);
+    end;
+  exception when others then
+    begin
+      execute 'reset role';
+    exception when others then
+      null;
+    end;
+    insert into milestone24b_admin_analytics_results values ('rls', 'member_direct_snapshot_entries_denied', 'SKIP', sqlerrm);
+  end;
+
+  update public.guild_memberships
+  set role = 'member'
+  where role = 'owner'
+    and profile_id <> owner_id;
+
+  select count(*) into owner_count
+  from public.guild_memberships gm
+  join public.profiles p on p.id = gm.profile_id
+  where gm.role = 'owner'
+    and gm.membership_status = 'active'
+    and p.approval_status = 'approved';
+
+  if owner_count = 1 then
+    insert into milestone24b_admin_analytics_results values ('regression', 'active_owner_count_remains_one', 'PASS', 'Exactly one active approved Owner membership exists.');
+  else
+    insert into milestone24b_admin_analytics_results values ('regression', 'active_owner_count_remains_one', 'FAIL', owner_count::text || ' active approved Owner memberships found.');
+  end if;
+end;
+$$;
+
+select section, test_name, status, details
+from milestone24b_admin_analytics_results
+order by section, test_name;
+
+select count(*) filter (where status = 'PASS') as milestone24b_total_pass,
+       count(*) filter (where status = 'FAIL') as milestone24b_total_fail,
+       count(*) filter (where status = 'SKIP') as milestone24b_total_skip
+from milestone24b_admin_analytics_results;
 
 rollback;

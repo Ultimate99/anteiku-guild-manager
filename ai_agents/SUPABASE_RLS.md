@@ -1,5 +1,36 @@
 # Supabase RLS
 
+## Milestone 24B Admin Analytics RLS/RPC
+
+Milestone 24B is implemented and locally validated only. It is not applied to staging or production yet.
+
+Migration:
+- `20260526000100_admin_analytics_foundation.sql`
+
+New RPC-only snapshot tables:
+- `cp_snapshot_batches`
+- `cp_snapshot_entries`
+
+RLS/grants:
+- RLS is enabled on both new snapshot tables.
+- No direct anon/authenticated table grants are provided.
+- Snapshot capture and reads are RPC-only.
+
+Analytics RPCs:
+- `get_admin_member_analytics(p_guild_id uuid default null)`
+- `get_admin_cp_analytics(p_guild_id uuid default null)`
+- `get_admin_gvg_analytics(p_guild_id uuid default null)`
+- `capture_weekly_cp_snapshot(p_guild_id uuid default null)`
+- `get_admin_cp_snapshot_history(p_guild_id uuid default null)`
+- `get_admin_cp_growth_report(p_guild_id uuid default null, p_snapshot_id uuid default null)`
+
+Security:
+- Members and pending users are denied Admin Analytics.
+- Wrong-guild staff are denied scoped analytics.
+- CP Analytics and Weekly Growth require backend-enforced scoped `view_cp`.
+- Admins without `view_cp` receive no CP values, growth values, or snapshot data.
+- Owner can use global analytics; scoped staff must request an authorized guild scope.
+
 ## Milestone 23D Premium Cosmetics Production RLS/RPC
 
 Milestone 23D is applied and verified in production.

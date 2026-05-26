@@ -1,5 +1,22 @@
 # Security Rules
 
+## Milestone 24B Admin Analytics Security Rules
+
+Admin Analytics backend support is local-only until staging/production rollout.
+
+Rules:
+- Admin Analytics must remain staff-only.
+- Members and pending/restricted users must not access analytics RPCs.
+- Member analytics can expose non-CP member status/approval/guild summaries only to Owner or scoped staff authority.
+- CP Analytics and Weekly Growth require backend-enforced scoped `view_cp`.
+- Admins without `view_cp` must not receive CP totals, averages, highest/lowest values, missing-CP details, snapshot rows, or growth values.
+- Wrong-guild staff must be denied.
+- Owner can view global analytics and capture global snapshots.
+- Scoped staff can view/capture only authorized guild scope.
+- Frontend must not direct-read `member_cp`, `cp_snapshots`, `cp_snapshot_batches`, or `cp_snapshot_entries`.
+- Snapshot writes must go through `capture_weekly_cp_snapshot(...)` only.
+- No service-role path, direct table grant, or member-facing analytics route is allowed.
+
 ## Owner Cosmetics Grant Tool Rules
 
 Owner Cosmetics is a frontend-only AdminPanel Tools surface for the existing grant RPC.
