@@ -576,11 +576,6 @@ export function Profile() {
             <h3>{t('profile.memberProfile')}</h3>
             <p>{t('profile.lockedFields')}</p>
           </div>
-          {!isEditing ? (
-            <button type="button" className="secondary-action compact-action member-profile-edit-button" onClick={startEditing}>
-              {t('profile.edit')}
-            </button>
-          ) : null}
         </div>
 
         {profileMessage ? <p className="notice-line">{profileMessage}</p> : null}
@@ -678,8 +673,13 @@ export function Profile() {
                   </div>
                 </form>
               ) : (
-                <div>
-                  <span>{t('profile.ign')}</span>
+                <div className="profile-detail-editable-row">
+                  <div className="profile-detail-row-title">
+                    <span>{t('profile.ign')}</span>
+                    <button type="button" className="secondary-action compact-action profile-row-edit-button" onClick={startEditing}>
+                      {t('profile.edit')}
+                    </button>
+                  </div>
                   <strong>{profile?.ign ?? t('common.notSet')}</strong>
                   <small>{t('profile.editableIgn')}</small>
                 </div>
