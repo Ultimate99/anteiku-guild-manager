@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-05-28 - Admin Mobile Section Redesign
+
+- Added CSS-only AdminPanel mobile redesign pass for the remaining admin sections.
+- Commit deployed: `79b15fa style: redesign admin mobile sections`.
+- Source files changed in the feature commit:
+  - `src/styles/app.css`
+- Used Admin Overview and Admin CP Ranking as the visual direction/reference.
+- Tightened Analytics scope selector, sub-tabs, stat cards, and Weekly Growth rows for phone widths.
+- Tightened Members cards and expanded Manage panels.
+- Tightened Admin CP roster/window cards, GvG admin cards, Audit Logs, Permissions, and Owner Tools.
+- Kept Admin Overview and CP Ranking largely unchanged.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Vercel deployment completed successfully and production serves the new CSS asset.
+- No SQL migrations, Supabase/RLS/RPC changes, service/data behavior changes, package/PWA/service-worker changes, Vercel env changes, production data mutations, Admin permission logic changes, CP privacy changes, Analytics calculation changes, GvG logic changes, 3v3 logic changes, or member-status behavior changes were included.
+
 ## 2026-05-28 - Admin Mobile UX Polish
 
 - Added frontend-only AdminPanel mobile UX polish.

@@ -1,5 +1,33 @@
 # Project State
 
+## Admin Mobile Section Redesign Complete
+
+AdminPanel mobile redesign for the remaining admin sections is implemented and deployed.
+
+Production rollout:
+- Commit `79b15fa style: redesign admin mobile sections` was pushed to `main`.
+- Vercel deployment completed successfully.
+- Production serves `assets/index-D0rC3ZAv.css`, which contains the new admin mobile section rules.
+- Source files changed in the feature commit:
+  - `src/styles/app.css`
+
+Behavior:
+- Analytics mobile cards, scope chips, sub-tabs, and Weekly Growth rows were tightened to feel closer to the approved Admin Overview / CP Ranking direction.
+- Members cards and expanded Manage panels now use stronger hierarchy, tighter metadata rows, and compact grouped controls on mobile.
+- Admin CP roster/window cards, GvG admin panels, Audit Logs, Permissions, and Owner Tools received denser dark/crimson mobile card styling.
+- Admin Overview and CP Ranking were not significantly changed.
+
+Security/behavior scope:
+- CSS/frontend presentation only.
+- No SQL migrations, Supabase/RLS/RPC changes, services/data fetching behavior changes, package/PWA/service-worker changes, Vercel env changes, production data mutation, Admin permission logic changes, CP privacy changes, Analytics calculation changes, GvG logic changes, 3v3 logic changes, or member-status behavior changes.
+- CP values remain only in existing authorized Admin CP/Analytics surfaces.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found only `src/styles/app.css` changed.
+- Production app returned HTTP 200, Vercel reported deployment success, and production assets contain the new admin mobile styles.
+- Remaining manual check: authenticated AdminPanel mobile screenshots/console at 360/390/430 widths.
+
 ## Admin Mobile UX Polish Complete
 
 AdminPanel mobile UX polish is implemented and deployed.

@@ -2,10 +2,10 @@
 
 ## Current Recommendation
 
-Admin mobile UX polish is complete and deployed.
+Admin mobile section redesign is complete and deployed.
 
 Recommended next step:
-- Do a manual authenticated AdminPanel mobile smoke pass on production at 360/390/430 widths:
+- Do a manual authenticated AdminPanel mobile smoke pass on production at 360/390/430 widths with extra focus on the redesigned remaining sections:
   - Admin Overview section selector and command cards.
   - Analytics Overview/Members/CP/GvG/Weekly Growth/Attention.
   - Approvals.
@@ -18,6 +18,13 @@ Recommended next step:
   - Tools / Owner Cosmetics.
   - Confirm no horizontal overflow, no bottom-nav overlap, no raw translation keys, no console errors, and no CP values outside existing authorized admin surfaces.
 - Continue with the next user-prioritized milestone after the AdminPanel mobile smoke pass.
+
+Recorded Admin mobile section redesign status:
+- Commit `79b15fa style: redesign admin mobile sections` is deployed.
+- This pass was CSS-only and targeted the remaining Admin sections after the first mobile polish: Analytics, Members, CP, GvG, Audit Logs, Permissions, and Tools.
+- Analytics mobile cards/scope/sub-tabs/Weekly Growth rows, member manage panels, editable CP cards/window controls, GvG admin cards, compact audit cards, permission rows, and Owner Tools were tightened toward the approved Admin Overview / CP Ranking direction.
+- No SQL migrations, Supabase/RLS/RPC changes, service/data behavior changes, package/PWA/service-worker changes, Vercel env changes, production data mutations, Admin permission logic changes, CP privacy changes, Analytics calculation changes, GvG logic changes, 3v3 logic changes, or member-status behavior changed.
+- `npm.cmd run build` passed and production assets were verified.
 
 Recorded Admin mobile polish status:
 - Commit `0dc9eb5 style: polish admin mobile experience` is deployed.

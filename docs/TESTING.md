@@ -1,5 +1,38 @@
 # Testing
 
+## Admin Mobile Section Redesign
+
+Admin mobile section redesign passed build, source, and production asset validation.
+
+Command:
+- `npm.cmd run build`
+
+Result:
+- Build passed with the existing Vite chunk-size warning only.
+
+Production validation:
+- Commit `79b15fa style: redesign admin mobile sections` is deployed.
+- Vercel commit status reported success.
+- Production app returned HTTP 200.
+- Production CSS asset `assets/index-D0rC3ZAv.css` contains the new admin mobile section styles.
+
+Behavior:
+- Analytics, Members, CP, GvG, Audit Logs, Permissions, and Tools received CSS-only mobile hierarchy/density polish.
+- Admin Overview and CP Ranking were kept largely unchanged.
+- Weekly Growth rows, audit metadata, permission toggles, CP cards, member manage panels, and Owner Tools are more compact/mobile-safe.
+
+Security/source validation:
+- Only `src/styles/app.css` changed.
+- No SQL migrations, Supabase/RLS/RPC changes, Supabase commands, services, package files, PWA/service-worker files, Vercel env changes, or production data mutations.
+- No Admin permission logic, CP privacy, Analytics calculations, GvG, 3v3, or member-status behavior changed.
+- Source checks found no protected CP/table/RPC/service-role references in the touched CSS.
+
+Manual test checklist:
+- At 360/390/430 widths, sign in as an authorized admin/owner.
+- Check Admin Analytics, Members, CP, GvG, Audit Logs, Permissions, and Tools.
+- Confirm Overview and CP Ranking still look good.
+- Confirm no horizontal overflow, no bottom-nav overlap, no raw translation keys, no console errors, and no CP values outside existing authorized admin surfaces.
+
 ## Admin Mobile UX Polish
 
 Admin mobile UX polish passed build, source, and production asset validation.

@@ -1,5 +1,10 @@
 # Code Index
 
+## Admin Mobile Section Redesign
+
+- `src/styles/app.css`: Adds CSS-only mobile refinements for the remaining AdminPanel sections after the initial mobile polish. Analytics scope/sub-tabs/stat cards/Weekly Growth rows, Members manage cards, editable CP cards/window controls, GvG admin cards, Audit Logs, Permissions, and Owner Tools now use tighter dark/crimson card styling closer to the approved Admin Overview / CP Ranking direction.
+- Production status: commit `79b15fa style: redesign admin mobile sections` is deployed. This is frontend presentation only; no SQL, Supabase/RLS/RPC, service/data fetching, package/PWA/service-worker, permission, CP privacy, Analytics calculation, GvG, 3v3, or member-status behavior changed.
+
 ## Admin Mobile UX Polish
 
 - `src/components/admin/AdminTabs.jsx`: Adds a mobile-friendly AdminPanel section selector while preserving the existing desktop tab bar and authorized tab list.
