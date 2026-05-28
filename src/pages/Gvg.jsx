@@ -176,22 +176,26 @@ export function Gvg() {
   }
 
   return (
-    <div className="stack">
+    <div className="stack gvg-member-page">
       <section className="panel hero-panel gvg-hero-panel member-compact-panel">
-        <div className="status-badge-row">
-          <StatusBadge tone={selectedEvent ? 'success' : 'warning'}>{t('gvg.voteBadge')}</StatusBadge>
-          <StatusBadge tone={rosterStatusTone(rosterStatus)}>{t(`roster.status.${rosterStatus}.label`)}</StatusBadge>
+        <div className="section-heading-row gvg-mobile-heading">
+          <div>
+            <div className="status-badge-row">
+              <StatusBadge tone={selectedEvent ? 'success' : 'warning'}>{t('gvg.voteBadge')}</StatusBadge>
+              <StatusBadge tone={rosterStatusTone(rosterStatus)}>{t(`roster.status.${rosterStatus}.label`)}</StatusBadge>
+            </div>
+            <h3>{t('gvg.readinessTitle')}</h3>
+            <p>{t('gvg.readinessBody')}</p>
+          </div>
+          <button
+            type="button"
+            className="secondary-action compact-action gvg-refresh-action"
+            onClick={() => loadGvgData()}
+            disabled={loading || saving || !canUseGvg}
+          >
+            {loading ? t('gvg.refreshing') : t('gvg.refresh')}
+          </button>
         </div>
-        <h3>{t('gvg.readinessTitle')}</h3>
-        <p>{t('gvg.readinessBody')}</p>
-        <button
-          type="button"
-          className="secondary-action compact-action"
-          onClick={() => loadGvgData()}
-          disabled={loading || saving || !canUseGvg}
-        >
-          {loading ? t('gvg.refreshing') : t('gvg.refresh')}
-        </button>
       </section>
 
       {error ? <p className="error-line">{error}</p> : null}
@@ -216,7 +220,7 @@ export function Gvg() {
       ) : null}
 
       {canUseGvg && events.length > 0 ? (
-        <section className="panel vote-panel compact-vote-panel" aria-label={t('gvg.votingLabel')}>
+        <section className="panel vote-panel compact-vote-panel gvg-vote-card" aria-label={t('gvg.votingLabel')}>
           {events.length > 1 ? (
             <label>
               {t('gvg.activeEvent')}
@@ -230,11 +234,17 @@ export function Gvg() {
             </label>
           ) : null}
 
-          <div className="approval-meta" aria-label={t('gvg.eventDetails')}>
+          <div className="gvg-vote-card-heading">
             <div>
-              <span>{t('gvg.event')}</span>
-              <strong>{selectedEvent?.title ?? t('gvg.activeEventFallback')}</strong>
+              <p className="eyebrow">{t('gvg.event')}</p>
+              <h3>{selectedEvent?.title ?? t('gvg.activeEventFallback')}</h3>
             </div>
+            <StatusBadge tone={currentVote?.vote_status ? 'success' : 'warning'}>
+              {formatVoteStatus(currentVote?.vote_status, t)}
+            </StatusBadge>
+          </div>
+
+          <div className="approval-meta compact-meta gvg-event-meta" aria-label={t('gvg.eventDetails')}>
             <div>
               <span>{t('gvg.scope')}</span>
               <strong>{selectedEvent?.scope === 'global' ? t('gvg.global') : selectedEvent?.guild?.name ?? t('gvg.guild')}</strong>
@@ -249,10 +259,10 @@ export function Gvg() {
             </div>
           </div>
 
-          <div className="vote-actions">
+          <div className="vote-actions gvg-vote-segment">
             <button
               type="button"
-              className="primary-action"
+              className="primary-action gvg-vote-option"
               data-active={voteStatus === 'present'}
               onClick={() => {
                 setVoteStatus('present');
@@ -264,7 +274,7 @@ export function Gvg() {
             </button>
             <button
               type="button"
-              className="danger-action"
+              className="danger-action gvg-vote-option"
               data-active={voteStatus === 'absent'}
               onClick={() => setVoteStatus('absent')}
               disabled={saving}
@@ -286,7 +296,7 @@ export function Gvg() {
             </label>
           ) : null}
 
-          <button type="button" className="primary-action" onClick={handleSubmitVote} disabled={saving || !selectedEventId}>
+          <button type="button" className="primary-action compact-action gvg-save-action" onClick={handleSubmitVote} disabled={saving || !selectedEventId}>
             {saving ? t('gvg.savingVote') : t('gvg.saveVote')}
           </button>
         </section>

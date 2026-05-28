@@ -126,13 +126,12 @@ function ThreeVThreeProfileCard({
   error,
   onDiscordDraftChange,
   onCpDraftChange,
-  onSaveDiscord,
-  onSaveCp,
+  onSaveSetup,
 }) {
   const { language, t } = useLanguage();
 
   return (
-    <section className="panel three-v-three-profile-card">
+    <section className="panel three-v-three-profile-card three-v-three-setup-card">
       <div className="section-heading-row">
         <div>
           <p className="eyebrow">{t('threeVThree.playerSetup')}</p>
@@ -143,8 +142,8 @@ function ThreeVThreeProfileCard({
         </StatusBadge>
       </div>
 
-      <div className="three-v-three-setup-grid">
-        <form className="three-v-three-inline-form" onSubmit={onSaveDiscord}>
+      <form className="three-v-three-setup-form" onSubmit={onSaveSetup}>
+        <div className="three-v-three-setup-grid">
           <label>
             <span>{t('threeVThree.discordUsername')}</span>
             <input
@@ -154,14 +153,9 @@ function ThreeVThreeProfileCard({
               placeholder={t('threeVThree.discordPlaceholder')}
               autoComplete="off"
             />
+            <small>{t('threeVThree.discordHelp')}</small>
           </label>
-          <button type="submit" className="secondary-action compact-action" disabled={savingField === 'discord'}>
-            {savingField === 'discord' ? t('common.working') : t('common.save')}
-          </button>
-          <small>{t('threeVThree.discordHelp')}</small>
-        </form>
 
-        <form className="three-v-three-inline-form" onSubmit={onSaveCp}>
           <label>
             <span>{t('threeVThree.publicCombinedCp')}</span>
             <input
@@ -171,17 +165,18 @@ function ThreeVThreeProfileCard({
               onChange={(event) => onCpDraftChange(event.target.value)}
               placeholder={t('threeVThree.combinedCpPlaceholder')}
             />
+            <small>
+              {profile?.combinedCp !== null && profile?.combinedCp !== undefined
+                ? displayCp(profile.combinedCp, language, t('common.notSet'))
+                : t('threeVThree.combinedCpHelp')}
+            </small>
           </label>
-          <button type="submit" className="secondary-action compact-action" disabled={savingField === 'cp'}>
-            {savingField === 'cp' ? t('common.working') : t('common.save')}
-          </button>
-          <small>
-            {profile?.combinedCp !== null && profile?.combinedCp !== undefined
-              ? displayCp(profile.combinedCp, language, t('common.notSet'))
-              : t('threeVThree.combinedCpHelp')}
-          </small>
-        </form>
-      </div>
+        </div>
+
+        <button type="submit" className="secondary-action compact-action three-v-three-save-setup" disabled={savingField === 'setup'}>
+          {savingField === 'setup' ? t('common.working') : t('threeVThree.saveSetup')}
+        </button>
+      </form>
 
       {message ? <p className="notice-line">{message}</p> : null}
       {error ? <p className="error-line">{error}</p> : null}
@@ -275,6 +270,8 @@ function TeamCard({
   onReopenTeam,
   onDisbandTeam,
   showRequestAction = true,
+  compact = false,
+  hideHeader = false,
 }) {
   const { t } = useLanguage();
   const emptySlots = team.slots.filter((slot) => slot.isEmpty);
@@ -282,14 +279,16 @@ function TeamCard({
   const canShowPlus = emptySlots.length > 0 && team.status === 'open';
 
   return (
-    <article className="three-v-three-team-card" data-status={team.status}>
-      <header className="three-v-three-team-header">
-        <div>
-          <p className="eyebrow">{t('threeVThree.team')}</p>
-          <h3>{team.name || t('threeVThree.unnamedTeam')}</h3>
-        </div>
-        <StatusBadge tone={statusTone(team.status)}>{t(`threeVThree.status.${team.status}`)}</StatusBadge>
-      </header>
+    <article className="three-v-three-team-card" data-status={team.status} data-compact={compact ? 'true' : 'false'}>
+      {!hideHeader ? (
+        <header className="three-v-three-team-header">
+          <div>
+            <p className="eyebrow">{t('threeVThree.team')}</p>
+            <h3>{team.name || t('threeVThree.unnamedTeam')}</h3>
+          </div>
+          <StatusBadge tone={statusTone(team.status)}>{t(`threeVThree.status.${team.status}`)}</StatusBadge>
+        </header>
+      ) : null}
 
       <div className="three-v-three-slots" aria-label={t('threeVThree.slots')}>
         {team.slots.map((slot) => (
@@ -401,7 +400,7 @@ function FindTeamTab({
           ))}
         </div>
       ) : (
-        <section className="panel three-v-three-empty-panel">
+        <section className="panel three-v-three-empty-panel compact-empty-state">
           <h3>{t('threeVThree.noTeams')}</h3>
           <p>{t('threeVThree.noTeamsBody')}</p>
         </section>
@@ -550,7 +549,7 @@ function MyRequestsTab({
 
   return (
     <section className="three-v-three-tab-panel three-v-three-requests-layout">
-      <section className="panel">
+      <section className="panel three-v-three-request-section">
         <div className="section-heading-row">
           <div>
             <p className="eyebrow">{t('threeVThree.myTeam')}</p>
@@ -571,15 +570,17 @@ function MyRequestsTab({
             onReopenTeam={onReopenTeam}
             onDisbandTeam={onDisbandTeam}
             showRequestAction={false}
+            compact
+            hideHeader
           />
         ) : currentTeam ? (
-          <TeamCard team={currentTeam} canManage={false} showRequestAction={false} />
+          <TeamCard team={currentTeam} canManage={false} showRequestAction={false} compact hideHeader />
         ) : (
-          <p className="muted-line">{t('threeVThree.noActiveTeamBody')}</p>
+          <p className="muted-line compact-state-line">{t('threeVThree.noActiveTeamBody')}</p>
         )}
       </section>
 
-      <section className="panel">
+      <section className="panel three-v-three-request-section">
         <div className="section-heading-row">
           <div>
             <p className="eyebrow">{t('threeVThree.incomingRequests')}</p>
@@ -600,11 +601,11 @@ function MyRequestsTab({
             ))}
           </div>
         ) : (
-          <p className="muted-line">{t('threeVThree.noIncomingRequests')}</p>
+          <p className="muted-line compact-state-line">{t('threeVThree.noIncomingRequests')}</p>
         )}
       </section>
 
-      <section className="panel">
+      <section className="panel three-v-three-request-section">
         <div className="section-heading-row">
           <div>
             <p className="eyebrow">{t('threeVThree.outgoingRequests')}</p>
@@ -624,7 +625,7 @@ function MyRequestsTab({
             ))}
           </div>
         ) : (
-          <p className="muted-line">{t('threeVThree.noOutgoingRequests')}</p>
+          <p className="muted-line compact-state-line">{t('threeVThree.noOutgoingRequests')}</p>
         )}
       </section>
     </section>
@@ -700,16 +701,7 @@ export function ThreeVThree() {
     }
   };
 
-  const handleSaveDiscord = (event) => {
-    event.preventDefault();
-    runAction(
-      'discord',
-      () => updateDiscordUsername(discordDraft),
-      'threeVThree.discordSaved',
-    );
-  };
-
-  const handleSaveCp = (event) => {
+  const handleSaveSetup = (event) => {
     event.preventDefault();
     const parsedCp = parseCombinedCpInput(profileCpDraft);
 
@@ -719,9 +711,12 @@ export function ThreeVThree() {
     }
 
     runAction(
-      'cp',
-      () => updateCombinedCp(parsedCp),
-      'threeVThree.combinedCpSaved',
+      'setup',
+      async () => {
+        await updateDiscordUsername(discordDraft);
+        await updateCombinedCp(parsedCp);
+      },
+      'threeVThree.setupSaved',
     );
   };
 
@@ -823,7 +818,7 @@ export function ThreeVThree() {
             <p className="eyebrow">{t('threeVThree.title')}</p>
             <h3>{t('threeVThree.heroTitle')}</h3>
           </div>
-          <button type="button" className="secondary-action compact-action" onClick={refresh} disabled={loading || Boolean(busyKey)}>
+          <button type="button" className="secondary-action compact-action three-v-three-refresh-action" onClick={refresh} disabled={loading || Boolean(busyKey)}>
             {loading ? t('common.loading') : t('common.refresh')}
           </button>
         </div>
@@ -853,8 +848,7 @@ export function ThreeVThree() {
         error={error}
         onDiscordDraftChange={setDiscordDraft}
         onCpDraftChange={setProfileCpDraft}
-        onSaveDiscord={handleSaveDiscord}
-        onSaveCp={handleSaveCp}
+        onSaveSetup={handleSaveSetup}
       />
 
       <div className="three-v-three-tabs" role="tablist" aria-label={t('threeVThree.title')}>

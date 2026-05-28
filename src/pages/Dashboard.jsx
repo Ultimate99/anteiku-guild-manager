@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { CosmeticPreview } from '../components/CosmeticPreview.jsx';
 import { RankBadge } from '../components/RankBadge.jsx';
 import { StatusBadge } from '../components/StatusBadge.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
@@ -8,6 +9,11 @@ import {
   rosterStatusTone,
 } from '../services/adminMemberService.js';
 import { loadMyCpRankSummary } from '../services/cpRankBadgeService.js';
+import { loadMyCosmetics } from '../services/cosmeticsService.js';
+
+function findCosmeticByKey(items, key) {
+  return items?.find((item) => item.key === key) ?? null;
+}
 
 export function Dashboard({ onNavigate }) {
   const { t } = useLanguage();
@@ -15,6 +21,7 @@ export function Dashboard({ onNavigate }) {
   const [rankSummary, setRankSummary] = useState(null);
   const [rankLoading, setRankLoading] = useState(false);
   const [rankError, setRankError] = useState('');
+  const [cosmeticsState, setCosmeticsState] = useState(null);
   const guildName = guild?.name ?? t('guild.assigned');
   const role = membership?.role ?? 'member';
   const rosterStatus = membership?.roster_status ?? 'active';
@@ -57,14 +64,48 @@ export function Dashboard({ onNavigate }) {
     };
   }, [membership?.id, profile?.id]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDashboardCosmetics() {
+      if (!profile?.id || !membership?.id) {
+        return;
+      }
+
+      try {
+        const nextCosmeticsState = await loadMyCosmetics();
+
+        if (!cancelled) {
+          setCosmeticsState(nextCosmeticsState);
+        }
+      } catch {
+        if (!cancelled) {
+          setCosmeticsState(null);
+        }
+      }
+    }
+
+    loadDashboardCosmetics();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [membership?.id, profile?.id]);
+
+  const equippedAvatar = findCosmeticByKey(cosmeticsState?.avatars, cosmeticsState?.equipped?.avatarKey);
+  const equippedFrame = findCosmeticByKey(cosmeticsState?.frames, cosmeticsState?.equipped?.frameKey);
+
   return (
-    <div className="stack">
+    <div className="stack dashboard-mobile-stack">
       <section className="panel hero-panel member-home-panel member-command-panel">
         <div className="dashboard-identity">
           <div className="dashboard-identity-main">
-            <div className="dashboard-guild-mark" aria-hidden="true">
-              {String(guildName).slice(0, 1).toUpperCase()}
-            </div>
+            <CosmeticPreview
+              avatar={equippedAvatar}
+              frame={equippedFrame}
+              label={profile?.ign ?? t('dashboard.memberFallback')}
+              className="dashboard-avatar-preview"
+            />
             <div>
               <p className="eyebrow">{t('dashboard.commandCenter')}</p>
               <h3>{t('dashboard.welcome', { ign: profile?.ign ?? t('dashboard.memberFallback') })}</h3>
@@ -76,7 +117,24 @@ export function Dashboard({ onNavigate }) {
             <StatusBadge tone={rosterStatusTone(rosterStatus)}>{t(`roster.status.${rosterStatus}.label`)}</StatusBadge>
           </div>
         </div>
-        <p>{t('dashboard.body')}</p>
+        <div className="dashboard-command-meta" aria-label={t('dashboard.overview')}>
+          <div>
+            <span>{t('dashboard.guild')}</span>
+            <strong>{guildName}</strong>
+          </div>
+          <div>
+            <span>{t('dashboard.role')}</span>
+            <strong>{t(`roles.${role}`)}</strong>
+          </div>
+          <div>
+            <span>{t('dashboard.gvgStatus')}</span>
+            <strong>{gvgStatus}</strong>
+          </div>
+        </div>
+        <div className="member-id-badges dashboard-rank-row">
+          <RankBadge compact summary={rankSummary} loading={rankLoading} error={rankError} />
+          <StatusBadge tone={rosterStatusTone(rosterStatus)}>{t(`roster.status.${rosterStatus}.label`)}</StatusBadge>
+        </div>
         {rosterStatus !== 'active' ? <p className="muted-copy">{t(`roster.status.${rosterStatus}.summary`)}</p> : null}
       </section>
 
@@ -94,6 +152,16 @@ export function Dashboard({ onNavigate }) {
         <button
           type="button"
           className="command-card dashboard-command-card"
+          onClick={() => canNavigate && onNavigate('leaderboard')}
+          disabled={!canNavigate}
+        >
+          <span>{t('dashboard.quickRanking')}</span>
+          <strong>{t('nav.leaderboard')}</strong>
+          <small>{t('dashboard.quickRankingBody')}</small>
+        </button>
+        <button
+          type="button"
+          className="command-card dashboard-command-card"
           onClick={() => canNavigate && onNavigate('gvg')}
           disabled={!canNavigate}
         >
@@ -101,37 +169,16 @@ export function Dashboard({ onNavigate }) {
           <strong>{t('nav.gvg')}</strong>
           <small>{gvgStatus}</small>
         </button>
-        <article className="command-card dashboard-command-card dashboard-status-card">
-          <span>{t('dashboard.quickGuildStatus')}</span>
-          <strong>{guildName}</strong>
-          <small>{t(`roster.status.${rosterStatus}.label`)}</small>
-        </article>
-      </section>
-
-      <section className="metric-grid compact-metric-grid dashboard-status-grid" aria-label={t('dashboard.overview')}>
-        <article className="metric-card">
-          <span>{t('dashboard.gvgStatus')}</span>
-          <strong>{gvgStatus}</strong>
-        </article>
-        <article className="metric-card">
-          <span>{t('dashboard.role')}</span>
-          <strong>{t(`roles.${role}`)}</strong>
-        </article>
-        <article className="metric-card">
-          <span>{t('dashboard.guild')}</span>
-          <strong>{guildName}</strong>
-        </article>
-      </section>
-
-      <section className="panel member-id-panel" aria-label={t('dashboard.memberSummary')}>
-        <div>
-          <h4>{profile?.ign ?? t('dashboard.memberFallback')}</h4>
-          <p>@{profile?.username ?? t('common.unknown')}</p>
-        </div>
-        <div className="member-id-badges">
-          <RankBadge compact summary={rankSummary} loading={rankLoading} error={rankError} />
-          <StatusBadge tone={rosterStatusTone(rosterStatus)}>{t(`roster.status.${rosterStatus}.label`)}</StatusBadge>
-        </div>
+        <button
+          type="button"
+          className="command-card dashboard-command-card"
+          onClick={() => canNavigate && onNavigate('threeVThree')}
+          disabled={!canNavigate}
+        >
+          <span>{t('dashboard.quickThreeVThree')}</span>
+          <strong>{t('nav.threeVThree')}</strong>
+          <small>{t('dashboard.quickThreeVThreeBody')}</small>
+        </button>
       </section>
     </div>
   );
