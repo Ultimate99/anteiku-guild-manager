@@ -121,14 +121,19 @@ function ThreeVThreeProfileCard({
   profile,
   discordDraft,
   cpDraft,
+  isEditing,
   savingField,
   message,
   error,
   onDiscordDraftChange,
   onCpDraftChange,
+  onEditSetup,
+  onCancelSetup,
   onSaveSetup,
 }) {
   const { language, t } = useLanguage();
+  const hasSavedSetup = Boolean(profile?.discordUsername) && profile?.combinedCp !== null && profile?.combinedCp !== undefined;
+  const showForm = !hasSavedSetup || isEditing;
 
   return (
     <section className="panel three-v-three-profile-card three-v-three-setup-card">
@@ -142,41 +147,64 @@ function ThreeVThreeProfileCard({
         </StatusBadge>
       </div>
 
-      <form className="three-v-three-setup-form" onSubmit={onSaveSetup}>
-        <div className="three-v-three-setup-grid">
-          <label>
+      {showForm ? (
+        <form className="three-v-three-setup-form" onSubmit={onSaveSetup}>
+          <div className="three-v-three-setup-grid">
+            <label>
+              <span>{t('threeVThree.discordUsername')}</span>
+              <input
+                type="text"
+                value={discordDraft}
+                onChange={(event) => onDiscordDraftChange(event.target.value)}
+                placeholder={t('threeVThree.discordPlaceholder')}
+                autoComplete="off"
+              />
+              <small>{t('threeVThree.discordHelp')}</small>
+            </label>
+
+            <label>
+              <span>{t('threeVThree.publicCombinedCp')}</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={cpDraft}
+                onChange={(event) => onCpDraftChange(event.target.value)}
+                placeholder={t('threeVThree.combinedCpPlaceholder')}
+              />
+              <small>
+                {profile?.combinedCp !== null && profile?.combinedCp !== undefined
+                  ? displayCp(profile.combinedCp, language, t('common.notSet'))
+                  : t('threeVThree.combinedCpHelp')}
+              </small>
+            </label>
+          </div>
+
+          <div className="three-v-three-setup-actions">
+            <button type="submit" className="secondary-action compact-action three-v-three-save-setup" disabled={savingField === 'setup'}>
+              {savingField === 'setup' ? t('common.working') : t('threeVThree.saveSetup')}
+            </button>
+            {hasSavedSetup ? (
+              <button type="button" className="inline-text-action" onClick={onCancelSetup} disabled={savingField === 'setup'}>
+                {t('common.cancel')}
+              </button>
+            ) : null}
+          </div>
+        </form>
+      ) : (
+        <div className="three-v-three-setup-summary">
+          <div>
             <span>{t('threeVThree.discordUsername')}</span>
-            <input
-              type="text"
-              value={discordDraft}
-              onChange={(event) => onDiscordDraftChange(event.target.value)}
-              placeholder={t('threeVThree.discordPlaceholder')}
-              autoComplete="off"
-            />
-            <small>{t('threeVThree.discordHelp')}</small>
-          </label>
-
-          <label>
+            <strong>{formatDiscordUsername(profile.discordUsername)}</strong>
+          </div>
+          <div>
             <span>{t('threeVThree.publicCombinedCp')}</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={cpDraft}
-              onChange={(event) => onCpDraftChange(event.target.value)}
-              placeholder={t('threeVThree.combinedCpPlaceholder')}
-            />
-            <small>
-              {profile?.combinedCp !== null && profile?.combinedCp !== undefined
-                ? displayCp(profile.combinedCp, language, t('common.notSet'))
-                : t('threeVThree.combinedCpHelp')}
-            </small>
-          </label>
+            <strong>{displayCp(profile.combinedCp, language, t('common.notSet'))}</strong>
+          </div>
+          <button type="button" className="secondary-action compact-action" onClick={onEditSetup}>
+            {t('threeVThree.editSetup')}
+          </button>
         </div>
-
-        <button type="submit" className="secondary-action compact-action three-v-three-save-setup" disabled={savingField === 'setup'}>
-          {savingField === 'setup' ? t('common.working') : t('threeVThree.saveSetup')}
-        </button>
-      </form>
+      )}
 
       {message ? <p className="notice-line">{message}</p> : null}
       {error ? <p className="error-line">{error}</p> : null}
@@ -272,11 +300,13 @@ function TeamCard({
   showRequestAction = true,
   compact = false,
   hideHeader = false,
+  hideRequestBlockReason = false,
 }) {
   const { t } = useLanguage();
   const emptySlots = team.slots.filter((slot) => slot.isEmpty);
   const isRequesting = requestingTeamId === team.id;
   const canShowPlus = emptySlots.length > 0 && team.status === 'open';
+  const shouldShowRequestLine = !canManage && showRequestAction && canShowPlus && (team.canRequest || !hideRequestBlockReason);
 
   return (
     <article className="three-v-three-team-card" data-status={team.status} data-compact={compact ? 'true' : 'false'}>
@@ -302,7 +332,7 @@ function TeamCard({
         ))}
       </div>
 
-      {!canManage && showRequestAction && canShowPlus ? (
+      {shouldShowRequestLine ? (
         <div className="three-v-three-request-line">
           {team.canRequest ? (
             <button
@@ -314,7 +344,7 @@ function TeamCard({
               <span aria-hidden="true">+</span>
               {t('threeVThree.requestOpenSlot')}
             </button>
-          ) : (
+          ) : hideRequestBlockReason ? null : (
             <p className="muted-line">{resolveRequestBlockReason(team.requestBlockReason, t)}</p>
           )}
         </div>
@@ -370,6 +400,7 @@ function TeamCard({
 function FindTeamTab({
   teams,
   profile,
+  isAlreadyInTeam,
   requestDrafts,
   requestingTeamId,
   busyKey,
@@ -382,6 +413,10 @@ function FindTeamTab({
 
   return (
     <section className="three-v-three-tab-panel">
+      {isAlreadyInTeam ? (
+        <p className="muted-line compact-state-line three-v-three-global-note">{t('threeVThree.alreadyInTeam')}</p>
+      ) : null}
+
       {teams.length ? (
         <div className="three-v-three-team-grid">
           {teams.map((team) => (
@@ -396,6 +431,7 @@ function FindTeamTab({
               onRequestDraftChange={onRequestDraftChange}
               onRequestSubmit={onRequestSubmit}
               onRequestCancel={onRequestCancel}
+              hideRequestBlockReason={isAlreadyInTeam}
             />
           ))}
         </div>
@@ -409,13 +445,36 @@ function FindTeamTab({
   );
 }
 
-function CreateTeamTab({ profile, teamName, cpDraft, busyKey, onTeamNameChange, onCpDraftChange, onSubmit }) {
+function CreateTeamTab({
+  profile,
+  hasActiveTeam,
+  teamName,
+  cpDraft,
+  busyKey,
+  onTeamNameChange,
+  onCpDraftChange,
+  onGoToMyTeam,
+  onSubmit,
+}) {
   const { t } = useLanguage();
   const cannotCreateReason = !profile?.canCreateOrRequest
     ? t('threeVThree.viewOnlyCreate')
     : !profile?.discordUsername
       ? t('threeVThree.discordRequired')
       : '';
+
+  if (hasActiveTeam) {
+    return (
+      <section className="panel three-v-three-create-panel three-v-three-blocked-panel compact-empty-state">
+        <StatusBadge tone="warning">{t('threeVThree.alreadyInTeam')}</StatusBadge>
+        <h3>{t('threeVThree.alreadyInTeamCreateBlocked')}</h3>
+        <p>{t('threeVThree.leaveOrDisbandFirst')}</p>
+        <button type="button" className="secondary-action compact-action" onClick={onGoToMyTeam}>
+          {t('threeVThree.goToMyTeam')}
+        </button>
+      </section>
+    );
+  }
 
   return (
     <section className="panel three-v-three-create-panel">
@@ -647,9 +706,11 @@ export function ThreeVThree() {
   const [createCpDraft, setCreateCpDraft] = useState('');
   const [requestingTeamId, setRequestingTeamId] = useState('');
   const [requestDrafts, setRequestDrafts] = useState({});
+  const [setupEditing, setSetupEditing] = useState(false);
 
   const threeVThreeProfile = myStatus?.profile ?? teamsState.viewer;
   const teams = teamsState.teams;
+  const hasActiveTeam = Boolean(myStatus?.currentTeam);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -685,7 +746,7 @@ export function ThreeVThree() {
     }
   }, [language, myStatus?.profile, teamsState.viewer]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const runAction = async (key, action, successKey) => {
+  const runAction = async (key, action, successKey, onSuccess) => {
     setBusyKey(key);
     setMessage('');
     setError('');
@@ -693,6 +754,9 @@ export function ThreeVThree() {
     try {
       await action();
       setMessage(t(successKey));
+      if (onSuccess) {
+        onSuccess();
+      }
       await refresh();
     } catch (actionError) {
       setError(formatErrorMessage(actionError, t));
@@ -717,7 +781,15 @@ export function ThreeVThree() {
         await updateCombinedCp(parsedCp);
       },
       'threeVThree.setupSaved',
+      () => setSetupEditing(false),
     );
+  };
+
+  const handleCancelSetup = () => {
+    setDiscordDraft(threeVThreeProfile?.discordUsername ? formatDiscordUsername(threeVThreeProfile.discordUsername) : '');
+    setProfileCpDraft(formatCombinedCp(threeVThreeProfile?.combinedCp, language));
+    setSetupEditing(false);
+    setError('');
   };
 
   const handleCreateTeam = (event) => {
@@ -843,11 +915,14 @@ export function ThreeVThree() {
         profile={threeVThreeProfile}
         discordDraft={discordDraft}
         cpDraft={profileCpDraft}
+        isEditing={setupEditing}
         savingField={busyKey}
         message={message}
         error={error}
         onDiscordDraftChange={setDiscordDraft}
         onCpDraftChange={setProfileCpDraft}
+        onEditSetup={() => setSetupEditing(true)}
+        onCancelSetup={handleCancelSetup}
         onSaveSetup={handleSaveSetup}
       />
 
@@ -875,6 +950,7 @@ export function ThreeVThree() {
         <FindTeamTab
           teams={teams}
           profile={threeVThreeProfile}
+          isAlreadyInTeam={hasActiveTeam}
           requestDrafts={requestDrafts}
           requestingTeamId={requestingTeamId}
           busyKey={busyKey}
@@ -888,11 +964,13 @@ export function ThreeVThree() {
       {!loading && activeTab === 'createTeam' ? (
         <CreateTeamTab
           profile={threeVThreeProfile}
+          hasActiveTeam={hasActiveTeam}
           teamName={teamNameDraft}
           cpDraft={createCpDraft}
           busyKey={busyKey}
           onTeamNameChange={setTeamNameDraft}
           onCpDraftChange={setCreateCpDraft}
+          onGoToMyTeam={() => setActiveTab('myRequests')}
           onSubmit={handleCreateTeam}
         />
       ) : null}
