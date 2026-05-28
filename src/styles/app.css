@@ -1165,10 +1165,19 @@ button.command-card:focus-visible {
   gap: 7px;
 }
 
-.admin-tab-bar {
+.admin-tab-shell {
   position: sticky;
   top: 8px;
   z-index: 4;
+  display: grid;
+  gap: 6px;
+}
+
+.admin-tab-select {
+  display: none;
+}
+
+.admin-tab-bar {
   display: flex;
   gap: 6px;
   overflow-x: auto;
@@ -3526,6 +3535,107 @@ button.command-card:focus-visible {
     -webkit-overflow-scrolling: touch;
   }
 
+  .admin-tab-shell {
+    top: 6px;
+    z-index: 5;
+  }
+
+  .admin-tab-select {
+    display: block;
+    width: 100%;
+    min-height: 42px;
+    border: 1px solid rgba(197, 22, 39, 0.44);
+    border-radius: 0;
+    background: #111116;
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.34);
+  }
+
+  .admin-tab-bar {
+    display: none;
+  }
+
+  .admin-hero-panel {
+    gap: 7px;
+    padding: 10px 11px;
+  }
+
+  .admin-hero-panel p {
+    font-size: 0.8rem;
+    line-height: 1.35;
+  }
+
+  .admin-refresh-action,
+  .admin-section-heading .compact-action,
+  .cp-management-tools .compact-action,
+  .audit-management-tools .compact-action,
+  .permission-management-tools .compact-action,
+  .member-management-tools .compact-action {
+    min-width: 0;
+    min-height: 34px;
+    width: auto;
+    padding: 6px 9px;
+    font-size: 0.7rem;
+  }
+
+  .admin-overview-panel {
+    gap: 9px;
+    padding: 10px;
+  }
+
+  .admin-overview-panel p,
+  .admin-section-heading p {
+    font-size: 0.8rem;
+    line-height: 1.35;
+  }
+
+  .admin-command-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .admin-command-card {
+    min-height: 76px;
+    gap: 6px;
+    padding: 8px;
+  }
+
+  .admin-command-card strong {
+    font-size: 0.86rem;
+    line-height: 1.1;
+  }
+
+  .admin-command-card small {
+    font-size: 0.68rem;
+    line-height: 1.25;
+  }
+
+  .admin-section-tools,
+  .cp-window-panel,
+  .member-card,
+  .permission-card,
+  .audit-card,
+  .cp-card,
+  .gvg-create-panel,
+  .gvg-results-panel,
+  .owner-cosmetics-panel {
+    gap: 9px;
+    padding: 10px;
+  }
+
+  .member-management,
+  .cp-management,
+  .audit-management,
+  .permission-management,
+  .gvg-management,
+  .admin-tab-content {
+    gap: 8px;
+    padding-bottom: 24px;
+  }
+
   .section-heading-row,
   .admin-section-heading,
   .three-v-three-team-header {
@@ -3835,12 +3945,13 @@ button.command-card:focus-visible {
 
   .analytics-scope-panel {
     display: grid;
-    gap: 8px;
+    gap: 7px;
+    padding: 8px;
   }
 
   .analytics-scope-panel > div:first-child {
     display: grid;
-    gap: 5px;
+    gap: 4px;
   }
 
   .analytics-scope-options,
@@ -3849,8 +3960,21 @@ button.command-card:focus-visible {
     padding-inline: 2px;
   }
 
+  .analytics-scope-options {
+    gap: 4px;
+    padding-bottom: 5px;
+  }
+
+  .analytics-scope-chip,
+  .analytics-sub-tab {
+    min-height: 34px;
+    padding: 6px 8px;
+    font-size: 0.68rem;
+  }
+
   .analytics-stat-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
   }
 
   .analytics-group-grid,
@@ -3864,16 +3988,16 @@ button.command-card:focus-visible {
   }
 
   .analytics-stat-card {
-    min-height: 74px;
-    padding: 8px;
+    min-height: 68px;
+    padding: 7px;
   }
 
   .analytics-stat-card strong {
-    font-size: 1.08rem;
+    font-size: 1rem;
   }
 
   .analytics-stat-card[data-variant="hero"] strong {
-    font-size: 1.2rem;
+    font-size: 1.08rem;
   }
 
   .analytics-action-row {
@@ -3891,8 +4015,17 @@ button.command-card:focus-visible {
 
   .analytics-growth-row {
     grid-template-columns: minmax(0, 1fr);
-    gap: 6px;
-    padding: 9px;
+    gap: 5px;
+    padding: 8px;
+  }
+
+  .analytics-growth-row strong[data-label] {
+    display: grid;
+    gap: 2px;
+    justify-content: stretch;
+    padding-bottom: 3px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 0.9rem;
   }
 
   .analytics-growth-row > span,
@@ -3912,6 +4045,10 @@ button.command-card:focus-visible {
     font-weight: 900;
     text-transform: uppercase;
     content: attr(data-label);
+  }
+
+  .analytics-growth-row strong[data-label]::before {
+    font-size: 0.64rem;
   }
 
   .analytics-growth-row > span,
@@ -3963,7 +4100,7 @@ button.command-card:focus-visible {
   .analytics-confirm-actions,
   .profile-inline-row-actions,
   .profile-inline-edit-actions {
-    gap: 8px;
+    gap: 7px;
   }
 
   .member-action-row > button,
@@ -3973,6 +4110,93 @@ button.command-card:focus-visible {
   .profile-inline-row-actions > button,
   .profile-inline-edit-actions > button {
     flex: 1 1 126px;
+    min-height: 38px;
+    padding: 7px 9px;
+    font-size: 0.72rem;
+  }
+
+  .member-filter-grid,
+  .member-edit-grid,
+  .member-admin-actions,
+  .member-action-row,
+  .cp-edit-row,
+  .gvg-date-grid,
+  .gvg-results-grid,
+  .audit-filter-grid {
+    gap: 8px;
+  }
+
+  .member-manage-details summary {
+    min-height: 38px;
+    font-size: 0.72rem;
+  }
+
+  .member-manage-body {
+    gap: 8px;
+    padding-top: 8px;
+  }
+
+  .compact-control-block,
+  .member-edit-block,
+  .permission-checkbox {
+    gap: 7px;
+    padding: 8px;
+  }
+
+  .permission-checkbox-grid,
+  .audit-metadata-list,
+  .cp-card-list,
+  .audit-card-list,
+  .permission-card-list,
+  .member-card-list {
+    gap: 7px;
+  }
+
+  .permission-checkbox-control {
+    gap: 8px;
+  }
+
+  .permission-checkbox small {
+    font-size: 0.72rem;
+    line-height: 1.32;
+  }
+
+  .audit-metadata-list {
+    gap: 6px;
+  }
+
+  .audit-metadata-list > div {
+    gap: 3px;
+    padding: 7px 8px;
+  }
+
+  .audit-metadata-list span {
+    font-size: 0.66rem;
+  }
+
+  .audit-metadata-list strong {
+    font-size: 0.8rem;
+  }
+
+  .audit-card h4,
+  .permission-card h4,
+  .cp-card h4 {
+    font-size: 0.94rem;
+    line-height: 1.14;
+  }
+
+  .cp-window-controls {
+    gap: 8px;
+  }
+
+  .owner-cosmetics-form {
+    gap: 8px;
+  }
+
+  .owner-cosmetics-grant {
+    min-height: 38px;
+    width: auto;
+    padding: 7px 10px;
   }
 
   .three-v-three-request-card,
@@ -4048,6 +4272,22 @@ button.command-card:focus-visible {
 
   .member-card-header .status-badge-row {
     justify-content: flex-start;
+  }
+
+  .admin-command-grid,
+  .analytics-stat-grid,
+  .analytics-stat-grid-compact,
+  .analytics-attention-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-command-card {
+    min-height: 72px;
+    padding: 7px;
+  }
+
+  .admin-command-card small {
+    display: none;
   }
 }
 
