@@ -1,5 +1,39 @@
 # Testing
 
+## Offline Notice Banner
+
+Offline Notice Banner passed build, source, and production app-load validation.
+
+Command:
+- `npm.cmd run build`
+
+Result:
+- Build passed with the existing Vite chunk-size warning only.
+
+Production validation:
+- Commit `2bbd24a feat: add offline notice banner` is deployed.
+- Production app loaded after deployment.
+
+Behavior:
+- Initial offline state uses `navigator.onLine`.
+- Live updates use browser `online` and `offline` events.
+- Banner appears only while offline.
+- Banner text is `You are offline` and `Live guild data requires an internet connection.`
+- Banner hides automatically when connection returns.
+
+Security/cache validation:
+- No SQL migrations, Supabase/RLS/RPC changes, Supabase commands, package/dependency changes, or Vercel env changes.
+- No service worker/cache behavior changed.
+- Supabase/API/Auth/RPC/CP/admin/GvG/3v3 data is not cached.
+- PWA update-banner behavior is unchanged.
+
+Manual test steps:
+- Open production in Chrome.
+- DevTools -> Network -> Offline.
+- Confirm the offline banner appears and does not block bottom navigation.
+- Switch Network back Online.
+- Confirm the banner disappears.
+
 ## PWA Update Available Banner
 
 PWA update-available banner passed build, source, and production asset validation.

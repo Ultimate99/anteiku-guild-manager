@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-05-28 - Offline Notice Banner
+
+- Added a global frontend-only Offline Notice Banner.
+- Commit deployed: `2bbd24a feat: add offline notice banner`.
+- Source files changed in the feature commit:
+  - `src/App.jsx`
+  - `src/styles/app.css`
+- The app detects offline state with `navigator.onLine` plus browser `online` and `offline` events.
+- Shows `You are offline` and `Live guild data requires an internet connection.` only while offline.
+- Automatically hides when the browser comes back online.
+- Styled in the existing dark/crimson Anteiku style and positioned above mobile bottom navigation.
+- Does not queue actions, add full offline mode, or change service worker/cache behavior.
+- Does not cache Supabase/API/Auth/RPC/CP/admin/GvG/3v3 data.
+- PWA update-banner behavior is unchanged.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production app loaded after deployment.
+
 ## 2026-05-28 - PWA Update Available Banner
 
 - Added a production-only PWA update-available banner.

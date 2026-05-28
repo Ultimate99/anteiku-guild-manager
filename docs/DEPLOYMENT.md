@@ -39,6 +39,19 @@ Commit `bb570a6 feat: add PWA update available banner` deployed the PWA update f
 - Supabase/API/Auth/RPC/CP/GvG/3v3/admin/analytics data remains uncached.
 - Manual update-cycle verification should be done after a future deployment with an already-open/installed app session.
 
+### Offline Notice Banner
+
+Commit `2bbd24a feat: add offline notice banner` deployed the frontend-only offline notice.
+
+- Uses `navigator.onLine` plus browser `online` and `offline` events.
+- Shows `You are offline` / `Live guild data requires an internet connection.` only while offline.
+- Hides automatically when connection returns.
+- Styled in the existing dark/crimson Anteiku UI and positioned above mobile bottom navigation.
+- Does not queue actions or add full offline mode.
+- Does not change service worker/cache behavior.
+- Does not cache Supabase/API/Auth/RPC/CP/admin/GvG/3v3 data.
+- Manual verification: use browser DevTools Network Offline/Online and confirm the banner appears/hides.
+
 ## Production Admin Analytics
 
 Milestone 24E deployed AdminPanel Analytics and Weekly Growth to production.

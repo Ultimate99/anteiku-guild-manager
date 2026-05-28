@@ -1,5 +1,37 @@
 # Testing And Validation
 
+## Offline Notice Banner Validation
+
+Offline Notice Banner passed build, source, and production app-load validation.
+
+Command:
+- `npm.cmd run build`
+
+Result:
+- Build passed with the existing Vite chunk-size warning only.
+
+Implemented:
+- Detects initial state from `navigator.onLine`.
+- Listens to browser `online` and `offline` events.
+- Shows a non-blocking offline banner only while offline.
+- Automatically hides when the browser comes back online.
+- Uses existing dark/crimson styling and is positioned above mobile bottom navigation.
+
+Production validation:
+- Commit `2bbd24a feat: add offline notice banner` is deployed.
+- Production app loaded after deployment.
+
+Security/cache validation:
+- No SQL migrations, Supabase/RLS/RPC changes, Supabase commands, package/dependency changes, or Vercel env changes.
+- No service worker/cache behavior changed.
+- No Supabase/API/Auth/RPC/CP/admin/GvG/3v3 data caching was added.
+- PWA update-banner behavior remains unchanged.
+
+Manual verification still needed:
+- In Chrome DevTools, switch Network to Offline and confirm the banner appears.
+- Switch back Online and confirm the banner hides.
+- Check narrow/mobile viewport to confirm the banner does not cover bottom navigation.
+
 ## PWA Update Available Banner Validation
 
 PWA update-available banner passed build, source, and production asset validation.

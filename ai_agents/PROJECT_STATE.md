@@ -1,5 +1,36 @@
 # Project State
 
+## Offline Notice Banner Complete
+
+The global offline notice banner is implemented and deployed.
+
+Production rollout:
+- Commit `2bbd24a feat: add offline notice banner` was pushed to `main`.
+- Source files changed in the feature commit:
+  - `src/App.jsx`
+  - `src/styles/app.css`
+
+Behavior:
+- Uses `navigator.onLine` for initial state and browser `online` / `offline` events for live updates.
+- Shows a non-blocking dark/crimson banner only while the browser is offline.
+- Banner copy:
+  - `You are offline`
+  - `Live guild data requires an internet connection.`
+- Automatically hides when the browser comes back online.
+- Positioned above the bottom navigation so it should not cover mobile nav.
+- UI-only notice; it does not queue actions or add full offline mode.
+
+Security/cache scope:
+- No service worker/cache behavior changed.
+- No Supabase/API/Auth/RPC/CP/admin/GvG/3v3 data is cached.
+- No SQL migrations, Supabase/RLS/RPC changes, package/dependency changes, Vercel env changes, auth behavior changes, production data mutations, or feature behavior changes were included.
+- PWA update-banner behavior is unchanged.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production app loaded after deploy.
+- Remaining manual check: use browser DevTools Network Offline/Online to confirm the banner appears and hides on target devices.
+
 ## PWA Update Available Banner Complete
 
 The PWA update-available banner is implemented and deployed.

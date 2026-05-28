@@ -44,7 +44,10 @@ Current production checkpoint:
 - PWA service worker caches same-origin app shell/static assets only and does not cache Supabase Auth/RPC/API responses.
 - PWA update-available banner is live in production through `bb570a6 feat: add PWA update available banner`. It waits for a service worker update, shows `Update App` / `Later`, and reloads only after user-triggered `SKIP_WAITING` plus `controllerchange`.
 - The update banner keeps Supabase/API/Auth/RPC/CP/GvG/3v3/admin/analytics data uncached.
+- Offline Notice Banner is live in production through `2bbd24a feat: add offline notice banner`. It uses `navigator.onLine` plus `online` / `offline` browser events, shows only while offline, and hides automatically when online returns.
+- Offline Notice Banner is UI-only: no queued actions, no full offline mode, no service worker/cache behavior change, and no Supabase/API/Auth/RPC/CP/admin/GvG/3v3 data caching.
 - Browser-native install prompt / standalone launch still needs a manual device/browser check if install UX confirmation is required.
+- Offline banner DevTools Network Offline/Online verification remains a recommended manual check.
 - Cosmetics v1 uses approved repo static assets only. Do not add arbitrary URLs, player uploads, or Supabase Storage without a planned security review.
 - Vercel Preview env has not been configured for staging yet.
 

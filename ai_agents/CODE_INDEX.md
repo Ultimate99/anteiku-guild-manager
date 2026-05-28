@@ -1,5 +1,11 @@
 # Code Index
 
+## Offline Notice Banner
+
+- `src/App.jsx`: Contains the global `OfflineNotice` UI and online/offline browser-event state handling.
+- `src/styles/app.css`: Adds the dark/crimson offline notice banner styles and mobile-safe positioning above bottom navigation.
+- Production status: commit `2bbd24a feat: add offline notice banner` is deployed. The feature is UI-only, does not change service worker/cache behavior, and does not cache Supabase/API/Auth/RPC/CP/admin/GvG/3v3 data.
+
 ## PWA Update Available Banner
 
 - `public/sw.js`: Supports `{ type: "SKIP_WAITING" }`, calls `self.skipWaiting()` only after that message, and uses cache name `anteiku-static-v2`. It no longer auto-skips waiting during install.

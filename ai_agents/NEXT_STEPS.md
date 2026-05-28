@@ -2,10 +2,10 @@
 
 ## Current Recommendation
 
-PWA install support and the PWA update-available banner are complete and deployed.
+PWA install support, the PWA update-available banner, and the offline notice banner are complete and deployed.
 
 Recommended next step:
-- Do a quick manual install/update UX check on target devices if desired:
+- Do a quick manual PWA/offline UX check on target devices if desired:
   - Desktop Chrome/Edge install app option.
   - Android Chrome Add to Home Screen / Install app.
   - iOS Safari Add to Home Screen name/icon.
@@ -13,7 +13,16 @@ Recommended next step:
   - After a future deployment, open an already-controlled app session and verify the update banner appears.
   - `Later` dismisses the banner for the current session.
   - `Update App` activates the waiting worker and reloads once after `controllerchange`.
+  - Chrome DevTools Network Offline shows `You are offline`.
+  - Returning to Online hides the offline notice.
 - Continue with the next user-prioritized milestone after the install UX check.
+
+Recorded offline notice status:
+- Commit `2bbd24a feat: add offline notice banner` is deployed.
+- The app uses `navigator.onLine` plus `online` / `offline` browser events.
+- The banner appears only while offline and automatically hides when online returns.
+- The banner is UI-only: no queued actions, no full offline mode, and no service worker/cache behavior changes.
+- Supabase/API/Auth/RPC/CP/admin/GvG/3v3 data remains uncached.
 
 Recorded PWA update-banner status:
 - Commit `bb570a6 feat: add PWA update available banner` is deployed.
