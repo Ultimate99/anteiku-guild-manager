@@ -54,6 +54,34 @@ function LoadingPanel() {
   );
 }
 
+function OfflineNotice() {
+  const [isOnline, setIsOnline] = useState(() => (typeof navigator === 'undefined' ? true : navigator.onLine));
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  if (isOnline) {
+    return null;
+  }
+
+  return (
+    <aside className="offline-notice-banner" role="status" aria-live="polite">
+      <strong>You are offline</strong>
+      <span>Live guild data requires an internet connection.</span>
+    </aside>
+  );
+}
+
 function AppContent() {
   const { accessState, loading, membership, recoveryRequired } = useAuth();
   const { t } = useLanguage();
@@ -211,6 +239,7 @@ function AppContent() {
 export default function App() {
   return (
     <LanguageProvider>
+      <OfflineNotice />
       <AuthProvider>
         <AppContent />
       </AuthProvider>
