@@ -4,6 +4,35 @@ The Supabase RLS/RPC implementation has been validated through the Weekly Growth
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
 
+## Milestone 25B 3v3 Team Finder RLS/RPC
+
+Milestone 25B is implemented and locally validated only. Staging and production do not have `20260528000100_three_v_three_team_finder.sql` yet.
+
+Tables:
+- `three_v_three_player_profiles`
+- `three_v_three_teams`
+- `three_v_three_team_members`
+- `three_v_three_join_requests`
+
+RLS/grants:
+- RLS is enabled on all new 3v3 tables.
+- Direct anon/authenticated table grants are revoked.
+- Future frontend access should use only the 3v3 RPCs.
+
+Eligibility:
+- Approved active-membership users with roster status `active`, `trial`, `pending_transfer`, `inactive`, or `on_break` can browse teams.
+- Only `active`, `trial`, and `pending_transfer` can create teams or request joins.
+- Pending, suspended, left, and kicked users are denied.
+
+Security:
+- Public 3v3 Combined CP is self-entered and separate from protected normal CP.
+- 3v3 RPCs must not read or expose `member_cp`, `cp_snapshots`, CP analytics, CP roster, CP ranking, or CP growth.
+- Team owner-only mutations are enforced in RPCs.
+- Request spam rules are backend-enforced.
+
+Validation:
+- Local validation passed with Milestone 25B result: 45 PASS / 0 FAIL / 0 SKIP.
+
 ## Live CP Growth RLS/RPC
 
 Live CP Growth is implemented and production applied/verified.

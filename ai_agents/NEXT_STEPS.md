@@ -2,6 +2,26 @@
 
 ## Current Recommendation
 
+Milestone 25B 3v3 Team Finder backend is implemented and locally validated only.
+
+Recommended next step:
+- Milestone 25C: implement the frontend `3v3` page locally with Find Team, Create Team, and My Requests on top of the 25B RPCs.
+
+Important rollout gates:
+- Do not deploy any 3v3 frontend to staging or production until `20260528000100_three_v_three_team_finder.sql` is applied and verified on that target database.
+- Keep 3v3 Combined CP separate from protected normal account CP.
+- Future frontend must use only the 3v3 RPCs and must not read `member_cp`, `cp_snapshots`, CP Analytics, CP roster, or CP ranking data.
+- Future staging rollout should dry-run and apply `20260528000100_three_v_three_team_finder.sql` before authenticated 3v3 browser validation.
+
+Recorded Milestone 25B status:
+- Added `three_v_three_player_profiles`, `three_v_three_teams`, `three_v_three_team_members`, and `three_v_three_join_requests`.
+- Added RPCs for Discord username, public 3v3 Combined CP, team create/browse/status, join request lifecycle, owner approval/decline/removal/disband, and close/reopen.
+- Local validation passed: `npx.cmd supabase db reset`; `supabase/tests/local_validation_anteiku.sql`; Milestone 25B result 45 PASS / 0 FAIL / 0 SKIP.
+- `npm.cmd run build` was skipped because no frontend source changed.
+- No staging, production, Vercel, deploy, or commit action was performed.
+
+## Previous Recommendation - Analytics UI Polish
+
 Analytics UI polish is live in production.
 
 Recommended next options:

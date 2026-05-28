@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-05-28 - Milestone 25B 3v3 Team Finder Backend
+
+- Added local-only backend/RLS/RPC foundation for future 3v3 Team Finder.
+- Added migration `20260528000100_three_v_three_team_finder.sql`.
+- Added tables for 3v3 player profiles, teams, team members, and join requests.
+- Added RPCs for own Discord username, public 3v3 Combined CP, team creation, team browsing, own 3v3 status, join request lifecycle, owner request decisions, member removal, disband, close, and reopen.
+- Enforced one active team membership and one active owned team per player.
+- Enforced one pending request per player/team, max two attempts, and six-hour cooldown after declined requests.
+- Enforced owner-only approve/decline/remove/disband/close/reopen.
+- Kept 3v3 Combined CP separate from protected account CP; no `member_cp` or `cp_snapshots` data is used.
+- Enabled RLS on all new 3v3 tables and kept direct anon/authenticated table access blocked.
+- Added local validation coverage.
+- `npx.cmd supabase db reset` passed.
+- Full local validation passed with Milestone 25B result 45 PASS / 0 FAIL / 0 SKIP.
+- `npm.cmd run build` was skipped because no frontend source changed.
+- No frontend UI, React source edit, staging action, production action, Vercel env change, deployment, or commit was included.
+
 ## 2026-05-26 - Analytics UI Polish
 
 - Polished AdminPanel -> Analytics as a frontend-only UI/layout/style pass.

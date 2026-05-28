@@ -1,5 +1,47 @@
 # Testing And Validation
 
+## Milestone 25B 3v3 Team Finder Backend Validation
+
+Backend/RLS/RPC-only local validation passed for 3v3 Team Finder.
+
+Commands:
+- `npx.cmd supabase db reset`
+- `Get-Content supabase/tests/local_validation_anteiku.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres`
+
+Result:
+- Local migration stack applied from scratch.
+- Full local validation script passed.
+- Milestone 25B focused result: 45 PASS / 0 FAIL / 0 SKIP.
+- `npm.cmd run build` was skipped because no frontend/runtime source files changed.
+
+Validated:
+- New 3v3 tables exist and have RLS enabled.
+- No direct anon/authenticated grants exist for 3v3 tables.
+- Direct authenticated read/write attempts on 3v3 tables are denied.
+- Approved members can update Discord username and public 3v3 Combined CP.
+- Pending users are denied.
+- Missing Discord is denied for create/request.
+- Creator creates a team and occupies slot 1.
+- One owned active team and one active team membership are enforced.
+- Team name immutability is enforced.
+- Team list returns slot payloads and does not expose normal CP.
+- Requests to open teams work.
+- Duplicate pending request is blocked.
+- Declined retry is blocked before the six-hour cooldown and allowed after cooldown when under max attempts.
+- Max two attempts per requester/team is enforced.
+- Cancelled request can be retried while under the max attempt limit.
+- Owner approve fills the first empty slot and cancels other pending requests by that requester.
+- Owner decline, remove member, close/reopen, and disband flows work.
+- Disbanded teams are hidden from the team finder.
+- Max three members/full-team behavior is enforced.
+- Non-owner approve/decline/remove/disband attempts are blocked.
+- `inactive` users can view but cannot create; `on_break` users cannot request.
+- Active Owner count remains one in the validation fixture.
+
+Source/security validation:
+- The new migration does not query protected `member_cp` or `cp_snapshots`.
+- No frontend UI, service, SQL rollout, staging action, production action, deploy, Vercel env change, or commit was included.
+
 ## Analytics UI Polish Production Validation
 
 Frontend-only AdminPanel Analytics UI polish passed build, source validation, and production Owner smoke.

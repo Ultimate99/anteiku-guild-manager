@@ -1,5 +1,37 @@
 # Project State
 
+## Milestone 25B 3v3 Team Finder Backend Implemented Locally
+
+Milestone 25B is implemented and locally validated as a backend/RLS/RPC foundation for the future member-facing `3v3` tab.
+
+Implemented:
+- Added new migration `20260528000100_three_v_three_team_finder.sql`.
+- Added `three_v_three_player_profiles` for player-entered Discord username and public 3v3 Combined CP.
+- Added `three_v_three_teams`, `three_v_three_team_members`, and `three_v_three_join_requests`.
+- Added RPC-only flows for updating own Discord username, updating own public 3v3 Combined CP, team create/browse/status, join requests, cancel, approve, decline, remove member, disband, close, and reopen.
+- Added local validation coverage in `supabase/tests/local_validation_anteiku.sql`.
+
+Validation:
+- `npx.cmd supabase db reset` passed locally.
+- Full local validation passed through Docker `psql`.
+- Milestone 25B focused validation result: 45 PASS / 0 FAIL / 0 SKIP.
+- `npm.cmd run build` was skipped because no frontend/runtime source files changed.
+
+Security/scope:
+- Backend/database/RPC only.
+- No frontend UI, React source edit, staging action, production action, Vercel env change, deploy, or commit was performed.
+- 3v3 Combined CP is a separate public self-entered value and does not read from or write to protected `member_cp` or `cp_snapshots`.
+- RLS is enabled on all new 3v3 tables and no direct anon/authenticated table grants are present.
+- Writes are RPC-only, use `auth.uid()`, and enforce approved/active membership plus roster eligibility.
+- `inactive` and `on_break` users can view 3v3 teams but cannot create teams or request joins.
+- Pending, suspended, left, and kicked users are denied.
+- One active team membership and one active owned team per player are enforced.
+- Request spam rules are enforced: one pending request per player/team, max two attempts per player/team, and six-hour cooldown after declines.
+
+Next gate:
+- Milestone 25C: implement the frontend 3v3 UI locally on top of the 25B RPCs.
+- Do not deploy 3v3 frontend to any target until `20260528000100_three_v_three_team_finder.sql` is applied and verified on that target database.
+
 ## Analytics UI Polish Complete
 
 Frontend-only AdminPanel Analytics UI polish is live in production.

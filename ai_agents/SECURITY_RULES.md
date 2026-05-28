@@ -1,5 +1,27 @@
 # Security Rules
 
+## Milestone 25B 3v3 Team Finder Security Rules
+
+Milestone 25B is implemented and locally validated only. Do not deploy a 3v3 frontend to staging or production until `20260528000100_three_v_three_team_finder.sql` is applied and verified on that target database.
+
+Rules:
+- 3v3 Team Finder access is for approved users with active primary membership.
+- `inactive` and `on_break` users may view 3v3 teams but cannot create teams or request joins.
+- `active`, `trial`, and `pending_transfer` users may create/request when other requirements pass.
+- Pending, suspended, left, and kicked users are denied.
+- Discord username is required before creating a team or requesting to join.
+- 3v3 Combined CP is required before creating a team or requesting to join.
+- 3v3 Combined CP is public inside the 3v3 feature and is self-entered; it must never be sourced from protected normal CP.
+- Do not read `member_cp`, `cp_snapshots`, CP analytics, CP roster, CP ranking, or CP growth data for 3v3.
+- One player can have only one active 3v3 team membership and one active owned team.
+- Team owner occupies slot 1.
+- Team owner only can approve/decline requests, remove slot 2/3 members, close/reopen, or disband.
+- Team owner cannot remove themselves; ownership transfer is not supported in v1.
+- Team name is immutable after creation.
+- Request spam limits are backend-enforced: one pending request per player/team, max two attempts per player/team, and a six-hour cooldown after a declined request.
+- Accepted requests cancel the requester's other pending requests.
+- Direct client table access to 3v3 tables must remain blocked; use RPC-only reads/writes.
+
 ## Live CP Growth Security Rules
 
 Live CP Growth is live in production through `20260526000300_live_cp_growth_baseline_scope.sql`.

@@ -1,5 +1,41 @@
 # Testing
 
+## Milestone 25B 3v3 Team Finder Backend
+
+Backend/RLS/RPC-only local validation passed.
+
+Commands:
+- `npx.cmd supabase db reset`
+- `Get-Content supabase/tests/local_validation_anteiku.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres`
+
+Result:
+- Full local validation passed.
+- Milestone 25B focused result: 45 PASS / 0 FAIL / 0 SKIP.
+- `npm.cmd run build` was skipped because no frontend/runtime source files changed.
+
+Validated:
+- 3v3 tables exist and have RLS enabled.
+- Direct anon/authenticated table grants are absent.
+- Direct authenticated table reads/writes are denied.
+- Approved members can update Discord username and public 3v3 Combined CP.
+- Missing Discord blocks team creation and join requests.
+- Team creation fills owner slot 1.
+- One active owned team and one active team membership are enforced.
+- Team name immutability is enforced.
+- Team list returns slots without normal CP.
+- Request create/cancel/decline/approve flows work.
+- Duplicate pending requests are blocked.
+- Declined retry cooldown and max two attempts are enforced.
+- Accepted request fills the first empty slot and cancels other pending requests from that requester.
+- Owner remove/disband/close/reopen flows work.
+- Non-owner team management attempts are blocked.
+- `inactive`/`on_break` action restrictions work.
+- Active Owner count remains one in the validation fixture.
+
+Scope:
+- No frontend UI, staging, production, Vercel, deploy, or commit action was included.
+- Normal protected CP (`member_cp`, `cp_snapshots`) was not used for 3v3 Combined CP.
+
 ## Analytics UI Polish
 
 Production validation passed for frontend-only AdminPanel Analytics UI polish.

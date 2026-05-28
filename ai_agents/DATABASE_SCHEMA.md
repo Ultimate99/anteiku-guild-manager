@@ -2,6 +2,8 @@
 
 ## Current Backend Status
 
+Milestone 25B is implemented and locally validated only. 3v3 Team Finder backend/RLS/RPC support lives in `20260528000100_three_v_three_team_finder.sql`; staging and production do not have this migration yet.
+
 Milestone 24E is complete in production. Admin Analytics RPCs and the manual Weekly Growth snapshot batch model are applied and verified in production through `20260526000100_admin_analytics_foundation.sql`.
 
 Milestone 23D completed production rollout for premium cosmetics hardening. Production now has current frames free, future manual avatar/frame enforcement, and grant-by-slug support.
@@ -42,6 +44,9 @@ Current local migration order:
 20. `20260525213900_cosmetics_catalog_sync.sql`
 21. `20260525220522_cosmetics_frame_unlock_hotfix.sql`
 22. `20260526000100_admin_analytics_foundation.sql`
+23. `20260526000200_live_cp_growth.sql`
+24. `20260526000300_live_cp_growth_baseline_scope.sql`
+25. `20260528000100_three_v_three_team_finder.sql`
 
 Migration `20260523000100_member_roster_status_system.sql` is implemented, locally validated, staging validated, and production applied/verified.
 
@@ -58,6 +63,57 @@ Migration `20260525000200_cp_rankings_cosmetics.sql` is implemented and producti
 Migration `20260525000300_premium_cosmetics_grant_helper.sql` is implemented, locally validated, staging validated, and production applied/verified.
 
 Migration `20260526000100_admin_analytics_foundation.sql` is implemented, locally validated, staging validated, and production applied/verified. It adds `cp_snapshot_batches`, `cp_snapshot_entries`, Admin Analytics RPCs, and manual Weekly Growth RPCs.
+
+Migration `20260528000100_three_v_three_team_finder.sql` is implemented and locally validated only. It adds 3v3 Team Finder tables/RLS/RPCs and must not be assumed present in staging or production until an approved rollout applies it.
+
+## Milestone 25B 3v3 Team Finder Backend
+
+Migration:
+- `supabase/migrations/20260528000100_three_v_three_team_finder.sql`
+
+New tables:
+- `three_v_three_player_profiles`: one row per profile for player-entered `discord_username` and public self-entered `combined_cp`.
+- `three_v_three_teams`: immutable team name, owner profile, status `open/full/closed/disbanded`, and timestamps.
+- `three_v_three_team_members`: active/left team slots, role `owner/member`, and public 3v3 Combined CP snapshot at join/update time.
+- `three_v_three_join_requests`: pending/approved/declined/cancelled join requests with attempt number, decision metadata, and public 3v3 Combined CP snapshot.
+
+Core constraints:
+- One active owned 3v3 team per owner profile.
+- One active 3v3 team membership per profile.
+- Unique active slot per team.
+- One pending request per requester/team.
+- Max three active members per team is enforced by RPC/locking.
+- Team names are immutable after creation.
+
+RPCs:
+- `update_my_discord_username(p_discord_username text)`
+- `update_my_3v3_combined_cp(p_combined_cp bigint)`
+- `create_3v3_team(p_team_name text, p_combined_cp bigint)`
+- `get_3v3_teams()`
+- `get_my_3v3_status()`
+- `request_join_3v3_team(p_team_id uuid, p_combined_cp bigint)`
+- `cancel_3v3_request(p_request_id uuid)`
+- `approve_3v3_request(p_request_id uuid)`
+- `decline_3v3_request(p_request_id uuid)`
+- `remove_3v3_member(p_team_id uuid, p_profile_id uuid)`
+- `disband_3v3_team(p_team_id uuid)`
+- `close_3v3_team(p_team_id uuid)`
+- `reopen_3v3_team(p_team_id uuid)`
+
+Eligibility:
+- Approved profiles with active primary membership can view when roster status is `active`, `trial`, `pending_transfer`, `inactive`, or `on_break`.
+- Only `active`, `trial`, and `pending_transfer` roster statuses can create teams or request joins.
+- Pending, suspended, left, and kicked users are denied.
+
+3v3 Combined CP:
+- Public inside the future 3v3 feature.
+- Self-entered and stored separately from protected account CP.
+- Does not read from or write to `member_cp` or `cp_snapshots`.
+
+Validation:
+- Local Supabase reset passed.
+- Local validation script passed through Docker `psql`.
+- Milestone 25B focused validation result: 45 PASS / 0 FAIL / 0 SKIP.
 
 Production Member Status verification:
 - Existing production memberships were backfilled to `roster_status = active`.

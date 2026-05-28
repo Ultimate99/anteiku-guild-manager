@@ -5197,4 +5197,757 @@ select count(*) filter (where status = 'PASS') as milestone24b_total_pass,
        count(*) filter (where status = 'SKIP') as milestone24b_total_skip
 from milestone24b_admin_analytics_results;
 
+create temp table milestone25b_3v3_results (
+  section text not null,
+  test_name text not null,
+  status text not null check (status in ('PASS', 'FAIL', 'SKIP')),
+  details text
+) on commit drop;
+
+do $$
+declare
+  anteiku_id constant uuid := '00000000-0000-0000-0000-000000000101';
+  owner_id constant uuid := '10000000-0000-0000-0000-000000000001';
+  creator_id constant uuid := '25000000-0000-0000-0000-000000000001';
+  requester_id constant uuid := '25000000-0000-0000-0000-000000000002';
+  alt_owner_id constant uuid := '25000000-0000-0000-0000-000000000003';
+  retry_id constant uuid := '25000000-0000-0000-0000-000000000004';
+  fill_two_id constant uuid := '25000000-0000-0000-0000-000000000005';
+  fill_three_id constant uuid := '25000000-0000-0000-0000-000000000006';
+  overflow_id constant uuid := '25000000-0000-0000-0000-000000000007';
+  missing_discord_id constant uuid := '25000000-0000-0000-0000-000000000008';
+  inactive_id constant uuid := '25000000-0000-0000-0000-000000000009';
+  on_break_id constant uuid := '25000000-0000-0000-0000-000000000010';
+  pending_3v3_id constant uuid := '25000000-0000-0000-0000-000000000011';
+  payload jsonb;
+  team_a_id uuid;
+  team_b_id uuid;
+  request_a_id uuid;
+  request_b_id uuid;
+  retry_request_id uuid;
+  fill_request_id uuid;
+  direct_count integer;
+  active_count integer;
+  owner_count integer;
+  team_status text;
+begin
+  begin
+    execute 'reset role';
+  exception when others then
+    null;
+  end;
+
+  delete from public.three_v_three_join_requests;
+  delete from public.three_v_three_team_members;
+  delete from public.three_v_three_teams;
+  delete from public.three_v_three_player_profiles
+  where profile_id in (
+    creator_id,
+    requester_id,
+    alt_owner_id,
+    retry_id,
+    fill_two_id,
+    fill_three_id,
+    overflow_id,
+    missing_discord_id,
+    inactive_id,
+    on_break_id,
+    pending_3v3_id
+  );
+
+  begin
+    insert into auth.users (
+      instance_id,
+      id,
+      aud,
+      role,
+      email,
+      encrypted_password,
+      email_confirmed_at,
+      raw_app_meta_data,
+      raw_user_meta_data,
+      created_at,
+      updated_at
+    )
+    values
+      ('00000000-0000-0000-0000-000000000000', creator_id, 'authenticated', 'authenticated', 'v25-creator.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', requester_id, 'authenticated', 'authenticated', 'v25-requester.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', alt_owner_id, 'authenticated', 'authenticated', 'v25-alt-owner.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', retry_id, 'authenticated', 'authenticated', 'v25-retry.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', fill_two_id, 'authenticated', 'authenticated', 'v25-fill-two.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', fill_three_id, 'authenticated', 'authenticated', 'v25-fill-three.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', overflow_id, 'authenticated', 'authenticated', 'v25-overflow.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', missing_discord_id, 'authenticated', 'authenticated', 'v25-missing-discord.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', inactive_id, 'authenticated', 'authenticated', 'v25-inactive.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', on_break_id, 'authenticated', 'authenticated', 'v25-on-break.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', pending_3v3_id, 'authenticated', 'authenticated', 'v25-pending.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now())
+    on conflict (id) do nothing;
+
+    insert into public.profiles (id, username, profile_slug, ign, approval_status, approved_at)
+    values
+      (creator_id, 'v25_creator', 'v25_creator', 'V25 Creator', 'approved', now()),
+      (requester_id, 'v25_requester', 'v25_requester', 'V25 Requester', 'approved', now()),
+      (alt_owner_id, 'v25_alt_owner', 'v25_alt_owner', 'V25 Alt Owner', 'approved', now()),
+      (retry_id, 'v25_retry', 'v25_retry', 'V25 Retry', 'approved', now()),
+      (fill_two_id, 'v25_fill_two', 'v25_fill_two', 'V25 Fill Two', 'approved', now()),
+      (fill_three_id, 'v25_fill_three', 'v25_fill_three', 'V25 Fill Three', 'approved', now()),
+      (overflow_id, 'v25_overflow', 'v25_overflow', 'V25 Overflow', 'approved', now()),
+      (missing_discord_id, 'v25_no_discord', 'v25_no_discord', 'V25 No Discord', 'approved', now()),
+      (inactive_id, 'v25_inactive', 'v25_inactive', 'V25 Inactive', 'approved', now()),
+      (on_break_id, 'v25_on_break', 'v25_on_break', 'V25 On Break', 'approved', now()),
+      (pending_3v3_id, 'v25_pending', 'v25_pending', 'V25 Pending', 'pending', null)
+    on conflict (id) do update
+    set ign = excluded.ign,
+        approval_status = excluded.approval_status,
+        approved_at = excluded.approved_at;
+
+    insert into public.guild_memberships (profile_id, guild_id, role, membership_status, roster_status, is_primary, assigned_by)
+    values
+      (creator_id, anteiku_id, 'member', 'active', 'active', true, owner_id),
+      (requester_id, anteiku_id, 'member', 'active', 'active', true, owner_id),
+      (alt_owner_id, anteiku_id, 'member', 'active', 'active', true, owner_id),
+      (retry_id, anteiku_id, 'member', 'active', 'active', true, owner_id),
+      (fill_two_id, anteiku_id, 'member', 'active', 'active', true, owner_id),
+      (fill_three_id, anteiku_id, 'member', 'active', 'active', true, owner_id),
+      (overflow_id, anteiku_id, 'member', 'active', 'active', true, owner_id),
+      (missing_discord_id, anteiku_id, 'member', 'active', 'active', true, owner_id),
+      (inactive_id, anteiku_id, 'member', 'active', 'inactive', true, owner_id),
+      (on_break_id, anteiku_id, 'member', 'active', 'on_break', true, owner_id),
+      (pending_3v3_id, anteiku_id, 'member', 'pending', 'active', true, null)
+    on conflict (profile_id, guild_id) do update
+    set role = excluded.role,
+        membership_status = excluded.membership_status,
+        roster_status = excluded.roster_status,
+        is_primary = excluded.is_primary,
+        assigned_by = excluded.assigned_by;
+
+    insert into milestone25b_3v3_results values ('setup', 'test_profiles_seeded', 'PASS', '3v3 disposable users and memberships seeded.');
+  exception when others then
+    insert into milestone25b_3v3_results values ('setup', 'test_profiles_seeded', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    if to_regclass('public.three_v_three_player_profiles') is not null
+       and to_regclass('public.three_v_three_teams') is not null
+       and to_regclass('public.three_v_three_team_members') is not null
+       and to_regclass('public.three_v_three_join_requests') is not null then
+      insert into milestone25b_3v3_results values ('schema', 'tables_exist', 'PASS', 'All 3v3 tables exist.');
+    else
+      insert into milestone25b_3v3_results values ('schema', 'tables_exist', 'FAIL', 'One or more 3v3 tables are missing.');
+    end if;
+
+    select count(*) into direct_count
+    from pg_class c
+    join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'public'
+      and c.relname in (
+        'three_v_three_player_profiles',
+        'three_v_three_teams',
+        'three_v_three_team_members',
+        'three_v_three_join_requests'
+      )
+      and c.relrowsecurity = true;
+
+    if direct_count = 4 then
+      insert into milestone25b_3v3_results values ('schema', 'rls_enabled', 'PASS', 'RLS enabled on all 3v3 tables.');
+    else
+      insert into milestone25b_3v3_results values ('schema', 'rls_enabled', 'FAIL', direct_count::text || ' 3v3 tables have RLS enabled.');
+    end if;
+
+    select count(*) into direct_count
+    from information_schema.role_table_grants
+    where table_schema = 'public'
+      and table_name in (
+        'three_v_three_player_profiles',
+        'three_v_three_teams',
+        'three_v_three_team_members',
+        'three_v_three_join_requests'
+      )
+      and grantee in ('anon', 'authenticated')
+      and privilege_type in ('SELECT', 'INSERT', 'UPDATE', 'DELETE');
+
+    if direct_count = 0 then
+      insert into milestone25b_3v3_results values ('rls', 'no_direct_client_table_grants', 'PASS', 'No direct anon/authenticated grants on 3v3 tables.');
+    else
+      insert into milestone25b_3v3_results values ('rls', 'no_direct_client_table_grants', 'FAIL', direct_count::text || ' direct client grants found.');
+    end if;
+  exception when others then
+    insert into milestone25b_3v3_results values ('schema', 'schema_checks', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', creator_id::text, true);
+    payload := public.update_my_discord_username('@Creator.Main');
+    if payload ->> 'discord_username' = 'creator.main' then
+      insert into milestone25b_3v3_results values ('profile', 'approved_member_updates_discord', 'PASS', payload::text);
+    else
+      insert into milestone25b_3v3_results values ('profile', 'approved_member_updates_discord', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone25b_3v3_results values ('profile', 'approved_member_updates_discord', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', creator_id::text, true);
+    payload := public.update_my_3v3_combined_cp(3250000);
+    if (payload ->> 'combined_cp')::bigint = 3250000 then
+      insert into milestone25b_3v3_results values ('profile', 'approved_member_updates_combined_cp', 'PASS', payload::text);
+    else
+      insert into milestone25b_3v3_results values ('profile', 'approved_member_updates_combined_cp', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone25b_3v3_results values ('profile', 'approved_member_updates_combined_cp', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', pending_3v3_id::text, true);
+    perform public.update_my_discord_username('@pending25');
+    insert into milestone25b_3v3_results values ('eligibility', 'pending_denied_profile_update', 'FAIL', 'Pending user updated 3v3 profile.');
+  exception when others then
+    insert into milestone25b_3v3_results values ('eligibility', 'pending_denied_profile_update', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', missing_discord_id::text, true);
+    perform public.create_3v3_team('No Discord Team', 3000000);
+    insert into milestone25b_3v3_results values ('eligibility', 'missing_discord_denied_create', 'FAIL', 'Team was created without Discord username.');
+  exception when others then
+    insert into milestone25b_3v3_results values ('eligibility', 'missing_discord_denied_create', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', creator_id::text, true);
+    payload := public.create_3v3_team('Anteiku Alpha', 3250000);
+    team_a_id := (payload ->> 'id')::uuid;
+
+    select count(*) into active_count
+    from public.three_v_three_team_members tm
+    where tm.team_id = team_a_id
+      and tm.profile_id = creator_id
+      and tm.slot_number = 1
+      and tm.role = 'owner'
+      and tm.left_at is null
+      and tm.combined_cp_snapshot = 3250000;
+
+    if team_a_id is not null and active_count = 1 then
+      insert into milestone25b_3v3_results values ('team', 'creator_creates_team_slot_one', 'PASS', payload::text);
+    else
+      insert into milestone25b_3v3_results values ('team', 'creator_creates_team_slot_one', 'FAIL', coalesce(payload::text, 'No payload.'));
+    end if;
+  exception when others then
+    insert into milestone25b_3v3_results values ('team', 'creator_creates_team_slot_one', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', creator_id::text, true);
+    perform public.create_3v3_team('Second Owned Team', 3300000);
+    insert into milestone25b_3v3_results values ('team', 'one_owned_active_team_enforced', 'FAIL', 'Creator created a second active owned team.');
+  exception when others then
+    insert into milestone25b_3v3_results values ('team', 'one_owned_active_team_enforced', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', alt_owner_id::text, true);
+    perform public.update_my_discord_username('@alt.owner');
+    perform public.update_my_3v3_combined_cp(3400000);
+    payload := public.create_3v3_team('Anteiku Beta', 3400000);
+    team_b_id := (payload ->> 'id')::uuid;
+
+    if team_b_id is not null then
+      insert into milestone25b_3v3_results values ('team', 'second_team_created_for_request_flow', 'PASS', payload::text);
+    else
+      insert into milestone25b_3v3_results values ('team', 'second_team_created_for_request_flow', 'FAIL', 'No team id returned.');
+    end if;
+  exception when others then
+    insert into milestone25b_3v3_results values ('team', 'second_team_created_for_request_flow', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', missing_discord_id::text, true);
+    perform public.request_join_3v3_team(team_a_id, 3000000);
+    insert into milestone25b_3v3_results values ('eligibility', 'missing_discord_denied_request', 'FAIL', 'Request was created without Discord username.');
+  exception when others then
+    insert into milestone25b_3v3_results values ('eligibility', 'missing_discord_denied_request', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', requester_id::text, true);
+    perform public.update_my_discord_username('@requester25');
+    payload := public.request_join_3v3_team(team_a_id, 3100000);
+    request_a_id := (payload ->> 'id')::uuid;
+
+    if request_a_id is not null and payload ->> 'status' = 'pending' then
+      insert into milestone25b_3v3_results values ('request', 'request_to_open_team_works', 'PASS', payload::text);
+    else
+      insert into milestone25b_3v3_results values ('request', 'request_to_open_team_works', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone25b_3v3_results values ('request', 'request_to_open_team_works', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', requester_id::text, true);
+    perform public.request_join_3v3_team(team_a_id, 3100000);
+    insert into milestone25b_3v3_results values ('request', 'duplicate_pending_request_blocked', 'FAIL', 'Duplicate pending request succeeded.');
+  exception when others then
+    insert into milestone25b_3v3_results values ('request', 'duplicate_pending_request_blocked', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', alt_owner_id::text, true);
+    perform public.approve_3v3_request(request_a_id);
+    insert into milestone25b_3v3_results values ('security', 'non_owner_approve_blocked', 'FAIL', 'Non-owner approved request.');
+  exception when others then
+    insert into milestone25b_3v3_results values ('security', 'non_owner_approve_blocked', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', alt_owner_id::text, true);
+    perform public.decline_3v3_request(request_a_id);
+    insert into milestone25b_3v3_results values ('security', 'non_owner_decline_blocked', 'FAIL', 'Non-owner declined request.');
+  exception when others then
+    insert into milestone25b_3v3_results values ('security', 'non_owner_decline_blocked', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', requester_id::text, true);
+    payload := public.request_join_3v3_team(team_b_id, 3100000);
+    request_b_id := (payload ->> 'id')::uuid;
+
+    if request_b_id is not null then
+      insert into milestone25b_3v3_results values ('request', 'multiple_pending_different_teams_allowed', 'PASS', payload::text);
+    else
+      insert into milestone25b_3v3_results values ('request', 'multiple_pending_different_teams_allowed', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone25b_3v3_results values ('request', 'multiple_pending_different_teams_allowed', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', creator_id::text, true);
+    payload := public.approve_3v3_request(request_a_id);
+
+    select count(*) into active_count
+    from public.three_v_three_team_members tm
+    where tm.team_id = team_a_id
+      and tm.profile_id = requester_id
+      and tm.slot_number = 2
+      and tm.left_at is null;
+
+    if active_count = 1 then
+      insert into milestone25b_3v3_results values ('approval', 'owner_approves_request_first_empty_slot', 'PASS', payload::text);
+    else
+      insert into milestone25b_3v3_results values ('approval', 'owner_approves_request_first_empty_slot', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone25b_3v3_results values ('approval', 'owner_approves_request_first_empty_slot', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    select count(*) into active_count
+    from public.three_v_three_join_requests r
+    where r.id = request_b_id
+      and r.status = 'cancelled';
+
+    if active_count = 1 then
+      insert into milestone25b_3v3_results values ('approval', 'accepted_request_cancels_other_pending', 'PASS', 'Other pending request cancelled.');
+    else
+      insert into milestone25b_3v3_results values ('approval', 'accepted_request_cancels_other_pending', 'FAIL', 'Other pending request was not cancelled.');
+    end if;
+  exception when others then
+    insert into milestone25b_3v3_results values ('approval', 'accepted_request_cancels_other_pending', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', requester_id::text, true);
+    perform public.request_join_3v3_team(team_b_id, 3100000);
+    insert into milestone25b_3v3_results values ('team', 'one_active_team_membership_enforced', 'FAIL', 'Accepted member requested another team.');
+  exception when others then
+    insert into milestone25b_3v3_results values ('team', 'one_active_team_membership_enforced', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', alt_owner_id::text, true);
+    perform public.remove_3v3_member(team_a_id, requester_id);
+    insert into milestone25b_3v3_results values ('security', 'non_owner_remove_blocked', 'FAIL', 'Non-owner removed member.');
+  exception when others then
+    insert into milestone25b_3v3_results values ('security', 'non_owner_remove_blocked', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', creator_id::text, true);
+    payload := public.remove_3v3_member(team_a_id, requester_id);
+
+    select count(*) into active_count
+    from public.three_v_three_team_members tm
+    where tm.team_id = team_a_id
+      and tm.profile_id = requester_id
+      and tm.left_at is null;
+
+    select status into team_status
+    from public.three_v_three_teams
+    where id = team_a_id;
+
+    if active_count = 0 and team_status = 'open' then
+      insert into milestone25b_3v3_results values ('team', 'owner_removes_member_opens_team', 'PASS', payload::text);
+    else
+      insert into milestone25b_3v3_results values ('team', 'owner_removes_member_opens_team', 'FAIL', coalesce(payload::text, 'No payload.') || ' status=' || coalesce(team_status, 'null'));
+    end if;
+  exception when others then
+    insert into milestone25b_3v3_results values ('team', 'owner_removes_member_opens_team', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', retry_id::text, true);
+    perform public.update_my_discord_username('@retry25');
+    payload := public.request_join_3v3_team(team_a_id, 2900000);
+    retry_request_id := (payload ->> 'id')::uuid;
+
+    perform set_config('request.jwt.claim.sub', creator_id::text, true);
+    payload := public.decline_3v3_request(retry_request_id);
+
+    if payload ->> 'status' = 'declined' then
+      insert into milestone25b_3v3_results values ('request', 'owner_declines_request', 'PASS', payload::text);
+    else
+      insert into milestone25b_3v3_results values ('request', 'owner_declines_request', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone25b_3v3_results values ('request', 'owner_declines_request', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', retry_id::text, true);
+    perform public.request_join_3v3_team(team_a_id, 2900000);
+    insert into milestone25b_3v3_results values ('request', 'declined_retry_cooldown_blocked', 'FAIL', 'Declined requester bypassed cooldown.');
+  exception when others then
+    insert into milestone25b_3v3_results values ('request', 'declined_retry_cooldown_blocked', 'PASS', sqlerrm);
+  end;
+
+  begin
+    update public.three_v_three_join_requests
+    set decided_at = now() - interval '7 hours',
+        updated_at = now() - interval '7 hours'
+    where id = retry_request_id;
+
+    perform set_config('request.jwt.claim.sub', retry_id::text, true);
+    payload := public.request_join_3v3_team(team_a_id, 2900000);
+    retry_request_id := (payload ->> 'id')::uuid;
+
+    if (payload ->> 'attempt_number')::integer = 2 then
+      insert into milestone25b_3v3_results values ('request', 'declined_retry_after_cooldown_allowed', 'PASS', payload::text);
+    else
+      insert into milestone25b_3v3_results values ('request', 'declined_retry_after_cooldown_allowed', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone25b_3v3_results values ('request', 'declined_retry_after_cooldown_allowed', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', creator_id::text, true);
+    perform public.decline_3v3_request(retry_request_id);
+    update public.three_v_three_join_requests
+    set decided_at = now() - interval '7 hours',
+        updated_at = now() - interval '7 hours'
+    where id = retry_request_id;
+
+    perform set_config('request.jwt.claim.sub', retry_id::text, true);
+    perform public.request_join_3v3_team(team_a_id, 2900000);
+    insert into milestone25b_3v3_results values ('request', 'max_two_attempts_enforced', 'FAIL', 'Third request attempt succeeded.');
+  exception when others then
+    insert into milestone25b_3v3_results values ('request', 'max_two_attempts_enforced', 'PASS', sqlerrm);
+  end;
+
+  begin
+    foreach active_count in array array[1, 2] loop
+      if active_count = 1 then
+        perform set_config('request.jwt.claim.sub', fill_two_id::text, true);
+        perform public.update_my_discord_username('@filltwo25');
+        payload := public.request_join_3v3_team(team_a_id, 2800000);
+      else
+        perform set_config('request.jwt.claim.sub', fill_three_id::text, true);
+        perform public.update_my_discord_username('@fillthree25');
+        payload := public.request_join_3v3_team(team_a_id, 2700000);
+      end if;
+
+      fill_request_id := (payload ->> 'id')::uuid;
+      perform set_config('request.jwt.claim.sub', creator_id::text, true);
+      perform public.approve_3v3_request(fill_request_id);
+    end loop;
+
+    select count(*) into active_count
+    from public.three_v_three_team_members tm
+    where tm.team_id = team_a_id
+      and tm.left_at is null;
+
+    select status into team_status
+    from public.three_v_three_teams
+    where id = team_a_id;
+
+    if active_count = 3 and team_status = 'full' then
+      insert into milestone25b_3v3_results values ('team', 'max_three_members_sets_full', 'PASS', 'Team full with three active members.');
+    else
+      insert into milestone25b_3v3_results values ('team', 'max_three_members_sets_full', 'FAIL', 'count=' || active_count::text || ', status=' || coalesce(team_status, 'null'));
+    end if;
+  exception when others then
+    insert into milestone25b_3v3_results values ('team', 'max_three_members_sets_full', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', overflow_id::text, true);
+    payload := public.update_my_discord_username('@overflow25');
+
+    if payload ->> 'discord_username' = 'overflow25' then
+      insert into milestone25b_3v3_results values ('profile', 'overflow_member_updates_discord', 'PASS', payload::text);
+    else
+      insert into milestone25b_3v3_results values ('profile', 'overflow_member_updates_discord', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone25b_3v3_results values ('profile', 'overflow_member_updates_discord', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', overflow_id::text, true);
+    perform public.request_join_3v3_team(team_a_id, 2600000);
+    insert into milestone25b_3v3_results values ('team', 'request_to_full_team_blocked', 'FAIL', 'Overflow request to full team succeeded.');
+  exception when others then
+    insert into milestone25b_3v3_results values ('team', 'request_to_full_team_blocked', 'PASS', sqlerrm);
+  end;
+
+  begin
+    update public.three_v_three_teams
+    set name = 'Renamed Team'
+    where id = team_a_id;
+    insert into milestone25b_3v3_results values ('team', 'team_name_immutable', 'FAIL', 'Team name update succeeded.');
+  exception when others then
+    insert into milestone25b_3v3_results values ('team', 'team_name_immutable', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', alt_owner_id::text, true);
+    payload := public.close_3v3_team(team_b_id);
+
+    if payload ->> 'status' = 'closed' then
+      insert into milestone25b_3v3_results values ('team', 'owner_closes_team', 'PASS', payload::text);
+    else
+      insert into milestone25b_3v3_results values ('team', 'owner_closes_team', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone25b_3v3_results values ('team', 'owner_closes_team', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', overflow_id::text, true);
+    perform public.request_join_3v3_team(team_b_id, 2600000);
+    insert into milestone25b_3v3_results values ('team', 'request_to_closed_team_blocked', 'FAIL', 'Request to closed team succeeded.');
+  exception when others then
+    insert into milestone25b_3v3_results values ('team', 'request_to_closed_team_blocked', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', alt_owner_id::text, true);
+    payload := public.reopen_3v3_team(team_b_id);
+
+    if payload ->> 'status' = 'open' then
+      insert into milestone25b_3v3_results values ('team', 'owner_reopens_team', 'PASS', payload::text);
+    else
+      insert into milestone25b_3v3_results values ('team', 'owner_reopens_team', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone25b_3v3_results values ('team', 'owner_reopens_team', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', overflow_id::text, true);
+    payload := public.request_join_3v3_team(team_b_id, 2600000);
+    fill_request_id := (payload ->> 'id')::uuid;
+    payload := public.cancel_3v3_request(fill_request_id);
+
+    if payload ->> 'status' = 'cancelled' then
+      insert into milestone25b_3v3_results values ('request', 'requester_cancels_pending_request', 'PASS', payload::text);
+    else
+      insert into milestone25b_3v3_results values ('request', 'requester_cancels_pending_request', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone25b_3v3_results values ('request', 'requester_cancels_pending_request', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', overflow_id::text, true);
+    payload := public.request_join_3v3_team(team_b_id, 2600000);
+
+    if (payload ->> 'attempt_number')::integer = 2 then
+      insert into milestone25b_3v3_results values ('request', 'cancelled_request_retry_under_limit_allowed', 'PASS', payload::text);
+    else
+      insert into milestone25b_3v3_results values ('request', 'cancelled_request_retry_under_limit_allowed', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone25b_3v3_results values ('request', 'cancelled_request_retry_under_limit_allowed', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', inactive_id::text, true);
+    perform public.update_my_discord_username('@inactive25');
+    payload := public.get_3v3_teams();
+    if jsonb_typeof(payload -> 'teams') = 'array' then
+      insert into milestone25b_3v3_results values ('eligibility', 'inactive_can_view_teams', 'PASS', 'Inactive roster user can view team finder.');
+    else
+      insert into milestone25b_3v3_results values ('eligibility', 'inactive_can_view_teams', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone25b_3v3_results values ('eligibility', 'inactive_can_view_teams', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', inactive_id::text, true);
+    perform public.create_3v3_team('Inactive Team', 2400000);
+    insert into milestone25b_3v3_results values ('eligibility', 'inactive_denied_create', 'FAIL', 'Inactive roster user created team.');
+  exception when others then
+    insert into milestone25b_3v3_results values ('eligibility', 'inactive_denied_create', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', on_break_id::text, true);
+    perform public.update_my_discord_username('@onbreak25');
+    perform public.request_join_3v3_team(team_b_id, 2300000);
+    insert into milestone25b_3v3_results values ('eligibility', 'on_break_denied_request', 'FAIL', 'On-break roster user requested team.');
+  exception when others then
+    insert into milestone25b_3v3_results values ('eligibility', 'on_break_denied_request', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', alt_owner_id::text, true);
+    perform public.disband_3v3_team(team_a_id);
+    insert into milestone25b_3v3_results values ('security', 'non_owner_disband_blocked', 'FAIL', 'Non-owner disbanded team.');
+  exception when others then
+    insert into milestone25b_3v3_results values ('security', 'non_owner_disband_blocked', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', creator_id::text, true);
+    payload := public.disband_3v3_team(team_a_id);
+
+    select count(*) into active_count
+    from public.three_v_three_team_members tm
+    where tm.team_id = team_a_id
+      and tm.left_at is null;
+
+    if payload ->> 'status' = 'disbanded' and active_count = 0 then
+      insert into milestone25b_3v3_results values ('team', 'owner_disbands_team', 'PASS', payload::text);
+    else
+      insert into milestone25b_3v3_results values ('team', 'owner_disbands_team', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone25b_3v3_results values ('team', 'owner_disbands_team', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', creator_id::text, true);
+    payload := public.get_3v3_teams();
+
+    if payload::text not like '%' || team_a_id::text || '%' then
+      insert into milestone25b_3v3_results values ('team', 'disbanded_team_hidden', 'PASS', 'Disbanded team omitted from team finder.');
+    else
+      insert into milestone25b_3v3_results values ('team', 'disbanded_team_hidden', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone25b_3v3_results values ('team', 'disbanded_team_hidden', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', creator_id::text, true);
+    payload := public.get_3v3_teams();
+
+    if payload::text not like '%member_cp%'
+       and payload::text not like '%cp_snapshots%'
+       and payload::text not like '%cp_value%'
+       and payload::text not like '%700000%' then
+      insert into milestone25b_3v3_results values ('privacy', 'team_finder_does_not_expose_normal_cp', 'PASS', '3v3 payload contains public combined_cp only.');
+    else
+      insert into milestone25b_3v3_results values ('privacy', 'team_finder_does_not_expose_normal_cp', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone25b_3v3_results values ('privacy', 'team_finder_does_not_expose_normal_cp', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', requester_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    execute 'set local role authenticated';
+    begin
+      execute 'select count(*) from public.three_v_three_teams' into direct_count;
+      execute 'reset role';
+
+      if direct_count = 0 then
+        insert into milestone25b_3v3_results values ('rls', 'direct_3v3_table_read_denied', 'PASS', 'Direct read returned zero rows.');
+      else
+        insert into milestone25b_3v3_results values ('rls', 'direct_3v3_table_read_denied', 'FAIL', 'Direct read returned ' || direct_count::text || ' rows.');
+      end if;
+    exception when others then
+      execute 'reset role';
+      insert into milestone25b_3v3_results values ('rls', 'direct_3v3_table_read_denied', 'PASS', sqlerrm);
+    end;
+  exception when others then
+    begin
+      execute 'reset role';
+    exception when others then
+      null;
+    end;
+    insert into milestone25b_3v3_results values ('rls', 'direct_3v3_table_read_denied', 'SKIP', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', requester_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    execute 'set local role authenticated';
+    begin
+      execute format(
+        'insert into public.three_v_three_teams (name, owner_profile_id, status) values (%L, %L::uuid, %L)',
+        'Unsafe Direct Team',
+        requester_id::text,
+        'open'
+      );
+      execute 'reset role';
+      insert into milestone25b_3v3_results values ('rls', 'direct_3v3_table_write_denied', 'FAIL', 'Direct table write succeeded.');
+    exception when others then
+      execute 'reset role';
+      insert into milestone25b_3v3_results values ('rls', 'direct_3v3_table_write_denied', 'PASS', sqlerrm);
+    end;
+  exception when others then
+    begin
+      execute 'reset role';
+    exception when others then
+      null;
+    end;
+    insert into milestone25b_3v3_results values ('rls', 'direct_3v3_table_write_denied', 'SKIP', sqlerrm);
+  end;
+
+  update public.guild_memberships
+  set role = 'member'
+  where role = 'owner'
+    and profile_id <> owner_id;
+
+  select count(*) into owner_count
+  from public.guild_memberships gm
+  join public.profiles p on p.id = gm.profile_id
+  where gm.role = 'owner'
+    and gm.membership_status = 'active'
+    and p.approval_status = 'approved';
+
+  if owner_count = 1 then
+    insert into milestone25b_3v3_results values ('regression', 'active_owner_count_remains_one', 'PASS', 'Exactly one active approved Owner membership exists.');
+  else
+    insert into milestone25b_3v3_results values ('regression', 'active_owner_count_remains_one', 'FAIL', owner_count::text || ' active approved Owner memberships found.');
+  end if;
+end;
+$$;
+
+select section, test_name, status, details
+from milestone25b_3v3_results
+order by section, test_name;
+
+select count(*) filter (where status = 'PASS') as milestone25b_total_pass,
+       count(*) filter (where status = 'FAIL') as milestone25b_total_fail,
+       count(*) filter (where status = 'SKIP') as milestone25b_total_skip
+from milestone25b_3v3_results;
+
 rollback;

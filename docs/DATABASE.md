@@ -4,6 +4,8 @@ The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been imple
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
+Milestone 25B 3v3 Team Finder backend is implemented and locally validated only. Staging and production do not have `20260528000100_three_v_three_team_finder.sql` yet.
+
 ## Current Local Migration Order
 
 1. `20260514000100_core_schema.sql`
@@ -30,6 +32,7 @@ Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION
 22. `20260526000100_admin_analytics_foundation.sql`
 23. `20260526000200_live_cp_growth.sql`
 24. `20260526000300_live_cp_growth_baseline_scope.sql`
+25. `20260528000100_three_v_three_team_finder.sql`
 
 Migration `20260523000100_member_roster_status_system.sql` is locally validated, staging validated, and production applied/verified as of Milestone 15E.
 
@@ -52,6 +55,54 @@ Migration `20260526000200_live_cp_growth.sql` is implemented, locally validated,
 Migration `20260526000300_live_cp_growth_baseline_scope.sql` is implemented, locally validated, and production applied/verified. It adds an overload for `get_admin_live_cp_growth(p_guild_id uuid, p_baseline_batch_id uuid)` so Owner can preserve a selected Global baseline while filtering live growth rows to a guild scope.
 
 Cosmetics catalog sync migrations `20260525213531`, `20260525213537`, and `20260525213900` are applied in production. Migration `20260525220522_cosmetics_frame_unlock_hotfix.sql` is applied in production and corrects frame unlock types so only `TXK_Arena*` and `TXK_KOF*` frames are manual while all other frames are free.
+
+Migration `20260528000100_three_v_three_team_finder.sql` is locally implemented/validated only. It adds 3v3 Team Finder backend tables and RPCs and requires a separate staging/production rollout gate before any frontend 3v3 UI deployment.
+
+## Milestone 25B 3v3 Team Finder Backend
+
+Migration:
+- `supabase/migrations/20260528000100_three_v_three_team_finder.sql`
+
+New tables:
+- `three_v_three_player_profiles`
+- `three_v_three_teams`
+- `three_v_three_team_members`
+- `three_v_three_join_requests`
+
+RPCs:
+- `update_my_discord_username(p_discord_username text)`
+- `update_my_3v3_combined_cp(p_combined_cp bigint)`
+- `create_3v3_team(p_team_name text, p_combined_cp bigint)`
+- `get_3v3_teams()`
+- `get_my_3v3_status()`
+- `request_join_3v3_team(p_team_id uuid, p_combined_cp bigint)`
+- `cancel_3v3_request(p_request_id uuid)`
+- `approve_3v3_request(p_request_id uuid)`
+- `decline_3v3_request(p_request_id uuid)`
+- `remove_3v3_member(p_team_id uuid, p_profile_id uuid)`
+- `disband_3v3_team(p_team_id uuid)`
+- `close_3v3_team(p_team_id uuid)`
+- `reopen_3v3_team(p_team_id uuid)`
+
+Rules:
+- Teams are global across guilds.
+- Team creator fills slot 1.
+- Team names are immutable.
+- One active owned team and one active team membership are enforced per player.
+- Requests enforce one pending request per player/team, max two attempts, and a six-hour cooldown after declined requests.
+- Accepted requests cancel the requester's other pending requests.
+- `inactive` and `on_break` users can view teams but cannot create/request.
+- Pending, suspended, left, and kicked users are denied.
+
+3v3 Combined CP:
+- Public self-entered value for 3v3 Team Finder only.
+- Separate from protected normal CP.
+- Does not use `member_cp` or `cp_snapshots`.
+
+Validation:
+- `npx.cmd supabase db reset` passed locally.
+- `supabase/tests/local_validation_anteiku.sql` passed through Docker `psql`.
+- Milestone 25B result: 45 PASS / 0 FAIL / 0 SKIP.
 
 ## Milestone 24B Admin Analytics Backend
 

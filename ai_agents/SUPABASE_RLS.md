@@ -1,5 +1,41 @@
 # Supabase RLS
 
+## Milestone 25B 3v3 Team Finder RLS/RPC
+
+Milestone 25B is implemented and locally validated only. Staging and production do not have `20260528000100_three_v_three_team_finder.sql` yet.
+
+Migration:
+- `20260528000100_three_v_three_team_finder.sql`
+
+New RPC-only tables:
+- `three_v_three_player_profiles`
+- `three_v_three_teams`
+- `three_v_three_team_members`
+- `three_v_three_join_requests`
+
+RLS/grants:
+- RLS is enabled on all new 3v3 tables.
+- Direct anon/authenticated table grants are revoked.
+- Future frontend reads/writes should use only the 3v3 RPCs.
+- Validation confirmed direct authenticated reads/writes on the new tables are denied.
+
+RPC security:
+- All public 3v3 RPCs use `auth.uid()` and accept no arbitrary actor profile id.
+- 3v3 browse/status RPCs allow approved active-membership users, including `inactive` and `on_break`, to view.
+- Team create and join-request RPCs require action-eligible roster status: `active`, `trial`, or `pending_transfer`.
+- Pending, suspended, left, and kicked users are denied.
+- Team owner-only actions are enforced for approve, decline, remove member, close, reopen, and disband.
+- Request approval fills the first empty slot transactionally, cancels the accepted requester's other pending requests, and updates team status.
+
+3v3 CP boundary:
+- `combined_cp` is a public, self-entered 3v3 Team Finder value.
+- It is separate from protected normal account CP.
+- The 3v3 backend must not read or expose `member_cp`, `cp_snapshots`, CP analytics, CP roster, or CP leaderboard data.
+
+Validation:
+- Local Supabase reset passed.
+- Local validation passed with Milestone 25B result: 45 PASS / 0 FAIL / 0 SKIP.
+
 ## Milestone 24B Admin Analytics RLS/RPC
 
 Milestone 24B/24E Admin Analytics is implemented, locally validated, staging validated, and production applied/verified.

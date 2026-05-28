@@ -1,5 +1,11 @@
 # Code Index
 
+## Milestone 25B 3v3 Team Finder Backend
+
+- `supabase/migrations/20260528000100_three_v_three_team_finder.sql`: Adds the local-only 3v3 Team Finder backend/RLS/RPC foundation. Defines `three_v_three_player_profiles`, `three_v_three_teams`, `three_v_three_team_members`, `three_v_three_join_requests`, RLS/no-direct-client-grant posture, eligibility helpers, request spam/cooldown enforcement, team owner actions, and RPC-only 3v3 flows.
+- `supabase/tests/local_validation_anteiku.sql`: Adds Milestone 25B local validation covering schema/RLS, approved/pending/inactive/on_break eligibility, Discord/Combined CP requirements, team create/status rules, request spam/cooldown limits, approve/decline/cancel/remove/disband flows, direct table denial, normal CP non-exposure, and active Owner count.
+- Status: local backend validation passed with 45 PASS / 0 FAIL / 0 SKIP. No frontend 3v3 UI exists yet, and staging/production do not have the 25B migration yet.
+
 ## Analytics UI Polish
 
 - `src/components/admin/AdminAnalyticsSection.jsx`: Frontend-only Analytics UI polish. Adds grouped member stat sections, tighter stat-card variants, visual Weekly Growth row states, and labeled mobile row cells while preserving existing analytics loading, scope, baseline, and RPC behavior.
