@@ -1,5 +1,47 @@
 # Testing And Validation
 
+## PWA Update Available Banner Validation
+
+PWA update-available banner passed build, source, and production asset validation.
+
+Command:
+- `npm.cmd run build`
+
+Result:
+- Build passed with the existing Vite chunk-size warning only.
+
+Implemented:
+- Detects a waiting service worker.
+- Shows a non-blocking update banner with:
+  - `New version available`
+  - `Update now to get the latest app changes.`
+  - `Update App`
+  - `Later`
+- `Update App` posts `{ type: "SKIP_WAITING" }` to the waiting worker and reloads after `controllerchange`.
+- `Later` dismisses the banner for the current session using `sessionStorage`.
+- No forced auto-reload without user action.
+- Production-only guard remains `import.meta.env.PROD`.
+- Service worker no longer auto-runs `skipWaiting()` during install.
+
+Production validation:
+- Commit `bb570a6 feat: add PWA update available banner` is deployed.
+- Production app returned HTTP 200.
+- Production `/sw.js` returned HTTP 200.
+- Production `/sw.js` contains `SKIP_WAITING`, `anteiku-static-v2`, and the same-origin guard.
+- Production JS bundle contains the update-banner flow.
+
+Security/cache validation:
+- No package changes.
+- No SQL migrations, Supabase/RLS/RPC changes, or Supabase commands.
+- Supabase/API/Auth/RPC/CP/GvG/3v3/admin/analytics data is still not cached.
+- Existing conservative service-worker caching remains same-origin static/app-shell only.
+
+Manual verification still needed:
+- With an installed/open app, deploy a newer app shell and confirm the banner appears.
+- Confirm `Later` dismisses for the current session.
+- Confirm `Update App` activates the waiting worker and reloads once.
+- Check no console/service-worker errors in target browsers/devices.
+
 ## Milestone 26A/26B PWA Install Support Validation
 
 PWA install support passed build, source, local preview, and production asset smoke validation.

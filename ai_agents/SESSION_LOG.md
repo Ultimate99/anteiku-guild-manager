@@ -1,5 +1,24 @@
 # Session Log
 
+## 2026-05-28 - PWA Update Available Banner
+
+- Implemented and deployed the PWA update-available banner.
+- Commit `bb570a6 feat: add PWA update available banner` changed only:
+  - `public/sw.js`
+  - `src/registerServiceWorker.js`
+  - `src/styles/app.css`
+- Added waiting-service-worker detection in the existing service worker registration flow.
+- Added a non-blocking dark/crimson banner with `New version available`, `Update now to get the latest app changes.`, `Update App`, and `Later`.
+- `Update App` sends `{ type: "SKIP_WAITING" }` to the waiting worker and reloads only after `controllerchange`.
+- `Later` dismisses the banner for the current browser session via `sessionStorage`.
+- Removed automatic `skipWaiting()` during service-worker install so updates wait for user action.
+- Kept update banner registration production-only through `import.meta.env.PROD`.
+- Kept the existing conservative same-origin static/app-shell caching strategy.
+- Supabase/API/Auth/RPC/CP/GvG/3v3/admin/analytics data remains uncached.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production app and `/sw.js` returned HTTP 200; production `/sw.js` contains `SKIP_WAITING`, `anteiku-static-v2`, and the same-origin guard.
+- Manual browser update-cycle verification remains pending.
+
 ## 2026-05-28 - Milestone 26A/26B PWA Install Support
 
 - Inspected current setup and found no existing PWA manifest, service worker, or Vite PWA plugin setup.

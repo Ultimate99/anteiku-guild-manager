@@ -1,5 +1,12 @@
 # Code Index
 
+## PWA Update Available Banner
+
+- `public/sw.js`: Supports `{ type: "SKIP_WAITING" }`, calls `self.skipWaiting()` only after that message, and uses cache name `anteiku-static-v2`. It no longer auto-skips waiting during install.
+- `src/registerServiceWorker.js`: Detects waiting service workers, renders the non-blocking update banner, handles `Update App` / `Later`, reloads only after `controllerchange`, and is guarded to production builds.
+- `src/styles/app.css`: Adds dark/crimson fixed update-banner styling and mobile stacking.
+- Production status: commit `bb570a6 feat: add PWA update available banner` is deployed. Production app and `/sw.js` are served; manual browser update-cycle verification remains pending.
+
 ## Milestone 26A/26B PWA Install Support
 
 - `index.html`: Adds manifest link, theme color, favicon, Apple mobile metadata, and Apple touch icon.

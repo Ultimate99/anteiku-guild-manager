@@ -1,5 +1,41 @@
 # Project State
 
+## PWA Update Available Banner Complete
+
+The PWA update-available banner is implemented and deployed.
+
+Production rollout:
+- Commit `bb570a6 feat: add PWA update available banner` was pushed to `main`.
+- Source files changed in the feature commit:
+  - `public/sw.js`
+  - `src/registerServiceWorker.js`
+  - `src/styles/app.css`
+
+Behavior:
+- Detects a waiting service worker from a new production deployment.
+- Shows a non-blocking dark/crimson update banner with:
+  - `New version available`
+  - `Update now to get the latest app changes.`
+  - `Update App`
+  - `Later`
+- `Update App` sends `{ type: "SKIP_WAITING" }` to the waiting service worker and reloads after `controllerchange`.
+- `Later` dismisses the banner for the current browser session through `sessionStorage`.
+- No forced auto-reload occurs without user action.
+- The update banner is production-only through `import.meta.env.PROD`.
+- The service worker no longer auto-runs `skipWaiting()` during install; it waits for the explicit update message.
+
+Security/cache scope:
+- Existing conservative app-shell/static-asset caching remains unchanged.
+- Supabase/API/Auth/RPC/CP/GvG/3v3/admin/analytics data is still not cached.
+- No SQL migrations, Supabase/RLS/RPC changes, package/dependency changes, Vercel env changes, production data mutation, auth behavior changes, or feature behavior changes were included.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production app and `/sw.js` returned HTTP 200.
+- Production `/sw.js` includes `SKIP_WAITING`, `anteiku-static-v2`, and the same-origin guard.
+- Production JS bundle includes the update-banner flow.
+- Manual browser update-cycle verification remains pending.
+
 ## Milestone 26A/26B PWA Install Support Complete
 
 Milestone 26A/26B is implemented and deployed as a frontend/build-config-only PWA installability pass.

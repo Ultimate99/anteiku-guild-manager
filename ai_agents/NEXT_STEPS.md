@@ -2,15 +2,27 @@
 
 ## Current Recommendation
 
-Milestone 26A/26B PWA Install Support is complete and deployed.
+PWA install support and the PWA update-available banner are complete and deployed.
 
 Recommended next step:
-- Do a quick manual install UX check on target devices if desired:
+- Do a quick manual install/update UX check on target devices if desired:
   - Desktop Chrome/Edge install app option.
   - Android Chrome Add to Home Screen / Install app.
   - iOS Safari Add to Home Screen name/icon.
   - Standalone launch opens the production app.
+  - After a future deployment, open an already-controlled app session and verify the update banner appears.
+  - `Later` dismisses the banner for the current session.
+  - `Update App` activates the waiting worker and reloads once after `controllerchange`.
 - Continue with the next user-prioritized milestone after the install UX check.
+
+Recorded PWA update-banner status:
+- Commit `bb570a6 feat: add PWA update available banner` is deployed.
+- The banner detects a waiting service worker and shows `New version available` / `Update now to get the latest app changes.`
+- `Update App` posts `{ type: "SKIP_WAITING" }` to the waiting worker.
+- `Later` dismisses through session-only storage.
+- No forced auto-reload occurs without user action.
+- Service worker no longer auto-runs `skipWaiting()` during install.
+- Supabase/API/Auth/RPC/CP/GvG/3v3/admin/analytics data is still not cached.
 
 Recorded Milestone 26A/26B status:
 - Added dependency-free PWA support with `public/manifest.webmanifest`, `public/sw.js`, PWA icons under `public/icons/`, iOS meta tags, and production-only service worker registration.

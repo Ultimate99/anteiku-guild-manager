@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-05-28 - PWA Update Available Banner
+
+- Added a production-only PWA update-available banner.
+- Commit deployed: `bb570a6 feat: add PWA update available banner`.
+- Source files changed in the feature commit:
+  - `public/sw.js`
+  - `src/registerServiceWorker.js`
+  - `src/styles/app.css`
+- The app detects a waiting service worker and shows a non-blocking `New version available` banner.
+- `Update App` sends `{ type: "SKIP_WAITING" }` to the waiting worker and reloads after `controllerchange`.
+- `Later` dismisses the banner for the current session via `sessionStorage`.
+- Service worker no longer auto-runs `skipWaiting()` during install.
+- No forced auto-reload happens without user action.
+- Supabase/API/Auth/RPC/CP/GvG/3v3/admin/analytics data is still not cached.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production app and `/sw.js` served successfully after deployment.
+
 ## 2026-05-28 - Milestone 26A/26B PWA Install Support
 
 - Added dependency-free PWA install support.

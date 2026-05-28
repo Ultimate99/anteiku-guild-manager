@@ -42,6 +42,8 @@ Current production checkpoint:
 - Controlled 3v3 test team cleanup status was not specified in the smoke note; verify before assuming retained or disbanded state.
 - Milestone 26A/26B PWA install support is live in production. Production serves the manifest, service worker, icons, and standalone app metadata.
 - PWA service worker caches same-origin app shell/static assets only and does not cache Supabase Auth/RPC/API responses.
+- PWA update-available banner is live in production through `bb570a6 feat: add PWA update available banner`. It waits for a service worker update, shows `Update App` / `Later`, and reloads only after user-triggered `SKIP_WAITING` plus `controllerchange`.
+- The update banner keeps Supabase/API/Auth/RPC/CP/GvG/3v3/admin/analytics data uncached.
 - Browser-native install prompt / standalone launch still needs a manual device/browser check if install UX confirmation is required.
 - Cosmetics v1 uses approved repo static assets only. Do not add arbitrary URLs, player uploads, or Supabase Storage without a planned security review.
 - Vercel Preview env has not been configured for staging yet.

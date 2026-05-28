@@ -26,6 +26,19 @@ Milestone 26A/26B deployed PWA install support to production.
 - No Vercel env, Supabase, SQL, auth, backend, or feature-behavior changes were required.
 - Browser-native install prompt and standalone launch should be manually checked on target browsers/devices when needed.
 
+### PWA Update Available Banner
+
+Commit `bb570a6 feat: add PWA update available banner` deployed the PWA update flow.
+
+- Detects a waiting service worker after a new production deployment.
+- Shows a non-blocking `New version available` banner with `Update App` and `Later`.
+- `Update App` sends `{ type: "SKIP_WAITING" }` to the waiting service worker and reloads after `controllerchange`.
+- `Later` dismisses the banner for the current browser session through `sessionStorage`.
+- No forced auto-reload occurs without user action.
+- The service worker no longer auto-runs `skipWaiting()` during install.
+- Supabase/API/Auth/RPC/CP/GvG/3v3/admin/analytics data remains uncached.
+- Manual update-cycle verification should be done after a future deployment with an already-open/installed app session.
+
 ## Production Admin Analytics
 
 Milestone 24E deployed AdminPanel Analytics and Weekly Growth to production.
