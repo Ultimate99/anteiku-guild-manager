@@ -359,6 +359,69 @@ textarea {
   color: #bdf3cd;
 }
 
+.pwa-update-banner {
+  position: fixed;
+  right: max(12px, env(safe-area-inset-right));
+  bottom: max(92px, calc(env(safe-area-inset-bottom) + 18px));
+  left: max(12px, env(safe-area-inset-left));
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: min(560px, calc(100% - 24px));
+  margin: 0 auto;
+  padding: 12px;
+  border: 1px solid rgba(226, 27, 45, 0.46);
+  border-left: 4px solid #e21b2d;
+  background:
+    linear-gradient(135deg, rgba(197, 22, 39, 0.18), transparent 70%),
+    rgba(14, 14, 19, 0.98);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.46);
+  color: #f7f7fa;
+}
+
+.pwa-update-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.pwa-update-copy strong {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.pwa-update-copy span {
+  color: #c9c9d1;
+  font-size: 0.82rem;
+}
+
+.pwa-update-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.pwa-update-actions button {
+  min-height: 34px;
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.pwa-update-primary {
+  background: #c51627;
+}
+
+.pwa-update-secondary {
+  background: rgba(255, 255, 255, 0.06);
+}
+
 .error-line {
   border-left-color: rgba(226, 27, 45, 0.86);
   background: rgba(226, 27, 45, 0.08);
@@ -3114,6 +3177,19 @@ button.command-card:focus-visible {
 }
 
 @media (max-width: 520px) {
+  .pwa-update-banner {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .pwa-update-actions {
+    justify-content: stretch;
+  }
+
+  .pwa-update-actions button {
+    flex: 1 1 128px;
+  }
+
   .three-v-three-summary-row {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }

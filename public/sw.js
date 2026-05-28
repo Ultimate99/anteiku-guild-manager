@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anteiku-static-v1';
+const CACHE_NAME = 'anteiku-static-v2';
 const APP_SHELL_URLS = [
   '/',
   '/index.html',
@@ -14,9 +14,14 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(CACHE_NAME)
-      .then((cache) => cache.addAll(APP_SHELL_URLS))
-      .then(() => self.skipWaiting()),
+      .then((cache) => cache.addAll(APP_SHELL_URLS)),
   );
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('activate', (event) => {
