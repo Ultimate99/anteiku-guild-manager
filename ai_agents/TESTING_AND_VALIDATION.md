@@ -1,5 +1,45 @@
 # Testing And Validation
 
+## Milestone 26A/26B PWA Install Support Validation
+
+PWA install support passed build, source, local preview, and production asset smoke validation.
+
+Command:
+- `npm.cmd run build`
+
+Result:
+- Build passed with the existing Vite chunk-size warning only.
+
+Implemented:
+- Added `public/manifest.webmanifest`.
+- Added icons under `public/icons/`.
+- Added `public/sw.js`.
+- Added production-only service worker registration through `src/registerServiceWorker.js`.
+- Added manifest, favicon, Apple mobile, and theme-color tags to `index.html`.
+
+Local preview validation:
+- Vite preview served `/`, `/manifest.webmanifest`, `/sw.js`, and `/icons/icon-192.png` with HTTP 200.
+- Preview index contained manifest and Apple mobile metadata.
+- Preview service worker contained the expected static cache name.
+
+Production validation:
+- Production app returned HTTP 200.
+- Production index contains `/manifest.webmanifest` and Apple mobile metadata.
+- Production bundle contains service worker registration.
+- Production `/manifest.webmanifest` returned HTTP 200 and includes `Anteiku Guild Manager`, `Anteiku`, and `standalone`.
+- Production `/sw.js` returned HTTP 200 and includes the same-origin guard.
+- Production `/icons/icon-192.png` returned HTTP 200.
+
+Source/security validation:
+- No SQL migrations, Supabase/RLS/RPC changes, Supabase commands, package/dependency changes, or Vercel env changes were made.
+- No auth logic or feature behavior changed.
+- Service worker ignores cross-origin requests and does not cache Supabase Auth/RPC/API responses.
+- Service worker caches same-origin app shell/static build assets/icons/manifest/approved mark only.
+- No CP/GvG/audit/role/permission/member-status/analytics/3v3/cosmetics behavior changed.
+
+Not fully validated:
+- Browser-native install prompt visibility and installed standalone launch were not manually verified in this terminal-only pass.
+
 ## Milestone 25D 3v3 Production Rollout And Smoke
 
 3v3 Team Finder production rollout and controlled production smoke passed.

@@ -40,6 +40,9 @@ Current production checkpoint:
 - Milestone 25D 3v3 Team Finder production rollout is complete. Production has `20260528000100_three_v_three_team_finder.sql` applied and verified, the member-facing `3v3` UI is live, and controlled production smoke passed for create/request/approve/slot-fill.
 - 3v3 Combined CP is public/self-entered and separate from protected normal CP. Normal CP was not visible during controlled production smoke.
 - Controlled 3v3 test team cleanup status was not specified in the smoke note; verify before assuming retained or disbanded state.
+- Milestone 26A/26B PWA install support is live in production. Production serves the manifest, service worker, icons, and standalone app metadata.
+- PWA service worker caches same-origin app shell/static assets only and does not cache Supabase Auth/RPC/API responses.
+- Browser-native install prompt / standalone launch still needs a manual device/browser check if install UX confirmation is required.
 - Cosmetics v1 uses approved repo static assets only. Do not add arbitrary URLs, player uploads, or Supabase Storage without a planned security review.
 - Vercel Preview env has not been configured for staging yet.
 

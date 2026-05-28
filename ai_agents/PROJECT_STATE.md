@@ -1,5 +1,35 @@
 # Project State
 
+## Milestone 26A/26B PWA Install Support Complete
+
+Milestone 26A/26B is implemented and deployed as a frontend/build-config-only PWA installability pass.
+
+Implemented:
+- Added a web app manifest for `Anteiku Guild Manager` with short name `Anteiku`, standalone display, root start/scope, dark background, crimson theme color, portrait-primary orientation, and 192/512/maskable icons.
+- Added app icons derived from the existing approved `public/anteiku-mark.svg` project mark.
+- Added iOS/mobile meta tags and `apple-touch-icon`.
+- Added a small production-only service worker registration module.
+- Added `public/sw.js` with app-shell/static-asset caching only.
+
+Production rollout:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Commit `1d8b5a5 feat: add PWA install support` was pushed to `main`.
+- Production now serves the updated index, manifest, icons, service worker, and JS bundle.
+
+Production PWA smoke:
+- Production app returned `200`.
+- `/manifest.webmanifest` returned `200` and includes `Anteiku Guild Manager`, `Anteiku`, and `standalone`.
+- `/sw.js` returned `200`.
+- `/icons/icon-192.png` returned `200`.
+- Production bundle contains service worker registration.
+- Browser-native install prompt / installed standalone launch were not manually verified in this terminal-only pass and should receive a quick device/browser check if the user wants install UX confirmation.
+
+Security/cache scope:
+- No SQL migrations, Supabase/RLS/RPC changes, Supabase commands, Vercel env changes, auth behavior changes, production data mutations, package/dependency changes, or feature logic changes were included.
+- Service worker ignores cross-origin requests, so Supabase Auth/RPC/API responses are not cached.
+- Service worker caches only same-origin app shell/static build assets/icons/manifest/approved mark.
+- No CP/GvG/audit/role/permission/member-status/analytics/3v3/cosmetics behavior changed.
+
 ## Milestone 25D 3v3 Team Finder Production Rollout Complete
 
 Milestone 25D is complete. The 3v3 Team Finder backend and frontend are live in production after the production database received and verified `20260528000100_three_v_three_team_finder.sql`.

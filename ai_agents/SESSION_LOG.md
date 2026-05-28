@@ -1,5 +1,21 @@
 # Session Log
 
+## 2026-05-28 - Milestone 26A/26B PWA Install Support
+
+- Inspected current setup and found no existing PWA manifest, service worker, or Vite PWA plugin setup.
+- Kept the implementation dependency-free rather than adding a PWA plugin.
+- Added `public/manifest.webmanifest` with app name `Anteiku Guild Manager`, short name `Anteiku`, standalone display, root start/scope, dark background, crimson theme color, portrait-primary orientation, and required icons.
+- Generated PWA PNG icons from the existing approved `public/anteiku-mark.svg` project mark.
+- Added `public/sw.js` with same-origin app-shell/static-asset caching only.
+- Added `src/registerServiceWorker.js` and registered the service worker only in production builds.
+- Added manifest, favicon, iOS mobile, Apple touch icon, and theme-color tags to `index.html`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source checks confirmed no SQL/migration changes, no Supabase/RLS/RPC changes, no package/dependency changes, no service behavior changes, and no direct Supabase/API response caching.
+- Local Vite preview smoke passed for `/`, `/manifest.webmanifest`, `/sw.js`, and `/icons/icon-192.png`.
+- Pushed commit `1d8b5a5 feat: add PWA install support` to `main`.
+- Production smoke confirmed the app, manifest, service worker, icon, and service worker registration bundle are served.
+- Browser-native install prompt and installed standalone launch were not manually verified from the terminal.
+
 ## 2026-05-28 - Milestone 25D 3v3 Production Rollout
 
 - Production project `mzflfyxxkascrfpteexz` was deliberately linked for the 3v3 rollout.

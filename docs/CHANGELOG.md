@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-05-28 - Milestone 26A/26B PWA Install Support
+
+- Added dependency-free PWA install support.
+- Added `public/manifest.webmanifest` with `Anteiku Guild Manager` / `Anteiku`, standalone display, root start/scope, dark/crimson theme colors, and portrait-primary orientation.
+- Added app icons under `public/icons/`, generated from the existing approved `public/anteiku-mark.svg` project mark.
+- Added `public/sw.js` with conservative same-origin app-shell/static-asset caching.
+- Added production-only service worker registration in `src/registerServiceWorker.js`.
+- Added manifest, favicon, Apple mobile, Apple touch icon, and theme-color tags to `index.html`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Local preview served the app, manifest, service worker, and icon successfully.
+- Commit `1d8b5a5 feat: add PWA install support` was pushed to `main`.
+- Production serves the app manifest, icons, service worker, and registration bundle.
+- Service worker ignores cross-origin requests, so Supabase Auth/RPC/API responses are not cached.
+- No SQL migrations, Supabase/RLS/RPC changes, package/dependency changes, Vercel env changes, auth behavior changes, production data mutation, or CP/GvG/audit/role/permission/member-status/analytics/3v3/cosmetics behavior changes were included.
+
 ## 2026-05-28 - Milestone 25D 3v3 Production Rollout
 
 - Applied production migration `20260528000100_three_v_three_team_finder.sql` after a clean dry-run showing exactly that one pending migration.

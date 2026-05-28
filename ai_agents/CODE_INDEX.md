@@ -1,5 +1,15 @@
 # Code Index
 
+## Milestone 26A/26B PWA Install Support
+
+- `index.html`: Adds manifest link, theme color, favicon, Apple mobile metadata, and Apple touch icon.
+- `public/manifest.webmanifest`: Web app manifest for installability with `Anteiku Guild Manager` / `Anteiku`, standalone display, root start/scope, dark/crimson theme colors, portrait-primary orientation, and PNG icons.
+- `public/icons/icon-192.png`, `public/icons/icon-512.png`, `public/icons/maskable-512.png`, `public/icons/apple-touch-icon.png`, `public/icons/favicon-32.png`: App icons generated from the existing approved `public/anteiku-mark.svg` project mark.
+- `public/sw.js`: Conservative same-origin service worker. It caches app shell/static build assets/icons/manifest/approved mark only and ignores cross-origin requests, including Supabase Auth/RPC/API.
+- `src/registerServiceWorker.js`: Production-only service worker registration helper.
+- `src/main.jsx`: Calls the registration helper after app render.
+- Status: commit `1d8b5a5 feat: add PWA install support` is pushed to `main`; production serves the manifest, service worker, icons, and registration bundle.
+
 ## Milestone 25D 3v3 Production Status
 
 - `supabase/migrations/20260528000100_three_v_three_team_finder.sql`: Applied and verified in production. Adds the 3v3 Team Finder backend/RLS/RPC foundation.

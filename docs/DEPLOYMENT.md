@@ -4,6 +4,28 @@ Vercel is the production hosting target.
 
 Milestone 13B completed Vercel setup, Supabase Auth URL configuration, deployment, and production smoke/security validation.
 
+## Production PWA Install Support
+
+Milestone 26A/26B deployed PWA install support to production.
+
+- Commit deployed: `1d8b5a5 feat: add PWA install support`.
+- Production now serves:
+  - `/manifest.webmanifest`
+  - `/sw.js`
+  - `/icons/icon-192.png`
+  - `/icons/icon-512.png`
+  - `/icons/maskable-512.png`
+  - `/icons/apple-touch-icon.png`
+- App name: `Anteiku Guild Manager`.
+- Short name: `Anteiku`.
+- Display mode: `standalone`.
+- Theme color: dark crimson.
+- Icons are derived from the existing approved `public/anteiku-mark.svg` project mark.
+- The service worker caches only same-origin app shell/static build assets/icons/manifest/approved mark.
+- The service worker ignores cross-origin requests and does not cache Supabase Auth/RPC/API responses.
+- No Vercel env, Supabase, SQL, auth, backend, or feature-behavior changes were required.
+- Browser-native install prompt and standalone launch should be manually checked on target browsers/devices when needed.
+
 ## Production Admin Analytics
 
 Milestone 24E deployed AdminPanel Analytics and Weekly Growth to production.

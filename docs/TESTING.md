@@ -1,5 +1,36 @@
 # Testing
 
+## Milestone 26A/26B PWA Install Support
+
+PWA install support passed build, source, local preview, and production asset smoke validation.
+
+Command:
+- `npm.cmd run build`
+
+Result:
+- Build passed with the existing Vite chunk-size warning only.
+
+Local preview:
+- `/` returned HTTP 200.
+- `/manifest.webmanifest` returned HTTP 200.
+- `/sw.js` returned HTTP 200.
+- `/icons/icon-192.png` returned HTTP 200.
+- Preview index contained manifest and Apple mobile metadata.
+
+Production smoke:
+- Production app returned HTTP 200.
+- Production index contains manifest and Apple mobile metadata.
+- Production JS bundle contains service worker registration.
+- Production manifest is served and includes `Anteiku Guild Manager`, `Anteiku`, and `standalone`.
+- Production service worker is served and includes the same-origin guard.
+- Production icon is served.
+
+Security/cache validation:
+- No SQL migrations, Supabase/RLS/RPC changes, Supabase commands, package/dependency changes, auth changes, Vercel env changes, or production data changes were made.
+- Service worker ignores cross-origin requests and does not cache Supabase Auth/RPC/API responses.
+- Service worker caches same-origin app shell/static assets/icons/manifest only.
+- Browser install prompt and standalone launch need a manual device/browser check if install UX confirmation is required.
+
 ## Milestone 25D 3v3 Production Rollout
 
 3v3 Team Finder production rollout and controlled production smoke passed.

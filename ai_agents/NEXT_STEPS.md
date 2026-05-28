@@ -2,6 +2,28 @@
 
 ## Current Recommendation
 
+Milestone 26A/26B PWA Install Support is complete and deployed.
+
+Recommended next step:
+- Do a quick manual install UX check on target devices if desired:
+  - Desktop Chrome/Edge install app option.
+  - Android Chrome Add to Home Screen / Install app.
+  - iOS Safari Add to Home Screen name/icon.
+  - Standalone launch opens the production app.
+- Continue with the next user-prioritized milestone after the install UX check.
+
+Recorded Milestone 26A/26B status:
+- Added dependency-free PWA support with `public/manifest.webmanifest`, `public/sw.js`, PWA icons under `public/icons/`, iOS meta tags, and production-only service worker registration.
+- Icons were derived from the existing approved `public/anteiku-mark.svg` mark.
+- Service worker caches only same-origin app shell/static assets/icons/manifest/approved mark.
+- Service worker ignores cross-origin requests, so Supabase Auth/RPC/API responses are not cached.
+- `npm.cmd run build` passed.
+- Commit `1d8b5a5 feat: add PWA install support` was pushed to `main`.
+- Production serves the manifest, icons, service worker, and updated bundle.
+- Browser-native install prompt / standalone launch were not manually verified from the terminal.
+
+## Previous Recommendation - Milestone 25D
+
 Milestone 25D 3v3 Team Finder production rollout is complete.
 
 Recommended next step:
