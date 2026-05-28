@@ -22,6 +22,26 @@ Milestone 24E deployed AdminPanel Analytics and Weekly Growth to production.
 - Milestone 24E production smoke did not perform snapshot capture mutation by design.
 - Supabase CLI is currently linked to production project `mzflfyxxkascrfpteexz`; relink deliberately before future staging/local Supabase commands.
 
+## Production 3v3 Team Finder
+
+Milestone 25D deployed 3v3 Team Finder to production.
+
+- Commit deployed: `4c9da98 feat: add 3v3 team finder UI`.
+- Production migration applied and verified:
+  - `20260528000100_three_v_three_team_finder.sql`
+- New production 3v3 tables:
+  - `three_v_three_player_profiles`
+  - `three_v_three_teams`
+  - `three_v_three_team_members`
+  - `three_v_three_join_requests`
+- Production DB verification passed for table existence, RLS enabled, no broad direct anon/authenticated grants, 3v3 RPC existence/authenticated execute grants, direct normal-CP read protection, and active Owner count `1`.
+- Member-facing `3v3` is live in production with Find Team, Create Team, and My Requests.
+- 3v3 Combined CP is public/self-entered and separate from protected normal CP.
+- The 3v3 frontend uses RPC-only writes and does not direct-write 3v3 tables.
+- Manual controlled production smoke passed for team creation, join request, owner approval, slot fill, Discord username display, public 3v3 Combined CP display, normal CP non-exposure, and Member AdminPanel denial.
+- Test team cleanup status was not specified in the manual smoke note; verify before assuming retained or disbanded state.
+- Supabase CLI is currently linked to production project `mzflfyxxkascrfpteexz`; relink deliberately before future staging/local Supabase commands.
+
 ## Production Member-Facing UI Cleanup
 
 Milestone 16H deployed the frontend-only member-facing compact UI/copy pass to production.

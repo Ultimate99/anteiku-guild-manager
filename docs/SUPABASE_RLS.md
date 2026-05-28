@@ -1,12 +1,12 @@
 # Supabase RLS
 
-The Supabase RLS/RPC implementation has been validated through the Weekly Growth baseline scope fix. Production is applied/verified through `20260526000300_live_cp_growth_baseline_scope.sql`.
+The Supabase RLS/RPC implementation has been validated through the 3v3 Team Finder. Production is applied/verified through `20260528000100_three_v_three_team_finder.sql`.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
 
 ## Milestone 25B 3v3 Team Finder RLS/RPC
 
-Milestone 25B is implemented and locally validated only. Staging and production do not have `20260528000100_three_v_three_team_finder.sql` yet.
+Milestone 25B is implemented and locally validated. Production has `20260528000100_three_v_three_team_finder.sql` applied and verified as of Milestone 25D.
 
 Tables:
 - `three_v_three_player_profiles`
@@ -32,6 +32,9 @@ Security:
 
 Validation:
 - Local validation passed with Milestone 25B result: 45 PASS / 0 FAIL / 0 SKIP.
+- Production verification passed for table existence, RLS enabled, no broad direct client grants, 3v3 RPC existence/authenticated execute grants, direct normal-CP read protection, and active Owner count `1`.
+- Manual controlled production smoke passed for create team, request join, approve request, slot fill, public Discord/3v3 CP display, normal CP non-exposure, and Member AdminPanel denial.
+- Test team cleanup status was not specified in the smoke note.
 
 ## Live CP Growth RLS/RPC
 

@@ -1,8 +1,29 @@
 # Security Rules
 
+## Milestone 25D 3v3 Team Finder Production Rules
+
+3v3 Team Finder is live in production through `20260528000100_three_v_three_team_finder.sql` and commit `4c9da98 feat: add 3v3 team finder UI`.
+
+Production rules:
+- 3v3 Team Finder access remains for approved users with active primary membership.
+- `inactive` and `on_break` users may view 3v3 teams but cannot create teams or request joins.
+- `active`, `trial`, and `pending_transfer` users may create/request when other requirements pass.
+- Pending, suspended, left, and kicked users are denied.
+- Discord username is required before creating a team or requesting to join.
+- 3v3 Combined CP is public inside the 3v3 feature and is self-entered.
+- 3v3 Combined CP must never be sourced from protected normal CP.
+- 3v3 must not read `member_cp`, `cp_snapshots`, CP analytics, CP roster, CP ranking, or CP growth data.
+- Team owner occupies slot 1 and is the only user who can approve/decline requests, remove slot 2/3 members, close/reopen, or disband.
+- Request spam limits remain backend-enforced: one pending request per player/team, max two attempts per player/team, and a six-hour cooldown after declined requests.
+- Direct client table access to 3v3 tables must remain blocked; use RPC-only reads/writes.
+
+Production validation:
+- Controlled production smoke passed for create team, request join, approve request, slot fill, public Discord/3v3 CP display, normal CP non-exposure, and Member AdminPanel denial.
+- Test team cleanup state was not specified in the smoke note; verify before assuming retained/disbanded state.
+
 ## Milestone 25B 3v3 Team Finder Security Rules
 
-Milestone 25B is implemented and locally validated only. Do not deploy a 3v3 frontend to staging or production until `20260528000100_three_v_three_team_finder.sql` is applied and verified on that target database.
+Milestone 25B is implemented, locally validated, and production applied through Milestone 25D. For future new target environments, do not deploy a 3v3 frontend until `20260528000100_three_v_three_team_finder.sql` is applied and verified on that target database.
 
 Rules:
 - 3v3 Team Finder access is for approved users with active primary membership.

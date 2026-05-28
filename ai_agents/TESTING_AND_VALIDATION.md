@@ -1,5 +1,41 @@
 # Testing And Validation
 
+## Milestone 25D 3v3 Production Rollout And Smoke
+
+3v3 Team Finder production rollout and controlled production smoke passed.
+
+Commands/results:
+- Production dry-run showed exactly one pending migration: `20260528000100_three_v_three_team_finder.sql`.
+- Production migration push applied `20260528000100_three_v_three_team_finder.sql`.
+- Remote migration list confirmed `20260528000100` applied.
+- Commit `4c9da98 feat: add 3v3 team finder UI` was pushed to `main`.
+- Production served a bundle containing the 3v3 UI/RPC wrappers.
+
+Production DB verification:
+- `three_v_three_player_profiles`, `three_v_three_teams`, `three_v_three_team_members`, and `three_v_three_join_requests` exist.
+- RLS is enabled on all four tables.
+- No broad direct anon/authenticated grants exist for the 3v3 tables.
+- All 13 3v3 RPCs exist with authenticated execute grants and internal checks.
+- Active Owner count remains `1`.
+- Simulated normal authenticated direct reads of `member_cp` and `cp_snapshots` returned no visible rows.
+
+Manual controlled production smoke:
+- Member A created a 3v3 team.
+- Discord username and public 3v3 Combined CP were required/displayed.
+- Team card rendered three slots.
+- Member B requested to join.
+- Member A saw the incoming request and approved it.
+- Member B filled the first empty slot.
+- Normal protected CP was not visible.
+- Normal Member had no AdminPanel access.
+- No console/UI blocker was found.
+- Test team cleanup status was not specified in the smoke note; verify before assuming retained or disbanded state.
+
+Security/source validation:
+- `src/services/threeVThreeService.js` uses only 3v3 RPCs.
+- Source checks found no direct `.from('three_v_three_*')` writes, no `member_cp`, no `cp_snapshots`, and no normal CP RPC usage in the 3v3 UI/service.
+- No CP/GvG/audit/role/permission/member-status behavior changed.
+
 ## Milestone 25C 3v3 Frontend Build And Source Validation
 
 Frontend-only 3v3 Team Finder UI implementation passed local build and source validation.

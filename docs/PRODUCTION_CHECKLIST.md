@@ -6,7 +6,7 @@ Current production checkpoint:
 - Production project ref: `mzflfyxxkascrfpteexz`.
 - Project name: `Anteiku Guild Manager Production`.
 - Region: Central EU / Frankfurt.
-- All approved production migrations through `20260526000100_admin_analytics_foundation.sql` are applied remotely, including `20260523000100_member_roster_status_system.sql`, `20260524000100_cp_update_window_self_submit.sql`, `20260524000200_cp_update_window_staff_read.sql`, `20260524000300_cp_rankings.sql`, `20260524000400_cp_rank_badge_summary.sql`, `20260525000100_cosmetics_catalog_unlocks.sql`, `20260525000200_cp_rankings_cosmetics.sql`, `20260525000300_premium_cosmetics_grant_helper.sql`, cosmetics catalog sync/frame hotfix migrations, and `20260526000100_admin_analytics_foundation.sql`.
+- All approved production migrations through `20260528000100_three_v_three_team_finder.sql` are applied remotely, including `20260523000100_member_roster_status_system.sql`, `20260524000100_cp_update_window_self_submit.sql`, `20260524000200_cp_update_window_staff_read.sql`, `20260524000300_cp_rankings.sql`, `20260524000400_cp_rank_badge_summary.sql`, `20260525000100_cosmetics_catalog_unlocks.sql`, `20260525000200_cp_rankings_cosmetics.sql`, `20260525000300_premium_cosmetics_grant_helper.sql`, cosmetics catalog sync/frame hotfix migrations, `20260526000100_admin_analytics_foundation.sql`, live CP growth migrations, and `20260528000100_three_v_three_team_finder.sql`.
 - Production schema/RLS/seed verification passed.
 - Manual Owner bootstrap completed for `ultimatesrb` / `UltimateSRB` in `Anteiku`.
 - Exactly one active Owner membership exists.
@@ -37,6 +37,9 @@ Current production checkpoint:
 - Owner Cosmetics is live in AdminPanel -> Tools, visible only to Owner, and production-smoke validated for locked avatar/frame grant by exact profile slug / username plus member equip after grant.
 - Milestone 24E AdminPanel Analytics production rollout is complete. Production has `20260526000100_admin_analytics_foundation.sql` applied and verified, AdminPanel -> Analytics is live, Weekly Growth is live, and Owner production smoke passed.
 - Weekly Growth snapshot capture creates persistent production snapshot rows and was not tested in production by design; require explicit approval before capture.
+- Milestone 25D 3v3 Team Finder production rollout is complete. Production has `20260528000100_three_v_three_team_finder.sql` applied and verified, the member-facing `3v3` UI is live, and controlled production smoke passed for create/request/approve/slot-fill.
+- 3v3 Combined CP is public/self-entered and separate from protected normal CP. Normal CP was not visible during controlled production smoke.
+- Controlled 3v3 test team cleanup status was not specified in the smoke note; verify before assuming retained or disbanded state.
 - Cosmetics v1 uses approved repo static assets only. Do not add arbitrary URLs, player uploads, or Supabase Storage without a planned security review.
 - Vercel Preview env has not been configured for staging yet.
 

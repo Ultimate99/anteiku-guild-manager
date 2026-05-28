@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-05-28 - Milestone 25D 3v3 Production Rollout
+
+- Applied production migration `20260528000100_three_v_three_team_finder.sql` after a clean dry-run showing exactly that one pending migration.
+- Verified production 3v3 tables exist with RLS enabled and no broad direct client grants.
+- Verified all 13 3v3 RPCs exist with authenticated execute grants and internal auth/eligibility checks.
+- Verified active Owner count remains `1`.
+- Verified simulated normal authenticated direct reads of protected normal CP tables returned no visible rows for `member_cp` and `cp_snapshots`.
+- Pushed commit `4c9da98 feat: add 3v3 team finder UI` to `main`; production now serves the 3v3 UI.
+- Manual controlled production smoke passed: Member A created a team, Member B requested to join, Member A approved the request, and Member B filled the first empty slot.
+- Discord username and public 3v3 Combined CP were required/displayed.
+- Normal protected CP was not visible and normal Members had no AdminPanel access.
+- No console/UI blocker was found.
+- Test team cleanup status was not specified in the manual smoke note.
+- No source, SQL, migration, Supabase command, deployment, or production data mutation was performed during the docs/handoff checkpoint.
+
 ## 2026-05-28 - Milestone 25C 3v3 Frontend UI
 
 - Added local frontend-only 3v3 Team Finder UI.

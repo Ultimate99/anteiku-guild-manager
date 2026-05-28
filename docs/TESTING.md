@@ -1,5 +1,31 @@
 # Testing
 
+## Milestone 25D 3v3 Production Rollout
+
+3v3 Team Finder production rollout and controlled production smoke passed.
+
+Production rollout:
+- Production dry-run showed exactly one pending migration: `20260528000100_three_v_three_team_finder.sql`.
+- Production migration push applied that migration.
+- Production DB verification passed for 3v3 table existence, RLS enabled, no broad direct client grants, RPC existence, direct normal-CP read protection, and active Owner count `1`.
+- Commit `4c9da98 feat: add 3v3 team finder UI` was pushed to `main` and deployed.
+
+Manual controlled production smoke:
+- Member A created a 3v3 team.
+- Discord username and public 3v3 Combined CP were required/displayed.
+- Team card rendered three slots.
+- Member B requested to join.
+- Member A saw and approved the incoming request.
+- Member B filled the first empty slot.
+- Normal protected CP was not visible.
+- Normal Member had no AdminPanel access.
+- No console/UI blocker was found.
+- Test team cleanup status was not specified in the smoke note.
+
+Security validation:
+- 3v3 frontend uses the 3v3 RPC service path only.
+- No normal CP, `member_cp`, `cp_snapshots`, or direct 3v3 table writes are used by the 3v3 UI/service.
+
 ## Milestone 25C 3v3 Frontend UI
 
 Frontend-only 3v3 Team Finder build/source validation passed locally.

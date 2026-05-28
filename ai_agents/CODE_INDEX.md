@@ -1,5 +1,16 @@
 # Code Index
 
+## Milestone 25D 3v3 Production Status
+
+- `supabase/migrations/20260528000100_three_v_three_team_finder.sql`: Applied and verified in production. Adds the 3v3 Team Finder backend/RLS/RPC foundation.
+- `src/services/threeVThreeService.js`: Production RPC-only frontend wrapper for 3v3 functions. Source validation found no direct table access, no normal CP RPC usage, no `member_cp`, and no `cp_snapshots`.
+- `src/pages/ThreeVThree.jsx`: Production member-facing 3v3 page with Find Team, Create Team, and My Requests sub-tabs.
+- `src/App.jsx` and `src/data/navigation.js`: Production navigation wiring for approved-member `3v3`.
+- `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`: Production 3v3 navigation and page labels.
+- `src/styles/app.css`: Production mobile-first 3v3 card/slot/request styles.
+- Production status: migration applied, frontend deployed at commit `4c9da98`, controlled production smoke passed for create/request/approve/slot-fill, and normal protected CP remained hidden.
+- Cleanup note: manual smoke did not specify whether the controlled test team was left live or disbanded.
+
 ## Milestone 25C 3v3 Frontend UI
 
 - `src/services/threeVThreeService.js`: RPC-only frontend wrapper for the 25B 3v3 functions. Normalizes team/status/request payloads, safe avatar/frame paths, public 3v3 Combined CP values, Discord display, and combined CP input formatting. Does not direct-read or direct-write 3v3 tables and does not call normal CP services.
@@ -8,13 +19,13 @@
 - `src/data/navigation.js`: Adds the approved member nav item for `3v3`.
 - `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`: Adds `nav.threeVThree`, `app.eyebrow.teams`, and `threeVThree.*` labels.
 - `src/styles/app.css`: Adds mobile-first 3v3 page, tab, team-card, slot, plus-slot, request-card, and owner-action styles.
-- Status: local frontend build/source validation passed. Awaiting Milestone 25D staging migration and authenticated multi-account browser validation.
+- Status: local frontend build/source validation passed, then production deployed and controlled-smoke validated in Milestone 25D.
 
 ## Milestone 25B 3v3 Team Finder Backend
 
 - `supabase/migrations/20260528000100_three_v_three_team_finder.sql`: Adds the local-only 3v3 Team Finder backend/RLS/RPC foundation. Defines `three_v_three_player_profiles`, `three_v_three_teams`, `three_v_three_team_members`, `three_v_three_join_requests`, RLS/no-direct-client-grant posture, eligibility helpers, request spam/cooldown enforcement, team owner actions, and RPC-only 3v3 flows.
 - `supabase/tests/local_validation_anteiku.sql`: Adds Milestone 25B local validation covering schema/RLS, approved/pending/inactive/on_break eligibility, Discord/Combined CP requirements, team create/status rules, request spam/cooldown limits, approve/decline/cancel/remove/disband flows, direct table denial, normal CP non-exposure, and active Owner count.
-- Status: local backend validation passed with 45 PASS / 0 FAIL / 0 SKIP. No frontend 3v3 UI exists yet, and staging/production do not have the 25B migration yet.
+- Status: local backend validation passed with 45 PASS / 0 FAIL / 0 SKIP. Production has the 25B migration applied and verified through Milestone 25D.
 
 ## Analytics UI Polish
 

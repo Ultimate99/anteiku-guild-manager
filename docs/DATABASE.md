@@ -1,10 +1,10 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented through the Weekly Growth baseline scope fix. Remote production is live through `20260526000300_live_cp_growth_baseline_scope.sql`.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented through the 3v3 Team Finder. Remote production is live through `20260528000100_three_v_three_team_finder.sql`.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
-Milestone 25B 3v3 Team Finder backend is implemented and locally validated only. Staging and production do not have `20260528000100_three_v_three_team_finder.sql` yet.
+Milestone 25B/25D 3v3 Team Finder backend is implemented, locally validated, production applied, and controlled-production-smoke validated.
 
 ## Current Local Migration Order
 
@@ -56,7 +56,7 @@ Migration `20260526000300_live_cp_growth_baseline_scope.sql` is implemented, loc
 
 Cosmetics catalog sync migrations `20260525213531`, `20260525213537`, and `20260525213900` are applied in production. Migration `20260525220522_cosmetics_frame_unlock_hotfix.sql` is applied in production and corrects frame unlock types so only `TXK_Arena*` and `TXK_KOF*` frames are manual while all other frames are free.
 
-Migration `20260528000100_three_v_three_team_finder.sql` is locally implemented/validated only. It adds 3v3 Team Finder backend tables and RPCs and requires a separate staging/production rollout gate before any frontend 3v3 UI deployment.
+Migration `20260528000100_three_v_three_team_finder.sql` is locally implemented/validated and production applied/verified as of Milestone 25D. It adds 3v3 Team Finder backend tables and RPCs.
 
 ## Milestone 25B 3v3 Team Finder Backend
 
@@ -98,6 +98,13 @@ Rules:
 - Public self-entered value for 3v3 Team Finder only.
 - Separate from protected normal CP.
 - Does not use `member_cp` or `cp_snapshots`.
+
+Production status:
+- Production project `mzflfyxxkascrfpteexz` has `20260528000100_three_v_three_team_finder.sql` applied.
+- Production verification passed for table existence, RLS enabled, no broad direct client grants, RPC existence, active Owner count `1`, and normal CP direct-read protection.
+- Production frontend commit `4c9da98 feat: add 3v3 team finder UI` is deployed.
+- Manual controlled production smoke passed for create team, request join, approve request, and first-empty-slot fill.
+- The manual smoke note did not specify whether the controlled test team was left live or disbanded.
 
 Validation:
 - `npx.cmd supabase db reset` passed locally.

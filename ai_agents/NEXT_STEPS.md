@@ -2,25 +2,21 @@
 
 ## Current Recommendation
 
-Milestone 25C 3v3 frontend UI is implemented locally and build/source validated.
+Milestone 25D 3v3 Team Finder production rollout is complete.
 
 Recommended next step:
-- Milestone 25D: staging rollout and authenticated validation.
+- Choose the next user-prioritized milestone, likely 3v3 UX polish, a 3v3 operating/cleanup procedure, or another production-safe frontend pass.
+- Before assuming the controlled production 3v3 test team is still live or disbanded, verify the cleanup status; the manual smoke note did not specify which state was chosen.
+- Keep 3v3 Combined CP separate from protected normal CP. Do not add normal CP reads to 3v3.
 
-25D gate:
-- Apply `20260528000100_three_v_three_team_finder.sql` to staging only after migration list/dry-run confirms the expected pending migration set.
-- Point local frontend to staging only after staging DB has the 25B migration.
-- Validate with multiple staging accounts for create/request/approve/decline/remove/disband flows.
-- Do not deploy or push production frontend until staging passes and production rollout is separately approved.
-
-Recorded Milestone 25C status:
-- Added `3v3` member navigation and `ThreeVThree` page.
-- Added `threeVThreeService` using only 3v3 RPCs.
-- Added Find Team, Create Team, and My Requests sub-tabs.
-- Team cards show three slots, avatar/frame, IGN, Discord username, and public 3v3 Combined CP.
-- My Requests supports outgoing requests and owner incoming request actions.
-- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
-- Source validation found no normal CP identifiers, no direct 3v3 table access, and no SQL/RLS/RPC/backend changes.
+Recorded Milestone 25D status:
+- Production received `20260528000100_three_v_three_team_finder.sql` after a clean dry-run showing exactly that one pending migration.
+- Production DB verification passed for 3v3 table existence, RLS enabled, no broad direct client grants, RPC existence, direct normal-CP read protection, and active Owner count `1`.
+- Commit `4c9da98 feat: add 3v3 team finder UI` was pushed to `main` and production serves the 3v3 UI bundle.
+- Manual controlled production smoke passed: Member A created a team, Member B requested to join, Member A approved, Member B filled the first empty slot.
+- Discord username and public 3v3 Combined CP were required/displayed.
+- Normal protected CP was not visible and normal Members had no AdminPanel access.
+- No console/UI blocker was found.
 
 ## Previous Recommendation - Milestone 25B
 

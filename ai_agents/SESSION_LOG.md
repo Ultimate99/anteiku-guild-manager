@@ -1,5 +1,25 @@
 # Session Log
 
+## 2026-05-28 - Milestone 25D 3v3 Production Rollout
+
+- Production project `mzflfyxxkascrfpteexz` was deliberately linked for the 3v3 rollout.
+- Production migration dry-run showed exactly one pending migration: `20260528000100_three_v_three_team_finder.sql`.
+- Applied `20260528000100_three_v_three_team_finder.sql` to production.
+- Verified `three_v_three_player_profiles`, `three_v_three_teams`, `three_v_three_team_members`, and `three_v_three_join_requests` exist with RLS enabled.
+- Verified no broad direct anon/authenticated 3v3 table grants.
+- Verified all 13 3v3 RPCs exist with authenticated execute grants and internal checks.
+- Verified active Owner count remains `1`.
+- Verified simulated normal authenticated direct reads of `member_cp` and `cp_snapshots` returned no visible rows.
+- Pushed commit `4c9da98 feat: add 3v3 team finder UI` to `main`.
+- Production served the 3v3 UI bundle.
+- Manual controlled production smoke passed: Member A created a team, Member B requested to join, Member A approved, and Member B filled the first empty slot.
+- Discord username and public 3v3 Combined CP were required/displayed.
+- Normal protected CP was not visible.
+- Normal Member had no AdminPanel access.
+- No console/UI blocker was found.
+- Test team cleanup status was not specified in the manual smoke note.
+- Docs/handoff checkpoint recorded the production status; no source, SQL, migration, Supabase command, deployment, or production data mutation was performed during the docs checkpoint.
+
 ## 2026-05-28 - Milestone 25C 3v3 Frontend UI
 
 - Committed Milestone 25B backend locally as `0dad508 feat: add 3v3 team finder backend`; no push was performed.

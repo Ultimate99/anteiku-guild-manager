@@ -1,5 +1,44 @@
 # Project State
 
+## Milestone 25D 3v3 Team Finder Production Rollout Complete
+
+Milestone 25D is complete. The 3v3 Team Finder backend and frontend are live in production after the production database received and verified `20260528000100_three_v_three_team_finder.sql`.
+
+Production rollout:
+- Production project `mzflfyxxkascrfpteexz` was deliberately linked before migration actions.
+- Production dry-run showed exactly one pending migration: `20260528000100_three_v_three_team_finder.sql`.
+- `npx.cmd supabase db push` applied only that migration.
+- Remote migration list confirmed `20260528000100` applied.
+- Commit `4c9da98 feat: add 3v3 team finder UI` was pushed to `main`; production now serves the 3v3 UI bundle.
+
+Production DB verification:
+- `three_v_three_player_profiles`, `three_v_three_teams`, `three_v_three_team_members`, and `three_v_three_join_requests` exist.
+- RLS is enabled on all four new tables.
+- No broad direct anon/authenticated 3v3 table grants exist.
+- All 13 3v3 RPCs exist and have authenticated execute grants with internal auth/eligibility checks.
+- Active Owner count remains `1`.
+- Simulated normal authenticated direct reads of protected normal CP tables returned no visible rows for `member_cp` and `cp_snapshots`.
+
+Production smoke:
+- Manual controlled production smoke passed.
+- Member A created a 3v3 team after setting Discord username and public 3v3 Combined CP.
+- Team card rendered three slots and displayed the creator in slot 1.
+- Member B set Discord username/public 3v3 Combined CP, requested to join, and was approved by Member A.
+- Member B filled the first empty slot after approval.
+- Normal protected CP was not visible.
+- Normal members had no AdminPanel access.
+- No console/UI blocker was found.
+- Test team cleanup status was not specified in the manual smoke note; verify before assuming it remains live or was disbanded.
+
+Security/scope:
+- 3v3 Combined CP is public, self-entered, and separate from protected normal CP.
+- 3v3 frontend uses only the 3v3 RPC service path.
+- No direct 3v3 table writes, normal CP RPCs, `member_cp`, or `cp_snapshots` calls are part of the 3v3 UI/service.
+- No SQL edits, migration edits, Supabase/RLS/RPC changes, Vercel env changes, service-role key path, uploads, Supabase Storage, arbitrary URLs, or CP/GvG/audit/role/permission/member-status behavior changes were included during the docs checkpoint.
+
+Next gate:
+- Milestone 25E or next user-prioritized polish/operations milestone.
+
 ## Milestone 25C 3v3 Frontend Implemented Locally
 
 Milestone 25C is implemented locally as a frontend-only 3v3 Team Finder UI on top of the Milestone 25B RPCs.
