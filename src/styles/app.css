@@ -12,6 +12,13 @@
   box-sizing: border-box;
 }
 
+html,
+body,
+#root {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
   min-width: 320px;
@@ -25,11 +32,13 @@ button,
 input,
 select,
 textarea {
+  max-width: 100%;
   font: inherit;
 }
 
 button {
   cursor: pointer;
+  overflow-wrap: anywhere;
 }
 
 button:disabled,
@@ -264,6 +273,7 @@ input,
 select,
 textarea {
   width: 100%;
+  min-width: 0;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: #0b0b10;
   color: #f5f5f7;
@@ -2864,8 +2874,9 @@ button.command-card:focus-visible {
 .app-nav {
   position: fixed;
   right: 12px;
-  bottom: 12px;
+  bottom: max(12px, env(safe-area-inset-bottom));
   left: 12px;
+  z-index: 32;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
   gap: 6px;
@@ -2878,17 +2889,26 @@ button.command-card:focus-visible {
     rgba(10, 10, 14, 0.96);
   backdrop-filter: blur(16px);
   box-shadow: 0 18px 46px rgba(0, 0, 0, 0.44);
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
 }
 
 .nav-button {
   position: relative;
+  min-width: 0;
   min-height: 44px;
   padding: 8px 4px;
   border-color: rgba(255, 255, 255, 0.06);
   background: rgba(255, 255, 255, 0.03);
   color: #9f9fa8;
   font-size: 0.72rem;
+  line-height: 1.12;
   text-transform: uppercase;
+}
+
+.nav-button span {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .nav-button[data-active="true"] {
@@ -3207,9 +3227,59 @@ button.command-card:focus-visible {
 }
 
 @media (max-width: 520px) {
+  .app-shell {
+    padding: 12px 10px calc(108px + env(safe-area-inset-bottom));
+  }
+
+  .topbar {
+    gap: 8px;
+    padding: 9px;
+  }
+
+  .brand-mark {
+    width: 38px;
+    height: 38px;
+  }
+
+  .topbar h1,
+  .page-heading h2,
+  .section-heading-row h3,
+  .admin-section-heading h3 {
+    overflow-wrap: anywhere;
+  }
+
+  .page-heading,
+  .panel {
+    padding: 12px;
+  }
+
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+  }
+
+  .primary-action,
+  .secondary-action,
+  .danger-action,
+  .compact-action {
+    min-height: 44px;
+    line-height: 1.15;
+  }
+
+  .inline-text-action {
+    min-height: 40px;
+  }
+
   .pwa-update-banner {
     align-items: stretch;
+    bottom: max(94px, calc(env(safe-area-inset-bottom) + 94px));
     flex-direction: column;
+  }
+
+  .offline-notice-banner {
+    bottom: max(94px, calc(env(safe-area-inset-bottom) + 94px));
+    padding: 10px 11px;
   }
 
   .pwa-update-actions {
@@ -3218,10 +3288,40 @@ button.command-card:focus-visible {
 
   .pwa-update-actions button {
     flex: 1 1 128px;
+    min-height: 40px;
+  }
+
+  .admin-tab-bar,
+  .analytics-sub-tabs,
+  .analytics-scope-options,
+  .three-v-three-tabs {
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .section-heading-row,
+  .admin-section-heading,
+  .three-v-three-team-header {
+    min-width: 0;
+  }
+
+  .section-heading-row > div,
+  .admin-section-heading > div,
+  .three-v-three-team-header > div {
+    min-width: 0;
   }
 
   .three-v-three-summary-row {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .three-v-three-summary-row article {
+    padding: 8px;
+  }
+
+  .three-v-three-summary-row strong {
+    font-size: 1.12rem;
+    overflow-wrap: anywhere;
   }
 
   .three-v-three-inline-form,
@@ -3252,6 +3352,18 @@ button.command-card:focus-visible {
   .three-v-three-remove {
     grid-column: 1 / -1;
     justify-self: start;
+    min-height: 34px;
+  }
+
+  .three-v-three-action-row .primary-action,
+  .three-v-three-action-row .secondary-action,
+  .three-v-three-action-row .danger-action,
+  .three-v-three-request-actions .primary-action,
+  .three-v-three-request-actions .secondary-action,
+  .three-v-three-request-actions .danger-action,
+  .three-v-three-owner-actions .secondary-action,
+  .three-v-three-owner-actions .danger-action {
+    flex: 1 1 132px;
   }
 
   .member-profile-card {
@@ -3448,11 +3560,112 @@ button.command-card:focus-visible {
 
   .analytics-growth-row > span::before,
   .analytics-growth-row > strong::before {
+    flex: 0 0 auto;
     color: #858590;
     font-size: 0.68rem;
     font-weight: 900;
     text-transform: uppercase;
     content: attr(data-label);
+  }
+
+  .analytics-growth-row > span,
+  .analytics-growth-row > strong,
+  .cp-leaderboard-row p,
+  .gvg-vote-row p,
+  .audit-metadata-list strong,
+  .approval-meta strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 430px) {
+  .app-shell {
+    padding-inline: 9px;
+  }
+
+  .topbar-actions {
+    gap: 5px;
+  }
+
+  .shell-signout,
+  .language-switcher select {
+    min-height: 40px;
+  }
+
+  .page-heading h2 {
+    font-size: 1.52rem;
+  }
+
+  .compact-meta,
+  .cp-window-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .approval-meta > div,
+  .compact-meta > div,
+  .profile-mini-stat-grid > div,
+  .profile-detail-grid > div,
+  .profile-detail-grid > form,
+  .analytics-stat-card {
+    min-width: 0;
+  }
+
+  .member-action-row,
+  .member-admin-actions,
+  .compact-admin-actions,
+  .analytics-confirm-actions,
+  .profile-inline-row-actions,
+  .profile-inline-edit-actions {
+    gap: 8px;
+  }
+
+  .member-action-row > button,
+  .member-admin-actions > button,
+  .compact-admin-actions > button,
+  .analytics-confirm-actions > button,
+  .profile-inline-row-actions > button,
+  .profile-inline-edit-actions > button {
+    flex: 1 1 126px;
+  }
+
+  .three-v-three-request-card,
+  .three-v-three-outgoing-card {
+    grid-template-columns: 1fr;
+    justify-items: stretch;
+  }
+
+  .three-v-three-request-card .cosmetic-preview,
+  .three-v-three-outgoing-card .cosmetic-preview {
+    justify-self: start;
+  }
+
+  .three-v-three-plus-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .three-v-three-team-header {
+    display: grid;
+    gap: 8px;
+  }
+
+  .three-v-three-team-header .status-badge {
+    justify-self: start;
+  }
+
+  .app-nav {
+    right: max(8px, env(safe-area-inset-right));
+    left: max(8px, env(safe-area-inset-left));
+    gap: 5px;
+    padding: 7px;
+    padding-bottom: max(7px, env(safe-area-inset-bottom));
+  }
+
+  .nav-button {
+    min-height: 42px;
+    padding-inline: 3px;
+    font-size: 0.66rem;
   }
 }
 
