@@ -2,9 +2,31 @@
 
 ## Current Recommendation
 
-PWA install support, the PWA update-available banner, and the offline notice banner are complete and deployed.
+Admin mobile UX polish is complete and deployed.
 
 Recommended next step:
+- Do a manual authenticated AdminPanel mobile smoke pass on production at 360/390/430 widths:
+  - Admin Overview section selector and command cards.
+  - Analytics Overview/Members/CP/GvG/Weekly Growth/Attention.
+  - Approvals.
+  - Members list and expanded Manage card.
+  - CP roster and CP Update Window.
+  - CP Ranking.
+  - GvG admin.
+  - Audit Logs.
+  - Permissions.
+  - Tools / Owner Cosmetics.
+  - Confirm no horizontal overflow, no bottom-nav overlap, no raw translation keys, no console errors, and no CP values outside existing authorized admin surfaces.
+- Continue with the next user-prioritized milestone after the AdminPanel mobile smoke pass.
+
+Recorded Admin mobile polish status:
+- Commit `0dc9eb5 style: polish admin mobile experience` is deployed.
+- Mobile AdminPanel now uses a compact section selector while desktop keeps the existing tab bar.
+- Admin Overview command cards, Analytics scope/sub-tabs/stat cards/Weekly Growth rows, Members, CP, GvG, Audit Logs, Permissions, and Owner Tools received compact mobile styling only.
+- No SQL migrations, Supabase/RLS/RPC changes, service/data behavior changes, package/PWA/service-worker changes, Vercel env changes, production data mutations, Admin permission logic changes, or CP privacy changes were included.
+- `npm.cmd run build` passed and production assets were verified.
+
+Previous PWA recommendation:
 - Do a quick manual PWA/offline UX check on target devices if desired:
   - Desktop Chrome/Edge install app option.
   - Android Chrome Add to Home Screen / Install app.
@@ -15,7 +37,6 @@ Recommended next step:
   - `Update App` activates the waiting worker and reloads once after `controllerchange`.
   - Chrome DevTools Network Offline shows `You are offline`.
   - Returning to Online hides the offline notice.
-- Continue with the next user-prioritized milestone after the install UX check.
 
 Recorded offline notice status:
 - Commit `2bbd24a feat: add offline notice banner` is deployed.

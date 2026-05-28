@@ -1,5 +1,37 @@
 # Testing And Validation
 
+## Admin Mobile UX Polish Validation
+
+Admin mobile UX polish passed build, source, and production asset validation.
+
+Command:
+- `npm.cmd run build`
+
+Result:
+- Build passed with the existing Vite chunk-size warning only.
+
+Implemented:
+- Added a mobile-only AdminPanel section selector in `AdminTabs`.
+- Kept the existing desktop AdminPanel tab bar for wider layouts.
+- Tightened mobile Admin Overview command cards.
+- Tightened mobile Analytics scope selector, sub-tabs, stat cards, and Weekly Growth rows.
+- Tightened mobile spacing for Members, CP, GvG, Audit Logs, Permissions, and Owner Tools panels/cards/buttons.
+- Added extra Admin tab content bottom padding for bottom-nav clearance.
+
+Production validation:
+- Commit `0dc9eb5 style: polish admin mobile experience` is deployed.
+- Production app returned HTTP 200.
+- Production JS/CSS assets contain `admin-tab-select`, `admin-tab-shell`, and the new admin mobile styles.
+
+Security/source validation:
+- No SQL migrations, Supabase/RLS/RPC changes, Supabase commands, services, package files, PWA/service-worker files, or Vercel env changes.
+- No Admin permission logic, CP privacy behavior, Analytics calculations, GvG logic, 3v3 logic, or member-status behavior changed.
+- Source checks found no new `member_cp`, `cp_snapshots`, admin CP RPC, service-role, or direct Supabase table access in the touched files.
+
+Manual verification still needed:
+- Authenticated AdminPanel mobile smoke at 360/390/430 widths.
+- Confirm Admin section navigation, Analytics, CP, Audit, Permissions, Tools, and final actions are usable with no horizontal overflow, bottom-nav overlap, raw translation keys, or console errors.
+
 ## Offline Notice Banner Validation
 
 Offline Notice Banner passed build, source, and production app-load validation.

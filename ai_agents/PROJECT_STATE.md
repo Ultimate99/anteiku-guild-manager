@@ -1,5 +1,35 @@
 # Project State
 
+## Admin Mobile UX Polish Complete
+
+AdminPanel mobile UX polish is implemented and deployed.
+
+Production rollout:
+- Commit `0dc9eb5 style: polish admin mobile experience` was pushed to `main`.
+- Production Vercel deployment completed successfully.
+- Source files changed in the feature commit:
+  - `src/components/admin/AdminTabs.jsx`
+  - `src/styles/app.css`
+
+Behavior:
+- AdminPanel uses a mobile-only dark/crimson section selector instead of the heavy horizontal desktop toolbar.
+- Desktop AdminPanel tab behavior remains available through the existing tab bar.
+- Admin Overview command cards are denser on mobile.
+- Analytics scope chips, sub-tabs, stat cards, and Weekly Growth rows are more compact/mobile-safe.
+- Members, CP, GvG, Audit Logs, Permissions, and Owner Tools panels/buttons/cards have tighter mobile spacing.
+- Admin content has extra bottom padding so final actions can scroll above bottom navigation.
+
+Security/behavior scope:
+- Frontend presentation only.
+- No SQL migrations, Supabase/RLS/RPC changes, service/data fetching behavior changes, package/PWA/service-worker changes, Vercel env changes, auth behavior changes, production data mutation, or Admin permission logic changes.
+- CP values remain only in existing authorized Admin CP/Analytics surfaces.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no protected backend/service/package/PWA files changed.
+- Production app returned HTTP 200 and production assets contain the Admin mobile selector/styles.
+- Remaining manual check: authenticated AdminPanel mobile screenshots/console at 360/390/430 widths.
+
 ## Offline Notice Banner Complete
 
 The global offline notice banner is implemented and deployed.

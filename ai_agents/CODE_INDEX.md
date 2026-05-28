@@ -1,5 +1,11 @@
 # Code Index
 
+## Admin Mobile UX Polish
+
+- `src/components/admin/AdminTabs.jsx`: Adds a mobile-friendly AdminPanel section selector while preserving the existing desktop tab bar and authorized tab list.
+- `src/styles/app.css`: Adds mobile-only AdminPanel density and overflow-safety polish for Admin navigation, Overview command cards, Analytics scope/sub-tabs/stat cards/Weekly Growth rows, Members, CP, GvG, Audit Logs, Permissions, Owner Tools, and bottom-nav clearance.
+- Production status: commit `0dc9eb5 style: polish admin mobile experience` is deployed. This is frontend presentation only; no SQL, Supabase/RLS/RPC, service/data fetching, package/PWA/service-worker, permission, CP privacy, Analytics calculation, GvG, 3v3, or member-status behavior changed.
+
 ## Offline Notice Banner
 
 - `src/App.jsx`: Contains the global `OfflineNotice` UI and online/offline browser-event state handling.

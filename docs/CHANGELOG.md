@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-05-28 - Admin Mobile UX Polish
+
+- Added frontend-only AdminPanel mobile UX polish.
+- Commit deployed: `0dc9eb5 style: polish admin mobile experience`.
+- Source files changed in the feature commit:
+  - `src/components/admin/AdminTabs.jsx`
+  - `src/styles/app.css`
+- Added a compact mobile AdminPanel section selector while preserving the existing desktop tab bar.
+- Tightened mobile Admin Overview command cards.
+- Tightened Analytics scope selector, sub-tabs, stat cards, and Weekly Growth rows for phone widths.
+- Tightened mobile spacing for Members, CP, GvG, Audit Logs, Permissions, and Owner Tools.
+- Added Admin tab content bottom padding for bottom navigation clearance.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production app and assets served successfully after deployment.
+- No SQL migrations, Supabase/RLS/RPC changes, service/data behavior changes, package/PWA/service-worker changes, Vercel env changes, production data mutations, Admin permission logic changes, CP privacy changes, Analytics calculation changes, GvG logic changes, 3v3 logic changes, or member-status behavior changes were included.
+
 ## 2026-05-28 - Offline Notice Banner
 
 - Added a global frontend-only Offline Notice Banner.

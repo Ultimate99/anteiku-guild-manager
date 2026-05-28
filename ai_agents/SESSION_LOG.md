@@ -1,5 +1,21 @@
 # Session Log
 
+## 2026-05-28 - Admin Mobile UX Polish
+
+- Implemented and deployed frontend-only AdminPanel mobile UX polish.
+- Commit `0dc9eb5 style: polish admin mobile experience` changed only:
+  - `src/components/admin/AdminTabs.jsx`
+  - `src/styles/app.css`
+- Added a mobile-only AdminPanel section selector while preserving the desktop tab bar.
+- Tightened Admin Overview command cards for mobile.
+- Tightened Analytics mobile scope chips, sub-tabs, stat cards, and Weekly Growth rows.
+- Tightened mobile spacing for Members, CP, GvG, Audit Logs, Permissions, and Owner Tools surfaces.
+- Added Admin tab content bottom padding so final actions can scroll above bottom navigation.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no SQL/migration, Supabase/RLS/RPC, service/data, package, PWA/service-worker, Admin permission logic, CP privacy, Analytics calculation, GvG, 3v3, or member-status changes.
+- Production deployment completed successfully and production assets contain the new Admin mobile selector/styles.
+- Manual authenticated mobile AdminPanel screenshot/console validation remains recommended.
+
 ## 2026-05-28 - Offline Notice Banner
 
 - Implemented and deployed the global Offline Notice Banner.

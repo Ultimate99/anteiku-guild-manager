@@ -1,5 +1,39 @@
 # Testing
 
+## Admin Mobile UX Polish
+
+Admin mobile UX polish passed build, source, and production asset validation.
+
+Command:
+- `npm.cmd run build`
+
+Result:
+- Build passed with the existing Vite chunk-size warning only.
+
+Production validation:
+- Commit `0dc9eb5 style: polish admin mobile experience` is deployed.
+- Production app returned HTTP 200.
+- Production JS/CSS assets contain the new Admin mobile section selector and mobile AdminPanel styles.
+
+Behavior:
+- AdminPanel uses a compact mobile section selector instead of the heavy horizontal desktop toolbar.
+- Desktop AdminPanel tab bar remains unchanged for wider layouts.
+- Admin Overview command cards are denser on mobile.
+- Analytics scope/sub-tabs/stat cards and Weekly Growth rows are more mobile-safe.
+- Members, CP, GvG, Audit Logs, Permissions, and Owner Tools have tighter mobile spacing.
+- Admin content has extra bottom padding for bottom navigation clearance.
+
+Security/source validation:
+- No SQL migrations, Supabase/RLS/RPC changes, Supabase commands, services, package files, PWA/service-worker files, Vercel env changes, or production data mutations.
+- No Admin permission logic, CP privacy, Analytics calculations, GvG, 3v3, or member-status behavior changed.
+- Source checks found no new `member_cp`, `cp_snapshots`, service-role, direct Supabase table access, or admin CP RPC additions in the touched files.
+
+Manual test checklist:
+- At 360/390/430 widths, sign in as an authorized admin/owner.
+- Open AdminPanel and confirm the section selector is usable.
+- Check Admin Overview, Analytics sub-tabs, Approvals, Members manage card, CP roster/window, CP Ranking, GvG admin, Audit Logs, Permissions, and Tools.
+- Confirm no horizontal overflow, no bottom-nav overlap, no raw translation keys, no console errors, and no CP values outside existing authorized admin surfaces.
+
 ## Offline Notice Banner
 
 Offline Notice Banner passed build, source, and production app-load validation.
