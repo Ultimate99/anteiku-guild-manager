@@ -1,5 +1,19 @@
 # Session Log
 
+## 2026-05-28 - Milestone 25C 3v3 Frontend UI
+
+- Committed Milestone 25B backend locally as `0dad508 feat: add 3v3 team finder backend`; no push was performed.
+- Implemented frontend-only 3v3 Team Finder UI locally.
+- Added `src/services/threeVThreeService.js` with RPC-only wrappers for the 25B 3v3 functions.
+- Added `src/pages/ThreeVThree.jsx` with Find Team, Create Team, and My Requests sub-tabs.
+- Added approved-member `3v3` navigation wiring in `App.jsx` and `navigation.js`.
+- Added EN/FR/DE `threeVThree.*` labels and `nav.threeVThree`.
+- Added mobile-first dark/crimson 3v3 styles for team cards, player slots, request panels, owner actions, and sub-tabs.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no normal CP identifiers, no direct `.from(...)` table calls, and only 3v3 RPCs in `threeVThreeService`.
+- No SQL migrations, Supabase/RLS/RPC changes, staging action, production action, Vercel env change, deploy, or production data mutation was performed.
+- Authenticated multi-account browser validation remains pending for Milestone 25D staging.
+
 ## 2026-05-28 - Milestone 25B 3v3 Team Finder Backend
 
 - Implemented backend/RLS/RPC-only 3v3 Team Finder foundation.

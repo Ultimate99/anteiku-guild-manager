@@ -2,6 +2,28 @@
 
 ## Current Recommendation
 
+Milestone 25C 3v3 frontend UI is implemented locally and build/source validated.
+
+Recommended next step:
+- Milestone 25D: staging rollout and authenticated validation.
+
+25D gate:
+- Apply `20260528000100_three_v_three_team_finder.sql` to staging only after migration list/dry-run confirms the expected pending migration set.
+- Point local frontend to staging only after staging DB has the 25B migration.
+- Validate with multiple staging accounts for create/request/approve/decline/remove/disband flows.
+- Do not deploy or push production frontend until staging passes and production rollout is separately approved.
+
+Recorded Milestone 25C status:
+- Added `3v3` member navigation and `ThreeVThree` page.
+- Added `threeVThreeService` using only 3v3 RPCs.
+- Added Find Team, Create Team, and My Requests sub-tabs.
+- Team cards show three slots, avatar/frame, IGN, Discord username, and public 3v3 Combined CP.
+- My Requests supports outgoing requests and owner incoming request actions.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no normal CP identifiers, no direct 3v3 table access, and no SQL/RLS/RPC/backend changes.
+
+## Previous Recommendation - Milestone 25B
+
 Milestone 25B 3v3 Team Finder backend is implemented and locally validated only.
 
 Recommended next step:

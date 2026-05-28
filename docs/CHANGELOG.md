@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-05-28 - Milestone 25C 3v3 Frontend UI
+
+- Added local frontend-only 3v3 Team Finder UI.
+- Added member nav item `3v3`.
+- Added `src/services/threeVThreeService.js` with RPC-only wrappers for the 25B 3v3 backend.
+- Added `src/pages/ThreeVThree.jsx` with Find Team, Create Team, and My Requests sub-tabs.
+- Added team cards with three slots, avatar/frame preview, IGN, Discord username, and public 3v3 Combined CP.
+- Added Create Team form, Discord/public Combined CP profile setup, outgoing request list, incoming owner queue, and owner actions.
+- Added EN/FR/DE `threeVThree.*` labels.
+- Added mobile-first dark/crimson 3v3 styles.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no normal CP identifiers, no direct table access, and only 3v3 RPC calls in the new service.
+- No SQL migrations, Supabase/RLS/RPC changes, staging, production, Vercel env, deploy, or production data mutation was included.
+- Authenticated multi-account browser validation is pending for Milestone 25D staging.
+
 ## 2026-05-28 - Milestone 25B 3v3 Team Finder Backend
 
 - Added local-only backend/RLS/RPC foundation for future 3v3 Team Finder.

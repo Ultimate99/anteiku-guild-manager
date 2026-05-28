@@ -1,5 +1,15 @@
 # Code Index
 
+## Milestone 25C 3v3 Frontend UI
+
+- `src/services/threeVThreeService.js`: RPC-only frontend wrapper for the 25B 3v3 functions. Normalizes team/status/request payloads, safe avatar/frame paths, public 3v3 Combined CP values, Discord display, and combined CP input formatting. Does not direct-read or direct-write 3v3 tables and does not call normal CP services.
+- `src/pages/ThreeVThree.jsx`: Member-facing 3v3 page with Find Team, Create Team, and My Requests sub-tabs; renders team cards, three-slot layouts, request forms, player setup forms, incoming/outgoing request queues, and owner actions.
+- `src/App.jsx`: Wires `threeVThree` page id to `ThreeVThree`.
+- `src/data/navigation.js`: Adds the approved member nav item for `3v3`.
+- `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`: Adds `nav.threeVThree`, `app.eyebrow.teams`, and `threeVThree.*` labels.
+- `src/styles/app.css`: Adds mobile-first 3v3 page, tab, team-card, slot, plus-slot, request-card, and owner-action styles.
+- Status: local frontend build/source validation passed. Awaiting Milestone 25D staging migration and authenticated multi-account browser validation.
+
 ## Milestone 25B 3v3 Team Finder Backend
 
 - `supabase/migrations/20260528000100_three_v_three_team_finder.sql`: Adds the local-only 3v3 Team Finder backend/RLS/RPC foundation. Defines `three_v_three_player_profiles`, `three_v_three_teams`, `three_v_three_team_members`, `three_v_three_join_requests`, RLS/no-direct-client-grant posture, eligibility helpers, request spam/cooldown enforcement, team owner actions, and RPC-only 3v3 flows.

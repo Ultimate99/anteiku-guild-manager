@@ -1,5 +1,35 @@
 # Project State
 
+## Milestone 25C 3v3 Frontend Implemented Locally
+
+Milestone 25C is implemented locally as a frontend-only 3v3 Team Finder UI on top of the Milestone 25B RPCs.
+
+Implemented:
+- Added member-facing `3v3` navigation item and page.
+- Added `src/services/threeVThreeService.js` with RPC-only wrappers for the 25B 3v3 functions.
+- Added `src/pages/ThreeVThree.jsx` with Find Team, Create Team, and My Requests sub-tabs.
+- Find Team renders rectangular dark/crimson team cards with three player slots, avatar/frame previews, Discord username, and public 3v3 Combined CP.
+- Create Team supports team name, public 3v3 Combined CP, Discord requirement messaging, and create flow.
+- My Requests shows current/owned team, outgoing requests, incoming owner queue, approve/decline, cancel, remove member, disband, close, and reopen controls.
+- Added EN/FR/DE `threeVThree.*` labels and `3v3` navigation labels.
+- Added mobile-first dark/crimson 3v3 card, slot, request, and tab styles.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation confirmed the 3v3 UI/service contains no `member_cp`, `cp_snapshots`, own/admin CP RPC calls, or direct Supabase table access.
+- `threeVThreeService` calls only 3v3 RPCs.
+- Local Vite is serving at `127.0.0.1:5173`.
+- Authenticated multi-account browser validation is still pending and should be handled in Milestone 25D staging validation.
+
+Security/scope:
+- Frontend-only local implementation.
+- No SQL migrations, Supabase/RLS/RPC changes, staging action, production action, Vercel env change, deployment, or production data mutation was performed.
+- Normal protected CP remains untouched; 3v3 UI uses only public 3v3 Combined CP from the 25B RPCs.
+- Do not deploy this frontend until `20260528000100_three_v_three_team_finder.sql` is applied and verified on the target database.
+
+Next gate:
+- Milestone 25D: staging migration rollout plus authenticated 3v3 browser validation with multiple test accounts.
+
 ## Milestone 25B 3v3 Team Finder Backend Implemented Locally
 
 Milestone 25B is implemented and locally validated as a backend/RLS/RPC foundation for the future member-facing `3v3` tab.

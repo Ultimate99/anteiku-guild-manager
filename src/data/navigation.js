@@ -42,6 +42,13 @@ export const navigationItems = [
     eyebrowKey: 'app.eyebrow.vote',
   },
   {
+    id: 'threeVThree',
+    label: '3v3',
+    labelKey: 'nav.threeVThree',
+    eyebrow: 'Teams',
+    eyebrowKey: 'app.eyebrow.teams',
+  },
+  {
     id: 'admin',
     label: 'Admin',
     labelKey: 'nav.admin',

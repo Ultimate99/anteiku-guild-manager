@@ -1,5 +1,37 @@
 # Testing And Validation
 
+## Milestone 25C 3v3 Frontend Build And Source Validation
+
+Frontend-only 3v3 Team Finder UI implementation passed local build and source validation.
+
+Command:
+- `npm.cmd run build`
+
+Result:
+- Build passed with the existing Vite chunk-size warning only.
+
+Implemented validation target:
+- Approved member navigation now includes `3v3`.
+- 3v3 page has Find Team, Create Team, and My Requests sub-tabs.
+- Team cards render three slots with avatar/frame, IGN, Discord username, and public 3v3 Combined CP.
+- Create Team and request flows use public 3v3 Combined CP input.
+- My Requests includes current/owned team, outgoing requests, incoming owner queue, and owner actions.
+
+Source/scope result:
+- No SQL migrations were edited after 25B.
+- No Supabase/RLS/RPC logic changed.
+- No staging, production, Vercel env, deploy, or production data action was performed.
+- `src/services/threeVThreeService.js` uses only 3v3 RPCs.
+- Source checks found no `member_cp`, `cp_snapshots`, own/admin CP RPC calls, or `.from(...)` table access in the 3v3 page/service.
+- No AdminPanel, CP/GvG/audit/role/permission/member-status behavior was changed.
+
+Browser validation:
+- Local Vite is serving at `127.0.0.1:5173`.
+- Authenticated multi-account validation is pending for Milestone 25D staging because request/approve flows need multiple real accounts.
+
+Rollout gate:
+- Do not deploy the 3v3 frontend until the target database has `20260528000100_three_v_three_team_finder.sql` applied and verified.
+
 ## Milestone 25B 3v3 Team Finder Backend Validation
 
 Backend/RLS/RPC-only local validation passed for 3v3 Team Finder.
