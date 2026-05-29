@@ -727,6 +727,13 @@ export function AdminAnalyticsSection({
                   : row.growthAmount < 0
                     ? 'negative'
                     : 'zero';
+              const memberName = row.ign ?? row.username ?? t('admin.common.unknownMember');
+              const guildName = row.guildName ?? t('admin.common.selectedGuild');
+              const updatedLabel = row.missingBaseline
+                ? t('admin.analytics.missingBaseline')
+                : row.missingCurrentCp
+                  ? t('admin.analytics.missingCurrentCp')
+                  : formatDate(row.lastUpdated);
 
               return (
                 <article
@@ -735,22 +742,45 @@ export function AdminAnalyticsSection({
                   key={`${row.profileId}-${row.baselineBatchId ?? 'live'}`}
                   data-growth={growthState}
                 >
-                  <span data-label={t('admin.cp.rank')}>#{row.rank}</span>
-                  <strong data-label={t('admin.common.members')}>{row.ign ?? row.username ?? t('admin.common.unknownMember')}</strong>
-                  <span data-label={t('admin.common.guild')}>{row.guildName ?? t('admin.common.selectedGuild')}</span>
-                  <span data-label={t('admin.analytics.baselineCp')}>{formatCpValue(row.baselineCp)}</span>
-                  <span data-label={t('admin.analytics.currentCp')}>{formatCpValue(row.currentCp)}</span>
-                  <span className="analytics-growth-value" data-label={t('admin.analytics.growth')}>
+                  <span className="analytics-growth-desktop-cell" data-label={t('admin.cp.rank')}>#{row.rank}</span>
+                  <strong className="analytics-growth-desktop-cell" data-label={t('admin.common.members')}>{memberName}</strong>
+                  <span className="analytics-growth-desktop-cell" data-label={t('admin.common.guild')}>{guildName}</span>
+                  <span className="analytics-growth-desktop-cell" data-label={t('admin.analytics.baselineCp')}>{formatCpValue(row.baselineCp)}</span>
+                  <span className="analytics-growth-desktop-cell" data-label={t('admin.analytics.currentCp')}>{formatCpValue(row.currentCp)}</span>
+                  <span className="analytics-growth-desktop-cell analytics-growth-value" data-label={t('admin.analytics.growth')}>
                     {formatCpValue(row.growthAmount)}
                   </span>
-                  <span data-label={t('admin.analytics.growthPercent')}>{formatPercent(row.growthPercent)}</span>
-                  <span data-label={t('admin.common.updated')}>
-                    {row.missingBaseline
-                      ? t('admin.analytics.missingBaseline')
-                      : row.missingCurrentCp
-                        ? t('admin.analytics.missingCurrentCp')
-                        : formatDate(row.lastUpdated)}
-                  </span>
+                  <span className="analytics-growth-desktop-cell" data-label={t('admin.analytics.growthPercent')}>{formatPercent(row.growthPercent)}</span>
+                  <span className="analytics-growth-desktop-cell" data-label={t('admin.common.updated')}>{updatedLabel}</span>
+
+                  <div className="analytics-growth-mobile-card">
+                    <div className="analytics-growth-mobile-top">
+                      <div>
+                        <strong>#{row.rank} {memberName}</strong>
+                        <span>{t('admin.common.guild')}: {guildName}</span>
+                      </div>
+                      <span>{updatedLabel}</span>
+                    </div>
+                    <div className="analytics-growth-mobile-highlight">
+                      <span>{t('admin.analytics.growth')}</span>
+                      <strong className="analytics-growth-value">{formatCpValue(row.growthAmount)}</strong>
+                      <strong>{formatPercent(row.growthPercent)}</strong>
+                    </div>
+                    <dl className="analytics-growth-mobile-details">
+                      <div>
+                        <dt>{t('admin.analytics.baselineCp')}</dt>
+                        <dd>{formatCpValue(row.baselineCp)}</dd>
+                      </div>
+                      <div>
+                        <dt>{t('admin.analytics.currentCp')}</dt>
+                        <dd>{formatCpValue(row.currentCp)}</dd>
+                      </div>
+                      <div>
+                        <dt>{t('admin.common.updated')}</dt>
+                        <dd>{updatedLabel}</dd>
+                      </div>
+                    </dl>
+                  </div>
                 </article>
               );
             })}
