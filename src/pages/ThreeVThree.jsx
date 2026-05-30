@@ -117,6 +117,25 @@ function formatErrorMessage(error, t) {
   return error?.message || t('threeVThree.actionFailed');
 }
 
+function ProfileLinkButton({ profileSlug, onOpenProfile, className = '', children }) {
+  const { t } = useLanguage();
+
+  if (!profileSlug || !onOpenProfile) {
+    return children;
+  }
+
+  return (
+    <button
+      type="button"
+      className={`profile-link-button ${className}`.trim()}
+      onClick={() => onOpenProfile(profileSlug)}
+      aria-label={t('publicProfile.viewProfile')}
+    >
+      {children}
+    </button>
+  );
+}
+
 function ThreeVThreeProfileCard({
   profile,
   discordDraft,
@@ -212,7 +231,7 @@ function ThreeVThreeProfileCard({
   );
 }
 
-function PlayerSlot({ slot, team, canManage, onRemove }) {
+function PlayerSlot({ slot, team, canManage, onRemove, onOpenProfile }) {
   const { language, t } = useLanguage();
 
   if (slot.isEmpty) {
@@ -231,9 +250,13 @@ function PlayerSlot({ slot, team, canManage, onRemove }) {
   return (
     <article className="three-v-three-slot" data-role={slot.role || 'member'}>
       <span className="three-v-three-slot-number">{slot.slotNumber}</span>
-      <CosmeticPreview avatar={slot.avatar} frame={slot.frame} size="small" label={slot.ign || t('common.unknown')} />
+      <ProfileLinkButton profileSlug={slot.profileSlug} onOpenProfile={onOpenProfile} className="three-v-three-player-link">
+        <CosmeticPreview avatar={slot.avatar} frame={slot.frame} size="small" label={slot.ign || t('common.unknown')} />
+      </ProfileLinkButton>
       <div className="three-v-three-slot-copy">
-        <strong>{slot.ign || t('common.unknown')}</strong>
+        <ProfileLinkButton profileSlug={slot.profileSlug} onOpenProfile={onOpenProfile} className="three-v-three-player-name">
+          <strong>{slot.ign || t('common.unknown')}</strong>
+        </ProfileLinkButton>
         <small>{formatDiscordUsername(slot.discordUsername) || t('threeVThree.discordMissing')}</small>
         <span>{displayCp(slot.combinedCp, language, t('common.notSet'))}</span>
       </div>
@@ -297,6 +320,7 @@ function TeamCard({
   onCloseTeam,
   onReopenTeam,
   onDisbandTeam,
+  onOpenProfile,
   showRequestAction = true,
   compact = false,
   hideHeader = false,
@@ -328,6 +352,7 @@ function TeamCard({
             team={team}
             canManage={canManage}
             onRemove={onRemoveMember}
+            onOpenProfile={onOpenProfile}
           />
         ))}
       </div>
@@ -408,6 +433,7 @@ function FindTeamTab({
   onRequestDraftChange,
   onRequestSubmit,
   onRequestCancel,
+  onOpenProfile,
 }) {
   const { t } = useLanguage();
 
@@ -431,6 +457,7 @@ function FindTeamTab({
               onRequestDraftChange={onRequestDraftChange}
               onRequestSubmit={onRequestSubmit}
               onRequestCancel={onRequestCancel}
+              onOpenProfile={onOpenProfile}
               hideRequestBlockReason={isAlreadyInTeam}
             />
           ))}
@@ -523,19 +550,31 @@ function CreateTeamTab({
   );
 }
 
-function RequesterCard({ request, busyKey, onApprove, onDecline }) {
+function RequesterCard({ request, busyKey, onApprove, onDecline, onOpenProfile }) {
   const { language, t } = useLanguage();
 
   return (
     <article className="three-v-three-request-card">
-      <CosmeticPreview
-        avatar={request.avatar}
-        frame={request.frame}
-        size="small"
-        label={request.requesterIgn || request.requesterUsername || t('common.unknown')}
-      />
+      <ProfileLinkButton
+        profileSlug={request.requesterProfileSlug}
+        onOpenProfile={onOpenProfile}
+        className="three-v-three-player-link"
+      >
+        <CosmeticPreview
+          avatar={request.avatar}
+          frame={request.frame}
+          size="small"
+          label={request.requesterIgn || request.requesterUsername || t('common.unknown')}
+        />
+      </ProfileLinkButton>
       <div>
-        <strong>{request.requesterIgn || t('common.unknown')}</strong>
+        <ProfileLinkButton
+          profileSlug={request.requesterProfileSlug}
+          onOpenProfile={onOpenProfile}
+          className="three-v-three-player-name"
+        >
+          <strong>{request.requesterIgn || t('common.unknown')}</strong>
+        </ProfileLinkButton>
         <small>{formatDiscordUsername(request.requesterDiscordUsername) || t('threeVThree.discordMissing')}</small>
         <span>{displayCp(request.combinedCp, language, t('common.notSet'))}</span>
       </div>
@@ -599,6 +638,7 @@ function MyRequestsTab({
   onCloseTeam,
   onReopenTeam,
   onDisbandTeam,
+  onOpenProfile,
 }) {
   const { t } = useLanguage();
   const ownedTeam = status?.ownedTeam;
@@ -628,12 +668,20 @@ function MyRequestsTab({
             onCloseTeam={onCloseTeam}
             onReopenTeam={onReopenTeam}
             onDisbandTeam={onDisbandTeam}
+            onOpenProfile={onOpenProfile}
             showRequestAction={false}
             compact
             hideHeader
           />
         ) : currentTeam ? (
-          <TeamCard team={currentTeam} canManage={false} showRequestAction={false} compact hideHeader />
+          <TeamCard
+            team={currentTeam}
+            canManage={false}
+            showRequestAction={false}
+            compact
+            hideHeader
+            onOpenProfile={onOpenProfile}
+          />
         ) : (
           <p className="muted-line compact-state-line">{t('threeVThree.noActiveTeamBody')}</p>
         )}
@@ -656,6 +704,7 @@ function MyRequestsTab({
                 busyKey={busyKey}
                 onApprove={onApproveRequest}
                 onDecline={onDeclineRequest}
+                onOpenProfile={onOpenProfile}
               />
             ))}
           </div>
@@ -691,7 +740,7 @@ function MyRequestsTab({
   );
 }
 
-export function ThreeVThree() {
+export function ThreeVThree({ onNavigate }) {
   const { language, t } = useLanguage();
   const [activeTab, setActiveTab] = useState('findTeam');
   const [teamsState, setTeamsState] = useState({ viewer: null, teams: [] });
@@ -711,6 +760,11 @@ export function ThreeVThree() {
   const threeVThreeProfile = myStatus?.profile ?? teamsState.viewer;
   const teams = teamsState.teams;
   const hasActiveTeam = Boolean(myStatus?.currentTeam);
+  const openPublicProfile = useCallback((profileSlug) => {
+    if (profileSlug) {
+      onNavigate?.('publicProfile', { profileSlug });
+    }
+  }, [onNavigate]);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -958,6 +1012,7 @@ export function ThreeVThree() {
           onRequestDraftChange={handleRequestDraftChange}
           onRequestSubmit={handleRequestSubmit}
           onRequestCancel={() => setRequestingTeamId('')}
+          onOpenProfile={openPublicProfile}
         />
       ) : null}
 
@@ -986,6 +1041,7 @@ export function ThreeVThree() {
           onCloseTeam={handleCloseTeam}
           onReopenTeam={handleReopenTeam}
           onDisbandTeam={handleDisbandTeam}
+          onOpenProfile={openPublicProfile}
         />
       ) : null}
     </div>

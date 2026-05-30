@@ -102,6 +102,25 @@ function GhoulRepChip({ value }) {
   );
 }
 
+function ProfileLinkButton({ profileSlug, onOpenProfile, className = '', children }) {
+  const { t } = useLanguage();
+
+  if (!profileSlug || !onOpenProfile) {
+    return children;
+  }
+
+  return (
+    <button
+      type="button"
+      className={`profile-link-button ${className}`.trim()}
+      onClick={() => onOpenProfile(profileSlug)}
+      aria-label={t('publicProfile.viewProfile')}
+    >
+      {children}
+    </button>
+  );
+}
+
 function ReactionButton({ type, reactions, disabled, onToggle, onShowDetails }) {
   const { t } = useLanguage();
   const count = getReactionCount(reactions, type);
@@ -133,7 +152,7 @@ function ReactionButton({ type, reactions, disabled, onToggle, onShowDetails }) 
   );
 }
 
-function ReactionDetailsPanel({ details, onClose }) {
+function ReactionDetailsPanel({ details, onClose, onOpenProfile }) {
   const { language, t } = useLanguage();
 
   if (!details?.open) {
@@ -176,7 +195,13 @@ function ReactionDetailsPanel({ details, onClose }) {
                 className="wall-reaction-detail-avatar"
               />
               <div>
-                <strong>{authorName(reaction, t('common.unknown'))}</strong>
+                <ProfileLinkButton
+                  profileSlug={reaction.profileSlug}
+                  onOpenProfile={onOpenProfile}
+                  className="wall-author-name-button"
+                >
+                  <strong>{authorName(reaction, t('common.unknown'))}</strong>
+                </ProfileLinkButton>
                 <span>{reaction.guildName || t('wall.guildOnly')}</span>
               </div>
               <small>
@@ -257,22 +282,43 @@ function WallComposer({ canPost, guildId, isGlobal, content, disabledReason, bus
   );
 }
 
-function WallComment({ comment, viewerCanPost, busyAction, onDelete, onModerateDelete, onReactionToggle, onShowReactionDetails }) {
+function WallComment({
+  comment,
+  viewerCanPost,
+  busyAction,
+  onDelete,
+  onModerateDelete,
+  onReactionToggle,
+  onShowReactionDetails,
+  onOpenProfile,
+}) {
   const { language, t } = useLanguage();
   const canDelete = comment.canDelete || comment.canModerate;
 
   return (
     <article className="wall-comment-card">
       <div className="wall-comment-header">
-        <CosmeticPreview
-          avatar={comment.author.avatar}
-          frame={comment.author.frame}
-          label={authorName(comment.author, t('common.unknown'))}
-          size="small"
-          className="wall-comment-avatar"
-        />
+        <ProfileLinkButton
+          profileSlug={comment.author.profileSlug}
+          onOpenProfile={onOpenProfile}
+          className="wall-avatar-link"
+        >
+          <CosmeticPreview
+            avatar={comment.author.avatar}
+            frame={comment.author.frame}
+            label={authorName(comment.author, t('common.unknown'))}
+            size="small"
+            className="wall-comment-avatar"
+          />
+        </ProfileLinkButton>
         <div>
-          <strong>{authorName(comment.author, t('common.unknown'))}</strong>
+          <ProfileLinkButton
+            profileSlug={comment.author.profileSlug}
+            onOpenProfile={onOpenProfile}
+            className="wall-author-name-button"
+          >
+            <strong>{authorName(comment.author, t('common.unknown'))}</strong>
+          </ProfileLinkButton>
           <GhoulRepChip value={comment.author.ghoulRep} />
           <span>{formatWallDate(comment.createdAt, language)}</span>
         </div>
@@ -331,6 +377,7 @@ function WallPostCard({
   onCommentReactionToggle,
   onPostReactionDetails,
   onCommentReactionDetails,
+  onOpenProfile,
 }) {
   const { language, t } = useLanguage();
   const canModerateOnly = post.canModerate && !post.canDelete;
@@ -340,16 +387,24 @@ function WallPostCard({
   return (
     <article className="panel wall-post-card" data-pinned={post.isPinned} data-global={post.isGlobal}>
       <header className="wall-post-header">
-        <CosmeticPreview
-          avatar={post.author.avatar}
-          frame={post.author.frame}
-          label={authorName(post.author, t('common.unknown'))}
-          size="medium"
-          className="wall-post-avatar"
-        />
+        <ProfileLinkButton profileSlug={post.author.profileSlug} onOpenProfile={onOpenProfile} className="wall-avatar-link">
+          <CosmeticPreview
+            avatar={post.author.avatar}
+            frame={post.author.frame}
+            label={authorName(post.author, t('common.unknown'))}
+            size="medium"
+            className="wall-post-avatar"
+          />
+        </ProfileLinkButton>
         <div className="wall-post-identity">
           <div>
-            <strong>{authorName(post.author, t('common.unknown'))}</strong>
+            <ProfileLinkButton
+              profileSlug={post.author.profileSlug}
+              onOpenProfile={onOpenProfile}
+              className="wall-author-name-button"
+            >
+              <strong>{authorName(post.author, t('common.unknown'))}</strong>
+            </ProfileLinkButton>
             <GhoulRepChip value={post.author.ghoulRep} />
             {post.isGlobal ? <StatusBadge tone="crimson">{t('wall.globalBadge')}</StatusBadge> : null}
             {post.isPinned ? <StatusBadge tone="crimson">{t('wall.pinned')}</StatusBadge> : null}
@@ -416,6 +471,7 @@ function WallPostCard({
                 onModerateDelete={onCommentModerateDelete}
                 onReactionToggle={onCommentReactionToggle}
                 onShowReactionDetails={onCommentReactionDetails}
+                onOpenProfile={onOpenProfile}
               />
             ))}
           </div>
@@ -442,7 +498,7 @@ function WallPostCard({
   );
 }
 
-export function GuildWall() {
+export function GuildWall({ onNavigate }) {
   const { guild } = useAuth();
   const { t } = useLanguage();
   const [selectedScopeId, setSelectedScopeId] = useState('global');
@@ -488,6 +544,11 @@ export function GuildWall() {
   const selectedGuildId = selectedScope?.isGlobal ? null : selectedScope?.guildId ?? guild?.id ?? null;
   const composerGuildId = selectedScope?.isGlobal ? null : selectedGuildId;
   const viewerCanPost = Boolean(viewer?.canPost && (selectedScope?.isGlobal || composerGuildId));
+  const openPublicProfile = useCallback((profileSlug) => {
+    if (profileSlug) {
+      onNavigate?.('publicProfile', { profileSlug });
+    }
+  }, [onNavigate]);
 
   const refreshFeed = useCallback(async ({ append = false, before = null } = {}) => {
     if (!selectedScope || (!selectedScope.isGlobal && !selectedGuildId)) {
@@ -753,6 +814,7 @@ export function GuildWall() {
               onCommentReactionDetails={(commentId, reactionType) =>
                 openReactionDetails({ targetType: 'comment', targetId: commentId, reactionType })
               }
+              onOpenProfile={openPublicProfile}
             />
           ))
         )}
@@ -764,7 +826,7 @@ export function GuildWall() {
         </button>
       ) : null}
 
-      <ReactionDetailsPanel details={reactionDetails} onClose={closeReactionDetails} />
+      <ReactionDetailsPanel details={reactionDetails} onClose={closeReactionDetails} onOpenProfile={openPublicProfile} />
     </div>
   );
 }

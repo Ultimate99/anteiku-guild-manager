@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AuthProvider } from './context/AuthContext.jsx';
 import { LanguageProvider, useLanguage } from './context/LanguageContext.jsx';
 import { useAuth } from './hooks/useAuth.js';
@@ -13,6 +13,7 @@ import { Leaderboard } from './pages/Leaderboard.jsx';
 import { Gvg } from './pages/Gvg.jsx';
 import { ThreeVThree } from './pages/ThreeVThree.jsx';
 import { GuildWall } from './pages/GuildWall.jsx';
+import { PublicMemberProfile } from './pages/PublicMemberProfile.jsx';
 import { AdminPanel } from './pages/AdminPanel.jsx';
 import { RejectedStatus } from './pages/RejectedStatus.jsx';
 import { RosterRestrictedStatus } from './pages/RosterRestrictedStatus.jsx';
@@ -28,8 +29,27 @@ const pageComponents = {
   gvg: Gvg,
   threeVThree: ThreeVThree,
   guildWall: GuildWall,
+  publicProfile: PublicMemberProfile,
   admin: AdminPanel,
 };
+
+function readPublicProfileSlugFromPath() {
+  if (typeof window === 'undefined') {
+    return '';
+  }
+
+  const match = window.location.pathname.match(/^\/members\/([^/]+)\/?$/);
+
+  if (!match?.[1]) {
+    return '';
+  }
+
+  try {
+    return decodeURIComponent(match[1]);
+  } catch {
+    return match[1];
+  }
+}
 
 function isPrivilegedRole(role) {
   return ['owner', 'leader', 'vice', 'admin'].includes(role);
@@ -87,7 +107,8 @@ function OfflineNotice() {
 function AppContent() {
   const { accessState, loading, membership, recoveryRequired } = useAuth();
   const { t } = useLanguage();
-  const [activePage, setActivePage] = useState('dashboard');
+  const [publicProfileSlug, setPublicProfileSlug] = useState(() => readPublicProfileSlugFromPath());
+  const [activePage, setActivePage] = useState(() => (readPublicProfileSlugFromPath() ? 'publicProfile' : 'dashboard'));
   const rosterStatus = membership?.roster_status ?? 'active';
   const statusItems = useMemo(
     () => ({
@@ -157,6 +178,57 @@ function AppContent() {
     [canViewAdmin, t],
   );
 
+  const handleNavigate = useCallback((pageId, options = {}) => {
+    if (pageId === 'publicProfile') {
+      const nextSlug = String(options?.profileSlug || '').trim();
+
+      if (!nextSlug) {
+        return;
+      }
+
+      setPublicProfileSlug(nextSlug);
+      setActivePage('publicProfile');
+
+      if (typeof window !== 'undefined') {
+        window.history.pushState(
+          { page: 'publicProfile', profileSlug: nextSlug },
+          '',
+          `/members/${encodeURIComponent(nextSlug)}`,
+        );
+      }
+
+      return;
+    }
+
+    setPublicProfileSlug('');
+    setActivePage(pageId);
+
+    if (typeof window !== 'undefined' && window.location.pathname.startsWith('/members/')) {
+      window.history.pushState({ page: pageId }, '', '/');
+    }
+  }, []);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const nextSlug = readPublicProfileSlugFromPath();
+
+      if (nextSlug) {
+        setPublicProfileSlug(nextSlug);
+        setActivePage('publicProfile');
+        return;
+      }
+
+      setPublicProfileSlug('');
+      setActivePage('dashboard');
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
+
   useEffect(() => {
     if (activePage === 'admin' && !canViewAdmin) {
       setActivePage('dashboard');
@@ -164,10 +236,17 @@ function AppContent() {
   }, [activePage, canViewAdmin]);
 
   const safeActivePage = activePage === 'admin' && !canViewAdmin ? 'dashboard' : activePage;
-  const activeItem = useMemo(
-    () => approvedNavigationItems.find((item) => item.id === safeActivePage) ?? approvedNavigationItems[0],
-    [approvedNavigationItems, safeActivePage],
-  );
+  const activeItem = useMemo(() => {
+    if (safeActivePage === 'publicProfile') {
+      return {
+        id: 'publicProfile',
+        label: t('publicProfile.title'),
+        eyebrow: t('app.eyebrow.member'),
+      };
+    }
+
+    return approvedNavigationItems.find((item) => item.id === safeActivePage) ?? approvedNavigationItems[0];
+  }, [approvedNavigationItems, safeActivePage, t]);
   const ActivePage = pageComponents[safeActivePage] ?? Dashboard;
 
   if (loading) {
@@ -231,9 +310,9 @@ function AppContent() {
       activeItem={activeItem}
       activePage={safeActivePage}
       navigationItems={approvedNavigationItems}
-      onNavigate={setActivePage}
+      onNavigate={handleNavigate}
     >
-      <ActivePage />
+      <ActivePage profileSlug={publicProfileSlug} onNavigate={handleNavigate} />
     </AppShell>
   );
 }
