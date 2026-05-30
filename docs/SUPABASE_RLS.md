@@ -1,8 +1,25 @@
 # Supabase RLS
 
-The Supabase RLS/RPC implementation has been validated through Ghoul Rep Profile display. Production is applied/verified through `20260530000500_my_ghoul_rep_profile.sql`.
+The Supabase RLS/RPC implementation has been validated through Ranking Public Profile links. Production is applied/verified through `20260530000700_ranking_public_profile_links.sql`.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
+
+## Ranking Public Profile Links RLS/RPC
+
+Ranking Public Profile links are implemented and production applied through `20260530000700_ranking_public_profile_links.sql`.
+
+Function:
+- `get_member_cp_rankings(p_scope text)` now returns safe `profile_slug` for authenticated public profile navigation.
+
+Rules:
+- Approved active-membership users can load member-safe rank order as before.
+- Invalid scopes and users without active approved membership remain denied.
+- Ranking order/math is unchanged.
+- Admin CP Ranking remains a separate permission-protected RPC path.
+
+Privacy:
+- Member ranking responses still do not return normal CP values, `member_cp`, `cp_snapshots`, CP history, CP growth, profile ids, email, auth metadata, audit/admin/private metadata, timestamps, or private CP metadata.
+- Frontend Ranking links must use the returned `profile_slug` only for authenticated `/members/:profileSlug` navigation.
 
 ## Ghoul Rep Profile And Wall RLS/RPC
 

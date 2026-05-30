@@ -1,5 +1,24 @@
 # Security Rules
 
+## Ranking Public Profile Link Security Rules
+
+Ranking to Public Member Profile links are live in production through `20260530000700_ranking_public_profile_links.sql` and commit `d806974 feat: link rankings to public profiles`.
+
+Rules:
+- Member-facing Ranking may use only `get_member_cp_rankings(p_scope)` for rank rows.
+- The only added member-ranking routing field is `profile_slug`.
+- Ranking rows/cards may navigate to authenticated `/members/:profileSlug` public profiles.
+- Ranking order/math must remain unchanged.
+- AdminPanel CP Ranking remains permission-protected and uses `get_admin_cp_rankings(...)`.
+
+Privacy:
+- Member Ranking must not return or render normal CP values, `member_cp`, `cp_snapshots`, CP history, CP growth, profile ids, email, auth IDs, audit logs, admin permissions, private notes, or private CP metadata.
+- Public profile pages remain authenticated app pages for approved members only.
+
+Production validation:
+- Local DB reset and full local validation passed with the new migration.
+- Production smoke passed for My Guild/Global Ranking links, safe `/members/toji` profile render/refresh, no protected CP values in member Ranking, Admin CP Ranking still loading for Owner, and no captured console errors.
+
 ## Public Member Profile Security Rules
 
 Public Member Profiles and profile reactions are live in production through `20260530000600_public_member_profiles.sql`, commit `3f55f76 feat: add public member profiles`, and route fallback commit `ffc36e1 fix: support public profile route refresh`.
@@ -12,7 +31,7 @@ Rules:
 - Frontend must not direct-read or direct-write `profile_reactions`.
 - Profile reactions do not affect Ghoul Rep.
 - Guild Wall and 3v3 may link to public profiles only when a safe `profile_slug` is already returned by the backend.
-- Ranking rows must remain unlinked until the member-safe ranking RPC safely returns `profile_slug` without exposing CP/private data.
+- Ranking rows/cards may link to public profiles because `20260530000700_ranking_public_profile_links.sql` adds safe `profile_slug` to the member-safe ranking RPC.
 
 Privacy:
 - Public profiles may show safe identity/social fields: avatar/frame, IGN, username/profile slug, guild, safe role label, safe roster/profile status, Ghoul Rep, public 3v3 Combined CP, and profile reaction counts/details.

@@ -1,10 +1,23 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented through Ghoul Rep Profile display. Remote production is live through `20260530000500_my_ghoul_rep_profile.sql`.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented through Ranking Public Profile links. Remote production is live through `20260530000700_ranking_public_profile_links.sql`.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
-Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, and own Profile Ghoul Rep display are implemented, locally validated, production applied, and production-smoke validated.
+Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, own Profile Ghoul Rep display, Public Member Profiles, and Ranking Public Profile links are implemented, locally validated, production applied, and production-smoke validated.
+
+## Ranking Public Profile Links
+
+Migration `20260530000700_ranking_public_profile_links.sql` is applied and verified in production.
+
+RPC behavior:
+- `get_member_cp_rankings(p_scope)` returns safe `profile_slug` in addition to existing rank-only display fields.
+- Ranking order/math remains unchanged.
+- Admin CP Ranking remains on `get_admin_cp_rankings(...)` and is unchanged.
+
+Privacy:
+- Member Ranking still does not return normal CP values, `member_cp`, `cp_snapshots`, CP history, CP growth, profile ids, email, auth metadata, audit/admin/private metadata, timestamps, or private CP metadata.
+- `profile_slug` is used only to navigate authenticated members to `/members/:profileSlug`.
 
 ## Own Profile Ghoul Rep
 
@@ -93,6 +106,8 @@ Security:
 28. `20260530000300_global_wall_scope.sql`
 29. `20260530000400_ghoul_rep_wall_reactions.sql`
 30. `20260530000500_my_ghoul_rep_profile.sql`
+31. `20260530000600_public_member_profiles.sql`
+32. `20260530000700_ranking_public_profile_links.sql`
 
 Migration `20260523000100_member_roster_status_system.sql` is locally validated, staging validated, and production applied/verified as of Milestone 15E.
 
@@ -119,6 +134,10 @@ Cosmetics catalog sync migrations `20260525213531`, `20260525213537`, and `20260
 Migration `20260528000100_three_v_three_team_finder.sql` is locally implemented/validated and production applied/verified as of Milestone 25D. It adds 3v3 Team Finder backend tables and RPCs.
 
 Migration `20260530000500_my_ghoul_rep_profile.sql` is locally implemented/validated and production applied/verified. It adds the own-user `get_my_ghoul_rep()` RPC for Profile display.
+
+Migration `20260530000600_public_member_profiles.sql` is locally implemented/validated and production applied/verified. It adds authenticated Public Member Profiles and Profile Reactions.
+
+Migration `20260530000700_ranking_public_profile_links.sql` is locally implemented/validated and production applied/verified. It adds safe `profile_slug` to member-safe rankings for authenticated public-profile navigation.
 
 ## Milestone 25B 3v3 Team Finder Backend
 

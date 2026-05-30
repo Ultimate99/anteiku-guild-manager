@@ -1,5 +1,15 @@
 # Code Index
 
+## Ranking Public Profile Links
+
+- `supabase/migrations/20260530000700_ranking_public_profile_links.sql`: Production-applied focused RPC migration adding safe `profile_slug` to `get_member_cp_rankings(p_scope)` without returning CP values or private CP metadata.
+- `supabase/tests/local_validation_anteiku.sql`: Extends CP Ranking validation to assert the current user row carries the expected safe `profile_slug`.
+- `src/services/cpLeaderboardService.js`: Maps `profile_slug` to `profileSlug` while keeping the private-field deny-list guard.
+- `src/pages/Leaderboard.jsx`: Makes member Ranking cards/rows tappable and keyboard-accessible links to `/members/:profileSlug` through existing `onNavigate('publicProfile', ...)`.
+- `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`: Add `leaderboard.viewProfile`.
+- `src/styles/app.css`: Adds mobile/desktop-safe hover/focus affordance for linked Ranking cards.
+- Production status: commit `d806974 feat: link rankings to public profiles` is deployed; production smoke passed.
+
 ## Public Member Profiles
 
 - `supabase/migrations/20260530000600_public_member_profiles.sql`: Production-applied backend/RPC foundation for public member profiles and profile reactions.

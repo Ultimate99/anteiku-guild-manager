@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-05-30 - Ranking Public Profile Links
+
+- Added authenticated public profile links to member-facing Ranking rows/cards.
+- Commit deployed: `d806974 feat: link rankings to public profiles`.
+- Migration applied: `20260530000700_ranking_public_profile_links.sql`.
+- Source files changed:
+  - `supabase/migrations/20260530000700_ranking_public_profile_links.sql`
+  - `supabase/tests/local_validation_anteiku.sql`
+  - `src/services/cpLeaderboardService.js`
+  - `src/pages/Leaderboard.jsx`
+  - `src/styles/app.css`
+  - `src/i18n/en.js`
+  - `src/i18n/fr.js`
+  - `src/i18n/de.js`
+- `get_member_cp_rankings(p_scope)` now returns safe `profile_slug` for `/members/:profileSlug` routing.
+- Ranking cards are tappable/keyboard-accessible in My Guild and Global views.
+- Local DB reset, full local validation, and `npm.cmd run build` passed.
+- Production smoke passed for My Guild/Global Ranking links, `/members/toji` direct refresh, Admin CP Ranking load, no protected CP values in member Ranking, and no captured console errors.
+- No ranking order/math change, Admin CP Ranking permission change, normal CP exposure, direct `member_cp`/`cp_snapshots` frontend use, unauthenticated public profile route, or unrelated feature behavior change was added.
+
 ## 2026-05-30 - Public Member Profiles
 
 - Added authenticated public member profiles and profile reactions.
@@ -21,7 +41,7 @@
   - `vercel.json`
 - Public profile route `/members/:profileSlug` shows safe member identity, avatar/frame, guild, safe role/status, Ghoul Rep, public 3v3 Combined CP, and profile reactions.
 - Guild Wall author/comment/reaction users and 3v3 team/request users link to public profiles when a safe profile slug is available.
-- Ranking rows remain unlinked because the member-safe ranking RPC does not currently return `profile_slug`.
+- Ranking rows/cards now link to public profiles through `20260530000700_ranking_public_profile_links.sql`.
 - `npm.cmd run build` passed with the existing Vite chunk-size warning only.
 - Production smoke passed for direct route load, safe fields, controlled profile reaction add/remove, reaction details, Wall links, 3v3 links, and no captured console errors.
 - No normal CP, `member_cp`, `cp_snapshots`, CP RPCs, email, auth IDs, admin permissions, audit/private metadata, uploads, Storage, public unauthenticated profiles, or unrelated behavior changes were added.

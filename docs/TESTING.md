@@ -1,5 +1,30 @@
 # Testing
 
+## Ranking Public Profile Links
+
+Ranking to Public Member Profile links passed local DB validation, build/source validation, deployment, and production smoke.
+
+Build/source:
+- `npx.cmd supabase db reset` applied through `20260530000700_ranking_public_profile_links.sql`.
+- `Get-Content supabase\tests\local_validation_anteiku.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres` passed.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no direct `.from(...)` table access, no normal CP RPC additions, and no protected `member_cp` / `cp_snapshots` frontend usage in the Ranking path.
+
+Production:
+- Production DB received `20260530000700_ranking_public_profile_links.sql`.
+- Commit deployed: `d806974 feat: link rankings to public profiles`.
+- My Guild and Global Ranking rows/cards expose safe `/members/:profileSlug` navigation.
+
+Production smoke:
+- Signed-in Owner opened Ranking.
+- My Guild Ranking had tappable profile targets.
+- Global Ranking had tappable profile targets.
+- Tapping Toji opened `/members/toji`.
+- Direct `/members/toji` refresh rendered the public profile route.
+- Member Ranking still hid protected normal CP values.
+- Admin CP Ranking still loaded for Owner in the existing authorized admin-only surface.
+- No captured console errors.
+
 ## Public Member Profiles
 
 Public Member Profiles/Profile Reactions passed production DB verification, build/source validation, deployment, and production smoke.

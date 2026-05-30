@@ -1,5 +1,30 @@
 # Project State
 
+## Ranking Public Profile Links Live
+
+Ranking to Public Member Profile links are live in production.
+
+Production rollout:
+- Production project `mzflfyxxkascrfpteexz` received `20260530000700_ranking_public_profile_links.sql`.
+- Commit `d806974 feat: link rankings to public profiles` was pushed to `main`.
+- Production serves a bundle containing tappable Ranking cards with safe `/members/:profileSlug` navigation.
+
+Behavior:
+- Member-facing Ranking rows/cards in `My Guild` and `Global` open authenticated public member profiles.
+- The existing public profile route `/members/:profileSlug` is reused; direct refresh/open remains covered by the Vercel SPA rewrite.
+- Ranking order/math and AdminPanel CP Ranking behavior were not changed.
+
+Security/CP privacy:
+- `get_member_cp_rankings(p_scope)` now returns only one additional safe routing field: `profile_slug`.
+- Member Ranking still does not return or render normal CP values, `member_cp`, `cp_snapshots`, CP history, CP growth, profile ids, email, auth IDs, audit/admin/private metadata, or private CP metadata.
+- Admin CP Ranking remains permission-protected and still uses `get_admin_cp_rankings(...)`.
+
+Validation:
+- Local `npx.cmd supabase db reset` passed through `20260530000700_ranking_public_profile_links.sql`.
+- Full local validation passed through Docker `psql`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production smoke passed for `My Guild` and `Global` Ranking profile links, `/members/toji` direct refresh, no protected CP values in member Ranking, Admin CP Ranking still loading for Owner, and no captured console errors.
+
 ## Public Member Profiles Live
 
 Public Member Profiles and profile reactions are live in production.
@@ -15,7 +40,7 @@ Behavior:
 - Public profile shows avatar/frame, IGN, `@profileSlug`, guild, role label, roster status, Ghoul Rep, optional public 3v3 Combined CP, and profile reactions.
 - Guild Wall post/comment authors and reaction-detail users can link to public profiles when a safe profile slug is already present.
 - 3v3 team slots and incoming request users can link to public profiles when a safe profile slug is already present.
-- Ranking rows remain unlinked because the member-safe ranking RPC does not currently return `profile_slug`.
+- Ranking rows/cards now link to public profiles through the safe `profile_slug` added by `20260530000700_ranking_public_profile_links.sql`.
 
 Security/CP privacy:
 - Frontend uses the new public profile RPCs only; no direct `profile_reactions` table reads/writes were added.

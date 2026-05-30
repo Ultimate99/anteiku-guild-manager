@@ -1,5 +1,21 @@
 # Session Log
 
+## 2026-05-30 - Ranking Public Profile Links
+
+- Implemented and deployed Ranking to Public Member Profile links.
+- Migration applied:
+  - `supabase/migrations/20260530000700_ranking_public_profile_links.sql`
+- Commit deployed:
+  - `d806974 feat: link rankings to public profiles`
+- Updated `get_member_cp_rankings(p_scope)` to add only safe `profile_slug` for authenticated `/members/:profileSlug` navigation.
+- Updated member Ranking cards/rows to be tappable/keyboard-accessible profile links.
+- Added EN/FR/DE `leaderboard.viewProfile` labels and dark/crimson focus/hover affordance.
+- Local `npx.cmd supabase db reset` passed.
+- Full local validation passed through Docker `psql`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production smoke passed for My Guild/Global Ranking links, `/members/toji` direct refresh, no protected normal CP values in member Ranking, Admin CP Ranking still loading, and no captured console errors.
+- No ranking order/math change, Admin CP Ranking permission change, normal CP exposure, direct `member_cp`/`cp_snapshots` frontend use, public unauthenticated profile route, or unrelated CP/GvG/Analytics/3v3/Guild Wall/cosmetics/member-status behavior change was included.
+
 ## 2026-05-30 - Public Member Profiles Frontend Rollout
 
 - Verified production DB readiness for Public Member Profiles/Profile Reactions after `20260530000600_public_member_profiles.sql` was applied.
@@ -20,7 +36,7 @@
 - Added RPC-only public profile service wrappers for profile load, reaction add/remove, and reaction details.
 - Linked Guild Wall post/comment authors and reaction details users to public profiles where safe `profileSlug` is returned.
 - Linked 3v3 team slots and incoming request users to public profiles where safe `profileSlug` is returned.
-- Left Ranking rows unlinked because the safe ranking RPC does not currently return `profile_slug`.
+- Ranking rows were linked later by `d806974 feat: link rankings to public profiles` after `20260530000700_ranking_public_profile_links.sql` added safe `profile_slug`.
 - `npm.cmd run build` passed with the existing Vite chunk-size warning only.
 - Production smoke passed for direct route render, safe profile fields, controlled profile reaction add/remove, reaction details, Wall links, 3v3 links, no normal CP/email/private/admin/audit metadata, and no console errors.
 

@@ -1,5 +1,31 @@
 # Testing And Validation
 
+## Ranking Public Profile Links Validation
+
+Ranking to Public Member Profile links passed local DB validation, build/source validation, production migration rollout, frontend deployment, and production smoke.
+
+Commands:
+- `npx.cmd supabase db reset`
+- `Get-Content supabase\tests\local_validation_anteiku.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres`
+- `npm.cmd run build`
+- `rg -n "\.from\(|member_cp|cp_snapshots|get_my_cp|get_current_cp_roster|get_cp_leaderboard|get_admin_cp_rankings|get_admin_cp|cp_value|email|auth\.users|audit|permissions|private" src\pages\Leaderboard.jsx src\services\cpLeaderboardService.js`
+
+Result:
+- Local migrations applied cleanly through `20260530000700_ranking_public_profile_links.sql`.
+- Full local validation passed through Docker `psql`.
+- Build passed with the existing Vite chunk-size warning only.
+- Source validation found no direct table reads/writes, no normal CP RPC additions, and no protected CP table usage in the Ranking frontend path.
+
+Production smoke:
+- Production serves commit `d806974 feat: link rankings to public profiles`.
+- My Guild Ranking showed tappable profile targets.
+- Global Ranking showed tappable profile targets.
+- Tapping the Toji row opened `/members/toji`.
+- Direct refresh of `/members/toji` rendered the authenticated public profile route.
+- Member Ranking still displayed `CP values are hidden.` and showed no protected normal CP values.
+- Admin CP Ranking still loaded for Owner with authorized CP values in the existing admin-only surface.
+- No captured console errors.
+
 ## Public Member Profiles Validation
 
 Public Member Profiles/Profile Reactions passed production DB verification, build/source validation, frontend deploy, route fallback validation, and production smoke.
