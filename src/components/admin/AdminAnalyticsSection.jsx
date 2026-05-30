@@ -734,6 +734,9 @@ export function AdminAnalyticsSection({
                 : row.missingCurrentCp
                   ? t('admin.analytics.missingCurrentCp')
                   : formatDate(row.lastUpdated);
+              const mobileUpdatedLabel = row.missingBaseline || row.missingCurrentCp
+                ? updatedLabel
+                : `${t('admin.common.updated')} ${updatedLabel}`;
 
               return (
                 <article
@@ -754,30 +757,28 @@ export function AdminAnalyticsSection({
                   <span className="analytics-growth-desktop-cell" data-label={t('admin.common.updated')}>{updatedLabel}</span>
 
                   <div className="analytics-growth-mobile-card">
-                    <div className="analytics-growth-mobile-top">
-                      <div>
-                        <strong>#{row.rank} {memberName}</strong>
-                        <span>{t('admin.common.guild')}: {guildName}</span>
+                    <div className="analytics-growth-mobile-header">
+                      <span className="analytics-growth-mobile-rank">#{row.rank}</span>
+                      <div className="analytics-growth-mobile-identity">
+                        <strong>{memberName}</strong>
+                        <span>
+                          <span className="analytics-growth-mobile-guild">{guildName}</span>
+                          <span>{mobileUpdatedLabel}</span>
+                        </span>
                       </div>
-                      <span>{updatedLabel}</span>
                     </div>
                     <div className="analytics-growth-mobile-highlight">
-                      <span>{t('admin.analytics.growth')}</span>
                       <strong className="analytics-growth-value">{formatCpValue(row.growthAmount)}</strong>
-                      <strong>{formatPercent(row.growthPercent)}</strong>
+                      <span>{formatPercent(row.growthPercent)}</span>
                     </div>
-                    <dl className="analytics-growth-mobile-details">
+                    <dl className="analytics-growth-mobile-stats">
                       <div>
-                        <dt>{t('admin.analytics.baselineCp')}</dt>
+                        <dt>{t('admin.analytics.baseline')}</dt>
                         <dd>{formatCpValue(row.baselineCp)}</dd>
                       </div>
                       <div>
                         <dt>{t('admin.analytics.currentCp')}</dt>
                         <dd>{formatCpValue(row.currentCp)}</dd>
-                      </div>
-                      <div>
-                        <dt>{t('admin.common.updated')}</dt>
-                        <dd>{updatedLabel}</dd>
                       </div>
                     </dl>
                   </div>
