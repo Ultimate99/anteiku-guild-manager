@@ -1,5 +1,25 @@
 # Testing
 
+## Ghoul Rep Wall Frontend
+
+Ghoul Rep frontend UI passed build/source validation and production smoke.
+
+Build/source:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Guild Wall page/service still use RPC-only access.
+- Source checks found no direct `.from(...)` wall table access in the Guild Wall page/service.
+- Source checks found no `member_cp`, `cp_snapshots`, CP RPCs, uploads, Storage, or service-role paths in the touched Guild Wall page/service/styles.
+
+Production smoke:
+- Production serves the updated bundle with `Ghoul Rep`, `author_ghoul_rep`, and `get_wall_reaction_details`.
+- Signed-in Owner opened Guild Wall.
+- `My Guild` feed showed Ghoul Rep chips on post/comment authors.
+- `Global` feed showed Ghoul Rep chips.
+- Reaction detail panel opened from a reaction and showed safe public user details.
+- Wall scope switching cleared the reaction detail panel.
+- No CP/email text appeared in the Wall smoke snapshot.
+- No captured console errors.
+
 ## Ghoul Rep Wall Reaction Backend
 
 Ghoul Rep backend support passed local validation and production migration/read-only verification.

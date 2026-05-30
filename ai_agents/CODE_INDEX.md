@@ -1,5 +1,13 @@
 # Code Index
 
+## Ghoul Rep Wall Frontend
+
+- `src/services/guildWallService.js`: Maps `author_ghoul_rep` into author payloads and adds RPC-only `loadReactionDetails({ targetType, targetId, reactionType })` using `get_wall_reaction_details(...)`.
+- `src/pages/GuildWall.jsx`: Renders compact Ghoul Rep chips for post/comment authors and adds a dark/crimson reaction details panel opened from reaction hover/focus/tap. Reaction details clear when Wall scope changes.
+- `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`: Add Wall labels for Ghoul Rep and reaction details.
+- `src/styles/app.css`: Adds compact Ghoul Rep chip and mobile-safe reaction detail panel styles.
+- Production status: commits `cc2a82b feat: show ghoul rep on guild wall` and `3c0ba0b fix: clear wall reaction details on scope change` are deployed.
+
 ## Ghoul Rep Wall Reaction Backend
 
 - `supabase/migrations/20260530000400_ghoul_rep_wall_reactions.sql`: Adds live-calculated Ghoul Rep for Guild Wall and Global Wall by counting distinct non-self reactors per post/comment target, excluding deleted content and removed reactions. Replaces `get_guild_wall_feed(...)` to include `author_ghoul_rep` for post/comment authors and adds `get_wall_reaction_details(p_target_type, p_target_id, p_reaction_type)` for safe reaction-user detail UI.

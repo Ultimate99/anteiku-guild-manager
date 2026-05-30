@@ -1,5 +1,31 @@
 # Project State
 
+## Ghoul Rep Wall Frontend Live
+
+Ghoul Rep frontend UI is live in production.
+
+Production rollout:
+- Commit `cc2a82b feat: show ghoul rep on guild wall` was pushed to `main`.
+- Follow-up commit `3c0ba0b fix: clear wall reaction details on scope change` was pushed to `main`.
+- Production serves the updated Guild Wall bundle containing `author_ghoul_rep` mapping and `get_wall_reaction_details(...)` usage.
+
+Behavior:
+- Guild Wall and Global Wall post author areas show a compact `Ghoul Rep` chip from `author_ghoul_rep`.
+- Comment author areas show a compact `Ghoul Rep` chip when the backend returns comment author rep.
+- Reaction buttons remain emoji-based while backend reaction values remain `like`, `fire`, `coffee`, `skull`, and `trophy`.
+- Hover/focus/tap on reaction buttons opens a compact reaction details panel using `get_wall_reaction_details(...)`.
+- Reaction details clear when Wall scope changes so stale details are not carried between `My Guild` and `Global`.
+
+Security/CP privacy:
+- Frontend uses only Guild Wall RPCs; no direct wall table reads/writes were added.
+- No `member_cp`, `cp_snapshots`, CP RPCs, uploads, Storage, email, auth IDs, or private admin metadata are displayed.
+- No CP/GvG/Analytics/3v3/cosmetics/member-status/auth/role/permission behavior changed.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no direct `.from(...)` calls in the Guild Wall page/service and no protected CP/storage/service-role references in the touched Wall page/service/styles.
+- Production smoke passed for Guild Wall load, `My Guild` Ghoul Rep chip, `Global` Ghoul Rep chip, reaction detail panel opening, safe reaction detail fields, scope-change detail clearing, no CP/email visible, and no captured console errors.
+
 ## Ghoul Rep Wall Reaction Backend Live
 
 Ghoul Rep backend support is live in production through `20260530000400_ghoul_rep_wall_reactions.sql`.
@@ -22,7 +48,7 @@ Behavior:
 Security/CP privacy:
 - No `member_cp`, `cp_snapshots`, CP RPCs, uploads, Storage, email, auth metadata, or private admin metadata are used or returned.
 - Reaction details return only safe public profile/cosmetic fields: IGN, username/profile slug, guild, avatar/frame asset fields, reaction type, and reaction timestamp.
-- Frontend Ghoul Rep display/reaction-detail UI is not implemented yet.
+- Frontend Ghoul Rep display/reaction-detail UI is live through commits `cc2a82b` and `3c0ba0b`.
 
 Validation:
 - Local `npx.cmd supabase db reset` passed.

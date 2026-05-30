@@ -1,5 +1,29 @@
 # Testing And Validation
 
+## Ghoul Rep Wall Frontend Validation
+
+Ghoul Rep frontend UI passed build/source validation and production smoke.
+
+Commands:
+- `npm.cmd run build`
+- `rg -n 'member_cp|cp_snapshots|get_current_cp_roster|get_cp_leaderboard|get_admin_cp_rankings|update_member_cp|submit_my_cp_update|get_my_cp|storage|upload|service_role|service-role' src\pages\GuildWall.jsx src\services\guildWallService.js src\styles\app.css`
+- `rg -n "\.from\(" src\pages\GuildWall.jsx src\services\guildWallService.js`
+
+Result:
+- Build passed with the existing Vite chunk-size warning only.
+- Source validation found no direct `.from(...)` calls in the Guild Wall page/service.
+- Source validation found no protected CP/storage/service-role references in the touched Guild Wall page/service/styles.
+- Production serves a bundle containing `Ghoul Rep`, `author_ghoul_rep`, and `get_wall_reaction_details`.
+
+Production smoke:
+- Signed-in Owner opened Guild Wall.
+- `My Guild` feed showed Ghoul Rep chips on post and comment authors.
+- `Global` feed showed Ghoul Rep chips.
+- Reaction details panel opened from a reaction and showed safe public fields only.
+- Scope switch from `My Guild` to `Global` cleared the open reaction details panel.
+- No CP or email text appeared in the Wall smoke snapshot.
+- No captured console errors.
+
 ## Ghoul Rep Wall Reaction Backend Validation
 
 Ghoul Rep backend support passed local validation and production migration/read-only verification.

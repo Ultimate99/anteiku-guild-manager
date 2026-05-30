@@ -2,7 +2,7 @@
 
 ## Ghoul Rep Wall Reaction Security Rules
 
-Ghoul Rep backend support is live in production through `20260530000400_ghoul_rep_wall_reactions.sql`.
+Ghoul Rep backend support is live in production through `20260530000400_ghoul_rep_wall_reactions.sql`, and the frontend chip/reaction-detail UI is live through commits `cc2a82b` and `3c0ba0b`.
 
 Rules:
 - Ghoul Rep is calculated from Guild Wall and Global Wall reactions only.
@@ -14,6 +14,8 @@ Rules:
 - Deleted posts/comments and removed reactions do not count.
 - `author_ghoul_rep` may be returned by `get_guild_wall_feed(...)`.
 - Reaction detail UI must use `get_wall_reaction_details(...)`, not direct table reads.
+- Frontend may display compact Ghoul Rep chips on Wall post/comment authors.
+- Frontend reaction detail UI may display safe public reaction-user details only.
 
 Privacy:
 - Ghoul Rep must not use or expose normal CP, `member_cp`, `cp_snapshots`, CP analytics, CP roster, CP rankings, CP growth, email, auth metadata, private admin metadata, uploads, or Storage data.
@@ -22,6 +24,7 @@ Privacy:
 Production validation:
 - Production dry-run showed only `20260530000400_ghoul_rep_wall_reactions.sql`, migration apply succeeded, and read-only DB verification passed.
 - Local validation passed `47 PASS / 0 FAIL / 0 SKIP`.
+- Frontend production smoke passed for My Guild/Global Ghoul Rep chips, reaction detail panel, no CP/email visible, and no console errors.
 
 ## Global Wall Scope Security Rules
 

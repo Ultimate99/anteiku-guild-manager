@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-05-30 - Ghoul Rep Wall Frontend
+
+- Added Ghoul Rep chips and reaction details UI to Guild Wall / Global Wall.
+- Commits deployed:
+  - `cc2a82b feat: show ghoul rep on guild wall`
+  - `3c0ba0b fix: clear wall reaction details on scope change`
+- Source files changed:
+  - `src/pages/GuildWall.jsx`
+  - `src/services/guildWallService.js`
+  - `src/styles/app.css`
+  - `src/i18n/en.js`
+  - `src/i18n/fr.js`
+  - `src/i18n/de.js`
+- Post and comment authors now show compact `Ghoul Rep` chips using `author_ghoul_rep`.
+- Reaction details use the RPC-only `get_wall_reaction_details(...)` path.
+- Reaction buttons remain emoji-based while backend reaction values remain `like`, `fire`, `coffee`, `skull`, and `trophy`.
+- Reaction details clear when switching between `My Guild` and `Global` Wall scopes.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production smoke passed for My Guild/Global Ghoul Rep chips, reaction details, no CP/email visible, and no console errors.
+- No SQL migrations, Supabase/RLS/RPC changes, CP/GvG/Analytics/3v3/cosmetics/member-status/auth/role/permission behavior changes, profile reactions, public profiles, uploads, Storage, or Ghoul Rep leaderboard were added.
+
 ## 2026-05-30 - Ghoul Rep Wall Reaction Backend
 
 - Added backend/RPC support for Ghoul Rep on Guild Wall and Global Wall reactions.

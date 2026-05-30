@@ -2,15 +2,20 @@
 
 ## Current Recommendation
 
-Ghoul Rep backend support for Guild Wall / Global Wall reactions is live in production.
+Ghoul Rep frontend and backend are live in production.
 
 Recommended next step:
-- Implement the frontend Ghoul Rep chip/UI and Discord-like reaction details:
-  - Display `author_ghoul_rep` on Guild Wall/Global Wall post and comment author surfaces.
-  - Keep reaction buttons as emojis while backend values remain `like`, `fire`, `coffee`, `skull`, and `trophy`.
-  - Use `get_wall_reaction_details(...)` for safe hover/focus/tap reaction-user details.
-  - Do not direct-read wall tables and do not expose CP/email/private metadata.
-- Optional controlled production smoke can verify an existing post/comment reaction updates Ghoul Rep and safe reaction details render once the frontend exists.
+- Continue with the next user-prioritized milestone.
+- Optional polish later:
+  - Add a dedicated Ghoul Rep leaderboard only if explicitly approved.
+  - Add public member profiles only if explicitly approved.
+  - Keep any future Ghoul Rep feature backed by RPCs; no direct wall table reads and no CP exposure.
+
+Recorded Ghoul Rep frontend status:
+- Commits `cc2a82b feat: show ghoul rep on guild wall` and `3c0ba0b fix: clear wall reaction details on scope change` are pushed to `main` and production serves the updated bundle.
+- Guild Wall and Global Wall post/comment author surfaces show compact `Ghoul Rep` chips from `author_ghoul_rep`.
+- Reaction details use `get_wall_reaction_details(...)` and show safe public profile/cosmetic fields only.
+- Production smoke passed for My Guild, Global, reaction details, scope-change clearing, no CP/email visible, and no console errors.
 
 Recorded Ghoul Rep backend status:
 - Production DB received `20260530000400_ghoul_rep_wall_reactions.sql` after a clean dry-run showing only that migration pending.
@@ -18,7 +23,6 @@ Recorded Ghoul Rep backend status:
 - Multiple reaction types by the same user on the same target count as `+1`; reactions by the same user on different targets count separately.
 - Deleted posts/comments and removed reactions do not count.
 - Local validation passed `47 PASS / 0 FAIL / 0 SKIP`; production DB/read-only verification passed.
-- No frontend Ghoul Rep chip/reaction-detail UI has been implemented yet.
 
 Recorded Global Wall scope status:
 - Commit `feaf2ff feat: add global wall scope` is pushed to `main` and production serves the updated bundle.
