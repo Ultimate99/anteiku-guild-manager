@@ -28,6 +28,13 @@ const CORE_GUILD_OPTIONS = [
   { id: '00000000-0000-0000-0000-000000000103', name: 'Anteiku:Rose', slug: 'anteiku-rose' },
   { id: '00000000-0000-0000-0000-000000000104', name: 'Anteiku:Goat', slug: 'anteiku-goat' },
 ];
+const REACTION_ICONS = {
+  like: '👍',
+  fire: '🔥',
+  coffee: '☕',
+  skull: '💀',
+  trophy: '🏆',
+};
 
 function formatWallDate(value, language) {
   if (!value) {
@@ -79,6 +86,8 @@ function ReactionButton({ type, reactions, disabled, onToggle }) {
   const { t } = useLanguage();
   const count = getReactionCount(reactions, type);
   const active = hasMyReaction(reactions, type);
+  const label = t(`wall.reaction.${type}`);
+  const icon = REACTION_ICONS[type] ?? type;
 
   return (
     <button
@@ -88,8 +97,10 @@ function ReactionButton({ type, reactions, disabled, onToggle }) {
       disabled={disabled}
       onClick={() => onToggle(type, active)}
       aria-pressed={active}
+      aria-label={label}
+      title={label}
     >
-      <span>{t(`wall.reaction.${type}`)}</span>
+      <span aria-hidden="true">{icon}</span>
       <strong>{count}</strong>
     </button>
   );

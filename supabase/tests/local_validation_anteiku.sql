@@ -6121,6 +6121,22 @@ begin
   end;
 
   begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    payload := public.get_guild_wall_feed(null, 20, null);
+
+    if (payload -> 'viewer' ->> 'is_global')::boolean = true
+       and payload::text not like '%member_cp%'
+       and payload::text not like '%cp_snapshots%'
+       and payload::text not like '%cp_value%' then
+      insert into milestone26c_guild_wall_results values ('feed', 'owner_global_feed_loads_without_scope_record_error', 'PASS', payload::text);
+    else
+      insert into milestone26c_guild_wall_results values ('feed', 'owner_global_feed_loads_without_scope_record_error', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('feed', 'owner_global_feed_loads_without_scope_record_error', 'FAIL', sqlerrm);
+  end;
+
+  begin
     perform set_config('request.jwt.claim.sub', pending_id::text, true);
     perform public.create_wall_post(anteiku_id, 'Pending should fail');
     insert into milestone26c_guild_wall_results values ('eligibility', 'pending_denied_post', 'FAIL', 'Pending user created wall post.');

@@ -3624,16 +3624,21 @@ button.command-card:focus-visible {
 .wall-reaction-button {
   display: inline-flex;
   flex: 0 0 auto;
-  min-height: 34px;
+  min-height: 36px;
   align-items: center;
   gap: 5px;
-  padding: 6px 8px;
+  padding: 6px 9px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(0, 0, 0, 0.26);
   color: #b8b8c0;
   font-size: 0.72rem;
   font-weight: 900;
   text-transform: uppercase;
+}
+
+.wall-reaction-button span {
+  font-size: 1rem;
+  line-height: 1;
 }
 
 .wall-reaction-button strong {
