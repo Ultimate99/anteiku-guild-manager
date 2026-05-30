@@ -445,7 +445,7 @@ function WallPostCard({
 export function GuildWall() {
   const { guild } = useAuth();
   const { t } = useLanguage();
-  const [selectedScopeId, setSelectedScopeId] = useState('guild');
+  const [selectedScopeId, setSelectedScopeId] = useState('global');
   const [viewer, setViewer] = useState(null);
   const [posts, setPosts] = useState([]);
   const [postDraft, setPostDraft] = useState('');
@@ -467,16 +467,16 @@ export function GuildWall() {
   const scopeOptions = useMemo(() => {
     return [
       {
-        id: 'guild',
-        name: t('wall.myGuild'),
-        guildId: guild?.id ?? null,
-        isGlobal: false,
-      },
-      {
         id: 'global',
         name: t('wall.global'),
         guildId: null,
         isGlobal: true,
+      },
+      {
+        id: 'guild',
+        name: t('wall.myOrg'),
+        guildId: guild?.id ?? null,
+        isGlobal: false,
       },
     ];
   }, [guild?.id, t]);
