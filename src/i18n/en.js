@@ -380,6 +380,7 @@ export const en = {
     editProfile: 'Edit profile',
     editingIgn: 'Editing IGN',
     profileLocked: 'Profile locked',
+    ghoulRep: 'Ghoul Rep',
     memberProfile: 'Member profile',
     lockedFields: 'Only IGN is editable.',
     edit: 'Edit',

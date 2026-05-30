@@ -42,6 +42,18 @@ export async function updateMyProfile({ ign, avatarKey }) {
   return data;
 }
 
+export async function loadMyGhoulRep() {
+  const client = requireSupabase();
+  const { data, error } = await client.rpc('get_my_ghoul_rep');
+
+  if (error) {
+    throw error;
+  }
+
+  const ghoulRep = Number(Array.isArray(data) ? data[0] : data);
+  return Number.isFinite(ghoulRep) ? ghoulRep : 0;
+}
+
 export async function getOwnProfile(userId) {
   const client = requireSupabase();
   const { data, error } = await client

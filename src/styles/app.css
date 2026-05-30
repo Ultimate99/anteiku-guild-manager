@@ -3603,24 +3603,31 @@ button.command-card:focus-visible {
   font-weight: 700;
 }
 
-.wall-ghoul-rep-chip {
+.wall-ghoul-rep-chip,
+.profile-ghoul-rep-chip {
   display: inline-flex;
   width: fit-content;
   align-items: center;
   gap: 4px;
-  padding: 3px 7px;
-  border: 1px solid rgba(255, 98, 115, 0.32);
-  background: rgba(197, 22, 39, 0.14);
-  color: #ffb9c0;
-  font-size: 0.68rem;
-  font-weight: 900;
+  padding: 2px 5px;
+  border: 1px solid rgba(255, 98, 115, 0.18);
+  background: rgba(197, 22, 39, 0.075);
+  color: #d8a0a7;
+  font-size: 0.66rem;
+  font-weight: 800;
   line-height: 1;
-  text-transform: uppercase;
 }
 
-.wall-ghoul-rep-chip strong {
+.wall-ghoul-rep-chip strong,
+.profile-ghoul-rep-chip strong {
   color: #fff;
-  font-size: 0.74rem;
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.profile-ghoul-rep-chip {
+  align-self: center;
+  min-height: 24px;
 }
 
 .wall-post-content {

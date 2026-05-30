@@ -19,14 +19,24 @@ import {
   loadMyCpUpdateWindow,
   submitMyCpUpdate,
 } from '../services/cpWindowService.js';
-import { updateMyProfile } from '../services/profileService.js';
+import { loadMyGhoulRep, updateMyProfile } from '../services/profileService.js';
 
 function findCosmeticByKey(items, key) {
   return items?.find((item) => item.key === key) ?? null;
 }
 
+function formatProfileNumber(value, language) {
+  const number = Number(value);
+
+  if (!Number.isFinite(number)) {
+    return '0';
+  }
+
+  return new Intl.NumberFormat(language).format(number);
+}
+
 export function Profile() {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   const { guild, membership, profile, refreshProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [ignDraft, setIgnDraft] = useState(profile?.ign ?? '');
@@ -43,6 +53,8 @@ export function Profile() {
   const [rankSummary, setRankSummary] = useState(null);
   const [rankLoading, setRankLoading] = useState(false);
   const [rankError, setRankError] = useState('');
+  const [ghoulRep, setGhoulRep] = useState(null);
+  const [ghoulRepLoading, setGhoulRepLoading] = useState(false);
   const [cosmeticsState, setCosmeticsState] = useState(null);
   const [cosmeticsLoading, setCosmeticsLoading] = useState(false);
   const [cosmeticsSavingKey, setCosmeticsSavingKey] = useState('');
@@ -132,6 +144,40 @@ export function Profile() {
     }
 
     loadRankBadge();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [membership?.id, profile?.id]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadGhoulRepStat() {
+      if (!profile?.id || !membership?.id) {
+        return;
+      }
+
+      setGhoulRepLoading(true);
+
+      try {
+        const nextGhoulRep = await loadMyGhoulRep();
+
+        if (!cancelled) {
+          setGhoulRep(nextGhoulRep);
+        }
+      } catch {
+        if (!cancelled) {
+          setGhoulRep(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setGhoulRepLoading(false);
+        }
+      }
+    }
+
+    loadGhoulRepStat();
 
     return () => {
       cancelled = true;
@@ -386,6 +432,12 @@ export function Profile() {
           </div>
           <div className="profile-identity-actions">
             <RankBadge className="profile-rank-badge" compact summary={rankSummary} loading={rankLoading} error={rankError} />
+            {ghoulRep !== null || ghoulRepLoading ? (
+              <span className="profile-ghoul-rep-chip" title={t('profile.ghoulRep')}>
+                <strong>{ghoulRepLoading ? '...' : formatProfileNumber(ghoulRep, language)}</strong>
+                <span>{t('profile.ghoulRep')}</span>
+              </span>
+            ) : null}
             <button
               type="button"
               className="secondary-action compact-action profile-customize-action"

@@ -381,6 +381,7 @@ export const de = {
     editProfile: 'Profil bearbeiten',
     editingIgn: 'IGN bearbeiten',
     profileLocked: 'Profil gesperrt',
+    ghoulRep: 'Ghoul Rep',
     memberProfile: 'Mitgliedsprofil',
     lockedFields: 'Nur IGN ist bearbeitbar.',
     edit: 'Bearbeiten',
