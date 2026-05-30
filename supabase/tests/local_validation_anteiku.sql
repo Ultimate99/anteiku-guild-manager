@@ -3300,6 +3300,7 @@ begin
 
     if member_ranking.ign = 'Member Local'
        and member_ranking.rank = 6
+       and member_ranking.profile_slug = 'member_local'
        and member_ranking.guild_name is null
        and member_ranking.guild_slug is null then
       insert into milestone20b_cp_rankings_results values ('rpc', 'member_current_user_highlighted', 'PASS', row_to_json(member_ranking)::text);

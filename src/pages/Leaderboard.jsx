@@ -111,7 +111,7 @@ function LeaderboardCompetitorCard({ row, scope, t, variant = 'row' }) {
   );
 }
 
-export function Leaderboard() {
+export function Leaderboard({ onNavigate }) {
   const { t } = useLanguage();
   const [scope, setScope] = useState('guild');
   const [rankings, setRankings] = useState([]);
@@ -127,6 +127,32 @@ export function Leaderboard() {
   const currentUserRanking = useMemo(() => rankings.find((row) => row.isCurrentUser) ?? null, [rankings]);
   const podiumRankings = rankings.length >= 3 ? rankings.slice(0, 3) : [];
   const listRankings = podiumRankings.length === 3 ? rankings.slice(3) : rankings;
+  const handleOpenProfile = (profileSlug) => {
+    if (!profileSlug) {
+      return;
+    }
+
+    onNavigate?.('publicProfile', { profileSlug });
+  };
+  const getProfileNavigationProps = (row) => {
+    if (!row.profileSlug) {
+      return {};
+    }
+
+    return {
+      role: 'link',
+      tabIndex: 0,
+      'aria-label': `${t('leaderboard.viewProfile')}: ${row.ign}`,
+      'data-has-profile-link': 'true',
+      onClick: () => handleOpenProfile(row.profileSlug),
+      onKeyDown: (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          handleOpenProfile(row.profileSlug);
+        }
+      },
+    };
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -207,14 +233,22 @@ export function Leaderboard() {
 
         {!loading && !error && rankings.length > 0 ? (
           currentUserRanking ? (
-            <article className="leaderboard-your-rank" data-rank-tier={getRankTier(currentUserRanking.rank)}>
+            <article
+              className="leaderboard-your-rank"
+              data-rank-tier={getRankTier(currentUserRanking.rank)}
+              {...getProfileNavigationProps(currentUserRanking)}
+            >
               <div>
                 <span className="eyebrow">{t('leaderboard.yourRank')}</span>
                 <div className="rank-marker" aria-label={`${t('leaderboard.rank')} ${currentUserRanking.rank}`}>
                   <span>{getRankMarker(currentUserRanking.rank)}</span>
                 </div>
               </div>
-              <LeaderboardCompetitorCard row={currentUserRanking} scope={normalizedScope} t={t} />
+              <LeaderboardCompetitorCard
+                row={currentUserRanking}
+                scope={normalizedScope}
+                t={t}
+              />
             </article>
           ) : (
             <p className="muted-line leaderboard-not-ranked">{t('leaderboard.notRankedYet')}</p>
@@ -232,11 +266,17 @@ export function Leaderboard() {
                   data-rank-tier={getRankTier(row.rank)}
                   data-rank={row.rank}
                   data-current-user={row.isCurrentUser ? 'true' : 'false'}
+                  {...getProfileNavigationProps(row)}
                 >
                   <div className="rank-marker" aria-label={`${t('leaderboard.rank')} ${row.rank}`}>
                     <span>{getRankMarker(row.rank)}</span>
                   </div>
-                  <LeaderboardCompetitorCard row={row} scope={normalizedScope} t={t} variant="podium" />
+                  <LeaderboardCompetitorCard
+                    row={row}
+                    scope={normalizedScope}
+                    t={t}
+                    variant="podium"
+                  />
                 </article>
               ))}
             </div>
@@ -253,6 +293,7 @@ export function Leaderboard() {
                 className="leaderboard-row"
                 data-rank-tier={tier}
                 data-current-user={row.isCurrentUser ? 'true' : 'false'}
+                {...getProfileNavigationProps(row)}
               >
                 <div className="rank-marker" aria-label={`${t('leaderboard.rank')} ${row.rank}`}>
                   <span>{getRankMarker(row.rank)}</span>

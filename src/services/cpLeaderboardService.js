@@ -85,6 +85,7 @@ export async function loadMemberCpRankings(scope = 'guild') {
   return rows.map((row) => ({
     rank: Number(row.rank),
     ign: row.ign,
+    profileSlug: safeString(row.profile_slug),
     guildName: row.guild_name ?? null,
     guildSlug: row.guild_slug ?? null,
     isCurrentUser: Boolean(row.is_current_user),

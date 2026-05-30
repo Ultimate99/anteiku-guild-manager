@@ -548,6 +548,7 @@ export const fr = {
     eliteFive: 'Elite 5',
     topTen: 'Top 10',
     ranked: 'Classe',
+    viewProfile: 'Ouvrir le profil public',
   },
   rankBadge: {
     globalRank: 'Rang global #{rank}',
