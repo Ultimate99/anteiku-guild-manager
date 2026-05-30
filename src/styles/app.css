@@ -3437,6 +3437,279 @@ button.command-card:focus-visible {
   padding: 12px;
 }
 
+.guild-wall-page {
+  gap: 12px;
+  padding-bottom: 22px;
+}
+
+.guild-wall-hero,
+.wall-composer-panel,
+.wall-post-card,
+.guild-wall-empty-panel {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(135deg, rgba(197, 22, 39, 0.1), transparent 62%),
+    rgba(13, 13, 18, 0.96);
+}
+
+.guild-wall-hero {
+  border-left: 3px solid rgba(197, 22, 39, 0.58);
+}
+
+.guild-wall-hero p,
+.wall-composer-footer span,
+.guild-wall-empty-panel p {
+  color: #b8b8c0;
+  line-height: 1.4;
+}
+
+.wall-scope-panel {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(197, 22, 39, 0.2);
+  background: rgba(10, 10, 14, 0.86);
+}
+
+.wall-scope-panel > div:first-child {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.wall-scope-panel strong {
+  color: #fff;
+  font-size: 0.88rem;
+}
+
+.wall-scope-chips {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.wall-scope-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.wall-scope-chip {
+  flex: 0 0 auto;
+  min-height: 36px;
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #111116;
+  color: #aaaab4;
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.wall-scope-chip[data-active="true"] {
+  border-color: rgba(255, 98, 115, 0.38);
+  background: #c51627;
+  color: #fff;
+}
+
+.wall-composer-panel {
+  display: grid;
+  gap: 10px;
+}
+
+.wall-composer-form {
+  display: grid;
+  gap: 8px;
+}
+
+.wall-composer-form textarea {
+  min-height: 94px;
+  resize: vertical;
+}
+
+.wall-composer-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.guild-wall-feed {
+  display: grid;
+  gap: 12px;
+}
+
+.wall-post-card {
+  display: grid;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.wall-post-card[data-pinned="true"] {
+  border-color: rgba(197, 22, 39, 0.48);
+  box-shadow: inset 3px 0 0 rgba(197, 22, 39, 0.75);
+}
+
+.wall-post-header,
+.wall-comment-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.wall-post-avatar .cosmetic-preview-stage {
+  --avatar-frame-size: 58px;
+}
+
+.wall-comment-avatar .cosmetic-preview-stage {
+  --avatar-frame-size: 38px;
+}
+
+.wall-post-identity,
+.wall-comment-header > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.wall-post-identity > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.wall-post-identity strong,
+.wall-comment-header strong {
+  color: #fff;
+  overflow-wrap: anywhere;
+}
+
+.wall-post-identity span,
+.wall-comment-header span {
+  color: #9f9faa;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.wall-post-content {
+  margin: 0;
+  color: #f2f2f5;
+  line-height: 1.46;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.wall-card-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.wall-reactions {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+
+.wall-reactions::-webkit-scrollbar {
+  display: none;
+}
+
+.wall-reaction-button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  min-height: 34px;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.26);
+  color: #b8b8c0;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.wall-reaction-button strong {
+  color: #fff;
+  font-size: 0.78rem;
+}
+
+.wall-reaction-button[data-active="true"] {
+  border-color: rgba(255, 98, 115, 0.45);
+  background: rgba(197, 22, 39, 0.22);
+  color: #fff;
+}
+
+.wall-moderation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.danger-text-action {
+  color: #ff9aa5;
+}
+
+.wall-comments {
+  display: grid;
+  gap: 9px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.wall-comments-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #f2f2f5;
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.wall-comments-title span {
+  color: #ffb9c0;
+}
+
+.wall-comment-list {
+  display: grid;
+  gap: 8px;
+}
+
+.wall-comment-card {
+  display: grid;
+  gap: 8px;
+  padding: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.wall-comment-card p {
+  margin: 0;
+  color: #e9e9ee;
+  line-height: 1.42;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.wall-comment-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.wall-load-older {
+  justify-self: center;
+}
+
 @media (max-width: 520px) {
   .app-shell {
     padding: 12px 10px calc(108px + env(safe-area-inset-bottom));
@@ -3529,6 +3802,31 @@ button.command-card:focus-visible {
   .pwa-update-actions button {
     flex: 1 1 128px;
     min-height: 40px;
+  }
+
+  .guild-wall-page {
+    padding-bottom: 36px;
+  }
+
+  .guild-wall-hero .section-heading-row,
+  .wall-composer-panel .section-heading-row {
+    gap: 8px;
+  }
+
+  .wall-post-card {
+    padding: 11px;
+  }
+
+  .wall-post-avatar .cosmetic-preview-stage {
+    --avatar-frame-size: 52px;
+  }
+
+  .wall-comment-form {
+    grid-template-columns: 1fr;
+  }
+
+  .wall-comment-form .secondary-action {
+    justify-self: start;
   }
 
   .admin-tab-bar,

@@ -5950,4 +5950,475 @@ select count(*) filter (where status = 'PASS') as milestone25b_total_pass,
        count(*) filter (where status = 'SKIP') as milestone25b_total_skip
 from milestone25b_3v3_results;
 
+create temp table milestone26c_guild_wall_results (
+  section text not null,
+  test_name text not null,
+  status text not null check (status in ('PASS', 'FAIL', 'SKIP')),
+  details text
+) on commit drop;
+
+do $$
+declare
+  anteiku_id constant uuid := '00000000-0000-0000-0000-000000000101';
+  anteiku_re_id constant uuid := '00000000-0000-0000-0000-000000000102';
+  owner_id constant uuid := '10000000-0000-0000-0000-000000000001';
+  member_a_id constant uuid := '26000000-0000-0000-0000-000000000001';
+  member_b_id constant uuid := '26000000-0000-0000-0000-000000000002';
+  pending_id constant uuid := '26000000-0000-0000-0000-000000000003';
+  inactive_id constant uuid := '26000000-0000-0000-0000-000000000004';
+  on_break_id constant uuid := '26000000-0000-0000-0000-000000000005';
+  wrong_guild_member_id constant uuid := '26000000-0000-0000-0000-000000000006';
+  moderator_id constant uuid := '26000000-0000-0000-0000-000000000007';
+  wrong_guild_moderator_id constant uuid := '26000000-0000-0000-0000-000000000008';
+  moderator_membership_id uuid;
+  wrong_moderator_membership_id uuid;
+  post_a_id uuid;
+  normal_post_id uuid;
+  pinned_post_id uuid;
+  re_post_id uuid;
+  wall_comment_id uuid;
+  mod_comment_id uuid;
+  payload jsonb;
+  direct_count integer;
+  owner_count integer;
+  first_post_id uuid;
+begin
+  begin
+    insert into auth.users (
+      instance_id,
+      id,
+      aud,
+      role,
+      email,
+      encrypted_password,
+      email_confirmed_at,
+      raw_app_meta_data,
+      raw_user_meta_data,
+      created_at,
+      updated_at
+    )
+    values
+      ('00000000-0000-0000-0000-000000000000', member_a_id, 'authenticated', 'authenticated', 'wall-member-a.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', member_b_id, 'authenticated', 'authenticated', 'wall-member-b.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', pending_id, 'authenticated', 'authenticated', 'wall-pending.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', inactive_id, 'authenticated', 'authenticated', 'wall-inactive.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', on_break_id, 'authenticated', 'authenticated', 'wall-on-break.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', wrong_guild_member_id, 'authenticated', 'authenticated', 'wall-wrong-guild.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', moderator_id, 'authenticated', 'authenticated', 'wall-moderator.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', wrong_guild_moderator_id, 'authenticated', 'authenticated', 'wall-wrong-moderator.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now())
+    on conflict (id) do nothing;
+
+    insert into public.profiles (id, username, profile_slug, ign, approval_status, approved_at)
+    values
+      (member_a_id, 'wall_member_a', 'wall_member_a', 'Wall Member A', 'approved', now()),
+      (member_b_id, 'wall_member_b', 'wall_member_b', 'Wall Member B', 'approved', now()),
+      (pending_id, 'wall_pending', 'wall_pending', 'Wall Pending', 'pending', null),
+      (inactive_id, 'wall_inactive', 'wall_inactive', 'Wall Inactive', 'approved', now()),
+      (on_break_id, 'wall_on_break', 'wall_on_break', 'Wall On Break', 'approved', now()),
+      (wrong_guild_member_id, 'wall_wrong_guild', 'wall_wrong_guild', 'Wall Wrong Guild', 'approved', now()),
+      (moderator_id, 'wall_moderator', 'wall_moderator', 'Wall Moderator', 'approved', now()),
+      (wrong_guild_moderator_id, 'wall_wrong_moderator', 'wall_wrong_moderator', 'Wall Wrong Moderator', 'approved', now())
+    on conflict (id) do update
+    set ign = excluded.ign,
+        approval_status = excluded.approval_status,
+        approved_at = excluded.approved_at;
+
+    insert into public.guild_memberships (profile_id, guild_id, role, membership_status, roster_status, is_primary, assigned_by)
+    values
+      (member_a_id, anteiku_id, 'member', 'active', 'active', true, owner_id),
+      (member_b_id, anteiku_id, 'member', 'active', 'active', true, owner_id),
+      (pending_id, anteiku_id, 'member', 'pending', 'active', true, null),
+      (inactive_id, anteiku_id, 'member', 'active', 'inactive', true, owner_id),
+      (on_break_id, anteiku_id, 'member', 'active', 'on_break', true, owner_id),
+      (wrong_guild_member_id, anteiku_re_id, 'member', 'active', 'active', true, owner_id),
+      (moderator_id, anteiku_id, 'admin', 'active', 'active', true, owner_id),
+      (wrong_guild_moderator_id, anteiku_re_id, 'admin', 'active', 'active', true, owner_id)
+    on conflict (profile_id, guild_id) do update
+    set role = excluded.role,
+        membership_status = excluded.membership_status,
+        roster_status = excluded.roster_status,
+        is_primary = excluded.is_primary,
+        assigned_by = excluded.assigned_by;
+
+    select id into moderator_membership_id
+    from public.guild_memberships
+    where profile_id = moderator_id
+      and guild_id = anteiku_id;
+
+    select id into wrong_moderator_membership_id
+    from public.guild_memberships
+    where profile_id = wrong_guild_moderator_id
+      and guild_id = anteiku_re_id;
+
+    insert into public.admin_permissions (membership_id, permission_key, granted_by)
+    values
+      (moderator_membership_id, 'manage_members', owner_id),
+      (wrong_moderator_membership_id, 'manage_members', owner_id)
+    on conflict (membership_id, permission_key) do nothing;
+
+    insert into milestone26c_guild_wall_results values ('setup', 'guild_wall_profiles_seeded', 'PASS', 'Guild Wall test profiles and scoped moderator permissions seeded.');
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('setup', 'guild_wall_profiles_seeded', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    if to_regclass('public.wall_posts') is not null
+       and to_regclass('public.wall_comments') is not null
+       and to_regclass('public.wall_post_reactions') is not null
+       and to_regclass('public.wall_comment_reactions') is not null then
+      insert into milestone26c_guild_wall_results values ('schema', 'wall_tables_exist', 'PASS', 'Wall tables exist.');
+    else
+      insert into milestone26c_guild_wall_results values ('schema', 'wall_tables_exist', 'FAIL', 'One or more wall tables are missing.');
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('schema', 'wall_tables_exist', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    select count(*) into direct_count
+    from pg_class c
+    join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'public'
+      and c.relname in ('wall_posts', 'wall_comments', 'wall_post_reactions', 'wall_comment_reactions')
+      and c.relrowsecurity = true;
+
+    if direct_count = 4 then
+      insert into milestone26c_guild_wall_results values ('schema', 'wall_rls_enabled', 'PASS', 'RLS enabled on all wall tables.');
+    else
+      insert into milestone26c_guild_wall_results values ('schema', 'wall_rls_enabled', 'FAIL', direct_count::text || ' wall tables have RLS enabled.');
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('schema', 'wall_rls_enabled', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_a_id::text, true);
+    post_a_id := public.create_wall_post(anteiku_id, 'Local wall validation post');
+
+    if post_a_id is not null then
+      insert into milestone26c_guild_wall_results values ('post', 'approved_member_posts_own_guild', 'PASS', post_a_id::text);
+    else
+      insert into milestone26c_guild_wall_results values ('post', 'approved_member_posts_own_guild', 'FAIL', 'No post id returned.');
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('post', 'approved_member_posts_own_guild', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_a_id::text, true);
+    payload := public.get_guild_wall_feed(anteiku_id, 20, null);
+
+    if payload::text like '%' || post_a_id::text || '%'
+       and payload::text not like '%member_cp%'
+       and payload::text not like '%cp_snapshots%'
+       and payload::text not like '%cp_value%' then
+      insert into milestone26c_guild_wall_results values ('feed', 'feed_returns_post_without_cp_fields', 'PASS', payload::text);
+    else
+      insert into milestone26c_guild_wall_results values ('feed', 'feed_returns_post_without_cp_fields', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('feed', 'feed_returns_post_without_cp_fields', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', pending_id::text, true);
+    perform public.create_wall_post(anteiku_id, 'Pending should fail');
+    insert into milestone26c_guild_wall_results values ('eligibility', 'pending_denied_post', 'FAIL', 'Pending user created wall post.');
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('eligibility', 'pending_denied_post', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', inactive_id::text, true);
+    payload := public.get_guild_wall_feed(anteiku_id, 20, null);
+
+    if jsonb_typeof(payload -> 'posts') = 'array' then
+      insert into milestone26c_guild_wall_results values ('eligibility', 'inactive_can_view_wall', 'PASS', 'Inactive roster user can view wall.');
+    else
+      insert into milestone26c_guild_wall_results values ('eligibility', 'inactive_can_view_wall', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('eligibility', 'inactive_can_view_wall', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', inactive_id::text, true);
+    perform public.create_wall_post(anteiku_id, 'Inactive should fail');
+    insert into milestone26c_guild_wall_results values ('eligibility', 'inactive_denied_post', 'FAIL', 'Inactive roster user created wall post.');
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('eligibility', 'inactive_denied_post', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', on_break_id::text, true);
+    perform public.react_to_wall_post(post_a_id, 'coffee');
+    insert into milestone26c_guild_wall_results values ('eligibility', 'on_break_denied_reaction', 'FAIL', 'On-break roster user reacted.');
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('eligibility', 'on_break_denied_reaction', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_a_id::text, true);
+    perform public.create_wall_post(anteiku_re_id, 'Wrong guild should fail');
+    insert into milestone26c_guild_wall_results values ('scope', 'member_wrong_guild_post_denied', 'FAIL', 'Member posted to wrong guild.');
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('scope', 'member_wrong_guild_post_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_b_id::text, true);
+    perform public.delete_wall_post(post_a_id);
+    insert into milestone26c_guild_wall_results values ('post', 'member_cannot_delete_other_post', 'FAIL', 'Member deleted another member post.');
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('post', 'member_cannot_delete_other_post', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_b_id::text, true);
+    wall_comment_id := public.create_wall_comment(post_a_id, 'Validation comment');
+
+    if wall_comment_id is not null then
+      insert into milestone26c_guild_wall_results values ('comment', 'approved_member_comments', 'PASS', wall_comment_id::text);
+    else
+      insert into milestone26c_guild_wall_results values ('comment', 'approved_member_comments', 'FAIL', 'No comment id returned.');
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('comment', 'approved_member_comments', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_a_id::text, true);
+    perform public.delete_wall_comment(wall_comment_id);
+    insert into milestone26c_guild_wall_results values ('comment', 'member_cannot_delete_other_comment', 'FAIL', 'Member deleted another member comment.');
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('comment', 'member_cannot_delete_other_comment', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_b_id::text, true);
+    perform public.react_to_wall_post(post_a_id, 'fire');
+    perform public.react_to_wall_post(post_a_id, 'fire');
+
+    select count(*) into direct_count
+    from public.wall_post_reactions
+    where post_id = post_a_id
+      and profile_id = member_b_id
+      and reaction_type = 'fire';
+
+    if direct_count = 1 then
+      insert into milestone26c_guild_wall_results values ('reaction', 'one_post_reaction_per_user_type', 'PASS', 'Duplicate post reaction reused existing row.');
+    else
+      insert into milestone26c_guild_wall_results values ('reaction', 'one_post_reaction_per_user_type', 'FAIL', direct_count::text || ' duplicate rows found.');
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('reaction', 'one_post_reaction_per_user_type', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_b_id::text, true);
+    perform public.react_to_wall_comment(wall_comment_id, 'like');
+    perform public.react_to_wall_comment(wall_comment_id, 'like');
+
+    select count(*) into direct_count
+    from public.wall_comment_reactions
+    where wall_comment_reactions.comment_id = wall_comment_id
+      and profile_id = member_b_id
+      and reaction_type = 'like';
+
+    if direct_count = 1 then
+      insert into milestone26c_guild_wall_results values ('reaction', 'one_comment_reaction_per_user_type', 'PASS', 'Duplicate comment reaction reused existing row.');
+    else
+      insert into milestone26c_guild_wall_results values ('reaction', 'one_comment_reaction_per_user_type', 'FAIL', direct_count::text || ' duplicate rows found.');
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('reaction', 'one_comment_reaction_per_user_type', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_b_id::text, true);
+    perform public.delete_wall_comment(wall_comment_id);
+    payload := public.get_guild_wall_feed(anteiku_id, 20, null);
+
+    if payload::text not like '%' || wall_comment_id::text || '%' then
+      insert into milestone26c_guild_wall_results values ('comment', 'own_comment_soft_delete_hidden', 'PASS', 'Deleted own comment hidden from feed.');
+    else
+      insert into milestone26c_guild_wall_results values ('comment', 'own_comment_soft_delete_hidden', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('comment', 'own_comment_soft_delete_hidden', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_a_id::text, true);
+    perform public.delete_wall_post(post_a_id);
+    payload := public.get_guild_wall_feed(anteiku_id, 20, null);
+
+    if payload::text not like '%' || post_a_id::text || '%' then
+      insert into milestone26c_guild_wall_results values ('post', 'own_post_soft_delete_hidden', 'PASS', 'Deleted own post hidden from feed.');
+    else
+      insert into milestone26c_guild_wall_results values ('post', 'own_post_soft_delete_hidden', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('post', 'own_post_soft_delete_hidden', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_a_id::text, true);
+    normal_post_id := public.create_wall_post(anteiku_id, 'Normal wall post');
+    pinned_post_id := public.create_wall_post(anteiku_id, 'Pinned wall post');
+
+    perform set_config('request.jwt.claim.sub', moderator_id::text, true);
+    perform public.pin_wall_post(pinned_post_id);
+
+    perform set_config('request.jwt.claim.sub', member_a_id::text, true);
+    payload := public.get_guild_wall_feed(anteiku_id, 20, null);
+    first_post_id := (payload -> 'posts' -> 0 ->> 'id')::uuid;
+
+    if first_post_id = pinned_post_id then
+      insert into milestone26c_guild_wall_results values ('moderation', 'pinned_posts_sort_first', 'PASS', payload::text);
+    else
+      insert into milestone26c_guild_wall_results values ('moderation', 'pinned_posts_sort_first', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('moderation', 'pinned_posts_sort_first', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', wrong_guild_moderator_id::text, true);
+    perform public.unpin_wall_post(pinned_post_id);
+    insert into milestone26c_guild_wall_results values ('moderation', 'wrong_guild_staff_denied', 'FAIL', 'Wrong-guild moderator unpinned post.');
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('moderation', 'wrong_guild_staff_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_b_id::text, true);
+    mod_comment_id := public.create_wall_comment(normal_post_id, 'Moderate this comment');
+
+    perform set_config('request.jwt.claim.sub', moderator_id::text, true);
+    perform public.moderate_delete_wall_comment(mod_comment_id);
+
+    payload := public.get_guild_wall_feed(anteiku_id, 20, null);
+    if payload::text not like '%' || mod_comment_id::text || '%' then
+      insert into milestone26c_guild_wall_results values ('moderation', 'scoped_staff_moderates_comment', 'PASS', 'Scoped moderator deleted comment.');
+    else
+      insert into milestone26c_guild_wall_results values ('moderation', 'scoped_staff_moderates_comment', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('moderation', 'scoped_staff_moderates_comment', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', moderator_id::text, true);
+    perform public.moderate_delete_wall_post(normal_post_id);
+
+    payload := public.get_guild_wall_feed(anteiku_id, 20, null);
+    if payload::text not like '%' || normal_post_id::text || '%' then
+      insert into milestone26c_guild_wall_results values ('moderation', 'scoped_staff_moderates_post', 'PASS', 'Scoped moderator deleted post.');
+    else
+      insert into milestone26c_guild_wall_results values ('moderation', 'scoped_staff_moderates_post', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('moderation', 'scoped_staff_moderates_post', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', wrong_guild_member_id::text, true);
+    re_post_id := public.create_wall_post(anteiku_re_id, 'Anteiku Re owner moderation post');
+
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    perform public.pin_wall_post(re_post_id);
+    perform public.moderate_delete_wall_post(re_post_id);
+
+    payload := public.get_guild_wall_feed(anteiku_re_id, 20, null);
+    if payload::text not like '%' || re_post_id::text || '%' then
+      insert into milestone26c_guild_wall_results values ('moderation', 'owner_moderates_all_guilds', 'PASS', 'Owner pinned/deleted other guild post.');
+    else
+      insert into milestone26c_guild_wall_results values ('moderation', 'owner_moderates_all_guilds', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('moderation', 'owner_moderates_all_guilds', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_a_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    execute 'set local role authenticated';
+    begin
+      execute 'select count(*) from public.wall_posts' into direct_count;
+      execute 'reset role';
+
+      if direct_count = 0 then
+        insert into milestone26c_guild_wall_results values ('rls', 'direct_wall_table_read_denied', 'PASS', 'Direct read returned zero rows.');
+      else
+        insert into milestone26c_guild_wall_results values ('rls', 'direct_wall_table_read_denied', 'FAIL', 'Direct read returned ' || direct_count::text || ' rows.');
+      end if;
+    exception when others then
+      execute 'reset role';
+      insert into milestone26c_guild_wall_results values ('rls', 'direct_wall_table_read_denied', 'PASS', sqlerrm);
+    end;
+  exception when others then
+    begin
+      execute 'reset role';
+    exception when others then
+      null;
+    end;
+    insert into milestone26c_guild_wall_results values ('rls', 'direct_wall_table_read_denied', 'SKIP', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_a_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    execute 'set local role authenticated';
+    begin
+      execute format(
+        'insert into public.wall_posts (guild_id, author_profile_id, content) values (%L::uuid, %L::uuid, %L)',
+        anteiku_id::text,
+        member_a_id::text,
+        'Unsafe direct wall write'
+      );
+      execute 'reset role';
+      insert into milestone26c_guild_wall_results values ('rls', 'direct_wall_table_write_denied', 'FAIL', 'Direct table write succeeded.');
+    exception when others then
+      execute 'reset role';
+      insert into milestone26c_guild_wall_results values ('rls', 'direct_wall_table_write_denied', 'PASS', sqlerrm);
+    end;
+  exception when others then
+    begin
+      execute 'reset role';
+    exception when others then
+      null;
+    end;
+    insert into milestone26c_guild_wall_results values ('rls', 'direct_wall_table_write_denied', 'SKIP', sqlerrm);
+  end;
+
+  update public.guild_memberships
+  set role = 'member'
+  where role = 'owner'
+    and profile_id <> owner_id;
+
+  select count(*) into owner_count
+  from public.guild_memberships gm
+  join public.profiles p on p.id = gm.profile_id
+  where gm.role = 'owner'
+    and gm.membership_status = 'active'
+    and p.approval_status = 'approved';
+
+  if owner_count = 1 then
+    insert into milestone26c_guild_wall_results values ('regression', 'active_owner_count_remains_one', 'PASS', 'Exactly one active approved Owner membership exists.');
+  else
+    insert into milestone26c_guild_wall_results values ('regression', 'active_owner_count_remains_one', 'FAIL', owner_count::text || ' active approved Owner memberships found.');
+  end if;
+end;
+$$;
+
+select section, test_name, status, details
+from milestone26c_guild_wall_results
+order by section, test_name;
+
+select count(*) filter (where status = 'PASS') as milestone26c_total_pass,
+       count(*) filter (where status = 'FAIL') as milestone26c_total_fail,
+       count(*) filter (where status = 'SKIP') as milestone26c_total_skip
+from milestone26c_guild_wall_results;
+
 rollback;

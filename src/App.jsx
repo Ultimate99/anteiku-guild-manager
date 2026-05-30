@@ -12,6 +12,7 @@ import { Profile } from './pages/Profile.jsx';
 import { Leaderboard } from './pages/Leaderboard.jsx';
 import { Gvg } from './pages/Gvg.jsx';
 import { ThreeVThree } from './pages/ThreeVThree.jsx';
+import { GuildWall } from './pages/GuildWall.jsx';
 import { AdminPanel } from './pages/AdminPanel.jsx';
 import { RejectedStatus } from './pages/RejectedStatus.jsx';
 import { RosterRestrictedStatus } from './pages/RosterRestrictedStatus.jsx';
@@ -26,6 +27,7 @@ const pageComponents = {
   leaderboard: Leaderboard,
   gvg: Gvg,
   threeVThree: ThreeVThree,
+  guildWall: GuildWall,
   admin: AdminPanel,
 };
 

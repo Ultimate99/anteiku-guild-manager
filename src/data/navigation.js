@@ -49,6 +49,13 @@ export const navigationItems = [
     eyebrowKey: 'app.eyebrow.teams',
   },
   {
+    id: 'guildWall',
+    label: 'Wall',
+    labelKey: 'nav.guildWall',
+    eyebrow: 'Feed',
+    eyebrowKey: 'app.eyebrow.wall',
+  },
+  {
     id: 'admin',
     label: 'Admin',
     labelKey: 'nav.admin',
