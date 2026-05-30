@@ -6777,4 +6777,334 @@ select count(*) filter (where status = 'PASS') as milestone26c_total_pass,
        count(*) filter (where status = 'SKIP') as milestone26c_total_skip
 from milestone26c_guild_wall_results;
 
+create temp table milestone_public_profile_results (
+  section text not null,
+  test_name text not null,
+  status text not null check (status in ('PASS', 'FAIL', 'SKIP')),
+  details text
+) on commit drop;
+
+do $$
+declare
+  anteiku_id constant uuid := '00000000-0000-0000-0000-000000000101';
+  anteiku_re_id constant uuid := '00000000-0000-0000-0000-000000000102';
+  owner_id constant uuid := '10000000-0000-0000-0000-000000000001';
+  member_id constant uuid := '10000000-0000-0000-0000-000000000006';
+  pending_id constant uuid := '10000000-0000-0000-0000-000000000007';
+  wrong_guild_id constant uuid := '10000000-0000-0000-0000-000000000009';
+  inactive_id constant uuid := '10000000-0000-0000-0000-000000000086';
+  suspended_id constant uuid := '10000000-0000-0000-0000-000000000087';
+  payload jsonb;
+  details_payload jsonb;
+  direct_count integer;
+  owner_count integer;
+begin
+  begin
+    if to_regclass('public.profile_reactions') is not null then
+      insert into milestone_public_profile_results values ('schema', 'profile_reactions_table_exists', 'PASS', 'profile_reactions exists.');
+    else
+      insert into milestone_public_profile_results values ('schema', 'profile_reactions_table_exists', 'FAIL', 'profile_reactions missing.');
+    end if;
+
+    if exists (
+      select 1
+      from pg_class c
+      join pg_namespace n on n.oid = c.relnamespace
+      where n.nspname = 'public'
+        and c.relname = 'profile_reactions'
+        and c.relrowsecurity = true
+    ) then
+      insert into milestone_public_profile_results values ('schema', 'profile_reactions_rls_enabled', 'PASS', 'RLS enabled.');
+    else
+      insert into milestone_public_profile_results values ('schema', 'profile_reactions_rls_enabled', 'FAIL', 'RLS not enabled.');
+    end if;
+
+    if not has_table_privilege('authenticated', 'public.profile_reactions', 'insert')
+       and not has_table_privilege('authenticated', 'public.profile_reactions', 'select')
+       and not has_table_privilege('anon', 'public.profile_reactions', 'select') then
+      insert into milestone_public_profile_results values ('schema', 'profile_reactions_no_broad_grants', 'PASS', 'No direct anon/authenticated table grants.');
+    else
+      insert into milestone_public_profile_results values ('schema', 'profile_reactions_no_broad_grants', 'FAIL', 'Unexpected direct table grant exists.');
+    end if;
+  exception when others then
+    insert into milestone_public_profile_results values ('schema', 'profile_reactions_schema_checks', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    insert into auth.users (
+      instance_id,
+      id,
+      aud,
+      role,
+      email,
+      encrypted_password,
+      email_confirmed_at,
+      raw_app_meta_data,
+      raw_user_meta_data,
+      created_at,
+      updated_at
+    )
+    values
+      ('00000000-0000-0000-0000-000000000000', inactive_id, 'authenticated', 'authenticated', 'inactive-profile.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', suspended_id, 'authenticated', 'authenticated', 'suspended-profile.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now())
+    on conflict (id) do nothing;
+
+    insert into public.profiles (id, username, profile_slug, ign, approval_status, approved_at)
+    values
+      (inactive_id, 'inactive_profile', 'inactive_profile', 'Inactive Profile', 'approved', now()),
+      (suspended_id, 'suspended_profile', 'suspended_profile', 'Suspended Profile', 'approved', now())
+    on conflict (id) do update
+    set ign = excluded.ign,
+        approval_status = excluded.approval_status,
+        approved_at = excluded.approved_at;
+
+    insert into public.guild_memberships (profile_id, guild_id, role, membership_status, roster_status, is_primary, assigned_by)
+    values
+      (inactive_id, anteiku_id, 'member', 'active', 'inactive', true, owner_id),
+      (suspended_id, anteiku_id, 'member', 'suspended', 'suspended', true, owner_id)
+    on conflict (profile_id, guild_id) do update
+    set role = excluded.role,
+        membership_status = excluded.membership_status,
+        roster_status = excluded.roster_status,
+        is_primary = excluded.is_primary,
+        assigned_by = excluded.assigned_by;
+
+    update public.profiles
+    set approval_status = 'approved', approved_at = coalesce(approved_at, now())
+    where id in (member_id, wrong_guild_id, owner_id);
+
+    update public.guild_memberships
+    set membership_status = 'active',
+        roster_status = 'active',
+        is_primary = true
+    where profile_id in (member_id, wrong_guild_id, owner_id);
+
+    insert into public.three_v_three_player_profiles (profile_id, discord_username, combined_cp)
+    values (wrong_guild_id, 'publicprofiletest', 3250000)
+    on conflict (profile_id) do update
+    set combined_cp = excluded.combined_cp,
+        discord_username = excluded.discord_username;
+
+    insert into milestone_public_profile_results values ('setup', 'public_profile_test_state_seeded', 'PASS', 'Public profile validation users prepared.');
+  exception when others then
+    insert into milestone_public_profile_results values ('setup', 'public_profile_test_state_seeded', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    payload := public.get_public_member_profile('wrong_guild');
+
+    if payload #>> '{profile,profile_slug}' = 'wrong_guild'
+       and payload #>> '{profile,guild_slug}' = 'anteiku-re' then
+      insert into milestone_public_profile_results values ('profile', 'approved_cross_guild_profile_fetch_allowed', 'PASS', payload::text);
+    else
+      insert into milestone_public_profile_results values ('profile', 'approved_cross_guild_profile_fetch_allowed', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone_public_profile_results values ('profile', 'approved_cross_guild_profile_fetch_allowed', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    if payload::text not ilike '%member_cp%'
+       and payload::text not ilike '%cp_snapshots%'
+       and payload::text not ilike '%cp_value%'
+       and payload::text not ilike '%email%'
+       and payload::text not ilike '%admin_permissions%'
+       and payload::text not ilike '%audit%' then
+      insert into milestone_public_profile_results values ('privacy', 'public_profile_payload_has_no_private_fields', 'PASS', 'No protected CP/email/admin/audit keys found.');
+    else
+      insert into milestone_public_profile_results values ('privacy', 'public_profile_payload_has_no_private_fields', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone_public_profile_results values ('privacy', 'public_profile_payload_has_no_private_fields', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    if (payload #>> '{profile,three_v_three_combined_cp}')::bigint = 3250000 then
+      insert into milestone_public_profile_results values ('profile', 'public_three_v_three_combined_cp_returned', 'PASS', 'Public self-entered 3v3 Combined CP returned.');
+    else
+      insert into milestone_public_profile_results values ('profile', 'public_three_v_three_combined_cp_returned', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_public_profile_results values ('profile', 'public_three_v_three_combined_cp_returned', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    if payload #> '{profile,ghoul_rep}' is not null
+       and jsonb_typeof(payload #> '{profile,reactions}') = 'array' then
+      insert into milestone_public_profile_results values ('profile', 'ghoul_rep_and_reaction_counts_returned', 'PASS', 'Ghoul Rep and reaction count array returned.');
+    else
+      insert into milestone_public_profile_results values ('profile', 'ghoul_rep_and_reaction_counts_returned', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_public_profile_results values ('profile', 'ghoul_rep_and_reaction_counts_returned', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', pending_id::text, true);
+    perform public.get_public_member_profile('wrong_guild');
+    insert into milestone_public_profile_results values ('eligibility', 'pending_user_denied_public_profile', 'FAIL', 'Pending user fetched public profile.');
+  exception when others then
+    insert into milestone_public_profile_results values ('eligibility', 'pending_user_denied_public_profile', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', suspended_id::text, true);
+    perform public.get_public_member_profile('wrong_guild');
+    insert into milestone_public_profile_results values ('eligibility', 'suspended_user_denied_public_profile', 'FAIL', 'Suspended user fetched public profile.');
+  exception when others then
+    insert into milestone_public_profile_results values ('eligibility', 'suspended_user_denied_public_profile', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', inactive_id::text, true);
+    payload := public.get_public_member_profile('wrong_guild');
+
+    if payload #>> '{profile,profile_slug}' = 'wrong_guild' then
+      insert into milestone_public_profile_results values ('eligibility', 'inactive_user_can_view_public_profile', 'PASS', 'Inactive/on_break class can view.');
+    else
+      insert into milestone_public_profile_results values ('eligibility', 'inactive_user_can_view_public_profile', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_public_profile_results values ('eligibility', 'inactive_user_can_view_public_profile', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', inactive_id::text, true);
+    perform public.react_to_public_profile(wrong_guild_id, 'like');
+    insert into milestone_public_profile_results values ('eligibility', 'inactive_user_cannot_react', 'FAIL', 'Inactive/on_break class reacted.');
+  exception when others then
+    insert into milestone_public_profile_results values ('eligibility', 'inactive_user_cannot_react', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.react_to_public_profile(member_id, 'like');
+    insert into milestone_public_profile_results values ('reaction', 'self_reaction_blocked', 'FAIL', 'Self-reaction succeeded.');
+  exception when others then
+    insert into milestone_public_profile_results values ('reaction', 'self_reaction_blocked', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.react_to_public_profile(wrong_guild_id, 'like');
+    perform public.react_to_public_profile(wrong_guild_id, 'like');
+
+    select count(*) into direct_count
+    from public.profile_reactions
+    where target_profile_id = wrong_guild_id
+      and reactor_profile_id = member_id
+      and reaction_type = 'like';
+
+    if direct_count = 1 then
+      insert into milestone_public_profile_results values ('reaction', 'duplicate_reaction_same_type_idempotent', 'PASS', 'Duplicate reaction produced one row.');
+    else
+      insert into milestone_public_profile_results values ('reaction', 'duplicate_reaction_same_type_idempotent', 'FAIL', direct_count::text || ' rows found.');
+    end if;
+  exception when others then
+    insert into milestone_public_profile_results values ('reaction', 'duplicate_reaction_same_type_idempotent', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.react_to_public_profile(wrong_guild_id, 'fire');
+    payload := public.get_public_member_profile('wrong_guild');
+
+    if payload::text like '%"reacted_by_me": true%' then
+      insert into milestone_public_profile_results values ('reaction', 'viewer_own_reactions_returned', 'PASS', payload::text);
+    else
+      insert into milestone_public_profile_results values ('reaction', 'viewer_own_reactions_returned', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone_public_profile_results values ('reaction', 'viewer_own_reactions_returned', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.remove_public_profile_reaction(wrong_guild_id, 'like');
+
+    select count(*) into direct_count
+    from public.profile_reactions
+    where target_profile_id = wrong_guild_id
+      and reactor_profile_id = member_id
+      and reaction_type = 'like';
+
+    if direct_count = 0 then
+      insert into milestone_public_profile_results values ('reaction', 'remove_reaction_works', 'PASS', 'Reaction removed.');
+    else
+      insert into milestone_public_profile_results values ('reaction', 'remove_reaction_works', 'FAIL', direct_count::text || ' rows remain.');
+    end if;
+  exception when others then
+    insert into milestone_public_profile_results values ('reaction', 'remove_reaction_works', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    details_payload := public.get_public_profile_reaction_details(wrong_guild_id, 'fire');
+
+    if jsonb_typeof(details_payload -> 'reactions') = 'array'
+       and details_payload::text like '%member_local%'
+       and details_payload::text not ilike '%email%'
+       and details_payload::text not ilike '%member_cp%'
+       and details_payload::text not ilike '%cp_snapshots%'
+       and details_payload::text not ilike '%profile_id%'
+       and details_payload::text not ilike '%auth%' then
+      insert into milestone_public_profile_results values ('reaction', 'reaction_details_safe_public_info_only', 'PASS', details_payload::text);
+    else
+      insert into milestone_public_profile_results values ('reaction', 'reaction_details_safe_public_info_only', 'FAIL', details_payload::text);
+    end if;
+  exception when others then
+    insert into milestone_public_profile_results values ('reaction', 'reaction_details_safe_public_info_only', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    execute 'set local role authenticated';
+    begin
+      execute format(
+        'insert into public.profile_reactions (target_profile_id, reactor_profile_id, reaction_type) values (%L::uuid, %L::uuid, %L)',
+        wrong_guild_id::text,
+        member_id::text,
+        'trophy'
+      );
+      execute 'reset role';
+      insert into milestone_public_profile_results values ('rls', 'direct_profile_reaction_write_denied', 'FAIL', 'Direct profile_reactions insert succeeded.');
+    exception when others then
+      execute 'reset role';
+      insert into milestone_public_profile_results values ('rls', 'direct_profile_reaction_write_denied', 'PASS', sqlerrm);
+    end;
+  exception when others then
+    begin
+      execute 'reset role';
+    exception when others then
+      null;
+    end;
+    insert into milestone_public_profile_results values ('rls', 'direct_profile_reaction_write_denied', 'SKIP', sqlerrm);
+  end;
+
+  select count(*) into owner_count
+  from public.guild_memberships gm
+  join public.profiles p on p.id = gm.profile_id
+  where gm.role = 'owner'
+    and gm.membership_status = 'active'
+    and p.approval_status = 'approved';
+
+  if owner_count = 1 then
+    insert into milestone_public_profile_results values ('regression', 'active_owner_count_remains_one', 'PASS', 'Exactly one active approved Owner membership exists.');
+  else
+    insert into milestone_public_profile_results values ('regression', 'active_owner_count_remains_one', 'FAIL', owner_count::text || ' active approved Owner memberships found.');
+  end if;
+end;
+$$;
+
+select section, test_name, status, details
+from milestone_public_profile_results
+order by section, test_name;
+
+select count(*) filter (where status = 'PASS') as milestone_public_profile_total_pass,
+       count(*) filter (where status = 'FAIL') as milestone_public_profile_total_fail,
+       count(*) filter (where status = 'SKIP') as milestone_public_profile_total_skip
+from milestone_public_profile_results;
+
 rollback;
