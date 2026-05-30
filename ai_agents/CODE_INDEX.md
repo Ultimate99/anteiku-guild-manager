@@ -1,5 +1,18 @@
 # Code Index
 
+## Public Member Profiles
+
+- `supabase/migrations/20260530000600_public_member_profiles.sql`: Production-applied backend/RPC foundation for public member profiles and profile reactions.
+- `src/services/publicProfileService.js`: RPC-only frontend wrapper for `get_public_member_profile`, `react_to_public_profile`, `remove_public_profile_reaction`, and `get_public_profile_reaction_details`; includes safe asset mapping and a defensive private-field key guard.
+- `src/pages/PublicMemberProfile.jsx`: Authenticated public member profile page showing safe profile identity, avatar/frame, guild, safe role/status, Ghoul Rep, optional public 3v3 Combined CP, profile reactions, and reaction details.
+- `src/App.jsx`: Adds internal `publicProfile` page state and `/members/:profileSlug` path handling.
+- `vercel.json`: Adds SPA rewrite so `/members/:profileSlug` refresh/direct open resolves to the React app.
+- `src/pages/GuildWall.jsx`: Links Wall post/comment authors and reaction detail users to public profiles when a safe slug is present.
+- `src/pages/ThreeVThree.jsx`: Links 3v3 team slots and incoming request users to public profiles when a safe slug is present.
+- `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`: Add `publicProfile.*` labels.
+- `src/styles/app.css`: Adds public profile, profile reaction, reaction detail, and profile-link styles.
+- Production status: commits `3f55f76 feat: add public member profiles` and `ffc36e1 fix: support public profile route refresh` are deployed; production smoke passed.
+
 ## Ghoul Rep Profile Polish
 
 - `supabase/migrations/20260530000500_my_ghoul_rep_profile.sql`: Adds `get_my_ghoul_rep()` as a minimal own-user RPC that uses `auth.uid()`, requires an approved profile, delegates to the private Ghoul Rep helper, and returns only the caller's live Ghoul Rep number.

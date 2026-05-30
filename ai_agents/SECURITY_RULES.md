@@ -1,5 +1,29 @@
 # Security Rules
 
+## Public Member Profile Security Rules
+
+Public Member Profiles and profile reactions are live in production through `20260530000600_public_member_profiles.sql`, commit `3f55f76 feat: add public member profiles`, and route fallback commit `ffc36e1 fix: support public profile route refresh`.
+
+Rules:
+- Public member profiles are authenticated app pages for approved members only, not unauthenticated public internet profiles.
+- Frontend reads must use `get_public_member_profile(p_profile_slug)` only.
+- Profile reaction writes must use `react_to_public_profile(...)` and `remove_public_profile_reaction(...)` only.
+- Reaction detail reads must use `get_public_profile_reaction_details(...)` only.
+- Frontend must not direct-read or direct-write `profile_reactions`.
+- Profile reactions do not affect Ghoul Rep.
+- Guild Wall and 3v3 may link to public profiles only when a safe `profile_slug` is already returned by the backend.
+- Ranking rows must remain unlinked until the member-safe ranking RPC safely returns `profile_slug` without exposing CP/private data.
+
+Privacy:
+- Public profiles may show safe identity/social fields: avatar/frame, IGN, username/profile slug, guild, safe role label, safe roster/profile status, Ghoul Rep, public 3v3 Combined CP, and profile reaction counts/details.
+- Public profiles must not show normal CP, `member_cp`, `cp_snapshots`, CP RPC data, email, auth IDs, audit logs, admin permissions, private notes, private metadata, uploads, or Storage data.
+- Normal CP privacy remains unchanged.
+
+Production validation:
+- Production DB verification passed for `profile_reactions` table existence/RLS, RPC existence, direct unsafe write denial, safe payload, active Owner count `1`, and normal CP direct-read protection.
+- Frontend source validation passed: no direct `.from(...)` calls in the public profile path and no `member_cp` / `cp_snapshots` usage except the defensive deny-list guard.
+- Production smoke passed for direct public profile route, controlled profile reaction add/remove, reaction details safe fields, Wall/3v3 links, no CP/email/private metadata, and no captured console errors.
+
 ## Ghoul Rep Profile And Wall Security Rules
 
 Ghoul Rep backend support is live in production through `20260530000400_ghoul_rep_wall_reactions.sql` and `20260530000500_my_ghoul_rep_profile.sql`. The frontend chip/reaction-detail UI is live through commits `cc2a82b`, `3c0ba0b`, and `bc9e30a`.

@@ -1,5 +1,31 @@
 # Changelog
 
+## 2026-05-30 - Public Member Profiles
+
+- Added authenticated public member profiles and profile reactions.
+- Commits deployed:
+  - `3f55f76 feat: add public member profiles`
+  - `ffc36e1 fix: support public profile route refresh`
+- Migration already applied and verified before frontend rollout:
+  - `20260530000600_public_member_profiles.sql`
+- Source files changed in frontend rollout:
+  - `src/App.jsx`
+  - `src/pages/PublicMemberProfile.jsx`
+  - `src/services/publicProfileService.js`
+  - `src/pages/GuildWall.jsx`
+  - `src/pages/ThreeVThree.jsx`
+  - `src/styles/app.css`
+  - `src/i18n/en.js`
+  - `src/i18n/fr.js`
+  - `src/i18n/de.js`
+  - `vercel.json`
+- Public profile route `/members/:profileSlug` shows safe member identity, avatar/frame, guild, safe role/status, Ghoul Rep, public 3v3 Combined CP, and profile reactions.
+- Guild Wall author/comment/reaction users and 3v3 team/request users link to public profiles when a safe profile slug is available.
+- Ranking rows remain unlinked because the member-safe ranking RPC does not currently return `profile_slug`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production smoke passed for direct route load, safe fields, controlled profile reaction add/remove, reaction details, Wall links, 3v3 links, and no captured console errors.
+- No normal CP, `member_cp`, `cp_snapshots`, CP RPCs, email, auth IDs, admin permissions, audit/private metadata, uploads, Storage, public unauthenticated profiles, or unrelated behavior changes were added.
+
 ## 2026-05-30 - Ghoul Rep Profile Polish
 
 - Added own Profile Ghoul Rep display and softened the Guild Wall / Global Wall Ghoul Rep chip.

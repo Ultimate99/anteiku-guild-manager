@@ -1,5 +1,37 @@
 # Testing And Validation
 
+## Public Member Profiles Validation
+
+Public Member Profiles/Profile Reactions passed production DB verification, build/source validation, frontend deploy, route fallback validation, and production smoke.
+
+Commands:
+- `npm.cmd run build`
+- `rg -n "from\\(|member_cp|cp_snapshots|get_my_cp|get_current_cp_roster|get_cp_leaderboard|get_admin_cp|cp_value|email|auth|admin_permissions|audit|private" src/pages/PublicMemberProfile.jsx src/services/publicProfileService.js src/pages/GuildWall.jsx src/pages/ThreeVThree.jsx src/App.jsx`
+- Production bundle/route checks against `https://anteiku-guild-manager.vercel.app/`
+
+Result:
+- Production DB verification passed before frontend rollout for `20260530000600_public_member_profiles.sql`.
+- `profile_reactions` exists with RLS enabled.
+- RPCs exist: `get_public_member_profile`, `react_to_public_profile`, `remove_public_profile_reaction`, `get_public_profile_reaction_details`.
+- Direct unsafe `profile_reactions` insert was denied.
+- Safe public profile payload contained no normal CP, email, auth, admin, audit, or private metadata.
+- Active Owner count remained `1`.
+- Direct normal authenticated reads of `member_cp` and `cp_snapshots` returned no visible rows.
+- Build passed with the existing Vite chunk-size warning only.
+- Source validation found no direct `.from(...)` calls in the public profile path and no `member_cp` / `cp_snapshots` usage except the defensive deny-list guard.
+
+Production smoke:
+- Production serves the public profile frontend bundle.
+- Direct `/members/ultimatesrb` route renders through the app after `ffc36e1` added the Vercel SPA rewrite.
+- Signed-in Owner saw avatar/frame, IGN, `@ultimatesrb`, guild, safe role label, roster status, Ghoul Rep, public 3v3 Combined CP, and profile reactions.
+- Normal CP, email, auth IDs, admin permissions, audit/private metadata were not visible.
+- Controlled profile reaction add/remove on `@holder` succeeded and was removed back to zero.
+- Profile reaction details opened and showed safe public fields/empty state only.
+- Guild Wall author links and comment-author links open public profiles.
+- 3v3 team slot links open public profiles.
+- Pending/restricted denial was not re-tested in browser during this rollout; DB/RPC gates were verified before rollout.
+- No captured console errors.
+
 ## Ghoul Rep Profile Polish Validation
 
 Ghoul Rep Profile display and Wall chip polish passed local validation, build/source validation, production migration rollout, and production smoke.

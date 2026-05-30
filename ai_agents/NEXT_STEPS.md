@@ -2,14 +2,24 @@
 
 ## Current Recommendation
 
-Ghoul Rep frontend, backend, and own Profile display are live in production.
+Public Member Profiles/Profile Reactions are live in production.
 
 Recommended next step:
 - Continue with the next user-prioritized milestone.
 - Optional polish later:
   - Add a dedicated Ghoul Rep leaderboard only if explicitly approved.
-  - Add public member profiles only if explicitly approved.
+  - Link Ranking rows to public profiles only after the member-safe ranking RPC safely returns `profile_slug` without exposing CP/private data.
   - Keep any future Ghoul Rep feature backed by RPCs; no direct wall table reads and no CP exposure.
+
+Recorded Public Member Profiles status:
+- Production DB received and verified `20260530000600_public_member_profiles.sql` before frontend rollout.
+- Commit `3f55f76 feat: add public member profiles` is pushed to `main`.
+- Follow-up commit `ffc36e1 fix: support public profile route refresh` is pushed to `main` and adds a Vercel SPA rewrite for `/members/:profileSlug`.
+- Public profiles show safe member identity, avatar/frame, guild, role label, roster status, Ghoul Rep, optional public 3v3 Combined CP, and profile reactions.
+- Profile reactions use `react_to_public_profile`, `remove_public_profile_reaction`, and `get_public_profile_reaction_details`; the controlled production add/remove smoke was restored back to zero.
+- Guild Wall author/comment/reaction users and 3v3 slots/requests link to public profiles where a safe slug is present.
+- Ranking rows remain unlinked because the current safe ranking response does not expose `profile_slug`.
+- Build/source validation and production smoke passed with no normal CP/email/admin/private metadata visible and no captured console errors.
 
 Recorded Ghoul Rep frontend status:
 - Commit `bc9e30a feat: show ghoul rep on profile` is pushed to `main` and production serves the updated Profile bundle.

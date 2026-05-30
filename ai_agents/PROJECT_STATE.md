@@ -1,5 +1,34 @@
 # Project State
 
+## Public Member Profiles Live
+
+Public Member Profiles and profile reactions are live in production.
+
+Production rollout:
+- Production project `mzflfyxxkascrfpteexz` already had `20260530000600_public_member_profiles.sql` applied and verified before frontend rollout.
+- Commit `3f55f76 feat: add public member profiles` was pushed to `main`.
+- Follow-up commit `ffc36e1 fix: support public profile route refresh` added the Vercel SPA rewrite so `/members/:profileSlug` opens through the authenticated app instead of Vercel 404.
+- Production serves a bundle containing `get_public_member_profile`, `react_to_public_profile`, `remove_public_profile_reaction`, and `get_public_profile_reaction_details`.
+
+Behavior:
+- Approved signed-in members can open `/members/:profileSlug` and see a safe public member profile.
+- Public profile shows avatar/frame, IGN, `@profileSlug`, guild, role label, roster status, Ghoul Rep, optional public 3v3 Combined CP, and profile reactions.
+- Guild Wall post/comment authors and reaction-detail users can link to public profiles when a safe profile slug is already present.
+- 3v3 team slots and incoming request users can link to public profiles when a safe profile slug is already present.
+- Ranking rows remain unlinked because the member-safe ranking RPC does not currently return `profile_slug`.
+
+Security/CP privacy:
+- Frontend uses the new public profile RPCs only; no direct `profile_reactions` table reads/writes were added.
+- No normal CP, `member_cp`, `cp_snapshots`, CP RPCs, email, auth IDs, admin permissions, audit/private metadata, uploads, or Storage data are displayed.
+- Public profiles are still authenticated app pages for approved members, not public internet/unauthenticated profiles.
+- Profile reactions do not affect Ghoul Rep.
+
+Validation:
+- Production DB verification passed for migration applied, `profile_reactions` existence/RLS, RPC presence, no direct unsafe client grants, active Owner count `1`, safe payload, direct `profile_reactions` insert denial, and normal CP direct-read protection.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no direct `.from(...)` calls in the public profile path and no `member_cp` / `cp_snapshots` usage except the defensive deny-list guard.
+- Production smoke passed for direct `/members/ultimatesrb`, safe profile data, no CP/email/private metadata, controlled profile reaction add/remove on `@holder`, reaction details panel, Wall author links, Wall comment-author links, 3v3 slot links, and no captured console errors.
+
 ## Ghoul Rep Profile Polish Live
 
 Ghoul Rep Profile display and Wall chip polish are live in production.

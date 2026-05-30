@@ -1,5 +1,33 @@
 # Testing
 
+## Public Member Profiles
+
+Public Member Profiles/Profile Reactions passed production DB verification, build/source validation, deployment, and production smoke.
+
+Build/source:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no direct `.from(...)` calls in the public profile path.
+- Source validation found no `member_cp` / `cp_snapshots` usage except the defensive deny-list guard in `src/services/publicProfileService.js`.
+- No CP RPCs, uploads, Storage, direct profile reaction table access, or public unauthenticated profile route were added.
+
+Production:
+- Production DB had `20260530000600_public_member_profiles.sql` applied and verified before frontend rollout.
+- Commits deployed:
+  - `3f55f76 feat: add public member profiles`
+  - `ffc36e1 fix: support public profile route refresh`
+- Production `/members/:profileSlug` direct route resolves to the React app through the Vercel SPA rewrite.
+
+Production smoke:
+- Signed-in Owner opened `/members/ultimatesrb`.
+- Public profile rendered avatar/frame, IGN, username/profile slug, guild, safe role label, roster status, Ghoul Rep, public 3v3 Combined CP, and profile reactions.
+- Normal CP, email, auth IDs, admin permissions, audit/private metadata were not visible.
+- Controlled profile reaction add/remove on `@holder` succeeded and was removed back to zero.
+- Reaction details opened and showed only safe public fields/empty state.
+- Guild Wall author and comment-author links opened public profiles.
+- 3v3 team slot links opened public profiles.
+- Pending/restricted browser smoke was not repeated in this frontend rollout.
+- No captured console errors.
+
 ## Ghoul Rep Profile Polish
 
 Ghoul Rep Profile display and Wall chip polish passed validation and production smoke.
