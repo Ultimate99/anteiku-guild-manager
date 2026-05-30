@@ -1,5 +1,27 @@
 # Testing
 
+## Ghoul Rep Profile Polish
+
+Ghoul Rep Profile display and Wall chip polish passed validation and production smoke.
+
+Build/source:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Local `npx.cmd supabase db reset` applied through `20260530000500_my_ghoul_rep_profile.sql`.
+- Existing local validation passed through Docker `psql`; Guild Wall/Ghoul Rep remained `47 PASS / 0 FAIL / 0 SKIP`.
+- Focused local RPC validation confirmed `get_my_ghoul_rep()` returns the caller's own Ghoul Rep and denies pending users.
+- Source checks found no `member_cp`, no `cp_snapshots`, no normal CP RPCs, no uploads/Storage/service-role paths, and no direct Wall table reads/writes in the touched Profile/Wall path.
+
+Production:
+- Production dry-run showed only `20260530000500_my_ghoul_rep_profile.sql`.
+- Production migration apply succeeded and remote migration list shows `20260530000500` applied.
+- Production serves the updated bundle with `get_my_ghoul_rep` and `profile-ghoul-rep-chip`.
+
+Production smoke:
+- Signed-in Owner opened Profile and saw a compact own `Ghoul Rep` chip.
+- Signed-in Owner opened Wall and saw softened compact Ghoul Rep chips with emoji reactions.
+- Wall showed no CP/private data; Profile still shows only the user's existing own CP section.
+- No captured console errors.
+
 ## Ghoul Rep Wall Frontend
 
 Ghoul Rep frontend UI passed build/source validation and production smoke.
@@ -40,7 +62,7 @@ Results:
 Security/source validation:
 - The Ghoul Rep migration references no `member_cp`, `cp_snapshots`, normal CP RPCs, service-role paths, uploads, or Storage.
 - Ghoul Rep counts distinct non-self reactors per post/comment target and includes comment reactions.
-- Frontend Ghoul Rep chip/reaction-detail UI remains pending.
+- Frontend Ghoul Rep chip/reaction-detail UI and own Profile Ghoul Rep display are live.
 
 ## Global Wall Scope
 

@@ -1,27 +1,30 @@
 # Supabase RLS
 
-The Supabase RLS/RPC implementation has been validated through Ghoul Rep Wall reactions. Production is applied/verified through `20260530000400_ghoul_rep_wall_reactions.sql`.
+The Supabase RLS/RPC implementation has been validated through Ghoul Rep Profile display. Production is applied/verified through `20260530000500_my_ghoul_rep_profile.sql`.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
 
-## Ghoul Rep Wall Reaction RLS/RPC
+## Ghoul Rep Profile And Wall RLS/RPC
 
-Ghoul Rep backend support is implemented and production applied through `20260530000400_ghoul_rep_wall_reactions.sql`.
+Ghoul Rep backend support is implemented and production applied through `20260530000400_ghoul_rep_wall_reactions.sql` and `20260530000500_my_ghoul_rep_profile.sql`.
 
 Functions:
 - `private.get_profile_ghoul_rep(p_profile_id uuid)` calculates live Ghoul Rep and is not executable by authenticated clients.
 - `get_guild_wall_feed(...)` returns `author_ghoul_rep`.
 - `get_wall_reaction_details(p_target_type, p_target_id, p_reaction_type)` returns safe reaction-user details for visible targets.
+- `get_my_ghoul_rep()` returns only the authenticated caller's own Ghoul Rep number.
 
 Rules:
 - Reaction details use the same Wall view gates as feed reads.
 - Wrong-guild users cannot read guild-scoped reaction details.
 - Pending/restricted users are denied.
 - Global Wall reaction details follow Global Wall visibility.
+- Own Profile Ghoul Rep uses `auth.uid()` and denies non-approved profiles.
 
 Privacy:
 - Reaction details expose only safe public profile/cosmetic fields.
 - Ghoul Rep does not return normal CP, `member_cp`, `cp_snapshots`, email, auth metadata, private admin metadata, uploads, or Storage data.
+- The own Profile RPC does not expose public profile data, other users' Ghoul Rep, profile reactions, or leaderboard data.
 
 ## Global Wall Scope RLS/RPC
 

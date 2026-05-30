@@ -2,7 +2,7 @@
 
 ## Current Recommendation
 
-Ghoul Rep frontend and backend are live in production.
+Ghoul Rep frontend, backend, and own Profile display are live in production.
 
 Recommended next step:
 - Continue with the next user-prioritized milestone.
@@ -12,12 +12,18 @@ Recommended next step:
   - Keep any future Ghoul Rep feature backed by RPCs; no direct wall table reads and no CP exposure.
 
 Recorded Ghoul Rep frontend status:
+- Commit `bc9e30a feat: show ghoul rep on profile` is pushed to `main` and production serves the updated Profile bundle.
+- Own Profile shows a compact `Ghoul Rep` chip using the own-user `get_my_ghoul_rep()` RPC.
+- Wall Ghoul Rep chips were softened to read like compact social stats instead of rank/title badges.
+- Production smoke passed for Profile Ghoul Rep display, softened Wall chip, Wall emoji reactions, no console errors, and no CP/privacy regression.
 - Commits `cc2a82b feat: show ghoul rep on guild wall` and `3c0ba0b fix: clear wall reaction details on scope change` are pushed to `main` and production serves the updated bundle.
 - Guild Wall and Global Wall post/comment author surfaces show compact `Ghoul Rep` chips from `author_ghoul_rep`.
 - Reaction details use `get_wall_reaction_details(...)` and show safe public profile/cosmetic fields only.
 - Production smoke passed for My Guild, Global, reaction details, scope-change clearing, no CP/email visible, and no console errors.
 
 Recorded Ghoul Rep backend status:
+- Production DB received `20260530000500_my_ghoul_rep_profile.sql` after a clean dry-run showing only that migration pending.
+- `get_my_ghoul_rep()` returns only the authenticated caller's own live Ghoul Rep number and requires an approved profile.
 - Production DB received `20260530000400_ghoul_rep_wall_reactions.sql` after a clean dry-run showing only that migration pending.
 - Ghoul Rep counts distinct non-self reacting profiles per visible post/comment target across Guild Wall and Global Wall.
 - Multiple reaction types by the same user on the same target count as `+1`; reactions by the same user on different targets count separately.

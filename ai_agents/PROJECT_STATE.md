@@ -1,5 +1,33 @@
 # Project State
 
+## Ghoul Rep Profile Polish Live
+
+Ghoul Rep Profile display and Wall chip polish are live in production.
+
+Production rollout:
+- Commit `bc9e30a feat: show ghoul rep on profile` was pushed to `main`.
+- Production project `mzflfyxxkascrfpteexz` received `20260530000500_my_ghoul_rep_profile.sql` after a clean dry-run showing only that migration pending.
+- Production migration list shows `20260530000500` applied remotely.
+- Production serves the updated bundle containing `get_my_ghoul_rep` and `profile-ghoul-rep-chip`.
+
+Behavior:
+- Guild Wall and Global Wall Ghoul Rep chips were softened to read like compact social stats instead of rank/title badges.
+- Own Profile now shows a compact `Ghoul Rep` chip near the rank/customize area.
+- Profile Ghoul Rep uses the new `get_my_ghoul_rep()` RPC and does not implement public profiles, profile reactions, or a Ghoul Rep leaderboard.
+
+Security/CP privacy:
+- `get_my_ghoul_rep()` uses `auth.uid()`, requires an approved profile, and returns only the caller's own live Ghoul Rep number.
+- The RPC delegates to the existing private Ghoul Rep helper and returns no CP, email, auth metadata, audit/admin/private metadata, uploads, or Storage data.
+- Frontend source validation found no `member_cp`, `cp_snapshots`, normal CP RPC, upload, Storage, service-role, or direct Wall table access added.
+- No CP/GvG/Analytics/3v3/cosmetics/member-status/auth/role/permission behavior changed.
+
+Validation:
+- `npx.cmd supabase db reset` passed locally through `20260530000500_my_ghoul_rep_profile.sql`.
+- `supabase/tests/local_validation_anteiku.sql` passed through local Docker `psql`; the Guild Wall/Ghoul Rep block remained `47 PASS / 0 FAIL / 0 SKIP`.
+- Focused local RPC validation returned `1` Ghoul Rep for an approved author with multiple reaction types from one reactor and denied a pending user.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production smoke passed for Profile Ghoul Rep chip, softened Wall Ghoul Rep chip, Wall emoji reactions, no CP/private data visible beyond the user's own existing Profile CP section, and no captured console errors.
+
 ## Ghoul Rep Wall Frontend Live
 
 Ghoul Rep frontend UI is live in production.

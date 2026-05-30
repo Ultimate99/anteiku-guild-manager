@@ -1,8 +1,8 @@
 # Security Rules
 
-## Ghoul Rep Wall Reaction Security Rules
+## Ghoul Rep Profile And Wall Security Rules
 
-Ghoul Rep backend support is live in production through `20260530000400_ghoul_rep_wall_reactions.sql`, and the frontend chip/reaction-detail UI is live through commits `cc2a82b` and `3c0ba0b`.
+Ghoul Rep backend support is live in production through `20260530000400_ghoul_rep_wall_reactions.sql` and `20260530000500_my_ghoul_rep_profile.sql`. The frontend chip/reaction-detail UI is live through commits `cc2a82b`, `3c0ba0b`, and `bc9e30a`.
 
 Rules:
 - Ghoul Rep is calculated from Guild Wall and Global Wall reactions only.
@@ -13,18 +13,22 @@ Rules:
 - Self-reactions remain visible but do not count toward Ghoul Rep.
 - Deleted posts/comments and removed reactions do not count.
 - `author_ghoul_rep` may be returned by `get_guild_wall_feed(...)`.
+- `get_my_ghoul_rep()` may return only the authenticated caller's own live Ghoul Rep number.
 - Reaction detail UI must use `get_wall_reaction_details(...)`, not direct table reads.
 - Frontend may display compact Ghoul Rep chips on Wall post/comment authors.
+- Frontend may display a compact own Ghoul Rep chip on the signed-in user's Profile.
 - Frontend reaction detail UI may display safe public reaction-user details only.
 
 Privacy:
 - Ghoul Rep must not use or expose normal CP, `member_cp`, `cp_snapshots`, CP analytics, CP roster, CP rankings, CP growth, email, auth metadata, private admin metadata, uploads, or Storage data.
 - Reaction details may show only safe public profile/cosmetic fields: avatar/frame if available, IGN, username/profile slug, guild, reaction type, and reaction timestamp.
+- Profile Ghoul Rep must use `get_my_ghoul_rep()` or an equivalently scoped own-user RPC; it must not query Wall tables directly and must not add public profile viewing.
 
 Production validation:
 - Production dry-run showed only `20260530000400_ghoul_rep_wall_reactions.sql`, migration apply succeeded, and read-only DB verification passed.
+- Production dry-run for `20260530000500_my_ghoul_rep_profile.sql` showed exactly that migration pending; migration apply succeeded and remote migration list shows it applied.
 - Local validation passed `47 PASS / 0 FAIL / 0 SKIP`.
-- Frontend production smoke passed for My Guild/Global Ghoul Rep chips, reaction detail panel, no CP/email visible, and no console errors.
+- Frontend production smoke passed for My Guild/Global Ghoul Rep chips, Profile own Ghoul Rep chip, reaction detail panel, no CP/email visible, and no console errors.
 
 ## Global Wall Scope Security Rules
 

@@ -1,5 +1,36 @@
 # Testing And Validation
 
+## Ghoul Rep Profile Polish Validation
+
+Ghoul Rep Profile display and Wall chip polish passed local validation, build/source validation, production migration rollout, and production smoke.
+
+Commands:
+- `npx.cmd supabase db reset`
+- `Get-Content supabase\tests\local_validation_anteiku.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres`
+- Focused local Docker `psql` check for `get_my_ghoul_rep()`
+- `npm.cmd run build`
+- `rg -n "member_cp|cp_snapshots|get_current_cp_roster|get_cp_leaderboard|get_admin_cp_rankings|update_member_cp|submit_my_cp_update|get_my_cp|service_role|service-role|storage|upload" src\pages\Profile.jsx src\services\profileService.js src\pages\GuildWall.jsx src\services\guildWallService.js supabase\migrations\20260530000500_my_ghoul_rep_profile.sql`
+- `rg -n "\.from\(|wall_posts|wall_comments|wall_post_reactions|wall_comment_reactions" src\pages\Profile.jsx src\services\profileService.js src\pages\GuildWall.jsx src\services\guildWallService.js`
+- `npx.cmd supabase db push --dry-run`
+- `npx.cmd supabase db push`
+- `npx.cmd supabase migration list`
+
+Result:
+- Local DB reset applied through `20260530000500_my_ghoul_rep_profile.sql`.
+- Existing local validation script passed; the Guild Wall/Ghoul Rep block remained `47 PASS / 0 FAIL / 0 SKIP`.
+- Focused local RPC validation returned `1` Ghoul Rep for an approved author and denied a pending user with `Approved profile required.`.
+- Build passed with the existing Vite chunk-size warning only.
+- Source validation found no protected CP references, no uploads/Storage/service-role paths, no direct Wall table reads/writes in the touched Wall/Profile path, and no public profile/profile-reaction/leaderboard implementation.
+- Production dry-run showed only `20260530000500_my_ghoul_rep_profile.sql` pending.
+- Production migration apply succeeded and remote migration list shows `20260530000500` applied.
+
+Production smoke:
+- Production serves the updated bundle with `get_my_ghoul_rep` and `profile-ghoul-rep-chip`.
+- Signed-in Owner opened Profile and saw a compact `2 Ghoul Rep` chip near rank/customize.
+- Signed-in Owner opened Wall and saw softened compact Ghoul Rep chips plus emoji reaction buttons.
+- No CP/private data appeared on Wall; Profile still shows only the user's existing own CP section.
+- No captured console errors.
+
 ## Ghoul Rep Wall Frontend Validation
 
 Ghoul Rep frontend UI passed build/source validation and production smoke.

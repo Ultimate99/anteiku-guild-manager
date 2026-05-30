@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-05-30 - Ghoul Rep Profile Polish
+
+- Added own Profile Ghoul Rep display and softened the Guild Wall / Global Wall Ghoul Rep chip.
+- Commit deployed: `bc9e30a feat: show ghoul rep on profile`.
+- Migration applied: `20260530000500_my_ghoul_rep_profile.sql`.
+- Source files changed:
+  - `supabase/migrations/20260530000500_my_ghoul_rep_profile.sql`
+  - `src/pages/Profile.jsx`
+  - `src/services/profileService.js`
+  - `src/styles/app.css`
+  - `src/i18n/en.js`
+  - `src/i18n/fr.js`
+  - `src/i18n/de.js`
+- Added `get_my_ghoul_rep()` as an own-user RPC that returns only the signed-in user's live Ghoul Rep number.
+- Profile now shows a compact `Ghoul Rep` chip near rank/customize.
+- Wall Ghoul Rep chips are smaller, lower-contrast, and no longer styled like loud rank/title badges.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Local DB reset and validation passed; focused own-RPC validation confirmed approved-user return and pending-user denial.
+- Production dry-run showed only the new own Ghoul Rep migration, migration apply succeeded, and production smoke passed.
+- No public profiles, profile reactions, Ghoul Rep leaderboard, normal CP exposure, `member_cp`, `cp_snapshots`, uploads, Storage, or CP/GvG/Analytics/3v3/cosmetics/member-status/auth/role/permission behavior changes were added.
+
 ## 2026-05-30 - Ghoul Rep Wall Frontend
 
 - Added Ghoul Rep chips and reaction details UI to Guild Wall / Global Wall.
@@ -35,7 +56,7 @@
 - Production dry-run showed only the Ghoul Rep migration, migration apply succeeded, and production DB/read-only verification passed.
 - `npm.cmd run build` was skipped because no frontend runtime code changed.
 - No CP/GvG/Analytics/3v3/cosmetics/member-status/auth/role/permission behavior changed, and no normal CP tables/RPCs, uploads, or Storage paths were added.
-- Frontend Ghoul Rep chip/reaction details UI remains pending.
+- Frontend Ghoul Rep chip/reaction details UI and own Profile Ghoul Rep display are live.
 
 ## 2026-05-30 - Global Wall Scope
 

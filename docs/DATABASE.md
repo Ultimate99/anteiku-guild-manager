@@ -1,10 +1,24 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented through Ghoul Rep Wall reactions. Remote production is live through `20260530000400_ghoul_rep_wall_reactions.sql`.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented through Ghoul Rep Profile display. Remote production is live through `20260530000500_my_ghoul_rep_profile.sql`.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
-Global Wall scope and Ghoul Rep backend support are implemented, locally validated, production applied, and read-only-production-smoke validated. Frontend Ghoul Rep chip/reaction-detail UI remains pending.
+Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, and own Profile Ghoul Rep display are implemented, locally validated, production applied, and production-smoke validated.
+
+## Own Profile Ghoul Rep
+
+Migration `20260530000500_my_ghoul_rep_profile.sql` is applied and verified in production.
+
+RPC behavior:
+- `get_my_ghoul_rep()` uses `auth.uid()`.
+- It requires an approved profile.
+- It returns only the authenticated caller's live Ghoul Rep number.
+- It delegates to `private.get_profile_ghoul_rep(p_profile_id uuid)`.
+
+Privacy:
+- The RPC returns no normal CP, `member_cp`, `cp_snapshots`, email, auth metadata, audit/admin/private metadata, uploads, or Storage data.
+- It does not implement public profiles, profile reactions, or a Ghoul Rep leaderboard.
 
 ## Ghoul Rep Wall Reactions
 
@@ -78,6 +92,7 @@ Security:
 27. `20260530000200_guild_wall_scope_hotfix.sql`
 28. `20260530000300_global_wall_scope.sql`
 29. `20260530000400_ghoul_rep_wall_reactions.sql`
+30. `20260530000500_my_ghoul_rep_profile.sql`
 
 Migration `20260523000100_member_roster_status_system.sql` is locally validated, staging validated, and production applied/verified as of Milestone 15E.
 
@@ -102,6 +117,8 @@ Migration `20260526000300_live_cp_growth_baseline_scope.sql` is implemented, loc
 Cosmetics catalog sync migrations `20260525213531`, `20260525213537`, and `20260525213900` are applied in production. Migration `20260525220522_cosmetics_frame_unlock_hotfix.sql` is applied in production and corrects frame unlock types so only `TXK_Arena*` and `TXK_KOF*` frames are manual while all other frames are free.
 
 Migration `20260528000100_three_v_three_team_finder.sql` is locally implemented/validated and production applied/verified as of Milestone 25D. It adds 3v3 Team Finder backend tables and RPCs.
+
+Migration `20260530000500_my_ghoul_rep_profile.sql` is locally implemented/validated and production applied/verified. It adds the own-user `get_my_ghoul_rep()` RPC for Profile display.
 
 ## Milestone 25B 3v3 Team Finder Backend
 

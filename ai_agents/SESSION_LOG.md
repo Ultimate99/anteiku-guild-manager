@@ -1,5 +1,25 @@
 # Session Log
 
+## 2026-05-30 - Ghoul Rep Profile Polish
+
+- Implemented and deployed own Profile Ghoul Rep display plus softened Wall Ghoul Rep chip styling.
+- Commit `bc9e30a feat: show ghoul rep on profile` changed:
+  - `supabase/migrations/20260530000500_my_ghoul_rep_profile.sql`
+  - `src/pages/Profile.jsx`
+  - `src/services/profileService.js`
+  - `src/styles/app.css`
+  - `src/i18n/en.js`
+  - `src/i18n/fr.js`
+  - `src/i18n/de.js`
+- Added `get_my_ghoul_rep()` as a focused own-user RPC that uses `auth.uid()`, requires an approved profile, and returns only the caller's live Ghoul Rep number.
+- Profile now shows a compact `Ghoul Rep` chip near the rank/customize area.
+- Guild Wall and Global Wall Ghoul Rep chips were softened to be smaller, lower-contrast social stats.
+- Local DB reset passed and existing local validation passed; focused local RPC validation confirmed own rep value and pending denial.
+- Production dry-run showed only `20260530000500_my_ghoul_rep_profile.sql`; migration apply and remote migration verification passed.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production smoke passed for Profile Ghoul Rep chip, softened Wall chip, Wall emoji reactions, no console errors, and no CP/privacy regression.
+- No public profiles, profile reactions, Ghoul Rep leaderboard, normal CP exposure, `member_cp`, `cp_snapshots`, uploads, Storage, CP/GvG/Analytics/3v3/cosmetics/member-status/auth/role/permission behavior changes were added.
+
 ## 2026-05-30 - Ghoul Rep Wall Frontend
 
 - Implemented and deployed frontend Ghoul Rep chips and reaction details UI.

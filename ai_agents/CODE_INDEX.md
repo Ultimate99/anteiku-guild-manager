@@ -1,5 +1,14 @@
 # Code Index
 
+## Ghoul Rep Profile Polish
+
+- `supabase/migrations/20260530000500_my_ghoul_rep_profile.sql`: Adds `get_my_ghoul_rep()` as a minimal own-user RPC that uses `auth.uid()`, requires an approved profile, delegates to the private Ghoul Rep helper, and returns only the caller's live Ghoul Rep number.
+- `src/services/profileService.js`: Adds RPC-only `loadMyGhoulRep()` for Profile.
+- `src/pages/Profile.jsx`: Loads own Ghoul Rep and renders a compact chip near rank/customize without adding public profiles or profile reactions.
+- `src/styles/app.css`: Softens Wall Ghoul Rep chips and adds the shared Profile Ghoul Rep chip styling.
+- `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`: Add `profile.ghoulRep`.
+- Production status: commit `bc9e30a feat: show ghoul rep on profile` is deployed; production DB has `20260530000500_my_ghoul_rep_profile.sql` applied.
+
 ## Ghoul Rep Wall Frontend
 
 - `src/services/guildWallService.js`: Maps `author_ghoul_rep` into author payloads and adds RPC-only `loadReactionDetails({ targetType, targetId, reactionType })` using `get_wall_reaction_details(...)`.
@@ -12,7 +21,7 @@
 
 - `supabase/migrations/20260530000400_ghoul_rep_wall_reactions.sql`: Adds live-calculated Ghoul Rep for Guild Wall and Global Wall by counting distinct non-self reactors per post/comment target, excluding deleted content and removed reactions. Replaces `get_guild_wall_feed(...)` to include `author_ghoul_rep` for post/comment authors and adds `get_wall_reaction_details(p_target_type, p_target_id, p_reaction_type)` for safe reaction-user detail UI.
 - `supabase/tests/local_validation_anteiku.sql`: Extends Guild Wall validation for post reactions, comment reactions, multiple reaction types from one user counting once per target, same user across multiple targets counting separately, self-reaction exclusion, removed/deleted reaction effects, safe reaction detail payloads, wrong-guild/pending denial, no CP fields, and active Owner count.
-- Production status: production DB has `20260530000400_ghoul_rep_wall_reactions.sql` applied and verified. No frontend Ghoul Rep chip/reaction-detail UI is implemented yet.
+- Production status: production DB has `20260530000400_ghoul_rep_wall_reactions.sql` applied and verified. Frontend Wall Ghoul Rep chip/reaction-detail UI and Profile own Ghoul Rep display are live.
 
 ## Global Wall Scope
 
