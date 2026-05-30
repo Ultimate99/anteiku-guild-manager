@@ -1,5 +1,31 @@
 # Project State
 
+## Social Profile Surfaces Polish Live
+
+Public Profile and Guild Wall social surfaces received a frontend-only polish pass and are live in production.
+
+Production rollout:
+- Commit `c92246c style: polish social profile surfaces` was pushed to `main`.
+- Production serves the updated bundle containing the polished public profile hero, compact Ghoul Rep chip treatment, and tighter Guild Wall cards.
+
+Behavior:
+- Public Member Profile keeps the approved authenticated `/members/:profileSlug` flow and safe payload, but now presents avatar/frame, identity, safe status chips, and Ghoul Rep as a cleaner compact identity surface.
+- Public 3v3 Combined CP remains labeled as public 3v3 CP and is not normal protected CP.
+- Guild Wall / Global Wall scope, composer, post cards, comment headers, reaction buttons, and reaction detail panels were tightened for a more intentional mobile/social layout.
+- Own Profile Ghoul Rep chip styling remains aligned with the Wall/Public Profile social stat treatment.
+- Ghoul Rep leaderboard was investigated only; no safe leaderboard RPC exists yet, so no leaderboard UI was added.
+
+Security/CP privacy:
+- Frontend-only UI/layout/style changes; no SQL, Supabase/RLS/RPC, service, auth, role/permission, CP, GvG, Analytics, 3v3, cosmetics, member-status, upload, Storage, or package behavior changed.
+- Public profile and Wall paths remain RPC-only through the existing services.
+- No normal CP values, `member_cp`, `cp_snapshots`, CP RPCs, email, auth IDs, admin permissions, audit/private metadata, uploads, or Storage data were added or exposed.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found only `src/pages/PublicMemberProfile.jsx`, `src/pages/GuildWall.jsx`, and `src/styles/app.css` changed.
+- Guard search found no protected CP/storage/direct-table patterns in the touched files.
+- Production smoke passed for `/members/toji`, public profile Ghoul Rep, profile reaction details, Guild Wall `Global` and `My Org` scopes, emoji reaction buttons, no visible CP/email/private tokens, no horizontal overflow in the in-app viewport, and no captured console errors.
+
 ## Ranking Public Profile Links Live
 
 Ranking to Public Member Profile links are live in production.

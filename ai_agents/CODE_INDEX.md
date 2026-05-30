@@ -1,5 +1,13 @@
 # Code Index
 
+## Social Profile Surfaces Polish
+
+- `src/pages/PublicMemberProfile.jsx`: Frontend-only presentation polish for the authenticated public profile hero. Ghoul Rep now sits in the identity area as a compact social stat chip; safe public 3v3 Combined CP remains separate and labeled.
+- `src/pages/GuildWall.jsx`: Frontend-only presentation polish for Wall post/comment author rows and metadata grouping. Existing RPC-only feed/reaction/comment/moderation behavior is unchanged.
+- `src/styles/app.css`: Adds tighter mobile-friendly Public Profile and Guild Wall styling for scope chips, composer, post cards, comment cards, reaction buttons/details, and Ghoul Rep chips.
+- Ghoul Rep leaderboard investigation: no safe public leaderboard RPC/payload exists yet, so no leaderboard UI was added. Future leaderboard work needs an explicit backend/RPC milestone.
+- Production status: commit `c92246c style: polish social profile surfaces` is deployed; production smoke passed.
+
 ## Ranking Public Profile Links
 
 - `supabase/migrations/20260530000700_ranking_public_profile_links.sql`: Production-applied focused RPC migration adding safe `profile_slug` to `get_member_cp_rankings(p_scope)` without returning CP values or private CP metadata.

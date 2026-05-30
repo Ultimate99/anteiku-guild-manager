@@ -1,5 +1,19 @@
 # Session Log
 
+## 2026-05-30 - Social Profile Surfaces Polish
+
+- Implemented and deployed a frontend-only polish pass for Public Member Profile and Guild Wall social surfaces.
+- Commit deployed:
+  - `c92246c style: polish social profile surfaces`
+- Updated `src/pages/PublicMemberProfile.jsx` so the public profile hero presents avatar/frame, identity, safe chips, and Ghoul Rep as a compact identity surface.
+- Updated `src/pages/GuildWall.jsx` with cleaner post/comment author rows and safer ASCII scope/date separation.
+- Updated `src/styles/app.css` for tighter Public Profile, Guild Wall, reaction, comment, scope, composer, and Ghoul Rep chip styling.
+- Investigated Ghoul Rep leaderboard feasibility only; no safe public leaderboard RPC exists, so no leaderboard UI was added.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no SQL/migrations, Supabase/RLS/RPC, services, package/PWA/service-worker, auth, CP, GvG, Analytics, 3v3, cosmetics, member-status, uploads, or Storage changes.
+- Guard search found no `member_cp`, `cp_snapshots`, CP RPC, direct `.from(...)`, upload, Storage, or service-role paths in the touched files.
+- Production smoke passed for `/members/toji`, profile reaction details, Guild Wall `Global` / `My Org`, emoji reaction buttons, Ghoul Rep chips, no CP/email/private tokens, no in-app viewport overflow, and no captured console errors.
+
 ## 2026-05-30 - Ranking Public Profile Links
 
 - Implemented and deployed Ranking to Public Member Profile links.

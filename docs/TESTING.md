@@ -1,5 +1,27 @@
 # Testing
 
+## Social Profile Surfaces Polish
+
+Social Profile Surfaces polish passed build/source validation, deployment, and production smoke.
+
+Build/source:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found only `src/pages/PublicMemberProfile.jsx`, `src/pages/GuildWall.jsx`, and `src/styles/app.css` changed.
+- No SQL/migration, Supabase/RLS/RPC, service, auth, CP, GvG, Analytics, 3v3, cosmetics, member-status, PWA/service-worker, package, upload, or Storage files changed.
+- Guard search found no `member_cp`, `cp_snapshots`, CP RPCs, direct `.from(...)`, uploads, Storage, or service-role paths in the touched frontend files.
+
+Production:
+- Commit deployed: `c92246c style: polish social profile surfaces`.
+- Production serves the updated Public Profile and Guild Wall social styling.
+
+Production smoke:
+- Signed-in Owner opened `/members/toji`; profile identity, avatar/frame, safe chips, compact Ghoul Rep, public 3v3 CP label, reactions, and normal-CP privacy copy rendered.
+- Public profile reaction details opened and showed safe fields/empty state only.
+- Guild Wall opened; `Global` and `My Org` scopes loaded, emoji reactions rendered, Ghoul Rep chips remained visible, and no protected CP/email/private tokens appeared.
+- No horizontal overflow was detected in the in-app browser viewport.
+- No captured console errors.
+- Ghoul Rep leaderboard was not implemented because no safe public leaderboard RPC exists yet.
+
 ## Ranking Public Profile Links
 
 Ranking to Public Member Profile links passed local DB validation, build/source validation, deployment, and production smoke.

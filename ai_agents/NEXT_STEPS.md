@@ -2,13 +2,21 @@
 
 ## Current Recommendation
 
-Ranking to Public Member Profile links are live in production.
+Social Profile Surfaces polish is live in production.
 
 Recommended next step:
 - Continue with the next user-prioritized milestone.
 - Optional polish later:
-  - Add a dedicated Ghoul Rep leaderboard only if explicitly approved.
+  - Add a dedicated Ghoul Rep leaderboard only after an approved backend/RPC milestone exposes a safe leaderboard payload.
   - Keep any future Ghoul Rep feature backed by RPCs; no direct wall table reads and no CP exposure.
+
+Recorded Social Profile Surfaces polish status:
+- Commit `c92246c style: polish social profile surfaces` is pushed to `main` and production serves the updated bundle.
+- Public Profile now presents avatar/frame, identity, safe status chips, and Ghoul Rep in a cleaner compact hero.
+- Guild Wall / Global Wall scope chips, composer, post cards, comment headers, reaction buttons, and reaction detail panels were tightened with dark/crimson social styling.
+- Existing Wall/Public Profile RPC-only behavior, Ghoul Rep logic, scope behavior, reactions/comments/moderation, and public 3v3 Combined CP behavior were not changed.
+- Ghoul Rep leaderboard feasibility was investigated only; no safe public leaderboard RPC exists, so no frontend leaderboard was added.
+- `npm.cmd run build` passed, source validation found no SQL/Supabase/service/security changes or protected CP paths, and production smoke passed for `/members/toji`, Wall `Global`/`My Org`, reaction details, no visible CP/email/private tokens, no in-app viewport overflow, and no captured console errors.
 
 Recorded Ranking profile-link status:
 - Production DB received `20260530000700_ranking_public_profile_links.sql`.

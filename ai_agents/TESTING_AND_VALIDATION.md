@@ -1,5 +1,28 @@
 # Testing And Validation
 
+## Social Profile Surfaces Polish Validation
+
+Social Profile Surfaces polish passed build/source validation, production deployment, and production smoke.
+
+Commands:
+- `npm.cmd run build`
+- `git diff --name-only`
+- `rg -n "member_cp|cp_snapshots|get_my_cp|get_current_cp_roster|get_cp_leaderboard|get_admin_cp|get_my_cp|cp_value|storage|upload|service_role|service-role|\\.from\\(" src\\pages\\PublicMemberProfile.jsx src\\pages\\GuildWall.jsx src\\styles\\app.css`
+
+Result:
+- Build passed with the existing Vite chunk-size warning only.
+- Source validation found only `src/pages/PublicMemberProfile.jsx`, `src/pages/GuildWall.jsx`, and `src/styles/app.css` changed.
+- No SQL/migration, Supabase/RLS/RPC, service, auth, role/permission, CP, GvG, Analytics, 3v3, cosmetics, member-status, PWA/service-worker, package, upload, or Storage files changed.
+- Guard search found no protected CP/storage/direct-table patterns in the touched files.
+
+Production smoke:
+- Production serves commit `c92246c style: polish social profile surfaces`.
+- Signed-in Owner opened `/members/toji`; the authenticated Public Member Profile rendered with avatar/frame, identity, safe status chips, compact Ghoul Rep, public 3v3 CP label, profile reactions, and the normal-CP privacy notice.
+- Profile reaction details opened and showed safe empty/detail state without email, CP, auth, admin, audit, or private metadata.
+- Guild Wall opened; `Global` and `My Org` scopes loaded, emoji reaction buttons rendered, Ghoul Rep chips remained visible, and no protected CP/email/private tokens appeared in the smoke snapshot.
+- No horizontal overflow was detected in the in-app browser viewport and no console errors were captured.
+- Ghoul Rep leaderboard was not implemented because there is no safe public leaderboard RPC yet.
+
 ## Ranking Public Profile Links Validation
 
 Ranking to Public Member Profile links passed local DB validation, build/source validation, production migration rollout, frontend deployment, and production smoke.
