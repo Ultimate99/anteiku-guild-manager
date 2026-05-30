@@ -20,6 +20,29 @@ import {
   submitMyCpUpdate,
 } from '../services/cpWindowService.js';
 import { loadMyGhoulRep, updateMyProfile } from '../services/profileService.js';
+import {
+  createMyTestPushNotification,
+  disablePushSubscription,
+  getCurrentPushSubscription,
+  getNotificationPermission,
+  isPushSupported,
+  loadMyPushPreferences,
+  registerPushSubscription,
+  requestNotificationPermission,
+  subscribeToPush,
+  updateMyPushPreferences,
+} from '../services/pushNotificationService.js';
+
+const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY ?? '';
+
+const PUSH_PREFERENCE_KEYS = [
+  ['notify_gvg', 'pushNotifications.preferences.gvg'],
+  ['notify_cp_window', 'pushNotifications.preferences.cpWindow'],
+  ['notify_3v3', 'pushNotifications.preferences.threeVThree'],
+  ['notify_wall_comments', 'pushNotifications.preferences.wallComments'],
+  ['notify_wall_reactions', 'pushNotifications.preferences.wallReactions'],
+  ['notify_profile_reactions', 'pushNotifications.preferences.profileReactions'],
+];
 
 function findCosmeticByKey(items, key) {
   return items?.find((item) => item.key === key) ?? null;
@@ -62,9 +85,20 @@ export function Profile() {
   const [cosmeticsError, setCosmeticsError] = useState('');
   const [cosmeticsPickerOpen, setCosmeticsPickerOpen] = useState(false);
   const [cosmeticsPickerTab, setCosmeticsPickerTab] = useState('avatars');
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [pushSupported, setPushSupported] = useState(false);
+  const [pushPermission, setPushPermission] = useState(getNotificationPermission());
+  const [pushEndpoint, setPushEndpoint] = useState('');
+  const [pushPreferences, setPushPreferences] = useState(null);
+  const [pushLoading, setPushLoading] = useState(false);
+  const [pushSaving, setPushSaving] = useState(false);
+  const [pushMessage, setPushMessage] = useState('');
+  const [pushError, setPushError] = useState('');
   const rosterStatus = membership?.roster_status ?? 'active';
   const rankVisualKey = rankSummary?.visualKey ?? 'unranked';
   const canSubmitCp = Boolean(cpWindowState?.can_submit);
+  const pushConfigured = Boolean(VAPID_PUBLIC_KEY);
+  const pushEnabled = Boolean(pushEndpoint);
   const cpWindowMessage =
     cpWindowState?.reason === 'not_eligible_roster_status' ? t('profile.cpNotEligible') : t('profile.cpWindowClosed');
 
@@ -238,6 +272,24 @@ export function Profile() {
     };
   }, [cosmeticsPickerOpen]);
 
+  useEffect(() => {
+    if (!settingsOpen) {
+      return undefined;
+    }
+
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') {
+        setSettingsOpen(false);
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [settingsOpen]);
+
   function startEditing() {
     setIgnDraft(profile?.ign ?? '');
     setProfileMessage('');
@@ -258,6 +310,11 @@ export function Profile() {
     if (!cosmeticsState && !cosmeticsLoading) {
       refreshCosmeticsPanel();
     }
+  }
+
+  function openSettingsPanel() {
+    setSettingsOpen(true);
+    refreshPushSettings();
   }
 
   async function saveProfile(event) {
@@ -327,6 +384,148 @@ export function Profile() {
       setCosmeticsError(loadError.message || t('profile.cosmeticsLoadError'));
     } finally {
       setCosmeticsLoading(false);
+    }
+  }
+
+  async function refreshPushSettings({ showMessage = false } = {}) {
+    setPushLoading(true);
+    setPushError('');
+    if (!showMessage) {
+      setPushMessage('');
+    }
+
+    const supported = isPushSupported();
+    setPushSupported(supported);
+    setPushPermission(getNotificationPermission());
+
+    try {
+      const [nextPreferences, currentSubscription] = await Promise.all([
+        loadMyPushPreferences(),
+        supported ? getCurrentPushSubscription().catch(() => null) : Promise.resolve(null),
+      ]);
+
+      setPushPreferences(nextPreferences);
+      setPushEndpoint(currentSubscription?.endpoint ?? '');
+      if (showMessage) {
+        setPushMessage(t('pushNotifications.updated'));
+      }
+    } catch (loadError) {
+      setPushPreferences(null);
+      setPushError(loadError.message || t('pushNotifications.loadError'));
+    } finally {
+      setPushLoading(false);
+    }
+  }
+
+  async function enablePushNotifications() {
+    setPushSaving(true);
+    setPushError('');
+    setPushMessage('');
+
+    try {
+      if (!pushConfigured) {
+        throw new Error(t('pushNotifications.configMissing'));
+      }
+
+      const nextPermission =
+        getNotificationPermission() === 'default'
+          ? await requestNotificationPermission()
+          : getNotificationPermission();
+
+      setPushPermission(nextPermission);
+
+      if (nextPermission !== 'granted') {
+        throw new Error(
+          nextPermission === 'denied'
+            ? t('pushNotifications.permissionDeniedHint')
+            : t('pushNotifications.permissionRequired'),
+        );
+      }
+
+      const subscription = await subscribeToPush({ vapidPublicKey: VAPID_PUBLIC_KEY });
+      const registrationResult = await registerPushSubscription(subscription);
+      setPushEndpoint(subscription.endpoint);
+      setPushPreferences(registrationResult?.preferences ?? registrationResult);
+      setPushMessage(t('pushNotifications.enabled'));
+    } catch (enableError) {
+      setPushError(enableError.message || t('pushNotifications.actionFailed'));
+    } finally {
+      setPushSaving(false);
+    }
+  }
+
+  async function disableCurrentPushSubscription() {
+    setPushSaving(true);
+    setPushError('');
+    setPushMessage('');
+
+    try {
+      const currentSubscription = await getCurrentPushSubscription().catch(() => null);
+      const endpoint = currentSubscription?.endpoint ?? pushEndpoint;
+
+      if (endpoint) {
+        const disableResult = await disablePushSubscription(endpoint);
+        setPushPreferences(disableResult?.preferences ?? disableResult);
+      }
+
+      if (currentSubscription) {
+        await currentSubscription.unsubscribe();
+      }
+
+      setPushEndpoint('');
+      setPushMessage(t('pushNotifications.disabled'));
+    } catch (disableError) {
+      setPushError(disableError.message || t('pushNotifications.actionFailed'));
+    } finally {
+      setPushSaving(false);
+    }
+  }
+
+  function updatePushPreferenceDraft(key, checked) {
+    setPushPreferences((current) => ({
+      notify_gvg: true,
+      notify_cp_window: true,
+      notify_3v3: true,
+      notify_wall_comments: true,
+      notify_wall_reactions: false,
+      notify_profile_reactions: false,
+      ...(current ?? {}),
+      [key]: checked,
+    }));
+  }
+
+  async function savePushPreferences() {
+    if (!pushPreferences) {
+      return;
+    }
+
+    setPushSaving(true);
+    setPushError('');
+    setPushMessage('');
+
+    try {
+      const nextPreferences = await updateMyPushPreferences(pushPreferences);
+      setPushPreferences(nextPreferences);
+      setPushMessage(t('pushNotifications.preferencesSaved'));
+    } catch (saveError) {
+      setPushError(saveError.message || t('pushNotifications.actionFailed'));
+    } finally {
+      setPushSaving(false);
+    }
+  }
+
+  async function sendTestPushNotification() {
+    setPushSaving(true);
+    setPushError('');
+    setPushMessage('');
+
+    try {
+      const result = await createMyTestPushNotification();
+      setPushMessage(result?.queued ? t('pushNotifications.testQueued') : t('pushNotifications.testNotQueued'));
+    } catch (testError) {
+      setPushError(testError.message || t('pushNotifications.actionFailed'));
+    } finally {
+      setPushSaving(false);
     }
   }
 
@@ -445,6 +644,9 @@ export function Profile() {
               disabled={cosmeticsLoading && !cosmeticsState}
             >
               {cosmeticsLoading && !cosmeticsState ? t('common.loading') : t('cosmetics.customize')}
+            </button>
+            <button type="button" className="secondary-action compact-action profile-settings-action" onClick={openSettingsPanel}>
+              {t('profile.settings')}
             </button>
           </div>
         </div>
@@ -618,6 +820,121 @@ export function Profile() {
             {!cosmeticsLoading && cosmeticsState && !cosmeticsState.avatars.length && !cosmeticsState.frames.length ? (
               <p className="muted-line compact-state-line">{t('profile.noCosmetics')}</p>
             ) : null}
+          </section>
+        </div>
+      ) : null}
+
+      {settingsOpen ? (
+        <div
+          className="cosmetic-modal-backdrop profile-settings-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setSettingsOpen(false);
+            }
+          }}
+        >
+          <section className="cosmetic-modal profile-settings-modal" role="dialog" aria-modal="true" aria-label={t('profile.settings')}>
+            <div className="cosmetic-modal-header">
+              <div>
+                <StatusBadge tone={pushEnabled ? 'success' : 'muted'}>
+                  {pushEnabled ? t('pushNotifications.enabledStatus') : t('pushNotifications.disabledStatus')}
+                </StatusBadge>
+                <h3>{t('profile.settings')}</h3>
+                <p>{t('pushNotifications.optionalBody')}</p>
+              </div>
+              <div className="cosmetic-modal-actions">
+                <button type="button" className="secondary-action compact-action" onClick={() => refreshPushSettings()} disabled={pushLoading || pushSaving}>
+                  {pushLoading ? t('common.loading') : t('common.refresh')}
+                </button>
+                <button type="button" className="secondary-action compact-action" onClick={() => setSettingsOpen(false)}>
+                  {t('common.close')}
+                </button>
+              </div>
+            </div>
+
+            <div className="push-settings-card">
+              <div className="push-settings-heading">
+                <div>
+                  <h4>{t('pushNotifications.title')}</h4>
+                  <p>{t('pushNotifications.body')}</p>
+                </div>
+              </div>
+
+              <div className="push-status-grid">
+                <div>
+                  <span>{t('pushNotifications.support')}</span>
+                  <strong>{pushSupported ? t('pushNotifications.supported') : t('pushNotifications.notSupported')}</strong>
+                </div>
+                <div>
+                  <span>{t('pushNotifications.permission')}</span>
+                  <strong>{t(`pushNotifications.permissionStates.${pushPermission}`)}</strong>
+                </div>
+                <div>
+                  <span>{t('pushNotifications.status')}</span>
+                  <strong>{pushEnabled ? t('pushNotifications.enabledStatus') : t('pushNotifications.disabledStatus')}</strong>
+                </div>
+              </div>
+
+              {!pushConfigured ? <p className="warning-line">{t('pushNotifications.configMissing')}</p> : null}
+              {pushPermission === 'denied' ? <p className="warning-line">{t('pushNotifications.permissionDeniedHint')}</p> : null}
+              {!pushSupported ? <p className="muted-line compact-state-line">{t('pushNotifications.unsupportedBody')}</p> : null}
+              {pushMessage ? <p className="notice-line">{pushMessage}</p> : null}
+              {pushError ? <p className="error-line">{pushError}</p> : null}
+
+              <div className="push-action-row">
+                <button
+                  type="button"
+                  className="primary-action compact-action"
+                  onClick={enablePushNotifications}
+                  disabled={!pushSupported || !pushConfigured || pushSaving || pushLoading || pushPermission === 'denied'}
+                >
+                  {pushSaving ? t('common.working') : t('pushNotifications.enable')}
+                </button>
+                <button
+                  type="button"
+                  className="secondary-action compact-action"
+                  onClick={disableCurrentPushSubscription}
+                  disabled={pushSaving || pushLoading || !pushEnabled}
+                >
+                  {t('pushNotifications.disable')}
+                </button>
+                <button
+                  type="button"
+                  className="secondary-action compact-action"
+                  onClick={sendTestPushNotification}
+                  disabled={pushSaving || pushLoading || !pushEnabled}
+                >
+                  {t('pushNotifications.sendTest')}
+                </button>
+              </div>
+
+              <div className="push-preference-list" aria-label={t('pushNotifications.preferencesTitle')}>
+                {PUSH_PREFERENCE_KEYS.map(([key, labelKey]) => (
+                  <label className="push-preference-row" key={key}>
+                    <span>
+                      <strong>{t(labelKey)}</strong>
+                      <small>{t(`pushNotifications.preferenceHelp.${key}`)}</small>
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={Boolean(pushPreferences?.[key])}
+                      onChange={(event) => updatePushPreferenceDraft(key, event.target.checked)}
+                      disabled={pushLoading || pushSaving || !pushPreferences}
+                    />
+                  </label>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                className="primary-action push-save-preferences"
+                onClick={savePushPreferences}
+                disabled={pushLoading || pushSaving || !pushPreferences}
+              >
+                {pushSaving ? t('common.working') : t('pushNotifications.savePreferences')}
+              </button>
+            </div>
           </section>
         </div>
       ) : null}

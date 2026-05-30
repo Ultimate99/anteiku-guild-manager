@@ -1,5 +1,15 @@
 # Code Index
 
+## Milestone 28C Push Notification Frontend
+
+- `src/services/pushNotificationService.js`: RPC-only frontend push wrapper. Handles support/permission helpers, browser PushManager subscription, push subscription registration, subscription disable, own preference load/update, and self-test enqueue. It does not use direct table access or service-role keys.
+- `src/pages/Profile.jsx`: Adds Profile Settings modal with Push Notifications status, enable/disable/test controls, and preference toggles. Existing Profile CP, cosmetics, Ghoul Rep, and inline IGN behavior remain unchanged.
+- `public/sw.js`: Adds `push` and `notificationclick` handlers while preserving the existing static/app-shell cache strategy. Notification clicks focus/open a safe same-origin route.
+- `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`: Add Push Notifications and Profile Settings labels.
+- `src/styles/app.css`: Adds dark/crimson Profile Settings and Push Notifications modal styling.
+- `.env.example`: Documents `VITE_VAPID_PUBLIC_KEY` as the only frontend VAPID value.
+- Status: local build/source validation passed. Production rollout is blocked until VAPID keys/secrets and the Push Notifications DB migration/function deploy gate are complete.
+
 ## Milestone 28B Push Notifications Foundation
 
 - `supabase/migrations/20260530000800_push_notifications_foundation.sql`: Adds the local-only push notification backend foundation: `push_subscriptions`, `push_notification_preferences`, `push_notification_outbox`, RLS/no-direct-client grants, fixed server-generated payload helpers, approved-recipient eligibility, and RPCs for own subscription registration, subscription disable, own preferences, preference update, and self-test notification enqueue.

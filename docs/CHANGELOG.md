@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-05-30 - Milestone 28C Push Notification Frontend
+
+- Added local Push Notification settings UI under Profile Settings.
+- Added `src/services/pushNotificationService.js` with RPC-only push subscription, preference, and self-test wrappers.
+- Added service worker `push` and `notificationclick` handlers without changing Supabase/API/Auth cache behavior.
+- Added `VITE_VAPID_PUBLIC_KEY` placeholder to `.env.example`; no VAPID private key was committed.
+- Added EN/FR/DE labels and dark/crimson styling for the push settings modal.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production deploy is blocked until VAPID config, production DB migration, Edge Function deploy, and controlled smoke gates are complete.
+
 ## 2026-05-30 - Milestone 28B Push Notifications Foundation
 
 - Added local backend/RPC foundation for Push Notifications.

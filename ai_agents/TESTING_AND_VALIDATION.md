@@ -1,5 +1,33 @@
 # Testing And Validation
 
+## Milestone 28C Push Notification Frontend Validation
+
+Push Notification frontend/settings and service worker handling passed local build/source validation.
+
+Command:
+- `npm.cmd run build`
+
+Result:
+- Build passed with the existing Vite chunk-size warning only.
+
+Source validation:
+- New push frontend path uses RPC wrappers only.
+- No direct push table reads/writes were added.
+- No `member_cp`, `cp_snapshots`, normal CP RPCs, service-role key, VAPID private key, or direct table access paths were found in the new push service/service-worker/env path.
+- Existing service worker app-shell/static caching remained in place; no Supabase RPC/API/Auth response caching was added.
+- No CP/GvG/Analytics/3v3/Guild Wall/cosmetics/member-status/auth/role/permission behavior changed.
+
+Configuration status:
+- `.env.example` documents `VITE_VAPID_PUBLIC_KEY`.
+- `.env.local` does not currently include `VITE_VAPID_PUBLIC_KEY`.
+- Supabase Edge Function secrets are still required before real push smoke: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT`.
+
+Rollout status:
+- No production DB dry-run/apply was run during 28C.
+- No Edge Function deploy was run.
+- No frontend deploy was run.
+- No controlled production push smoke was run.
+
 ## Milestone 28B Push Notifications Foundation Validation
 
 Push Notifications backend/RPC and Edge Function foundation passed local validation only.

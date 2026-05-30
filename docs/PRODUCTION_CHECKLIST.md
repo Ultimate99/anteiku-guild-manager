@@ -54,11 +54,14 @@ Current production checkpoint:
 
 Push Notifications pending checkpoint:
 - Milestone 28B Push Notifications foundation is local-only and validated.
+- Milestone 28C Push Notifications frontend/settings and service worker handling are local-only and build/source validated.
 - Production has not received `20260530000800_push_notifications_foundation.sql`.
 - `send-push-notifications` Edge Function is not deployed.
 - Required Edge Function secrets must be configured before deploy/use: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT`.
+- Frontend/Vercel needs `VITE_VAPID_PUBLIC_KEY`.
 - Do not send controlled production test notifications without explicit approval.
 - Do not expose service-role keys to frontend/Vercel public env.
+- Do not expose `VAPID_PRIVATE_KEY` to frontend/Vercel public env or committed files.
 - Do not include normal CP values, email, auth IDs, audit/admin/private metadata, or arbitrary user content in push payloads.
 
 Controlled guild onboarding checkpoint:

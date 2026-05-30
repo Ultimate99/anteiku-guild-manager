@@ -1,5 +1,23 @@
 # Security Rules
 
+## Push Notification Frontend Security Rules
+
+Milestone 28C Push Notification frontend/settings is implemented locally only and must not be deployed until the target database has `20260530000800_push_notifications_foundation.sql` and the Edge Function/secrets are ready.
+
+Frontend rules:
+- Use `src/services/pushNotificationService.js` RPC wrappers only.
+- Do not direct-read or direct-write push tables.
+- `VITE_VAPID_PUBLIC_KEY` is the only browser-exposed VAPID value.
+- `VAPID_PRIVATE_KEY` must never be committed, printed in docs/logs, added to frontend code, or placed in Vercel public env.
+- Service worker push handling must not cache Supabase RPC/API/Auth responses.
+- Service worker notification payloads must stay safe title/body/type/route data only.
+
+UI rules:
+- Push settings live under the user's own Profile Settings modal.
+- Enable/disable controls affect the current browser subscription.
+- Preference toggles update only the authenticated user's preferences through backend RPC.
+- Self-test only queues a notification for the authenticated user.
+
 ## Push Notification Security Rules
 
 Milestone 28B Push Notifications foundation is implemented and locally validated only. Production/staging do not have `20260530000800_push_notifications_foundation.sql` yet.

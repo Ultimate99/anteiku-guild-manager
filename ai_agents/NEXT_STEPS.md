@@ -2,6 +2,38 @@
 
 ## Current Recommendation
 
+Milestone 28C Push Notification frontend/settings is implemented locally and build/source validated. Production rollout is blocked by missing VAPID configuration and unapplied production DB migration.
+
+Recommended next step:
+- Generate VAPID keys locally without committing the private key. Safe command:
+  - `npx.cmd web-push generate-vapid-keys`
+- Configure:
+  - Frontend/Vercel: `VITE_VAPID_PUBLIC_KEY`
+  - Supabase Edge Function secrets: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`
+- Then run the production-direct gate:
+  - link production project `mzflfyxxkascrfpteexz`
+  - `npx.cmd supabase migration list`
+  - `npx.cmd supabase db push --dry-run`
+  - proceed only if exactly `20260530000800_push_notifications_foundation.sql` is pending
+  - apply migration, verify tables/RLS/RPCs/Owner count
+  - deploy `send-push-notifications`
+  - commit/push frontend only after DB/function readiness
+
+Do not yet:
+- Push/deploy the frontend bundle.
+- Apply production DB migration without clean dry-run.
+- Deploy the Edge Function without VAPID secrets.
+- Send a production self-test notification without explicit approval.
+
+Recorded Milestone 28C status:
+- Added RPC-only push notification frontend service.
+- Added Profile Settings modal with Push Notifications controls/preferences.
+- Added service worker `push` and `notificationclick` handling.
+- Added `VITE_VAPID_PUBLIC_KEY` placeholder to `.env.example`.
+- `npm.cmd run build` passed; source checks found no CP/private key/service-role/direct-table paths in the new push frontend path.
+
+## Previous Recommendation
+
 Milestone 28B Push Notifications foundation is implemented and locally validated only.
 
 Recommended next step:

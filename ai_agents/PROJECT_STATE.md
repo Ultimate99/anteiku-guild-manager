@@ -1,5 +1,34 @@
 # Project State
 
+## Milestone 28C Push Notification Frontend Local
+
+Push Notification frontend/settings and service worker handling are implemented locally and build/source validated. Production rollout is blocked until the Push Notifications DB migration, Edge Function secrets, and sender deployment are ready.
+
+Implemented locally:
+- `src/services/pushNotificationService.js` with RPC-only wrappers for push registration, disable, preference load/update, and self-test enqueue.
+- Profile Settings modal opened from the Profile identity header.
+- Push Notifications settings section with support/permission/enabled status, enable/disable/test actions, and preference toggles.
+- `public/sw.js` push and notification-click handlers.
+- `VITE_VAPID_PUBLIC_KEY` placeholder documented in `.env.example`.
+
+Security/behavior:
+- Frontend uses only push RPCs; no direct push table reads/writes.
+- VAPID private key is not in frontend or committed files.
+- Service worker cache behavior remains app-shell/static only; no Supabase RPC/API/Auth response caching was added.
+- No CP/GvG/Analytics/3v3/Guild Wall/cosmetics/member-status/auth/role/permission behavior changed.
+- Notification payload display remains fixed title/body/route from the outbox/sender path.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source checks on the push service, service worker, and env example found no `member_cp`, `cp_snapshots`, normal CP RPCs, service-role key, VAPID private key, or direct table access paths.
+
+Rollout blockers:
+- `.env.local` and `.env.example` do not contain `VITE_VAPID_PUBLIC_KEY`.
+- Production/staging do not have `20260530000800_push_notifications_foundation.sql` yet.
+- `send-push-notifications` Edge Function is not deployed.
+- Required Supabase Edge Function secrets are still needed: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT`.
+- No production dry-run, migration apply, Edge Function deploy, frontend deploy, or controlled push smoke was performed.
+
 ## Milestone 28B Push Notifications Foundation Local
 
 Push Notifications backend/RPC and Edge Function foundation is implemented and locally validated only.

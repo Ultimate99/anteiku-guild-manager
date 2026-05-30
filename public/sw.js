@@ -86,3 +86,67 @@ self.addEventListener('fetch', (event) => {
     }),
   );
 });
+
+function sanitizeNotificationRoute(route) {
+  if (typeof route !== 'string' || !route.startsWith('/') || route.startsWith('//') || /\s/.test(route)) {
+    return '/';
+  }
+
+  return route;
+}
+
+function readPushPayload(event) {
+  if (!event.data) {
+    return {};
+  }
+
+  try {
+    return event.data.json();
+  } catch {
+    return {
+      body: event.data.text(),
+    };
+  }
+}
+
+self.addEventListener('push', (event) => {
+  const payload = readPushPayload(event);
+  const title = typeof payload.title === 'string' && payload.title.trim()
+    ? payload.title.trim().slice(0, 80)
+    : 'Anteiku Guild Manager';
+  const body = typeof payload.body === 'string' ? payload.body.trim().slice(0, 160) : '';
+  const route = sanitizeNotificationRoute(payload.route);
+
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-192.png',
+      data: {
+        route,
+      },
+    }),
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  const route = sanitizeNotificationRoute(event.notification.data?.route);
+  const targetUrl = new URL(route, self.location.origin).href;
+
+  event.waitUntil(
+    self.clients
+      .matchAll({ type: 'window', includeUncontrolled: true })
+      .then((clientList) => {
+        const sameOriginClient = clientList.find((client) => new URL(client.url).origin === self.location.origin);
+
+        if (sameOriginClient) {
+          sameOriginClient.focus();
+          return sameOriginClient.navigate(targetUrl);
+        }
+
+        return self.clients.openWindow(targetUrl);
+      }),
+  );
+});

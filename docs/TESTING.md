@@ -1,5 +1,29 @@
 # Testing
 
+## Milestone 28C Push Notification Frontend
+
+Push Notification frontend/settings and service worker handling passed local build/source validation.
+
+Command:
+- `npm.cmd run build`
+
+Result:
+- Build passed with the existing Vite chunk-size warning only.
+
+Validated:
+- Profile Settings modal contains Push Notifications controls.
+- Push service uses RPCs only.
+- Service worker has safe `push` and `notificationclick` handling.
+- No direct push table reads/writes were added.
+- No Supabase RPC/API/Auth response caching was added.
+- No frontend service-role key or VAPID private key was added.
+- No normal CP paths were added.
+
+Blocked manual smoke:
+- Real browser push smoke requires `VITE_VAPID_PUBLIC_KEY` in the frontend environment.
+- Real send smoke requires Supabase Edge Function secrets: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT`.
+- Production DB must receive `20260530000800_push_notifications_foundation.sql` before frontend deployment.
+
 ## Milestone 28B Push Notifications Foundation
 
 Push Notifications backend/RPC and Edge Function foundation passed local validation only.

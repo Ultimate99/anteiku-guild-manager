@@ -1,5 +1,25 @@
 # Session Log
 
+## 2026-05-30 - Milestone 28C Push Notification Frontend
+
+- Implemented local Push Notification frontend/settings and service worker handling.
+- Added `src/services/pushNotificationService.js` with RPC-only wrappers for:
+  - push support/permission helpers
+  - browser subscription registration
+  - `register_push_subscription`
+  - `disable_push_subscription`
+  - `get_my_push_preferences`
+  - `update_my_push_preferences`
+  - `create_my_test_push_notification`
+- Added a Profile Settings modal from the Profile identity header.
+- Added Push Notifications status, enable/disable/test controls, and GvG/CP window/3v3/Wall/Profile reaction preference toggles.
+- Updated `public/sw.js` with safe `push` and `notificationclick` handlers.
+- Added `VITE_VAPID_PUBLIC_KEY` placeholder to `.env.example`; no private VAPID key was added.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source checks found no `member_cp`, `cp_snapshots`, normal CP RPCs, service-role key, VAPID private key, or direct table access in the new push frontend path.
+- No production DB migration, Edge Function deploy, frontend deploy, Vercel env change, or controlled push smoke was performed.
+- Production rollout is blocked until `VITE_VAPID_PUBLIC_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT` are configured and the production DB dry-run is clean.
+
 ## 2026-05-30 - Milestone 28B Push Notifications Foundation
 
 - Implemented local backend/RPC foundation for Push Notifications.
