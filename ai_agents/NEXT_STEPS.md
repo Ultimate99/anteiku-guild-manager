@@ -2,61 +2,25 @@
 
 ## Current Recommendation
 
-Milestone 28C Push Notification frontend/settings is implemented locally and build/source validated. Production rollout is blocked by missing VAPID configuration and unapplied production DB migration.
+Milestone 28 Push Notifications is live in production and manual push smoke passed.
 
 Recommended next step:
-- Generate VAPID keys locally without committing the private key. Safe command:
-  - `npx.cmd web-push generate-vapid-keys`
-- Configure:
-  - Frontend/Vercel: `VITE_VAPID_PUBLIC_KEY`
-  - Supabase Edge Function secrets: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`
-- Then run the production-direct gate:
-  - link production project `mzflfyxxkascrfpteexz`
-  - `npx.cmd supabase migration list`
-  - `npx.cmd supabase db push --dry-run`
-  - proceed only if exactly `20260530000800_push_notifications_foundation.sql` is pending
-  - apply migration, verify tables/RLS/RPCs/Owner count
-  - deploy `send-push-notifications`
-  - commit/push frontend only after DB/function readiness
+- Continue with the next user-prioritized milestone.
+- For future notification event hooks, keep each source-specific notification path in a separately approved milestone.
 
 Do not yet:
-- Push/deploy the frontend bundle.
-- Apply production DB migration without clean dry-run.
-- Deploy the Edge Function without VAPID secrets.
-- Send a production self-test notification without explicit approval.
+- Add GvG, CP Update Window, 3v3, Wall, or profile-reaction automatic push event hooks without a separate backend/RPC and privacy review.
+- Include normal CP values, email, auth IDs, audit/admin/private metadata, arbitrary user content, or service-role data in notification payloads.
+- Expose `VAPID_PRIVATE_KEY` in frontend, Vercel public env, docs, logs, or committed files.
 
-Recorded Milestone 28C status:
-- Added RPC-only push notification frontend service.
-- Added Profile Settings modal with Push Notifications controls/preferences.
-- Added service worker `push` and `notificationclick` handling.
-- Added `VITE_VAPID_PUBLIC_KEY` placeholder to `.env.example`.
-- `npm.cmd run build` passed; source checks found no CP/private key/service-role/direct-table paths in the new push frontend path.
-
-## Previous Recommendation
-
-Milestone 28B Push Notifications foundation is implemented and locally validated only.
-
-Recommended next step:
-- Configure Supabase Edge Function secrets for push sending before any remote rollout:
-  - `VAPID_PUBLIC_KEY`
-  - `VAPID_PRIVATE_KEY`
-  - `VAPID_SUBJECT`
-- Plan the production-direct rollout gate for `20260530000800_push_notifications_foundation.sql` only after secrets are ready.
-- Deploy the `send-push-notifications` Edge Function only after the DB migration is applied and verified on the target project.
-- Keep frontend push permission UI, service worker `push` / `notificationclick` listeners, and event hooks deferred to the next approved milestone.
-
-Do not yet:
-- Deploy push frontend/UI.
-- Deploy the Edge Function without VAPID secrets.
-- Send production test notifications without explicit approval.
-- Hook GvG, CP Update Window, 3v3, or Wall events into the outbox until a separate approved milestone.
-
-Recorded Milestone 28B status:
-- Added local migration `20260530000800_push_notifications_foundation.sql`.
-- Added RPC-only subscription/preference/outbox model and self-test enqueue RPC.
-- Added Edge Function foundation `supabase/functions/send-push-notifications/index.ts`.
-- Local DB reset passed, full validation passed, and Milestone 28B push validation reported `13 PASS / 0 FAIL / 0 SKIP`.
-- No frontend/service-worker/app build files changed, so `npm.cmd run build` was not required.
+Recorded Push Notifications production status:
+- Production DB received `20260530000800_push_notifications_foundation.sql` after a clean dry-run showing exactly that migration.
+- Production DB verification passed for push tables, RLS, no broad direct grants, push RPC grants, active Owner count `1`, and normal CP table protection.
+- Supabase Edge Function secrets are configured by name: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT`; values were not recorded.
+- `send-push-notifications` is deployed and active in production.
+- Frontend commit `c761d38 feat: add push notification settings UI` is pushed to `main`.
+- Manual production push smoke passed for permission grant, Enable Notifications, subscription registration, preference save, test notification receipt, notification click opening the app, and disable flow available/working.
+- No CP/private/admin data appeared in notifications.
 
 ## Previous Recommendation
 

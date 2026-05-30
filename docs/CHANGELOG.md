@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-05-30 - Push Notifications Production Rollout
+
+- Completed production rollout for Push Notifications.
+- Production migration applied after a clean dry-run:
+  - `20260530000800_push_notifications_foundation.sql`
+- Production DB verification passed for push tables, RLS, no broad direct grants, push RPC grants, active Owner count `1`, and normal CP table protection.
+- Supabase Edge Function `send-push-notifications` deployed and listed active.
+- Frontend commit pushed/deployed:
+  - `c761d38 feat: add push notification settings UI`
+- Manual production push smoke passed:
+  - browser notification permission allowed/granted
+  - Enable Notifications worked
+  - subscription registered
+  - preferences saved
+  - test notification received
+  - notification click opened the app
+  - disable flow worked or is available
+  - no CP/private/admin data appeared
+  - no console/service-worker blocker found
+- VAPID private key values were not committed, printed, or documented.
+
 ## 2026-05-30 - Milestone 28C Push Notification Frontend
 
 - Added local Push Notification settings UI under Profile Settings.
@@ -8,7 +29,7 @@
 - Added `VITE_VAPID_PUBLIC_KEY` placeholder to `.env.example`; no VAPID private key was committed.
 - Added EN/FR/DE labels and dark/crimson styling for the push settings modal.
 - `npm.cmd run build` passed with the existing Vite chunk-size warning only.
-- Production deploy is blocked until VAPID config, production DB migration, Edge Function deploy, and controlled smoke gates are complete.
+- Production deploy and controlled smoke are complete as recorded above.
 
 ## 2026-05-30 - Milestone 28B Push Notifications Foundation
 
@@ -19,8 +40,7 @@
 - Added Supabase Edge Function foundation: `send-push-notifications`.
 - Notification payloads are fixed server-side by type and contain no CP values, email, auth IDs, audit/admin/private metadata, or arbitrary user content.
 - Local reset passed and full validation passed; push validation block reported `13 PASS / 0 FAIL / 0 SKIP`.
-- No frontend/service-worker/package files changed; no production/staging deploy or migration was performed.
-- Remote rollout is blocked until `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT` are configured.
+- No frontend/service-worker/package files changed in 28B; production rollout completed later as recorded above.
 
 ## 2026-05-30 - Social Profile Surfaces Polish
 

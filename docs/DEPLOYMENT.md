@@ -4,29 +4,26 @@ Vercel is the production hosting target.
 
 Milestone 13B completed Vercel setup, Supabase Auth URL configuration, deployment, and production smoke/security validation.
 
-## Push Notifications Deployment Gate
+## Push Notifications Production Rollout
 
-Milestone 28B/28C Push Notifications foundation and frontend settings are local-only. Do not deploy push notification frontend/UI or run the sender in production until this gate is satisfied.
+Push Notifications are live in production.
 
-Required before remote rollout:
-- Configure Supabase Edge Function secrets:
-  - `VAPID_PUBLIC_KEY`
-  - `VAPID_PRIVATE_KEY`
-  - `VAPID_SUBJECT`
-- Configure frontend/Vercel public env:
-  - `VITE_VAPID_PUBLIC_KEY`
-- Run a clean production `supabase db push --dry-run`.
-- Proceed only if exactly `20260530000800_push_notifications_foundation.sql` is pending and no drift/unexpected SQL appears.
-- Apply the migration, then verify push tables, RLS, no broad direct grants, RPCs, active Owner count, and normal CP table protection.
-- Deploy `send-push-notifications` only after DB verification.
-- Deploy frontend only after production DB and Edge Function readiness are confirmed.
-- Do not send a controlled production test notification without explicit approval.
+Production rollout:
+- Production dry-run showed exactly `20260530000800_push_notifications_foundation.sql` pending.
+- Production migration apply passed.
+- Production DB verification passed for push tables, RLS, no broad direct grants, RPCs, active Owner count, and normal CP table protection.
+- Supabase Edge Function secret names are configured: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT`; values are not recorded.
+- Vercel production `VITE_VAPID_PUBLIC_KEY` is configured.
+- `send-push-notifications` deployed and listed active.
+- Frontend commit `c761d38 feat: add push notification settings UI` is pushed to `main`.
+- Manual production push smoke passed: permission granted, subscription registered, preferences saved, test notification received, notification click opened the app, disable flow worked or is available, and no CP/private/admin data appeared.
 
 Safety notes:
 - Frontend must never receive or store a service-role key.
 - `VAPID_PRIVATE_KEY` must never be committed or exposed to frontend/Vercel public env.
 - Push payloads must remain fixed server-generated text and route metadata only.
 - Do not include normal CP values, email, auth IDs, audit/admin/private metadata, or arbitrary user content in push payloads.
+- Future automatic notification event hooks require separately approved backend/RPC/privacy work.
 
 ## Production Global Wall Scope
 

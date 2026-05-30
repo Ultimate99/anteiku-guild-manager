@@ -1,8 +1,45 @@
 # Testing And Validation
 
+## Milestone 28 Push Notifications Production Validation
+
+Push Notifications passed local validation, production rollout gates, and manual production smoke.
+
+Commands/gates:
+- `npm.cmd run build`
+- Production `npx.cmd supabase db push --dry-run`
+- Production `npx.cmd supabase db push`
+- `npx.cmd supabase functions deploy send-push-notifications --project-ref mzflfyxxkascrfpteexz`
+
+Results:
+- Build passed with the existing Vite chunk-size warning only.
+- Production dry-run showed only `20260530000800_push_notifications_foundation.sql`.
+- Production migration apply passed.
+- Production DB verification passed for push tables, RLS, no broad direct grants, push RPC grants, active Owner count `1`, and normal CP table protection.
+- Supabase Edge Function secret names were verified without exposing values: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT`.
+- `send-push-notifications` deployed and listed active.
+- Frontend commit `c761d38 feat: add push notification settings UI` is pushed to `main`.
+
+Manual production smoke:
+- Browser notification permission was allowed/granted.
+- Enable Notifications worked.
+- Push subscription registered.
+- Preferences saved.
+- Test notification was received.
+- Clicking the notification opened the app.
+- Disable flow worked or is available.
+- No CP/private/admin data appeared in the notification.
+- No console/service-worker blocker was found.
+
+Security/source validation:
+- Push frontend path uses RPC wrappers only.
+- No direct push table reads/writes were added.
+- No `member_cp`, `cp_snapshots`, normal CP RPCs, service-role key, VAPID private key, or direct table access paths were found in the new push service/service-worker/env path.
+- Existing service worker app-shell/static caching remained in place; no Supabase RPC/API/Auth response caching was added.
+- No CP/GvG/Analytics/3v3/Guild Wall/cosmetics/member-status/auth/role/permission behavior changed.
+
 ## Milestone 28C Push Notification Frontend Validation
 
-Push Notification frontend/settings and service worker handling passed local build/source validation.
+Push Notification frontend/settings and service worker handling passed local build/source validation and is now production deployed through the Milestone 28 production validation above.
 
 Command:
 - `npm.cmd run build`
@@ -17,16 +54,11 @@ Source validation:
 - Existing service worker app-shell/static caching remained in place; no Supabase RPC/API/Auth response caching was added.
 - No CP/GvG/Analytics/3v3/Guild Wall/cosmetics/member-status/auth/role/permission behavior changed.
 
-Configuration status:
+Configuration/rollout status:
 - `.env.example` documents `VITE_VAPID_PUBLIC_KEY`.
-- `.env.local` does not currently include `VITE_VAPID_PUBLIC_KEY`.
-- Supabase Edge Function secrets are still required before real push smoke: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT`.
-
-Rollout status:
-- No production DB dry-run/apply was run during 28C.
-- No Edge Function deploy was run.
-- No frontend deploy was run.
-- No controlled production push smoke was run.
+- Production Vercel `VITE_VAPID_PUBLIC_KEY` is configured.
+- Supabase production Edge Function secret names are configured: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT`.
+- Production DB migration, Edge Function deploy, frontend deploy, and controlled push smoke passed.
 
 ## Milestone 28B Push Notifications Foundation Validation
 
@@ -60,9 +92,9 @@ Source validation:
 - `npm.cmd run build` was skipped because this milestone changed backend SQL, validation SQL, and an Edge Function only.
 
 Rollout status:
-- No staging/production migration was applied.
-- Edge Function is not deployed.
-- Remote rollout is blocked until `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT` are configured.
+- Production migration is applied.
+- Edge Function is deployed.
+- Manual production push smoke passed.
 
 ## Social Profile Surfaces Polish Validation
 

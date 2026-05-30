@@ -1,63 +1,38 @@
 # Project State
 
-## Milestone 28C Push Notification Frontend Local
+## Milestone 28 Push Notifications Production Complete
 
-Push Notification frontend/settings and service worker handling are implemented locally and build/source validated. Production rollout is blocked until the Push Notifications DB migration, Edge Function secrets, and sender deployment are ready.
+Push Notifications backend/RPC, Profile Settings frontend, service worker handling, and the `send-push-notifications` Edge Function are live in production.
 
-Implemented locally:
-- `src/services/pushNotificationService.js` with RPC-only wrappers for push registration, disable, preference load/update, and self-test enqueue.
-- Profile Settings modal opened from the Profile identity header.
-- Push Notifications settings section with support/permission/enabled status, enable/disable/test actions, and preference toggles.
-- `public/sw.js` push and notification-click handlers.
-- `VITE_VAPID_PUBLIC_KEY` placeholder documented in `.env.example`.
-
-Security/behavior:
-- Frontend uses only push RPCs; no direct push table reads/writes.
-- VAPID private key is not in frontend or committed files.
-- Service worker cache behavior remains app-shell/static only; no Supabase RPC/API/Auth response caching was added.
-- No CP/GvG/Analytics/3v3/Guild Wall/cosmetics/member-status/auth/role/permission behavior changed.
-- Notification payload display remains fixed title/body/route from the outbox/sender path.
-
-Validation:
-- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
-- Source checks on the push service, service worker, and env example found no `member_cp`, `cp_snapshots`, normal CP RPCs, service-role key, VAPID private key, or direct table access paths.
-
-Rollout blockers:
-- `.env.local` and `.env.example` do not contain `VITE_VAPID_PUBLIC_KEY`.
-- Production/staging do not have `20260530000800_push_notifications_foundation.sql` yet.
-- `send-push-notifications` Edge Function is not deployed.
-- Required Supabase Edge Function secrets are still needed: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT`.
-- No production dry-run, migration apply, Edge Function deploy, frontend deploy, or controlled push smoke was performed.
-
-## Milestone 28B Push Notifications Foundation Local
-
-Push Notifications backend/RPC and Edge Function foundation is implemented and locally validated only.
-
-Implemented locally:
+Implemented:
 - Migration `20260530000800_push_notifications_foundation.sql`.
 - New RPC-only tables: `push_subscriptions`, `push_notification_preferences`, and `push_notification_outbox`.
 - Public RPCs: `register_push_subscription`, `disable_push_subscription`, `get_my_push_preferences`, `update_my_push_preferences`, and `create_my_test_push_notification`.
 - Private helpers for approved-member eligibility, preference initialization, fixed safe payload generation, and internal outbox enqueue.
-- Supabase Edge Function foundation: `send-push-notifications`.
+- Supabase Edge Function: `send-push-notifications`.
+- Frontend Profile Settings modal with Push Notifications enable/disable/test controls and preferences.
+- `public/sw.js` push and notification-click handling.
 
 Security/behavior:
 - Eligible recipients are approved profiles with active primary guild membership and roster status `active`, `trial`, or `pending_transfer`.
 - Pending, rejected, suspended, left, kicked, inactive, and on-break users are blocked from push registration/preferences/test notification enqueue.
 - Notification payloads are fixed server-side by notification type and contain no CP values, email, auth IDs, audit/private metadata, or admin data.
 - No CP/GvG/Analytics/3v3/Guild Wall/cosmetics/member-status/auth/role/permission behavior was changed.
-- No frontend service worker push listener or notification permission UI was added in 28B.
+- Frontend uses only push RPCs; no direct push table reads/writes.
+- VAPID private key is not in frontend or committed files.
+- Service worker cache behavior remains app-shell/static only; no Supabase RPC/API/Auth response caching was added.
 
 Validation:
 - `npx.cmd supabase db reset` passed locally through `20260530000800_push_notifications_foundation.sql`.
 - `supabase/tests/local_validation_anteiku.sql` passed through Docker `psql`.
 - Milestone 28B push block passed `13 PASS / 0 FAIL / 0 SKIP`.
-- Source sweep on the new migration and Edge Function found no `member_cp`, `cp_snapshots`, normal CP RPCs, or CP value paths.
-- `npm.cmd run build` was skipped because no frontend, service worker, package, or app build files changed.
-
-Rollout blockers:
-- Production/staging do not have `20260530000800_push_notifications_foundation.sql` yet.
-- Edge Function deploy/send is blocked until Supabase function secrets are configured: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT`.
-- Future production rollout still requires a clean production `supabase db push --dry-run`, DB verification, Edge Function deployment, and explicit approval before any controlled production test notification.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only for the frontend/service worker.
+- Production dry-run showed only `20260530000800_push_notifications_foundation.sql`; migration apply passed.
+- Production DB verification passed for push table existence/RLS/no broad direct grants, RPC grants, active Owner count `1`, and normal CP table protection.
+- Supabase production secrets are configured by name: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT`; values were not recorded or exposed.
+- Edge Function `send-push-notifications` deployed and listed active.
+- Frontend commit `c761d38 feat: add push notification settings UI` is pushed to `main`.
+- Manual production push smoke passed: browser permission granted, Enable Notifications registered a subscription, preferences saved, test notification was received, notification click opened the app, disable flow worked or is available, and no CP/private/admin data appeared.
 
 ## Social Profile Surfaces Polish Live
 

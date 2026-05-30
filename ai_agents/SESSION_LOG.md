@@ -1,5 +1,31 @@
 # Session Log
 
+## 2026-05-30 - Push Notifications Production Rollout
+
+- Production rollout completed for Push Notifications.
+- Production dry-run showed exactly one pending migration:
+  - `20260530000800_push_notifications_foundation.sql`
+- Production migration apply passed.
+- Production DB verification passed for push table existence, RLS enabled, no broad direct grants, push RPC authenticated grants, active Owner count `1`, and normal CP table protection.
+- Supabase Edge Function secret names are configured without recording values:
+  - `VAPID_PUBLIC_KEY`
+  - `VAPID_PRIVATE_KEY`
+  - `VAPID_SUBJECT`
+- Deployed `send-push-notifications` to production project `mzflfyxxkascrfpteexz`; function listed active.
+- Frontend commit pushed:
+  - `c761d38 feat: add push notification settings UI`
+- Manual production push smoke passed:
+  - browser notification permission was allowed/granted
+  - Enable Notifications worked
+  - push subscription registered
+  - preferences saved
+  - test notification was received
+  - notification click opened the app
+  - disable flow worked or is available
+  - no CP/private/admin data appeared
+  - no console/service-worker blocker found
+- No CP/GvG/Analytics/3v3/Guild Wall/cosmetics/member-status/auth/role/permission behavior changed.
+
 ## 2026-05-30 - Milestone 28C Push Notification Frontend
 
 - Implemented local Push Notification frontend/settings and service worker handling.

@@ -1,5 +1,13 @@
 # Code Index
 
+## Milestone 28 Push Notifications Production
+
+- Production migration `20260530000800_push_notifications_foundation.sql` is applied.
+- Production Edge Function `send-push-notifications` is deployed and active.
+- Production frontend commit `c761d38 feat: add push notification settings UI` is pushed to `main`.
+- Manual production push smoke passed for permission grant, subscription registration, preference save, self-test notification receipt, notification click opening the app, and disable flow available/working.
+- Notification payloads remain fixed server-generated title/body/route data only and showed no CP/private/admin data in smoke.
+
 ## Milestone 28C Push Notification Frontend
 
 - `src/services/pushNotificationService.js`: RPC-only frontend push wrapper. Handles support/permission helpers, browser PushManager subscription, push subscription registration, subscription disable, own preference load/update, and self-test enqueue. It does not use direct table access or service-role keys.
@@ -8,14 +16,14 @@
 - `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`: Add Push Notifications and Profile Settings labels.
 - `src/styles/app.css`: Adds dark/crimson Profile Settings and Push Notifications modal styling.
 - `.env.example`: Documents `VITE_VAPID_PUBLIC_KEY` as the only frontend VAPID value.
-- Status: local build/source validation passed. Production rollout is blocked until VAPID keys/secrets and the Push Notifications DB migration/function deploy gate are complete.
+- Status: build/source validation passed and production smoke passed.
 
 ## Milestone 28B Push Notifications Foundation
 
-- `supabase/migrations/20260530000800_push_notifications_foundation.sql`: Adds the local-only push notification backend foundation: `push_subscriptions`, `push_notification_preferences`, `push_notification_outbox`, RLS/no-direct-client grants, fixed server-generated payload helpers, approved-recipient eligibility, and RPCs for own subscription registration, subscription disable, own preferences, preference update, and self-test notification enqueue.
+- `supabase/migrations/20260530000800_push_notifications_foundation.sql`: Adds the push notification backend foundation: `push_subscriptions`, `push_notification_preferences`, `push_notification_outbox`, RLS/no-direct-client grants, fixed server-generated payload helpers, approved-recipient eligibility, and RPCs for own subscription registration, subscription disable, own preferences, preference update, and self-test notification enqueue.
 - `supabase/functions/send-push-notifications/index.ts`: Supabase Edge Function foundation for sending queued outbox notifications with Web Push/VAPID. Requires `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT` at runtime. Sends only fixed outbox title/body/type/route payloads and disables gone/invalid subscriptions.
 - `supabase/tests/local_validation_anteiku.sql`: Adds Milestone 28B validation for table existence, RLS, no direct grants, eligible member registration, pending denial, own preferences, own disable, self-test outbox enqueue, outbox payload privacy, direct outbox write denial, and active Owner count.
-- Status: local DB reset and validation passed. Production/staging do not have `20260530000800_push_notifications_foundation.sql`; Edge Function is not deployed and push sending is blocked until VAPID secrets are configured.
+- Status: local DB reset and validation passed; production migration/function/frontend rollout and manual smoke passed.
 
 ## Social Profile Surfaces Polish
 

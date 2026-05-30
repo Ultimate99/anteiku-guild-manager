@@ -1,8 +1,37 @@
 # Testing
 
+## Milestone 28 Push Notifications Production
+
+Push Notifications passed production rollout and manual production smoke.
+
+Production rollout:
+- Production dry-run showed only `20260530000800_push_notifications_foundation.sql`.
+- Production migration apply passed.
+- Production DB verification passed for push tables, RLS, no broad direct grants, push RPC grants, active Owner count `1`, and normal CP table protection.
+- `send-push-notifications` Edge Function deployed and listed active.
+- Frontend commit deployed: `c761d38 feat: add push notification settings UI`.
+
+Manual production smoke:
+- Browser notification permission was allowed/granted.
+- Enable Notifications worked.
+- Push subscription registered.
+- Preferences saved.
+- Test notification was received.
+- Clicking the notification opened the app.
+- Disable flow worked or is available.
+- No CP/private/admin data appeared in the notification.
+- No console/service-worker blocker found.
+
+Security checks:
+- Frontend uses push RPCs only.
+- No direct push table reads/writes were added.
+- No Supabase RPC/API/Auth response caching was added.
+- No frontend service-role key or VAPID private key was added.
+- No normal CP paths were added.
+
 ## Milestone 28C Push Notification Frontend
 
-Push Notification frontend/settings and service worker handling passed local build/source validation.
+Push Notification frontend/settings and service worker handling passed local build/source validation and production smoke.
 
 Command:
 - `npm.cmd run build`
@@ -19,10 +48,10 @@ Validated:
 - No frontend service-role key or VAPID private key was added.
 - No normal CP paths were added.
 
-Blocked manual smoke:
-- Real browser push smoke requires `VITE_VAPID_PUBLIC_KEY` in the frontend environment.
-- Real send smoke requires Supabase Edge Function secrets: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT`.
-- Production DB must receive `20260530000800_push_notifications_foundation.sql` before frontend deployment.
+Production status:
+- Production Vercel `VITE_VAPID_PUBLIC_KEY` is configured.
+- Supabase Edge Function secret names are configured: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT`; values are not documented.
+- Production DB has `20260530000800_push_notifications_foundation.sql` applied.
 
 ## Milestone 28B Push Notifications Foundation
 
@@ -53,9 +82,9 @@ Source checks:
 - New push migration and Edge Function contain no `member_cp`, `cp_snapshots`, normal CP RPCs, or CP value paths.
 - No frontend/service-worker/package files changed; `npm.cmd run build` was skipped as not applicable.
 
-Pending:
-- VAPID secrets must be configured before Edge Function remote deploy/use.
-- No staging/production migration or push notification send has been performed.
+Production status:
+- Production migration and Edge Function deploy are complete.
+- Manual production push smoke passed.
 
 ## Social Profile Surfaces Polish
 

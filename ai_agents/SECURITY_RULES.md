@@ -1,8 +1,8 @@
 # Security Rules
 
-## Push Notification Frontend Security Rules
+## Push Notification Security Rules
 
-Milestone 28C Push Notification frontend/settings is implemented locally only and must not be deployed until the target database has `20260530000800_push_notifications_foundation.sql` and the Edge Function/secrets are ready.
+Push Notifications are live in production. Production has `20260530000800_push_notifications_foundation.sql` applied, `send-push-notifications` deployed, required Supabase Edge Function secret names configured, Vercel `VITE_VAPID_PUBLIC_KEY` configured, and manual production push smoke passed.
 
 Frontend rules:
 - Use `src/services/pushNotificationService.js` RPC wrappers only.
@@ -18,10 +18,6 @@ UI rules:
 - Preference toggles update only the authenticated user's preferences through backend RPC.
 - Self-test only queues a notification for the authenticated user.
 
-## Push Notification Security Rules
-
-Milestone 28B Push Notifications foundation is implemented and locally validated only. Production/staging do not have `20260530000800_push_notifications_foundation.sql` yet.
-
 Rules:
 - Push registration and preferences must use RPCs only.
 - Approved profile plus active primary membership is required.
@@ -36,10 +32,10 @@ Payload privacy:
 - No normal CP values, `member_cp`, `cp_snapshots`, CP history/growth, email, auth IDs, audit logs, admin permissions, private notes, private metadata, or arbitrary user content may be included in push payloads.
 - Push sender must not cache Supabase RPC/API/Auth responses.
 
-Deployment gate:
-- Configure Supabase Edge Function secrets before remote deploy/use: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT`.
-- Run a clean production dry-run before applying `20260530000800_push_notifications_foundation.sql`.
-- Do not send controlled production test notifications without explicit approval.
+Production validation:
+- Production dry-run showed only `20260530000800_push_notifications_foundation.sql`; migration apply passed.
+- DB verification passed for push table RLS/no broad direct grants, RPC grants, active Owner count `1`, and normal CP table protection.
+- Manual production push smoke passed: notification permission granted, subscription registered, preferences saved, test notification received, notification click opened the app, disable flow worked or is available, and no CP/private/admin data appeared.
 
 ## Ranking Public Profile Link Security Rules
 

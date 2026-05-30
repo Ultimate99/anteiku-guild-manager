@@ -47,22 +47,18 @@ Current production checkpoint:
 - Offline Notice Banner is live in production through `2bbd24a feat: add offline notice banner`. It uses `navigator.onLine` plus `online` / `offline` browser events, shows only while offline, and hides automatically when online returns.
 - Offline Notice Banner is UI-only: no queued actions, no full offline mode, no service worker/cache behavior change, and no Supabase/API/Auth/RPC/CP/admin/GvG/3v3 data caching.
 - Global Wall scope is live in production through `feaf2ff feat: add global wall scope` and `20260530000300_global_wall_scope.sql`. `My Guild` is explicit-guild scoped, `Global` uses null `guild_id`, RLS/direct-grant/RPC/Owner-count checks passed, and controlled production mutation smoke remains pending.
+- Push Notifications are live in production. Production has `20260530000800_push_notifications_foundation.sql` applied, `send-push-notifications` deployed and active, Vercel `VITE_VAPID_PUBLIC_KEY` configured, Supabase Edge Function secret names configured, frontend commit `c761d38 feat: add push notification settings UI` pushed to `main`, and manual production smoke passed for permission grant, subscription registration, preference save, test notification receipt, notification click opening the app, and disable flow available/working.
+- Push Notifications payloads remain fixed server-generated title/body/route data; manual smoke found no CP/private/admin data in notifications.
 - Browser-native install prompt / standalone launch still needs a manual device/browser check if install UX confirmation is required.
 - Offline banner DevTools Network Offline/Online verification remains a recommended manual check.
 - Cosmetics v1 uses approved repo static assets only. Do not add arbitrary URLs, player uploads, or Supabase Storage without a planned security review.
 - Vercel Preview env has not been configured for staging yet.
 
-Push Notifications pending checkpoint:
-- Milestone 28B Push Notifications foundation is local-only and validated.
-- Milestone 28C Push Notifications frontend/settings and service worker handling are local-only and build/source validated.
-- Production has not received `20260530000800_push_notifications_foundation.sql`.
-- `send-push-notifications` Edge Function is not deployed.
-- Required Edge Function secrets must be configured before deploy/use: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT`.
-- Frontend/Vercel needs `VITE_VAPID_PUBLIC_KEY`.
-- Do not send controlled production test notifications without explicit approval.
+Push Notifications security checkpoint:
 - Do not expose service-role keys to frontend/Vercel public env.
 - Do not expose `VAPID_PRIVATE_KEY` to frontend/Vercel public env or committed files.
 - Do not include normal CP values, email, auth IDs, audit/admin/private metadata, or arbitrary user content in push payloads.
+- Do not add automatic GvG, CP Update Window, 3v3, Wall, or profile-reaction notification hooks without a separate approved milestone.
 
 Controlled guild onboarding checkpoint:
 
