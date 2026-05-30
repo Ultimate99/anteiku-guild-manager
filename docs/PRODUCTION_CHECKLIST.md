@@ -6,7 +6,7 @@ Current production checkpoint:
 - Production project ref: `mzflfyxxkascrfpteexz`.
 - Project name: `Anteiku Guild Manager Production`.
 - Region: Central EU / Frankfurt.
-- All approved production migrations through `20260528000100_three_v_three_team_finder.sql` are applied remotely, including `20260523000100_member_roster_status_system.sql`, `20260524000100_cp_update_window_self_submit.sql`, `20260524000200_cp_update_window_staff_read.sql`, `20260524000300_cp_rankings.sql`, `20260524000400_cp_rank_badge_summary.sql`, `20260525000100_cosmetics_catalog_unlocks.sql`, `20260525000200_cp_rankings_cosmetics.sql`, `20260525000300_premium_cosmetics_grant_helper.sql`, cosmetics catalog sync/frame hotfix migrations, `20260526000100_admin_analytics_foundation.sql`, live CP growth migrations, and `20260528000100_three_v_three_team_finder.sql`.
+- All approved production migrations through `20260530000300_global_wall_scope.sql` are applied remotely, including `20260523000100_member_roster_status_system.sql`, `20260524000100_cp_update_window_self_submit.sql`, `20260524000200_cp_update_window_staff_read.sql`, `20260524000300_cp_rankings.sql`, `20260524000400_cp_rank_badge_summary.sql`, `20260525000100_cosmetics_catalog_unlocks.sql`, `20260525000200_cp_rankings_cosmetics.sql`, `20260525000300_premium_cosmetics_grant_helper.sql`, cosmetics catalog sync/frame hotfix migrations, `20260526000100_admin_analytics_foundation.sql`, live CP growth migrations, `20260528000100_three_v_three_team_finder.sql`, `20260530000100_guild_wall_mvp.sql`, `20260530000200_guild_wall_scope_hotfix.sql`, and `20260530000300_global_wall_scope.sql`.
 - Production schema/RLS/seed verification passed.
 - Manual Owner bootstrap completed for `ultimatesrb` / `UltimateSRB` in `Anteiku`.
 - Exactly one active Owner membership exists.
@@ -46,6 +46,7 @@ Current production checkpoint:
 - The update banner keeps Supabase/API/Auth/RPC/CP/GvG/3v3/admin/analytics data uncached.
 - Offline Notice Banner is live in production through `2bbd24a feat: add offline notice banner`. It uses `navigator.onLine` plus `online` / `offline` browser events, shows only while offline, and hides automatically when online returns.
 - Offline Notice Banner is UI-only: no queued actions, no full offline mode, no service worker/cache behavior change, and no Supabase/API/Auth/RPC/CP/admin/GvG/3v3 data caching.
+- Global Wall scope is live in production through `feaf2ff feat: add global wall scope` and `20260530000300_global_wall_scope.sql`. `My Guild` is explicit-guild scoped, `Global` uses null `guild_id`, RLS/direct-grant/RPC/Owner-count checks passed, and controlled production mutation smoke remains pending.
 - Browser-native install prompt / standalone launch still needs a manual device/browser check if install UX confirmation is required.
 - Offline banner DevTools Network Offline/Online verification remains a recommended manual check.
 - Cosmetics v1 uses approved repo static assets only. Do not add arbitrary URLs, player uploads, or Supabase Storage without a planned security review.

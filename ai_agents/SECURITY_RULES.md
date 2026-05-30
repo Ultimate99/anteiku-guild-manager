@@ -1,5 +1,24 @@
 # Security Rules
 
+## Global Wall Scope Security Rules
+
+Global Wall is live in production through `20260530000300_global_wall_scope.sql` and commit `feaf2ff feat: add global wall scope`.
+
+Rules:
+- `guild_id = null` means the Global Wall scope for wall posts/comments only.
+- `My Guild` feed must pass an explicit guild id; `Global` feed passes null and returns only Global posts.
+- Approved active/trial/pending_transfer members can create/comment/react in Global.
+- `inactive` and `on_break` users can view Global but cannot create/comment/react.
+- Pending, rejected, suspended, left, and kicked users remain denied by backend/RPC gates.
+- Owner can moderate Global posts/comments.
+- Scoped staff moderation remains guild-scoped and must not moderate Global posts.
+- Frontend must use the Guild Wall RPC service only; no direct wall table writes.
+- Guild Wall must not read or expose `member_cp`, `cp_snapshots`, CP analytics, CP roster, CP ranking, CP growth, auth secrets, emails, private admin metadata, uploads, or Storage data.
+
+Production validation:
+- Production DB verification passed for nullable wall scope columns, RLS enabled, zero broad direct wall table grants, wall RPC presence, active Owner count `1`, and Owner Global feed read.
+- Controlled production Global post/comment/reaction smoke still requires an authenticated controlled account.
+
 ## Milestone 25D 3v3 Team Finder Production Rules
 
 3v3 Team Finder is live in production through `20260528000100_three_v_three_team_finder.sql` and commit `4c9da98 feat: add 3v3 team finder UI`.

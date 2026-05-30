@@ -2,22 +2,24 @@
 
 ## Current Recommendation
 
-Admin mobile section redesign is complete and deployed.
+Global Wall scope is live in production.
 
 Recommended next step:
-- Do a manual authenticated AdminPanel mobile smoke pass on production at 360/390/430 widths with extra focus on the redesigned remaining sections:
-  - Admin Overview section selector and command cards.
-  - Analytics Overview/Members/CP/GvG/Weekly Growth/Attention.
-  - Approvals.
-  - Members list and expanded Manage card.
-  - CP roster and CP Update Window.
-  - CP Ranking.
-  - GvG admin.
-  - Audit Logs.
-  - Permissions.
-  - Tools / Owner Cosmetics.
-  - Confirm no horizontal overflow, no bottom-nav overlap, no raw translation keys, no console errors, and no CP values outside existing authorized admin surfaces.
-- Continue with the next user-prioritized milestone after the AdminPanel mobile smoke pass.
+- Run a manual authenticated controlled production smoke for Guild Wall Global scope:
+  - Approved member opens Guild Wall.
+  - Switches between `My Guild` and `Global`.
+  - Creates a Global post, comments, reacts, and optionally deletes the test content.
+  - Cross-guild approved member sees the Global post but not My Guild-only posts.
+  - Scoped staff cannot pin/moderate Global posts; Owner can moderate Global posts if tested.
+  - Confirm no CP values, no console errors, and no uploads/storage behavior.
+- Continue with the next user-prioritized milestone after the Global Wall controlled smoke.
+
+Recorded Global Wall scope status:
+- Commit `feaf2ff feat: add global wall scope` is pushed to `main` and production serves the updated bundle.
+- Production DB received `20260530000300_global_wall_scope.sql` after a clean dry-run showing only that migration.
+- `My Guild` uses explicit guild scope; `Global` uses `guild_id` null and does not mix guild-scoped posts into the Global feed.
+- Local Guild Wall validation passed `33 PASS / 0 FAIL / 0 SKIP`; build passed.
+- Production DB/read-only smoke passed; controlled production mutation smoke remains pending by design/no authenticated controlled session.
 
 Recorded Admin mobile section redesign status:
 - Commit `79b15fa style: redesign admin mobile sections` is deployed.

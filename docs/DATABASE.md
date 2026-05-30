@@ -1,10 +1,32 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented through the 3v3 Team Finder. Remote production is live through `20260528000100_three_v_three_team_finder.sql`.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented through Global Wall scope. Remote production is live through `20260530000300_global_wall_scope.sql`.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
-Milestone 25B/25D 3v3 Team Finder backend is implemented, locally validated, production applied, and controlled-production-smoke validated.
+Global Wall scope is implemented, locally validated, production applied, and read-only-production-smoke validated. Controlled Global post/comment/reaction production smoke remains pending.
+
+## Global Wall Scope
+
+Migration `20260530000300_global_wall_scope.sql` is applied and verified in production.
+
+Data model:
+- `wall_posts.guild_id` is nullable; null means Global Wall scope.
+- `wall_comments.guild_id` is nullable and follows the parent post scope.
+- Guild-scoped posts keep explicit guild ids.
+
+RPC behavior:
+- `get_guild_wall_feed(null, ...)` returns only Global Wall posts.
+- `get_guild_wall_feed(p_guild_id, ...)` returns only that guild wall.
+- `create_wall_post(null, content)` creates a Global Wall post for eligible approved users.
+- `create_wall_post(p_guild_id, content)` remains guild-scoped.
+- Existing comment/reaction/delete/moderation RPCs work with null Global scope through backend helpers.
+
+Security:
+- Global Wall does not read or expose `member_cp`, `cp_snapshots`, CP analytics, CP roster, CP ranking, or CP growth.
+- RLS remains enabled on all wall tables.
+- Direct anon/authenticated/public wall table grants remain blocked.
+- Owner can moderate Global posts; scoped staff cannot moderate Global posts.
 
 ## Current Local Migration Order
 
@@ -33,6 +55,9 @@ Milestone 25B/25D 3v3 Team Finder backend is implemented, locally validated, pro
 23. `20260526000200_live_cp_growth.sql`
 24. `20260526000300_live_cp_growth_baseline_scope.sql`
 25. `20260528000100_three_v_three_team_finder.sql`
+26. `20260530000100_guild_wall_mvp.sql`
+27. `20260530000200_guild_wall_scope_hotfix.sql`
+28. `20260530000300_global_wall_scope.sql`
 
 Migration `20260523000100_member_roster_status_system.sql` is locally validated, staging validated, and production applied/verified as of Milestone 15E.
 

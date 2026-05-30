@@ -1,5 +1,15 @@
 # Code Index
 
+## Global Wall Scope
+
+- `supabase/migrations/20260530000300_global_wall_scope.sql`: Adds Global Wall scope support by allowing null `wall_posts.guild_id` / `wall_comments.guild_id`, updating wall view/action helpers, and replacing `get_guild_wall_feed` / `create_wall_post` so null scope means Global Wall rather than mixed all-guild feed.
+- `supabase/tests/local_validation_anteiku.sql`: Extends Guild Wall validation for Global posts, cross-guild Global reads, Global comments/reactions, Owner-only Global moderation, nullable wall scope columns, RLS, no direct grants, and active Owner count.
+- `src/services/guildWallService.js`: Maps Global Wall fields (`is_global`, author guild metadata) and keeps RPC-only Guild Wall access.
+- `src/pages/GuildWall.jsx`: Adds `My Guild` / `Global` scope chips, Global post badges, scoped composer handling, and emoji reaction display while preserving backend reaction values.
+- `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`: Add Global Wall scope labels.
+- `src/styles/app.css`: Adds a subtle Global post card accent.
+- Production status: commit `feaf2ff feat: add global wall scope` is pushed to `main`; production DB has `20260530000300_global_wall_scope.sql` applied and verified. Controlled production mutation smoke remains pending.
+
 ## Admin Mobile Section Redesign
 
 - `src/styles/app.css`: Adds CSS-only mobile refinements for the remaining AdminPanel sections after the initial mobile polish. Analytics scope/sub-tabs/stat cards/Weekly Growth rows, Members manage cards, editable CP cards/window controls, GvG admin cards, Audit Logs, Permissions, and Owner Tools now use tighter dark/crimson card styling closer to the approved Admin Overview / CP Ranking direction.

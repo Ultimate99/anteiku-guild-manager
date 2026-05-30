@@ -1,5 +1,44 @@
 # Testing And Validation
 
+## Global Wall Scope Validation
+
+Global Wall scope passed local backend validation, build/source validation, production dry-run/apply, and production read-only verification.
+
+Commands:
+- `npx.cmd supabase db reset`
+- `Get-Content supabase\tests\local_validation_anteiku.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres`
+- `npm.cmd run build`
+- `npx.cmd supabase db push --dry-run`
+- `npx.cmd supabase db push`
+- `npx.cmd supabase migration list`
+
+Result:
+- Local reset applied through `20260530000300_global_wall_scope.sql`.
+- Guild Wall validation block passed `33 PASS / 0 FAIL / 0 SKIP`.
+- Build passed with the existing Vite chunk-size warning only.
+- Production dry-run showed only `20260530000300_global_wall_scope.sql` pending.
+- Production migration apply succeeded and remote migration list shows `20260530000300` applied.
+
+Production DB verification:
+- `wall_posts.guild_id` and `wall_comments.guild_id` are nullable for Global scope.
+- RLS remains enabled on `wall_posts`, `wall_comments`, `wall_post_reactions`, and `wall_comment_reactions`.
+- Direct anon/authenticated/public wall table grants remain `0`.
+- Wall RPC set count is `13`.
+- Active approved Owner count remains `1`.
+- Owner Global feed read through `get_guild_wall_feed(null, 1, null)` returned `is_global = true`, `can_post = true`, and `can_moderate = true`.
+
+Production frontend smoke:
+- Commit `feaf2ff feat: add global wall scope` was pushed to `main`.
+- Production bundle contains the Global Wall frontend strings.
+- Production app loads in a clean browser session with no captured console errors.
+
+Source/security validation:
+- `src/services/guildWallService.js` uses RPCs only.
+- Source checks found no direct `.from(...)` wall table access, no `member_cp`, no `cp_snapshots`, no CP RPCs, no uploads, no Storage paths, and no service-role references in the Guild Wall path.
+
+Manual verification still needed:
+- Authenticated controlled production smoke for creating a Global post, comment, reaction, optional delete/moderation, and cross-guild visibility.
+
 ## Admin Mobile Section Redesign Validation
 
 Admin mobile section redesign passed build, source, and production asset validation.

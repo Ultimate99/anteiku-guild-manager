@@ -4,6 +4,18 @@ Vercel is the production hosting target.
 
 Milestone 13B completed Vercel setup, Supabase Auth URL configuration, deployment, and production smoke/security validation.
 
+## Production Global Wall Scope
+
+Global Wall scope is live in production.
+
+- Commit deployed: `feaf2ff feat: add global wall scope`.
+- Production migration applied: `20260530000300_global_wall_scope.sql`.
+- Production dry-run showed only the Global Wall migration pending before apply.
+- Production DB verification passed for nullable wall scope columns, RLS enabled on all wall tables, zero broad direct wall table grants, wall RPC presence, active Owner count `1`, and Owner Global feed read.
+- Production frontend bundle contains the Global Wall scope UI.
+- `My Guild` uses explicit guild scope; `Global` uses null `guild_id` and does not mix guild-scoped posts into Global.
+- Controlled production mutation smoke for Global post/comment/reaction remains pending.
+
 ## Production PWA Install Support
 
 Milestone 26A/26B deployed PWA install support to production.

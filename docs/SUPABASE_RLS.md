@@ -1,8 +1,41 @@
 # Supabase RLS
 
-The Supabase RLS/RPC implementation has been validated through the 3v3 Team Finder. Production is applied/verified through `20260528000100_three_v_three_team_finder.sql`.
+The Supabase RLS/RPC implementation has been validated through Global Wall scope. Production is applied/verified through `20260530000300_global_wall_scope.sql`.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
+
+## Global Wall Scope RLS/RPC
+
+Global Wall scope is implemented and production applied through `20260530000300_global_wall_scope.sql`.
+
+Tables:
+- `wall_posts`
+- `wall_comments`
+- `wall_post_reactions`
+- `wall_comment_reactions`
+
+RLS/grants:
+- RLS is enabled on all wall tables.
+- Direct anon/authenticated/public table grants remain revoked.
+- Frontend access should use only the Guild Wall RPCs.
+
+Scope rules:
+- Null `guild_id` means Global Wall for wall posts/comments.
+- Non-null `guild_id` remains guild-scoped.
+- `get_guild_wall_feed(null, ...)` returns only Global posts.
+- `get_guild_wall_feed(p_guild_id, ...)` returns only that guild's posts.
+
+Eligibility:
+- Approved active/trial/pending_transfer members can view/post/comment/react in Global.
+- Approved inactive/on_break members can view only.
+- Pending/rejected/suspended/left/kicked users are denied.
+
+Moderation:
+- Owner can moderate Global.
+- Scoped staff can moderate only their allowed guild scope and cannot moderate Global posts.
+
+CP/privacy:
+- Guild Wall must not return normal CP, `member_cp`, `cp_snapshots`, CP analytics, CP roster, CP ranking, or CP growth data.
 
 ## Milestone 25B 3v3 Team Finder RLS/RPC
 

@@ -1,5 +1,28 @@
 # Session Log
 
+## 2026-05-30 - Global Wall Scope
+
+- Implemented and deployed Global Wall as a separate Guild Wall scope.
+- Commit `feaf2ff feat: add global wall scope` changed:
+  - `supabase/migrations/20260530000300_global_wall_scope.sql`
+  - `supabase/tests/local_validation_anteiku.sql`
+  - `src/pages/GuildWall.jsx`
+  - `src/services/guildWallService.js`
+  - `src/styles/app.css`
+  - `src/i18n/en.js`
+  - `src/i18n/fr.js`
+  - `src/i18n/de.js`
+- Added nullable wall `guild_id` support where null means Global Wall.
+- Updated Guild Wall feed/create RPCs so Global returns only Global posts and My Guild uses explicit guild scope.
+- Kept Global moderation Owner-only; scoped staff cannot moderate Global posts.
+- Updated frontend to show `My Guild` / `Global` scope chips and fixed reaction display through stable emoji icons while keeping backend reaction values unchanged.
+- Local DB reset passed and local Guild Wall validation passed `33 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production dry-run showed only `20260530000300_global_wall_scope.sql`; migration apply and DB verification passed.
+- Pushed `main`; production bundle contains Global Wall strings and the app loads with no captured console errors.
+- Controlled production Global post/comment/reaction smoke was not performed by Codex because no authenticated controlled production session was available.
+- No normal CP, `member_cp`, `cp_snapshots`, uploads, Storage, CP/GvG/Analytics/3v3/cosmetics/member-status/auth/role/permission behavior changed.
+
 ## 2026-05-28 - Admin Mobile Section Redesign
 
 - Implemented and deployed a CSS-only AdminPanel mobile redesign pass for the remaining admin sections.

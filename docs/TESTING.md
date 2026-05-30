@@ -1,5 +1,31 @@
 # Testing
 
+## Global Wall Scope
+
+Global Wall scope passed local validation, build/source validation, production migration rollout, and production read-only smoke.
+
+Commands:
+- `npx.cmd supabase db reset`
+- `Get-Content supabase\tests\local_validation_anteiku.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres`
+- `npm.cmd run build`
+- `npx.cmd supabase db push --dry-run`
+- `npx.cmd supabase db push`
+
+Results:
+- Local Guild Wall validation passed `33 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed only `20260530000300_global_wall_scope.sql`.
+- Production migration apply succeeded and remote migration list shows `20260530000300` applied.
+- Production DB verification passed for nullable wall scope columns, RLS enabled, zero broad direct wall table grants, wall RPC presence, active Owner count `1`, and Owner Global feed read.
+- Production bundle contains the Global Wall frontend strings and the app loads with no captured console errors.
+
+Security/source validation:
+- Guild Wall frontend uses RPC-only service calls.
+- Source checks found no direct `.from(...)` wall table access, no `member_cp`, no `cp_snapshots`, no CP RPCs, no uploads, no Storage paths, and no service-role references.
+- No CP/GvG/Analytics/3v3/cosmetics/member-status/auth/role/permission behavior changed.
+
+Manual verification still needed:
+- Authenticated controlled production smoke for Global post create/comment/react/delete and Owner/scoped-staff moderation checks.
+
 ## Admin Mobile Section Redesign
 
 Admin mobile section redesign passed build, source, and production asset validation.

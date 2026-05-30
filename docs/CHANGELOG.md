@@ -1,5 +1,29 @@
 # Changelog
 
+## 2026-05-30 - Global Wall Scope
+
+- Added Global Wall as a separate Guild Wall scope.
+- Commit deployed: `feaf2ff feat: add global wall scope`.
+- Migration applied: `20260530000300_global_wall_scope.sql`.
+- Source files changed in the feature commit:
+  - `supabase/migrations/20260530000300_global_wall_scope.sql`
+  - `supabase/tests/local_validation_anteiku.sql`
+  - `src/pages/GuildWall.jsx`
+  - `src/services/guildWallService.js`
+  - `src/styles/app.css`
+  - `src/i18n/en.js`
+  - `src/i18n/fr.js`
+  - `src/i18n/de.js`
+- `My Guild` now loads explicit guild-scoped posts.
+- `Global` now loads only posts/comments with null `guild_id`.
+- Global Wall supports approved member posts/comments/reactions and Owner-only Global moderation.
+- Reactions display emoji icons while backend reaction values remain `like`, `fire`, `coffee`, `skull`, and `trophy`.
+- Local Guild Wall validation passed `33 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed only the Global Wall migration, migration apply succeeded, and production DB/read-only verification passed.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- No CP/GvG/Analytics/3v3/cosmetics/member-status/auth/role/permission behavior changed, and no normal CP tables/RPCs, uploads, or Storage paths were added.
+- Controlled production Global post/comment/reaction smoke remains pending.
+
 ## 2026-05-28 - Admin Mobile Section Redesign
 
 - Added CSS-only AdminPanel mobile redesign pass for the remaining admin sections.

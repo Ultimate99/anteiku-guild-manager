@@ -1,5 +1,34 @@
 # Project State
 
+## Global Wall Scope Live
+
+Guild Wall now has two member-facing scopes: `My Guild` and `Global`.
+
+Production rollout:
+- Commit `feaf2ff feat: add global wall scope` was pushed to `main`.
+- Production project `mzflfyxxkascrfpteexz` received `20260530000300_global_wall_scope.sql` after a clean dry-run showing only that migration pending.
+- Production DB verification passed for nullable `wall_posts.guild_id` / `wall_comments.guild_id`, RLS enabled on all wall tables, zero broad direct anon/authenticated/public wall table grants, 13 wall RPCs present, active Owner count `1`, and Owner Global feed RPC read.
+- Production bundle contains the Global Wall frontend strings and the app loads with no captured console errors in a clean browser session.
+
+Behavior:
+- `My Guild` loads only the user's guild-scoped wall posts.
+- `Global` loads only Global Wall posts where `guild_id` is null.
+- Approved active/trial/pending_transfer members can post/comment/react in Global.
+- `inactive` and `on_break` members can view but cannot post/comment/react.
+- Global moderation is Owner-only; scoped staff cannot moderate Global posts.
+- Reactions still use stable backend values `like`, `fire`, `coffee`, `skull`, `trophy` while the UI displays emoji icons.
+
+Security/CP privacy:
+- Guild Wall still uses RPC-only service paths.
+- No `member_cp`, `cp_snapshots`, normal CP RPCs, uploads, or Storage paths are used.
+- No CP/GvG/Analytics/3v3/cosmetics/member-status/auth/role/permission behavior changed.
+
+Validation:
+- Local `npx.cmd supabase db reset` passed.
+- Local `local_validation_anteiku.sql` Guild Wall block passed `33 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Controlled production create/comment/react/delete smoke was not performed by Codex because no authenticated controlled production session was available.
+
 ## Admin Mobile Section Redesign Complete
 
 AdminPanel mobile redesign for the remaining admin sections is implemented and deployed.
