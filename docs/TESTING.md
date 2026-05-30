@@ -1,5 +1,27 @@
 # Testing
 
+## Ghoul Rep Wall Reaction Backend
+
+Ghoul Rep backend support passed local validation and production migration/read-only verification.
+
+Commands:
+- `npx.cmd supabase db reset`
+- `Get-Content supabase\tests\local_validation_anteiku.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres`
+- `npx.cmd supabase db push --dry-run`
+- `npx.cmd supabase db push`
+- `npx.cmd supabase migration list`
+
+Results:
+- Local Guild Wall/Ghoul Rep validation passed `47 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed only `20260530000400_ghoul_rep_wall_reactions.sql`.
+- Production migration apply succeeded and remote migration list shows `20260530000400` applied.
+- Production DB verification passed for `author_ghoul_rep` in the feed function, `get_wall_reaction_details(...)` presence/authenticated execute, private helper denial for authenticated clients, Wall RLS/no direct client grants, no CP/email references in installed Ghoul Rep functions, Owner Global feed read, and active Owner count `1`.
+
+Security/source validation:
+- The Ghoul Rep migration references no `member_cp`, `cp_snapshots`, normal CP RPCs, service-role paths, uploads, or Storage.
+- Ghoul Rep counts distinct non-self reactors per post/comment target and includes comment reactions.
+- Frontend Ghoul Rep chip/reaction-detail UI remains pending.
+
 ## Global Wall Scope
 
 Global Wall scope passed local validation, build/source validation, production migration rollout, and production read-only smoke.

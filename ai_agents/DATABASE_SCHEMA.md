@@ -2,7 +2,11 @@
 
 ## Current Backend Status
 
-Milestone 25B is implemented and locally validated only. 3v3 Team Finder backend/RLS/RPC support lives in `20260528000100_three_v_three_team_finder.sql`; staging and production do not have this migration yet.
+Guild Wall / Global Wall Ghoul Rep backend support is applied and verified in production through `20260530000400_ghoul_rep_wall_reactions.sql`.
+
+Global Wall scope is applied and verified in production through `20260530000300_global_wall_scope.sql`.
+
+3v3 Team Finder backend/RLS/RPC support is applied and verified in production through `20260528000100_three_v_three_team_finder.sql`.
 
 Milestone 24E is complete in production. Admin Analytics RPCs and the manual Weekly Growth snapshot batch model are applied and verified in production through `20260526000100_admin_analytics_foundation.sql`.
 
@@ -18,7 +22,7 @@ Staging and production both have this migration applied and verified. Future new
 
 ## Production Deployment Status
 
-Production Supabase is live and migrated through Milestone 24E. Member Status, CP Update Window / Member CP Self-Submit, CP Leaderboard, Rank Badge / Profile Border, Cosmetics, Premium Cosmetics, Owner Cosmetics, and Admin Analytics are applied, verified, and live in production.
+Production Supabase is live and migrated through `20260530000400_ghoul_rep_wall_reactions.sql`. Member Status, CP Update Window / Member CP Self-Submit, CP Leaderboard, Rank Badge / Profile Border, Cosmetics, Premium Cosmetics, Owner Cosmetics, Admin Analytics, Live CP Growth, 3v3 Team Finder, Guild Wall, Global Wall, and Ghoul Rep backend support are applied, verified, and live in production.
 
 Current local migration order:
 
@@ -47,6 +51,10 @@ Current local migration order:
 23. `20260526000200_live_cp_growth.sql`
 24. `20260526000300_live_cp_growth_baseline_scope.sql`
 25. `20260528000100_three_v_three_team_finder.sql`
+26. `20260530000100_guild_wall_mvp.sql`
+27. `20260530000200_guild_wall_scope_hotfix.sql`
+28. `20260530000300_global_wall_scope.sql`
+29. `20260530000400_ghoul_rep_wall_reactions.sql`
 
 Migration `20260523000100_member_roster_status_system.sql` is implemented, locally validated, staging validated, and production applied/verified.
 
@@ -64,7 +72,33 @@ Migration `20260525000300_premium_cosmetics_grant_helper.sql` is implemented, lo
 
 Migration `20260526000100_admin_analytics_foundation.sql` is implemented, locally validated, staging validated, and production applied/verified. It adds `cp_snapshot_batches`, `cp_snapshot_entries`, Admin Analytics RPCs, and manual Weekly Growth RPCs.
 
-Migration `20260528000100_three_v_three_team_finder.sql` is implemented and locally validated only. It adds 3v3 Team Finder tables/RLS/RPCs and must not be assumed present in staging or production until an approved rollout applies it.
+Migration `20260528000100_three_v_three_team_finder.sql` is implemented, locally validated, and production applied/verified. It adds 3v3 Team Finder tables/RLS/RPCs.
+
+Migration `20260530000100_guild_wall_mvp.sql` is implemented, locally validated, and production applied/verified. It adds Guild Wall tables/RLS/RPCs.
+
+Migration `20260530000200_guild_wall_scope_hotfix.sql` is implemented, locally validated, and production applied/verified. It fixes Guild Wall scope resolution.
+
+Migration `20260530000300_global_wall_scope.sql` is implemented, locally validated, and production applied/verified. It adds null-scope Global Wall support.
+
+Migration `20260530000400_ghoul_rep_wall_reactions.sql` is implemented, locally validated, and production applied/verified. It adds live-calculated Ghoul Rep fields to the Wall feed and safe reaction details RPC support.
+
+## Ghoul Rep Wall Reaction Backend
+
+Migration:
+- `supabase/migrations/20260530000400_ghoul_rep_wall_reactions.sql`
+
+Backend behavior:
+- `private.get_profile_ghoul_rep(p_profile_id uuid)` calculates live Ghoul Rep from wall reaction rows.
+- `get_guild_wall_feed(...)` includes `author_ghoul_rep` for post and comment authors.
+- `get_wall_reaction_details(p_target_type text, p_target_id uuid, p_reaction_type text default null)` returns safe public reaction-user details for post/comment targets.
+
+Ghoul Rep rules:
+- Counts post reactions toward the post author and comment reactions toward the comment author.
+- Counts distinct non-self reacting profiles per target post/comment.
+- Multiple reaction types by the same user on the same target count as `+1`.
+- The same user reacting to different targets by the same author can count once per target.
+- Deleted posts/comments and removed reactions do not count.
+- Normal protected CP is never used.
 
 ## Milestone 25B 3v3 Team Finder Backend
 

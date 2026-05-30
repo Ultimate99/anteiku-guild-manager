@@ -1,5 +1,11 @@
 # Code Index
 
+## Ghoul Rep Wall Reaction Backend
+
+- `supabase/migrations/20260530000400_ghoul_rep_wall_reactions.sql`: Adds live-calculated Ghoul Rep for Guild Wall and Global Wall by counting distinct non-self reactors per post/comment target, excluding deleted content and removed reactions. Replaces `get_guild_wall_feed(...)` to include `author_ghoul_rep` for post/comment authors and adds `get_wall_reaction_details(p_target_type, p_target_id, p_reaction_type)` for safe reaction-user detail UI.
+- `supabase/tests/local_validation_anteiku.sql`: Extends Guild Wall validation for post reactions, comment reactions, multiple reaction types from one user counting once per target, same user across multiple targets counting separately, self-reaction exclusion, removed/deleted reaction effects, safe reaction detail payloads, wrong-guild/pending denial, no CP fields, and active Owner count.
+- Production status: production DB has `20260530000400_ghoul_rep_wall_reactions.sql` applied and verified. No frontend Ghoul Rep chip/reaction-detail UI is implemented yet.
+
 ## Global Wall Scope
 
 - `supabase/migrations/20260530000300_global_wall_scope.sql`: Adds Global Wall scope support by allowing null `wall_posts.guild_id` / `wall_comments.guild_id`, updating wall view/action helpers, and replacing `get_guild_wall_feed` / `create_wall_post` so null scope means Global Wall rather than mixed all-guild feed.

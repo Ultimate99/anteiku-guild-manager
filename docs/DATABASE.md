@@ -1,10 +1,29 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented through Global Wall scope. Remote production is live through `20260530000300_global_wall_scope.sql`.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented through Ghoul Rep Wall reactions. Remote production is live through `20260530000400_ghoul_rep_wall_reactions.sql`.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
-Global Wall scope is implemented, locally validated, production applied, and read-only-production-smoke validated. Controlled Global post/comment/reaction production smoke remains pending.
+Global Wall scope and Ghoul Rep backend support are implemented, locally validated, production applied, and read-only-production-smoke validated. Frontend Ghoul Rep chip/reaction-detail UI remains pending.
+
+## Ghoul Rep Wall Reactions
+
+Migration `20260530000400_ghoul_rep_wall_reactions.sql` is applied and verified in production.
+
+Behavior:
+- `get_guild_wall_feed(...)` returns `author_ghoul_rep` for Wall post and comment authors.
+- `private.get_profile_ghoul_rep(p_profile_id uuid)` calculates Ghoul Rep from visible wall reaction rows.
+- `get_wall_reaction_details(p_target_type, p_target_id, p_reaction_type)` returns safe public reaction-user details for post/comment reaction UI.
+
+Rules:
+- Post reactions count for the post author.
+- Comment reactions count for the comment author.
+- One reacting profile contributes at most `+1` per target post/comment, even with multiple reaction types.
+- The same reacting profile can count separately on different targets.
+- Self-reactions, deleted posts/comments, and removed reactions do not count.
+
+Privacy:
+- Ghoul Rep does not use or expose normal CP, `member_cp`, `cp_snapshots`, email, auth metadata, uploads, Storage, or private admin metadata.
 
 ## Global Wall Scope
 
@@ -58,6 +77,7 @@ Security:
 26. `20260530000100_guild_wall_mvp.sql`
 27. `20260530000200_guild_wall_scope_hotfix.sql`
 28. `20260530000300_global_wall_scope.sql`
+29. `20260530000400_ghoul_rep_wall_reactions.sql`
 
 Migration `20260523000100_member_roster_status_system.sql` is locally validated, staging validated, and production applied/verified as of Milestone 15E.
 

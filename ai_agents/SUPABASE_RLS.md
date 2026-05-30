@@ -1,5 +1,29 @@
 # Supabase RLS
 
+## Ghoul Rep Wall Reaction RLS/RPC
+
+Ghoul Rep backend support is implemented, locally validated, and production applied through `20260530000400_ghoul_rep_wall_reactions.sql`.
+
+RPCs/helpers:
+- `private.get_profile_ghoul_rep(p_profile_id uuid)` is private and not executable by authenticated clients.
+- `get_guild_wall_feed(...)` remains the Wall feed read path and now returns `author_ghoul_rep`.
+- `get_wall_reaction_details(p_target_type, p_target_id, p_reaction_type)` is the safe reaction-detail read path for future hover/tap UI.
+
+Access rules:
+- Reaction detail reads require the same Guild Wall view authorization as feed reads.
+- Approved users can read safe reaction details only for visible Guild Wall or Global Wall targets.
+- Wrong-guild users are denied guild-scoped reaction details.
+- Pending/restricted users are denied.
+- Global Wall reaction details are visible to approved users according to Global Wall view rules.
+
+Privacy:
+- Reaction details return safe public profile/cosmetic fields only: IGN, username/profile slug, guild, avatar/frame asset fields, reaction type, and reaction timestamp.
+- No email, auth metadata, CP, audit/admin/private metadata, `member_cp`, or `cp_snapshots` are returned.
+
+Validation:
+- Local Guild Wall/Ghoul Rep validation passed `47 PASS / 0 FAIL / 0 SKIP`.
+- Production verification confirmed authenticated execute grant on `get_wall_reaction_details`, no authenticated execute on the private helper, Wall RLS/no direct client grants, no CP references in installed Ghoul Rep functions, Owner Global feed read, and active Owner count `1`.
+
 ## Milestone 25B 3v3 Team Finder RLS/RPC
 
 Milestone 25B is implemented and locally validated only. Staging and production do not have `20260528000100_three_v_three_team_finder.sql` yet.

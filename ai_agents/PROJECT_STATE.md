@@ -1,5 +1,34 @@
 # Project State
 
+## Ghoul Rep Wall Reaction Backend Live
+
+Ghoul Rep backend support is live in production through `20260530000400_ghoul_rep_wall_reactions.sql`.
+
+Production rollout:
+- Production project `mzflfyxxkascrfpteexz` received `20260530000400_ghoul_rep_wall_reactions.sql` after a clean dry-run showing only that migration pending.
+- Production migration list shows `20260530000400` applied remotely.
+- Production DB verification passed for `get_guild_wall_feed(...)` returning `author_ghoul_rep`, new `get_wall_reaction_details(...)` RPC presence/authenticated execute grant, private `get_profile_ghoul_rep(...)` helper not executable by authenticated clients, Wall table RLS/no direct client grants, no CP references in installed Ghoul Rep functions, Owner Global feed read, and active Owner count `1`.
+
+Behavior:
+- Ghoul Rep is calculated live from Guild Wall and Global Wall reactions.
+- Post reactions give Ghoul Rep to the post author.
+- Comment reactions give Ghoul Rep to the comment author.
+- One reacting profile contributes at most `+1` per target post or comment even if they add multiple reaction types.
+- Self-reactions remain visible but do not count.
+- Deleted posts/comments and removed reactions do not count.
+- `get_guild_wall_feed(...)` now includes `author_ghoul_rep` for post and comment authors.
+- `get_wall_reaction_details(p_target_type, p_target_id, p_reaction_type)` returns safe reaction-user details for future hover/tap UI.
+
+Security/CP privacy:
+- No `member_cp`, `cp_snapshots`, CP RPCs, uploads, Storage, email, auth metadata, or private admin metadata are used or returned.
+- Reaction details return only safe public profile/cosmetic fields: IGN, username/profile slug, guild, avatar/frame asset fields, reaction type, and reaction timestamp.
+- Frontend Ghoul Rep display/reaction-detail UI is not implemented yet.
+
+Validation:
+- Local `npx.cmd supabase db reset` passed.
+- Local `local_validation_anteiku.sql` Guild Wall/Ghoul Rep block passed `47 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` was skipped because this checkpoint changed SQL/tests/docs only and no frontend runtime code.
+
 ## Global Wall Scope Live
 
 Guild Wall now has two member-facing scopes: `My Guild` and `Global`.

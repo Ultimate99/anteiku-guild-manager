@@ -2,17 +2,23 @@
 
 ## Current Recommendation
 
-Global Wall scope is live in production.
+Ghoul Rep backend support for Guild Wall / Global Wall reactions is live in production.
 
 Recommended next step:
-- Run a manual authenticated controlled production smoke for Guild Wall Global scope:
-  - Approved member opens Guild Wall.
-  - Switches between `My Guild` and `Global`.
-  - Creates a Global post, comments, reacts, and optionally deletes the test content.
-  - Cross-guild approved member sees the Global post but not My Guild-only posts.
-  - Scoped staff cannot pin/moderate Global posts; Owner can moderate Global posts if tested.
-  - Confirm no CP values, no console errors, and no uploads/storage behavior.
-- Continue with the next user-prioritized milestone after the Global Wall controlled smoke.
+- Implement the frontend Ghoul Rep chip/UI and Discord-like reaction details:
+  - Display `author_ghoul_rep` on Guild Wall/Global Wall post and comment author surfaces.
+  - Keep reaction buttons as emojis while backend values remain `like`, `fire`, `coffee`, `skull`, and `trophy`.
+  - Use `get_wall_reaction_details(...)` for safe hover/focus/tap reaction-user details.
+  - Do not direct-read wall tables and do not expose CP/email/private metadata.
+- Optional controlled production smoke can verify an existing post/comment reaction updates Ghoul Rep and safe reaction details render once the frontend exists.
+
+Recorded Ghoul Rep backend status:
+- Production DB received `20260530000400_ghoul_rep_wall_reactions.sql` after a clean dry-run showing only that migration pending.
+- Ghoul Rep counts distinct non-self reacting profiles per visible post/comment target across Guild Wall and Global Wall.
+- Multiple reaction types by the same user on the same target count as `+1`; reactions by the same user on different targets count separately.
+- Deleted posts/comments and removed reactions do not count.
+- Local validation passed `47 PASS / 0 FAIL / 0 SKIP`; production DB/read-only verification passed.
+- No frontend Ghoul Rep chip/reaction-detail UI has been implemented yet.
 
 Recorded Global Wall scope status:
 - Commit `feaf2ff feat: add global wall scope` is pushed to `main` and production serves the updated bundle.

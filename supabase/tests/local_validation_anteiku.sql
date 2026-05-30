@@ -5975,12 +5975,18 @@ declare
   post_a_id uuid;
   global_post_id uuid;
   global_comment_id uuid;
+  rep_post_one_id uuid;
+  rep_post_two_id uuid;
+  rep_comment_id uuid;
   normal_post_id uuid;
   pinned_post_id uuid;
   re_post_id uuid;
   wall_comment_id uuid;
   mod_comment_id uuid;
   payload jsonb;
+  details_payload jsonb;
+  rep_before bigint;
+  rep_after bigint;
   direct_count integer;
   owner_count integer;
   first_post_id uuid;
@@ -6234,6 +6240,240 @@ begin
     insert into milestone26c_guild_wall_results values ('moderation', 'owner_moderates_global_post', 'PASS', 'Owner pinned and unpinned a global post.');
   exception when others then
     insert into milestone26c_guild_wall_results values ('moderation', 'owner_moderates_global_post', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_a_id::text, true);
+    rep_post_one_id := public.create_wall_post(anteiku_id, 'Ghoul Rep guild post one');
+    rep_post_two_id := public.create_wall_post(anteiku_id, 'Ghoul Rep guild post two');
+
+    rep_before := private.get_profile_ghoul_rep(member_a_id);
+
+    perform set_config('request.jwt.claim.sub', member_b_id::text, true);
+    perform public.react_to_wall_post(rep_post_one_id, 'fire');
+    perform public.react_to_wall_post(rep_post_one_id, 'trophy');
+
+    rep_after := private.get_profile_ghoul_rep(member_a_id);
+
+    if rep_after = rep_before + 1 then
+      insert into milestone26c_guild_wall_results values ('ghoul_rep', 'same_user_multiple_post_reactions_count_once', 'PASS', 'before=' || rep_before::text || ', after=' || rep_after::text);
+    else
+      insert into milestone26c_guild_wall_results values ('ghoul_rep', 'same_user_multiple_post_reactions_count_once', 'FAIL', 'before=' || rep_before::text || ', after=' || rep_after::text);
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('ghoul_rep', 'same_user_multiple_post_reactions_count_once', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    rep_before := private.get_profile_ghoul_rep(member_a_id);
+
+    perform set_config('request.jwt.claim.sub', member_b_id::text, true);
+    perform public.react_to_wall_post(rep_post_two_id, 'coffee');
+
+    rep_after := private.get_profile_ghoul_rep(member_a_id);
+
+    if rep_after = rep_before + 1 then
+      insert into milestone26c_guild_wall_results values ('ghoul_rep', 'same_user_different_posts_count_per_target', 'PASS', 'before=' || rep_before::text || ', after=' || rep_after::text);
+    else
+      insert into milestone26c_guild_wall_results values ('ghoul_rep', 'same_user_different_posts_count_per_target', 'FAIL', 'before=' || rep_before::text || ', after=' || rep_after::text);
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('ghoul_rep', 'same_user_different_posts_count_per_target', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    rep_before := private.get_profile_ghoul_rep(member_a_id);
+
+    perform set_config('request.jwt.claim.sub', member_a_id::text, true);
+    perform public.react_to_wall_post(rep_post_one_id, 'skull');
+
+    rep_after := private.get_profile_ghoul_rep(member_a_id);
+
+    if rep_after = rep_before then
+      insert into milestone26c_guild_wall_results values ('ghoul_rep', 'self_reaction_does_not_count', 'PASS', 'before=' || rep_before::text || ', after=' || rep_after::text);
+    else
+      insert into milestone26c_guild_wall_results values ('ghoul_rep', 'self_reaction_does_not_count', 'FAIL', 'before=' || rep_before::text || ', after=' || rep_after::text);
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('ghoul_rep', 'self_reaction_does_not_count', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    rep_before := private.get_profile_ghoul_rep(member_a_id);
+
+    perform set_config('request.jwt.claim.sub', member_b_id::text, true);
+    perform public.remove_wall_post_reaction(rep_post_two_id, 'coffee');
+
+    rep_after := private.get_profile_ghoul_rep(member_a_id);
+
+    if rep_after = rep_before - 1 then
+      insert into milestone26c_guild_wall_results values ('ghoul_rep', 'removed_post_reaction_reduces_rep', 'PASS', 'before=' || rep_before::text || ', after=' || rep_after::text);
+    else
+      insert into milestone26c_guild_wall_results values ('ghoul_rep', 'removed_post_reaction_reduces_rep', 'FAIL', 'before=' || rep_before::text || ', after=' || rep_after::text);
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('ghoul_rep', 'removed_post_reaction_reduces_rep', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_b_id::text, true);
+    perform public.react_to_wall_post(rep_post_two_id, 'coffee');
+
+    rep_before := private.get_profile_ghoul_rep(member_a_id);
+
+    perform set_config('request.jwt.claim.sub', member_a_id::text, true);
+    perform public.delete_wall_post(rep_post_two_id);
+
+    rep_after := private.get_profile_ghoul_rep(member_a_id);
+
+    if rep_after = rep_before - 1 then
+      insert into milestone26c_guild_wall_results values ('ghoul_rep', 'deleted_post_removes_rep', 'PASS', 'before=' || rep_before::text || ', after=' || rep_after::text);
+    else
+      insert into milestone26c_guild_wall_results values ('ghoul_rep', 'deleted_post_removes_rep', 'FAIL', 'before=' || rep_before::text || ', after=' || rep_after::text);
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('ghoul_rep', 'deleted_post_removes_rep', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    rep_before := private.get_profile_ghoul_rep(member_a_id);
+
+    perform set_config('request.jwt.claim.sub', wrong_guild_member_id::text, true);
+    perform public.react_to_wall_post(global_post_id, 'trophy');
+
+    rep_after := private.get_profile_ghoul_rep(member_a_id);
+
+    if rep_after = rep_before + 1 then
+      insert into milestone26c_guild_wall_results values ('ghoul_rep', 'global_wall_reaction_counts', 'PASS', 'before=' || rep_before::text || ', after=' || rep_after::text);
+    else
+      insert into milestone26c_guild_wall_results values ('ghoul_rep', 'global_wall_reaction_counts', 'FAIL', 'before=' || rep_before::text || ', after=' || rep_after::text);
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('ghoul_rep', 'global_wall_reaction_counts', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_a_id::text, true);
+    rep_comment_id := public.create_wall_comment(global_post_id, 'Ghoul Rep comment validation');
+
+    rep_before := private.get_profile_ghoul_rep(member_a_id);
+
+    perform set_config('request.jwt.claim.sub', member_b_id::text, true);
+    perform public.react_to_wall_comment(rep_comment_id, 'like');
+    perform public.react_to_wall_comment(rep_comment_id, 'fire');
+
+    rep_after := private.get_profile_ghoul_rep(member_a_id);
+
+    if rep_after = rep_before + 1 then
+      insert into milestone26c_guild_wall_results values ('ghoul_rep', 'same_user_multiple_comment_reactions_count_once', 'PASS', 'before=' || rep_before::text || ', after=' || rep_after::text);
+    else
+      insert into milestone26c_guild_wall_results values ('ghoul_rep', 'same_user_multiple_comment_reactions_count_once', 'FAIL', 'before=' || rep_before::text || ', after=' || rep_after::text);
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('ghoul_rep', 'same_user_multiple_comment_reactions_count_once', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_a_id::text, true);
+    details_payload := public.get_wall_reaction_details('comment', rep_comment_id, 'like');
+
+    if details_payload::text like '%' || member_b_id::text || '%'
+       and details_payload::text like '%"reaction_type": "like"%'
+       and details_payload::text not like '%member_cp%'
+       and details_payload::text not like '%cp_snapshots%'
+       and details_payload::text not like '%cp_value%'
+       and details_payload::text not like '%email%' then
+      insert into milestone26c_guild_wall_results values ('reaction_details', 'comment_reaction_details_safe', 'PASS', details_payload::text);
+    else
+      insert into milestone26c_guild_wall_results values ('reaction_details', 'comment_reaction_details_safe', 'FAIL', details_payload::text);
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('reaction_details', 'comment_reaction_details_safe', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    rep_before := private.get_profile_ghoul_rep(member_a_id);
+
+    perform set_config('request.jwt.claim.sub', member_a_id::text, true);
+    perform public.delete_wall_comment(rep_comment_id);
+
+    rep_after := private.get_profile_ghoul_rep(member_a_id);
+
+    if rep_after = rep_before - 1 then
+      insert into milestone26c_guild_wall_results values ('ghoul_rep', 'deleted_comment_removes_rep', 'PASS', 'before=' || rep_before::text || ', after=' || rep_after::text);
+    else
+      insert into milestone26c_guild_wall_results values ('ghoul_rep', 'deleted_comment_removes_rep', 'FAIL', 'before=' || rep_before::text || ', after=' || rep_after::text);
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('ghoul_rep', 'deleted_comment_removes_rep', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_a_id::text, true);
+    payload := public.get_guild_wall_feed(anteiku_id, 20, null);
+
+    if payload::text like '%author_ghoul_rep%'
+       and payload::text not like '%member_cp%'
+       and payload::text not like '%cp_snapshots%'
+       and payload::text not like '%cp_value%' then
+      insert into milestone26c_guild_wall_results values ('ghoul_rep', 'feed_returns_author_ghoul_rep_without_cp', 'PASS', payload::text);
+    else
+      insert into milestone26c_guild_wall_results values ('ghoul_rep', 'feed_returns_author_ghoul_rep_without_cp', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('ghoul_rep', 'feed_returns_author_ghoul_rep_without_cp', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_a_id::text, true);
+    details_payload := public.get_wall_reaction_details('post', rep_post_one_id, 'fire');
+
+    if details_payload::text like '%' || member_b_id::text || '%'
+       and details_payload::text like '%"reaction_type": "fire"%'
+       and details_payload::text like '%avatar_asset_path%'
+       and details_payload::text not like '%member_cp%'
+       and details_payload::text not like '%cp_snapshots%'
+       and details_payload::text not like '%cp_value%'
+       and details_payload::text not like '%email%' then
+      insert into milestone26c_guild_wall_results values ('reaction_details', 'post_reaction_details_safe', 'PASS', details_payload::text);
+    else
+      insert into milestone26c_guild_wall_results values ('reaction_details', 'post_reaction_details_safe', 'FAIL', details_payload::text);
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('reaction_details', 'post_reaction_details_safe', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', wrong_guild_member_id::text, true);
+    details_payload := public.get_wall_reaction_details('post', global_post_id, 'trophy');
+
+    if details_payload::text like '%' || wrong_guild_member_id::text || '%'
+       and details_payload::text not like '%member_cp%'
+       and details_payload::text not like '%cp_snapshots%'
+       and details_payload::text not like '%cp_value%'
+       and details_payload::text not like '%email%' then
+      insert into milestone26c_guild_wall_results values ('reaction_details', 'global_reaction_details_visible_to_approved_member', 'PASS', details_payload::text);
+    else
+      insert into milestone26c_guild_wall_results values ('reaction_details', 'global_reaction_details_visible_to_approved_member', 'FAIL', details_payload::text);
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('reaction_details', 'global_reaction_details_visible_to_approved_member', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', wrong_guild_member_id::text, true);
+    perform public.get_wall_reaction_details('post', post_a_id, 'fire');
+    insert into milestone26c_guild_wall_results values ('reaction_details', 'wrong_guild_reaction_details_denied', 'FAIL', 'Wrong-guild member read guild post reaction details.');
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('reaction_details', 'wrong_guild_reaction_details_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', pending_id::text, true);
+    perform public.get_wall_reaction_details('post', rep_post_one_id, 'fire');
+    insert into milestone26c_guild_wall_results values ('reaction_details', 'pending_reaction_details_denied', 'FAIL', 'Pending user read reaction details.');
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('reaction_details', 'pending_reaction_details_denied', 'PASS', sqlerrm);
   end;
 
   begin

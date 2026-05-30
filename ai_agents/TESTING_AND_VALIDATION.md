@@ -1,5 +1,40 @@
 # Testing And Validation
 
+## Ghoul Rep Wall Reaction Backend Validation
+
+Ghoul Rep backend support passed local validation and production migration/read-only verification.
+
+Commands:
+- `npx.cmd supabase db reset`
+- `Get-Content supabase\tests\local_validation_anteiku.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres`
+- `rg -n "member_cp|cp_snapshots|get_current_cp_roster|get_cp_leaderboard|get_admin_cp_rankings|update_member_cp|submit_my_cp_update|get_my_cp|service_role|service-role|storage|upload" supabase\migrations\20260530000400_ghoul_rep_wall_reactions.sql`
+- `npx.cmd supabase link --project-ref mzflfyxxkascrfpteexz`
+- `npx.cmd supabase migration list`
+- `npx.cmd supabase db push --dry-run`
+- `npx.cmd supabase db push`
+
+Result:
+- Local reset applied through `20260530000400_ghoul_rep_wall_reactions.sql`.
+- Guild Wall/Ghoul Rep validation block passed `47 PASS / 0 FAIL / 0 SKIP`.
+- Migration source scan found no normal CP, CP snapshots, service-role, upload, or Storage references in the Ghoul Rep migration.
+- Production dry-run showed only `20260530000400_ghoul_rep_wall_reactions.sql` pending.
+- Production migration apply succeeded and remote migration list shows `20260530000400` applied.
+
+Production DB verification:
+- `get_guild_wall_feed(...)` returns `author_ghoul_rep`.
+- `get_wall_reaction_details(...)` exists and is executable by authenticated users.
+- `private.get_profile_ghoul_rep(...)` exists but is not executable by authenticated users.
+- Wall tables retain RLS and no direct anon/authenticated table grants.
+- Installed Ghoul Rep functions do not reference `member_cp`, `cp_snapshots`, or email.
+- Owner Global feed read returned a safe viewer payload.
+- Active approved Owner count remains `1`.
+
+Build note:
+- `npm.cmd run build` was skipped because no frontend runtime code changed for this backend-only checkpoint.
+
+Manual/frontend verification still needed:
+- Frontend Ghoul Rep chip and reaction-detail hover/tap UI are not implemented yet.
+
 ## Global Wall Scope Validation
 
 Global Wall scope passed local backend validation, build/source validation, production dry-run/apply, and production read-only verification.

@@ -1,5 +1,28 @@
 # Security Rules
 
+## Ghoul Rep Wall Reaction Security Rules
+
+Ghoul Rep backend support is live in production through `20260530000400_ghoul_rep_wall_reactions.sql`.
+
+Rules:
+- Ghoul Rep is calculated from Guild Wall and Global Wall reactions only.
+- Post reactions count for the post author.
+- Comment reactions count for the comment author.
+- A reacting profile gives at most `+1` per target post/comment, even if they use multiple reaction types.
+- The same reacting profile can count separately for different post/comment targets by the same author.
+- Self-reactions remain visible but do not count toward Ghoul Rep.
+- Deleted posts/comments and removed reactions do not count.
+- `author_ghoul_rep` may be returned by `get_guild_wall_feed(...)`.
+- Reaction detail UI must use `get_wall_reaction_details(...)`, not direct table reads.
+
+Privacy:
+- Ghoul Rep must not use or expose normal CP, `member_cp`, `cp_snapshots`, CP analytics, CP roster, CP rankings, CP growth, email, auth metadata, private admin metadata, uploads, or Storage data.
+- Reaction details may show only safe public profile/cosmetic fields: avatar/frame if available, IGN, username/profile slug, guild, reaction type, and reaction timestamp.
+
+Production validation:
+- Production dry-run showed only `20260530000400_ghoul_rep_wall_reactions.sql`, migration apply succeeded, and read-only DB verification passed.
+- Local validation passed `47 PASS / 0 FAIL / 0 SKIP`.
+
 ## Global Wall Scope Security Rules
 
 Global Wall is live in production through `20260530000300_global_wall_scope.sql` and commit `feaf2ff feat: add global wall scope`.

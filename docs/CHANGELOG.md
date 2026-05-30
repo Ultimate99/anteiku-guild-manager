@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-05-30 - Ghoul Rep Wall Reaction Backend
+
+- Added backend/RPC support for Ghoul Rep on Guild Wall and Global Wall reactions.
+- Migration applied: `20260530000400_ghoul_rep_wall_reactions.sql`.
+- Source files changed:
+  - `supabase/migrations/20260530000400_ghoul_rep_wall_reactions.sql`
+  - `supabase/tests/local_validation_anteiku.sql`
+- `get_guild_wall_feed(...)` now returns `author_ghoul_rep` for post and comment authors.
+- Added `get_wall_reaction_details(p_target_type, p_target_id, p_reaction_type)` for safe future reaction hover/tap details.
+- Ghoul Rep counts distinct non-self reactors per post/comment target, includes comment reactions, avoids double-counting multiple reaction types from one user on one target, and excludes deleted content/removed reactions.
+- Local Guild Wall/Ghoul Rep validation passed `47 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed only the Ghoul Rep migration, migration apply succeeded, and production DB/read-only verification passed.
+- `npm.cmd run build` was skipped because no frontend runtime code changed.
+- No CP/GvG/Analytics/3v3/cosmetics/member-status/auth/role/permission behavior changed, and no normal CP tables/RPCs, uploads, or Storage paths were added.
+- Frontend Ghoul Rep chip/reaction details UI remains pending.
+
 ## 2026-05-30 - Global Wall Scope
 
 - Added Global Wall as a separate Guild Wall scope.
