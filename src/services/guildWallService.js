@@ -29,6 +29,15 @@ function safeBoolean(value) {
   return Boolean(value);
 }
 
+function safeNullableNumber(value) {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+
+  const nextValue = Number(value);
+  return Number.isFinite(nextValue) ? nextValue : null;
+}
+
 function safeAssetPath(value, type) {
   const path = safeString(value);
   const prefix = type === 'frame' ? SAFE_FRAME_PREFIX : SAFE_AVATAR_PREFIX;
@@ -69,6 +78,24 @@ function mapAuthor(row) {
     username: safeString(row?.author_username),
     profileSlug: safeString(row?.author_profile_slug),
     ign: safeString(row?.author_ign),
+    ghoulRep: safeNullableNumber(row?.author_ghoul_rep),
+    ...mapCosmetics(row),
+  };
+}
+
+function mapReactionDetail(row) {
+  const type = safeString(row?.reaction_type);
+
+  return {
+    profileId: row?.profile_id || null,
+    username: safeString(row?.username),
+    profileSlug: safeString(row?.profile_slug),
+    ign: safeString(row?.ign),
+    guildId: row?.guild_id || null,
+    guildName: safeString(row?.guild_name),
+    guildSlug: safeString(row?.guild_slug),
+    reactionType: WALL_REACTION_TYPES.includes(type) ? type : '',
+    reactedAt: row?.reacted_at || null,
     ...mapCosmetics(row),
   };
 }
@@ -146,6 +173,30 @@ export async function loadGuildWallFeed({ guildId = null, limit = 20, before = n
   return {
     viewer: mapViewer(data?.viewer),
     posts: Array.isArray(data?.posts) ? data.posts.map(mapPost).filter((post) => post.id) : [],
+  };
+}
+
+export async function loadReactionDetails({ targetType, targetId, reactionType = null }) {
+  const client = requireSupabase();
+  const { data, error } = await client.rpc('get_wall_reaction_details', {
+    p_target_type: targetType,
+    p_target_id: targetId,
+    p_reaction_type: reactionType || null,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  const type = safeString(data?.reaction_type);
+
+  return {
+    targetType: safeString(data?.target_type),
+    targetId: data?.target_id || null,
+    reactionType: WALL_REACTION_TYPES.includes(type) ? type : '',
+    reactions: Array.isArray(data?.reactions)
+      ? data.reactions.map(mapReactionDetail).filter((reaction) => reaction.reactionType)
+      : [],
   };
 }
 

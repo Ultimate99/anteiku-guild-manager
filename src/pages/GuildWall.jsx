@@ -11,6 +11,7 @@ import {
   deleteWallPost,
   getReactionCount,
   hasMyReaction,
+  loadReactionDetails,
   loadGuildWallFeed,
   moderateDeleteWallComment,
   moderateDeleteWallPost,
@@ -49,6 +50,16 @@ function formatWallDate(value, language) {
   }).format(date);
 }
 
+function formatWallNumber(value, language) {
+  const number = Number(value);
+
+  if (!Number.isFinite(number)) {
+    return '';
+  }
+
+  return new Intl.NumberFormat(language).format(number);
+}
+
 function authorName(author, fallback) {
   return author?.ign || author?.username || author?.profileSlug || fallback;
 }
@@ -76,12 +87,32 @@ function getErrorMessage(error, t) {
   return message || t('wall.actionFailed');
 }
 
-function ReactionButton({ type, reactions, disabled, onToggle }) {
+function GhoulRepChip({ value }) {
+  const { language, t } = useLanguage();
+
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  return (
+    <span className="wall-ghoul-rep-chip" title={t('wall.ghoulRep')}>
+      <strong>{formatWallNumber(value, language)}</strong>
+      <span>{t('wall.ghoulRep')}</span>
+    </span>
+  );
+}
+
+function ReactionButton({ type, reactions, disabled, onToggle, onShowDetails }) {
   const { t } = useLanguage();
   const count = getReactionCount(reactions, type);
   const active = hasMyReaction(reactions, type);
   const label = t(`wall.reaction.${type}`);
   const icon = REACTION_ICONS[type] ?? type;
+  const detailsLabel = `${label} ${t('wall.reactionDetails')}`;
+
+  function handleClick() {
+    onToggle(type, active);
+  }
 
   return (
     <button
@@ -89,14 +120,74 @@ function ReactionButton({ type, reactions, disabled, onToggle }) {
       className="wall-reaction-button"
       data-active={active}
       disabled={disabled}
-      onClick={() => onToggle(type, active)}
+      onClick={handleClick}
+      onMouseEnter={() => onShowDetails(type)}
+      onFocus={() => onShowDetails(type)}
       aria-pressed={active}
-      aria-label={label}
-      title={label}
+      aria-label={detailsLabel}
+      title={detailsLabel}
     >
       <span aria-hidden="true">{icon}</span>
       <strong>{count}</strong>
     </button>
+  );
+}
+
+function ReactionDetailsPanel({ details, onClose }) {
+  const { language, t } = useLanguage();
+
+  if (!details?.open) {
+    return null;
+  }
+
+  const icon = REACTION_ICONS[details.reactionType] ?? '';
+  const title = icon ? `${icon} ${t('wall.reactedBy')}` : t('wall.reactionDetails');
+
+  return (
+    <aside className="wall-reaction-details-panel" role="dialog" aria-label={t('wall.reactionDetails')}>
+      <div className="wall-reaction-details-header">
+        <div>
+          <p className="eyebrow">{t('wall.reactionDetails')}</p>
+          <h3>{title}</h3>
+        </div>
+        <button type="button" className="inline-text-action" onClick={onClose}>
+          {t('wall.close')}
+        </button>
+      </div>
+
+      {details.loading ? (
+        <p className="notice-line">{t('common.loading')}</p>
+      ) : details.error ? (
+        <p className="error-line">{details.error}</p>
+      ) : details.reactions.length === 0 ? (
+        <p className="notice-line">{t('wall.noReactions')}</p>
+      ) : (
+        <div className="wall-reaction-detail-list">
+          {details.reactions.map((reaction, index) => (
+            <article
+              key={`${reaction.reactionType}:${reaction.username}:${reaction.profileSlug}:${reaction.reactedAt}:${index}`}
+              className="wall-reaction-detail-row"
+            >
+              <CosmeticPreview
+                avatar={reaction.avatar}
+                frame={reaction.frame}
+                label={authorName(reaction, t('common.unknown'))}
+                size="small"
+                className="wall-reaction-detail-avatar"
+              />
+              <div>
+                <strong>{authorName(reaction, t('common.unknown'))}</strong>
+                <span>{reaction.guildName || t('wall.guildOnly')}</span>
+              </div>
+              <small>
+                {REACTION_ICONS[reaction.reactionType] ?? reaction.reactionType}
+                {reaction.reactedAt ? ` ${formatWallDate(reaction.reactedAt, language)}` : ''}
+              </small>
+            </article>
+          ))}
+        </div>
+      )}
+    </aside>
   );
 }
 
@@ -166,7 +257,7 @@ function WallComposer({ canPost, guildId, isGlobal, content, disabledReason, bus
   );
 }
 
-function WallComment({ comment, viewerCanPost, busyAction, onDelete, onModerateDelete, onReactionToggle }) {
+function WallComment({ comment, viewerCanPost, busyAction, onDelete, onModerateDelete, onReactionToggle, onShowReactionDetails }) {
   const { language, t } = useLanguage();
   const canDelete = comment.canDelete || comment.canModerate;
 
@@ -182,6 +273,7 @@ function WallComment({ comment, viewerCanPost, busyAction, onDelete, onModerateD
         />
         <div>
           <strong>{authorName(comment.author, t('common.unknown'))}</strong>
+          <GhoulRepChip value={comment.author.ghoulRep} />
           <span>{formatWallDate(comment.createdAt, language)}</span>
         </div>
       </div>
@@ -195,6 +287,7 @@ function WallComment({ comment, viewerCanPost, busyAction, onDelete, onModerateD
               reactions={comment.reactions}
               disabled={!viewerCanPost || busyAction === comment.id}
               onToggle={(reactionType, active) => onReactionToggle(comment.id, reactionType, active)}
+              onShowDetails={(reactionType) => onShowReactionDetails(comment.id, reactionType)}
             />
           ))}
         </div>
@@ -236,6 +329,8 @@ function WallPostCard({
   onCommentDelete,
   onCommentModerateDelete,
   onCommentReactionToggle,
+  onPostReactionDetails,
+  onCommentReactionDetails,
 }) {
   const { language, t } = useLanguage();
   const canModerateOnly = post.canModerate && !post.canDelete;
@@ -255,6 +350,7 @@ function WallPostCard({
         <div className="wall-post-identity">
           <div>
             <strong>{authorName(post.author, t('common.unknown'))}</strong>
+            <GhoulRepChip value={post.author.ghoulRep} />
             {post.isGlobal ? <StatusBadge tone="crimson">{t('wall.globalBadge')}</StatusBadge> : null}
             {post.isPinned ? <StatusBadge tone="crimson">{t('wall.pinned')}</StatusBadge> : null}
           </div>
@@ -273,6 +369,7 @@ function WallPostCard({
               reactions={post.reactions}
               disabled={!viewerCanPost || busyAction === post.id}
               onToggle={(reactionType, active) => onPostReactionToggle(post.id, reactionType, active)}
+              onShowDetails={(reactionType) => onPostReactionDetails(post.id, reactionType)}
             />
           ))}
         </div>
@@ -318,6 +415,7 @@ function WallPostCard({
                 onDelete={onCommentDelete}
                 onModerateDelete={onCommentModerateDelete}
                 onReactionToggle={onCommentReactionToggle}
+                onShowReactionDetails={onCommentReactionDetails}
               />
             ))}
           </div>
@@ -357,6 +455,14 @@ export function GuildWall() {
   const [busyAction, setBusyAction] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [reactionDetails, setReactionDetails] = useState({
+    open: false,
+    loading: false,
+    error: '',
+    targetKey: '',
+    reactionType: '',
+    reactions: [],
+  });
 
   const scopeOptions = useMemo(() => {
     return [
@@ -451,6 +557,62 @@ export function GuildWall() {
     }
   }
 
+  async function openReactionDetails({ targetType, targetId, reactionType }) {
+    const targetKey = `${targetType}:${targetId}:${reactionType}`;
+
+    setReactionDetails({
+      open: true,
+      loading: true,
+      error: '',
+      targetKey,
+      reactionType,
+      reactions: [],
+    });
+
+    try {
+      const details = await loadReactionDetails({ targetType, targetId, reactionType });
+      setReactionDetails({
+        open: true,
+        loading: false,
+        error: '',
+        targetKey,
+        reactionType: details.reactionType || reactionType,
+        reactions: details.reactions,
+      });
+    } catch (detailsError) {
+      setReactionDetails({
+        open: true,
+        loading: false,
+        error: getErrorMessage(detailsError, t),
+        targetKey,
+        reactionType,
+        reactions: [],
+      });
+    }
+  }
+
+  async function handlePostReactionToggle(postId, reactionType, active) {
+    await runAction(
+      `${postId}:${reactionType}`,
+      () =>
+        active
+          ? removeWallPostReaction({ postId, reactionType })
+          : reactToWallPost({ postId, reactionType }),
+    );
+    await openReactionDetails({ targetType: 'post', targetId: postId, reactionType });
+  }
+
+  async function handleCommentReactionToggle(commentId, reactionType, active) {
+    await runAction(
+      `${commentId}:${reactionType}`,
+      () =>
+        active
+          ? removeWallCommentReaction({ commentId, reactionType })
+          : reactToWallComment({ commentId, reactionType }),
+    );
+    await openReactionDetails({ targetType: 'comment', targetId: commentId, reactionType });
+  }
+
   function handlePostSubmit(event) {
     event.preventDefault();
     const content = postDraft.trim();
@@ -494,6 +656,14 @@ export function GuildWall() {
     }
 
     refreshFeed({ append: true, before: lastPost.createdAt });
+  }
+
+  function closeReactionDetails() {
+    setReactionDetails((current) => ({
+      ...current,
+      open: false,
+      loading: false,
+    }));
   }
 
   const disabledReason = viewer?.canPost
@@ -565,27 +735,17 @@ export function GuildWall() {
                   targetPost.isPinned ? t('wall.postUnpinned') : t('wall.postPinned'),
                 )
               }
-              onPostReactionToggle={(postId, reactionType, active) =>
-                runAction(
-                  `${postId}:${reactionType}`,
-                  () =>
-                    active
-                      ? removeWallPostReaction({ postId, reactionType })
-                      : reactToWallPost({ postId, reactionType }),
-                )
-              }
               onCommentDelete={(commentId) => runAction(commentId, () => deleteWallComment(commentId), t('wall.commentDeleted'))}
               onCommentModerateDelete={(commentId) =>
                 runAction(commentId, () => moderateDeleteWallComment(commentId), t('wall.commentDeleted'))
               }
-              onCommentReactionToggle={(commentId, reactionType, active) =>
-                runAction(
-                  `${commentId}:${reactionType}`,
-                  () =>
-                    active
-                      ? removeWallCommentReaction({ commentId, reactionType })
-                      : reactToWallComment({ commentId, reactionType }),
-                )
+              onPostReactionToggle={handlePostReactionToggle}
+              onCommentReactionToggle={handleCommentReactionToggle}
+              onPostReactionDetails={(postId, reactionType) =>
+                openReactionDetails({ targetType: 'post', targetId: postId, reactionType })
+              }
+              onCommentReactionDetails={(commentId, reactionType) =>
+                openReactionDetails({ targetType: 'comment', targetId: commentId, reactionType })
               }
             />
           ))
@@ -597,6 +757,8 @@ export function GuildWall() {
           {loadingOlder ? t('common.loading') : t('wall.loadOlder')}
         </button>
       ) : null}
+
+      <ReactionDetailsPanel details={reactionDetails} onClose={closeReactionDetails} />
     </div>
   );
 }
