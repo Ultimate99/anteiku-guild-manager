@@ -536,6 +536,12 @@ export function GuildWall() {
     setMessage('');
     setPostDraft('');
     setCommentDrafts({});
+    setReactionDetails((current) => ({
+      ...current,
+      open: false,
+      loading: false,
+      error: '',
+    }));
     refreshFeed();
   }, [refreshFeed]);
 
