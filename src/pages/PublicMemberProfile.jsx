@@ -283,21 +283,29 @@ export function PublicMemberProfile({ profileSlug, onNavigate }) {
           </div>
         ) : profile ? (
           <>
-            <CosmeticPreview
-              avatar={profile.avatar}
-              frame={profile.frame}
-              label={displayName(profile, t('common.unknown'))}
-              size="large"
-              className="public-profile-avatar"
-            />
-            <div className="public-profile-identity">
-              <p className="eyebrow">{t('publicProfile.memberProfile')}</p>
-              <h2>{displayName(profile, t('common.unknown'))}</h2>
-              <span>@{profile.profileSlug || profile.username}</span>
-              <div className="status-badge-row">
-                {profile.guildName ? <StatusBadge tone="crimson">{profile.guildName}</StatusBadge> : null}
-                {profile.roleLabel ? <StatusBadge tone="info">{profile.roleLabel}</StatusBadge> : null}
-                {profile.rosterStatus ? <StatusBadge tone="success">{profile.rosterStatus}</StatusBadge> : null}
+            <div className="public-profile-hero-main">
+              <CosmeticPreview
+                avatar={profile.avatar}
+                frame={profile.frame}
+                label={displayName(profile, t('common.unknown'))}
+                size="large"
+                className="public-profile-avatar"
+              />
+              <div className="public-profile-identity">
+                <p className="eyebrow">{t('publicProfile.memberProfile')}</p>
+                <h2>{displayName(profile, t('common.unknown'))}</h2>
+                <div className="public-profile-social-line">
+                  <span>@{profile.profileSlug || profile.username}</span>
+                  <span className="public-profile-ghoul-chip" title={t('publicProfile.ghoulRep')}>
+                    <strong>{formatNumber(profile.ghoulRep ?? 0, language)}</strong>
+                    <span>{t('publicProfile.ghoulRep')}</span>
+                  </span>
+                </div>
+                <div className="status-badge-row public-profile-badges">
+                  {profile.guildName ? <StatusBadge tone="crimson">{profile.guildName}</StatusBadge> : null}
+                  {profile.roleLabel ? <StatusBadge tone="info">{profile.roleLabel}</StatusBadge> : null}
+                  {profile.rosterStatus ? <StatusBadge tone="success">{profile.rosterStatus}</StatusBadge> : null}
+                </div>
               </div>
             </div>
             <div className="public-profile-actions">
@@ -322,10 +330,6 @@ export function PublicMemberProfile({ profileSlug, onNavigate }) {
       {profile ? (
         <>
           <section className="panel public-profile-stats-card">
-            <div className="public-profile-stat">
-              <span>{t('publicProfile.ghoulRep')}</span>
-              <strong>{formatNumber(profile.ghoulRep ?? 0, language)}</strong>
-            </div>
             {displayCp ? (
               <div className="public-profile-stat">
                 <span>{t('publicProfile.threeVThreeCp')}</span>

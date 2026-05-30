@@ -3464,7 +3464,7 @@ button.command-card:focus-visible {
 
 .guild-wall-page {
   gap: 12px;
-  padding-bottom: 22px;
+  padding-bottom: 34px;
 }
 
 .guild-wall-hero,
@@ -3481,6 +3481,10 @@ button.command-card:focus-visible {
   border-left: 3px solid rgba(197, 22, 39, 0.58);
 }
 
+.guild-wall-hero .section-heading-row {
+  align-items: center;
+}
+
 .guild-wall-hero p,
 .wall-composer-footer span,
 .guild-wall-empty-panel p {
@@ -3491,9 +3495,11 @@ button.command-card:focus-visible {
 .wall-scope-panel {
   display: grid;
   gap: 8px;
-  padding: 10px;
-  border: 1px solid rgba(197, 22, 39, 0.2);
-  background: rgba(10, 10, 14, 0.86);
+  padding: 9px;
+  border: 1px solid rgba(197, 22, 39, 0.26);
+  background:
+    linear-gradient(135deg, rgba(197, 22, 39, 0.11), transparent 70%),
+    rgba(10, 10, 14, 0.9);
 }
 
 .wall-scope-panel > div:first-child {
@@ -3512,6 +3518,7 @@ button.command-card:focus-visible {
   display: flex;
   gap: 6px;
   overflow-x: auto;
+  padding: 1px 0 2px;
   scrollbar-width: none;
 }
 
@@ -3521,8 +3528,8 @@ button.command-card:focus-visible {
 
 .wall-scope-chip {
   flex: 0 0 auto;
-  min-height: 36px;
-  padding: 7px 10px;
+  min-height: 34px;
+  padding: 7px 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: #111116;
   color: #aaaab4;
@@ -3539,7 +3546,8 @@ button.command-card:focus-visible {
 
 .wall-composer-panel {
   display: grid;
-  gap: 10px;
+  gap: 9px;
+  padding: 12px;
 }
 
 .wall-composer-form {
@@ -3548,7 +3556,7 @@ button.command-card:focus-visible {
 }
 
 .wall-composer-form textarea {
-  min-height: 94px;
+  min-height: 82px;
   resize: vertical;
 }
 
@@ -3567,7 +3575,8 @@ button.command-card:focus-visible {
 
 .wall-post-card {
   display: grid;
-  gap: 12px;
+  gap: 10px;
+  padding: 13px;
   overflow: hidden;
 }
 
@@ -3601,17 +3610,25 @@ button.command-card:focus-visible {
 }
 
 .wall-post-identity,
-.wall-comment-header > div {
+.wall-comment-identity {
   display: grid;
   gap: 4px;
   min-width: 0;
 }
 
-.wall-post-identity > div {
+.wall-post-author-row,
+.wall-comment-author-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 7px;
+  min-width: 0;
+}
+
+.wall-post-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
   min-width: 0;
 }
 
@@ -3626,6 +3643,13 @@ button.command-card:focus-visible {
   color: #9f9faa;
   font-size: 0.75rem;
   font-weight: 700;
+}
+
+.wall-post-meta-row span {
+  display: inline-flex;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .profile-link-button {
@@ -3667,12 +3691,12 @@ button.command-card:focus-visible {
   display: inline-flex;
   width: fit-content;
   align-items: center;
-  gap: 4px;
-  padding: 2px 5px;
-  border: 1px solid rgba(255, 98, 115, 0.18);
-  background: rgba(197, 22, 39, 0.075);
-  color: #d8a0a7;
-  font-size: 0.66rem;
+  gap: 5px;
+  padding: 3px 6px;
+  border: 1px solid rgba(255, 98, 115, 0.22);
+  background: linear-gradient(135deg, rgba(197, 22, 39, 0.2), rgba(255, 255, 255, 0.03));
+  color: #ffd0d5;
+  font-size: 0.65rem;
   font-weight: 800;
   line-height: 1;
 }
@@ -3706,7 +3730,7 @@ button.command-card:focus-visible {
   display: flex;
   gap: 6px;
   overflow-x: auto;
-  padding-bottom: 2px;
+  padding: 1px 0 3px;
   scrollbar-width: none;
 }
 
@@ -3717,10 +3741,10 @@ button.command-card:focus-visible {
 .wall-reaction-button {
   display: inline-flex;
   flex: 0 0 auto;
-  min-height: 36px;
+  min-height: 34px;
   align-items: center;
   gap: 5px;
-  padding: 6px 9px;
+  padding: 6px 10px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(0, 0, 0, 0.26);
   color: #b8b8c0;
@@ -3858,10 +3882,12 @@ button.command-card:focus-visible {
 
 .wall-comment-card {
   display: grid;
-  gap: 8px;
+  gap: 7px;
   padding: 9px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(0, 0, 0, 0.24);
+  background:
+    linear-gradient(135deg, rgba(197, 22, 39, 0.055), transparent 74%),
+    rgba(0, 0, 0, 0.25);
 }
 
 .wall-comment-card p {
@@ -3885,18 +3911,25 @@ button.command-card:focus-visible {
 
 .public-profile-page {
   gap: 12px;
-  padding-bottom: 22px;
+  padding-bottom: 34px;
 }
 
 .public-profile-hero {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 12px;
-  align-items: center;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 11px;
   border-left: 3px solid rgba(197, 22, 39, 0.62);
   background:
     linear-gradient(135deg, rgba(197, 22, 39, 0.18), transparent 62%),
     rgba(13, 13, 18, 0.98);
+}
+
+.public-profile-hero-main {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
 }
 
 .public-profile-avatar .cosmetic-preview-stage {
@@ -3910,7 +3943,8 @@ button.command-card:focus-visible {
 }
 
 .public-profile-identity h2,
-.public-profile-identity span {
+.public-profile-social-line,
+.public-profile-social-line span {
   min-width: 0;
   overflow-wrap: anywhere;
 }
@@ -3920,14 +3954,40 @@ button.command-card:focus-visible {
   font-size: 1.45rem;
 }
 
-.public-profile-identity > span {
+.public-profile-social-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
+.public-profile-social-line > span:first-child {
   color: #a9a9b3;
   font-size: 0.82rem;
   font-weight: 800;
 }
 
+.public-profile-ghoul-chip {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 7px;
+  border: 1px solid rgba(255, 98, 115, 0.26);
+  background:
+    linear-gradient(135deg, rgba(197, 22, 39, 0.24), rgba(255, 255, 255, 0.04));
+  color: #ffd2d7;
+  font-size: 0.68rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.public-profile-ghoul-chip strong {
+  color: #fff;
+  font-size: 0.76rem;
+}
+
 .public-profile-actions {
-  grid-column: 1 / -1;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -3935,7 +3995,7 @@ button.command-card:focus-visible {
 
 .public-profile-stats-card {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 8px;
   border-color: rgba(197, 22, 39, 0.2);
   background:
@@ -3947,9 +4007,11 @@ button.command-card:focus-visible {
   display: grid;
   gap: 4px;
   min-width: 0;
-  padding: 9px;
+  padding: 10px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(0, 0, 0, 0.22);
+  background:
+    linear-gradient(135deg, rgba(197, 22, 39, 0.08), transparent 75%),
+    rgba(0, 0, 0, 0.23);
 }
 
 .public-profile-stat span {
@@ -3968,7 +4030,7 @@ button.command-card:focus-visible {
 
 .public-profile-reactions-card {
   display: grid;
-  gap: 10px;
+  gap: 9px;
   border-color: rgba(197, 22, 39, 0.22);
   background:
     linear-gradient(135deg, rgba(197, 22, 39, 0.1), transparent 66%),
@@ -3990,10 +4052,10 @@ button.command-card:focus-visible {
 .public-profile-reaction-button {
   display: inline-flex;
   flex: 0 0 auto;
-  min-height: 38px;
+  min-height: 36px;
   align-items: center;
   gap: 6px;
-  padding: 7px 10px;
+  padding: 7px 11px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(0, 0, 0, 0.3);
   color: #d8d8df;
@@ -4070,12 +4132,24 @@ button.command-card:focus-visible {
     padding: 12px;
   }
 
+  .public-profile-hero-main {
+    gap: 9px;
+  }
+
   .public-profile-avatar .cosmetic-preview-stage {
     --avatar-frame-size: 66px;
   }
 
   .public-profile-identity h2 {
     font-size: 1.2rem;
+  }
+
+  .public-profile-social-line {
+    gap: 6px;
+  }
+
+  .public-profile-ghoul-chip {
+    padding: 4px 6px;
   }
 
   .public-profile-actions {
@@ -4171,17 +4245,57 @@ button.command-card:focus-visible {
     padding-bottom: 36px;
   }
 
+  .wall-scope-panel {
+    padding: 8px;
+  }
+
+  .wall-scope-chip {
+    min-height: 32px;
+    padding: 6px 10px;
+  }
+
   .guild-wall-hero .section-heading-row,
   .wall-composer-panel .section-heading-row {
     gap: 8px;
+  }
+
+  .wall-composer-panel {
+    padding: 11px;
+  }
+
+  .wall-composer-form textarea {
+    min-height: 74px;
   }
 
   .wall-post-card {
     padding: 11px;
   }
 
+  .wall-post-header,
+  .wall-comment-header {
+    align-items: flex-start;
+  }
+
   .wall-post-avatar .cosmetic-preview-stage {
     --avatar-frame-size: 52px;
+  }
+
+  .wall-post-author-row,
+  .wall-comment-author-row {
+    gap: 5px;
+  }
+
+  .wall-post-meta-row {
+    gap: 3px 7px;
+  }
+
+  .wall-ghoul-rep-chip {
+    padding: 3px 5px;
+  }
+
+  .wall-reaction-button {
+    min-height: 32px;
+    padding: 5px 9px;
   }
 
   .wall-comment-form {

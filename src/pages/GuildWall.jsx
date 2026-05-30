@@ -311,15 +311,17 @@ function WallComment({
             className="wall-comment-avatar"
           />
         </ProfileLinkButton>
-        <div>
-          <ProfileLinkButton
-            profileSlug={comment.author.profileSlug}
-            onOpenProfile={onOpenProfile}
-            className="wall-author-name-button"
-          >
-            <strong>{authorName(comment.author, t('common.unknown'))}</strong>
-          </ProfileLinkButton>
-          <GhoulRepChip value={comment.author.ghoulRep} />
+        <div className="wall-comment-identity">
+          <div className="wall-comment-author-row">
+            <ProfileLinkButton
+              profileSlug={comment.author.profileSlug}
+              onOpenProfile={onOpenProfile}
+              className="wall-author-name-button"
+            >
+              <strong>{authorName(comment.author, t('common.unknown'))}</strong>
+            </ProfileLinkButton>
+            <GhoulRepChip value={comment.author.ghoulRep} />
+          </div>
           <span>{formatWallDate(comment.createdAt, language)}</span>
         </div>
       </div>
@@ -382,7 +384,7 @@ function WallPostCard({
   const { language, t } = useLanguage();
   const canModerateOnly = post.canModerate && !post.canDelete;
   const authorGuild = post.guildName || post.authorGuildName || t('wall.guildOnly');
-  const scopeLabel = post.isGlobal ? `${t('wall.global')} · ${authorGuild}` : authorGuild;
+  const scopeLabel = post.isGlobal ? `${t('wall.global')} - ${authorGuild}` : authorGuild;
 
   return (
     <article className="panel wall-post-card" data-pinned={post.isPinned} data-global={post.isGlobal}>
@@ -397,7 +399,7 @@ function WallPostCard({
           />
         </ProfileLinkButton>
         <div className="wall-post-identity">
-          <div>
+          <div className="wall-post-author-row">
             <ProfileLinkButton
               profileSlug={post.author.profileSlug}
               onOpenProfile={onOpenProfile}
@@ -409,7 +411,10 @@ function WallPostCard({
             {post.isGlobal ? <StatusBadge tone="crimson">{t('wall.globalBadge')}</StatusBadge> : null}
             {post.isPinned ? <StatusBadge tone="crimson">{t('wall.pinned')}</StatusBadge> : null}
           </div>
-          <span>{scopeLabel} · {formatWallDate(post.createdAt, language)}</span>
+          <div className="wall-post-meta-row">
+            <span>{scopeLabel}</span>
+            <span>{formatWallDate(post.createdAt, language)}</span>
+          </div>
         </div>
       </header>
 
