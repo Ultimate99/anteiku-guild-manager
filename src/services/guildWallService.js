@@ -94,6 +94,10 @@ function mapPost(row) {
     guildId: row?.guild_id || null,
     guildName: safeString(row?.guild_name),
     guildSlug: safeString(row?.guild_slug),
+    authorGuildId: row?.author_guild_id || null,
+    authorGuildName: safeString(row?.author_guild_name),
+    authorGuildSlug: safeString(row?.author_guild_slug),
+    isGlobal: safeBoolean(row?.is_global),
     content: safeString(row?.content),
     isPinned: safeBoolean(row?.is_pinned),
     isLocked: safeBoolean(row?.is_locked),
@@ -148,7 +152,7 @@ export async function loadGuildWallFeed({ guildId = null, limit = 20, before = n
 export async function createWallPost({ guildId, content }) {
   const client = requireSupabase();
   const { data, error } = await client.rpc('create_wall_post', {
-    p_guild_id: guildId,
+    p_guild_id: guildId || null,
     p_content: content,
   });
 

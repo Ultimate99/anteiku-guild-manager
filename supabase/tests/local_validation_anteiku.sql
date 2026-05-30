@@ -5973,6 +5973,8 @@ declare
   moderator_membership_id uuid;
   wrong_moderator_membership_id uuid;
   post_a_id uuid;
+  global_post_id uuid;
+  global_comment_id uuid;
   normal_post_id uuid;
   pinned_post_id uuid;
   re_post_id uuid;
@@ -6092,6 +6094,23 @@ begin
   end;
 
   begin
+    select count(*) into direct_count
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name in ('wall_posts', 'wall_comments')
+      and column_name = 'guild_id'
+      and is_nullable = 'YES';
+
+    if direct_count = 2 then
+      insert into milestone26c_guild_wall_results values ('schema', 'global_wall_nullable_scope', 'PASS', 'Wall post/comment guild_id allows Global null scope.');
+    else
+      insert into milestone26c_guild_wall_results values ('schema', 'global_wall_nullable_scope', 'FAIL', direct_count::text || ' nullable guild_id columns found.');
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('schema', 'global_wall_nullable_scope', 'FAIL', sqlerrm);
+  end;
+
+  begin
     perform set_config('request.jwt.claim.sub', member_a_id::text, true);
     post_a_id := public.create_wall_post(anteiku_id, 'Local wall validation post');
 
@@ -6121,10 +6140,42 @@ begin
   end;
 
   begin
+    perform set_config('request.jwt.claim.sub', member_a_id::text, true);
+    global_post_id := public.create_wall_post(null, 'Global wall validation post');
+
+    if global_post_id is not null then
+      insert into milestone26c_guild_wall_results values ('post', 'approved_member_posts_global_wall', 'PASS', global_post_id::text);
+    else
+      insert into milestone26c_guild_wall_results values ('post', 'approved_member_posts_global_wall', 'FAIL', 'No global post id returned.');
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('post', 'approved_member_posts_global_wall', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', wrong_guild_member_id::text, true);
+    payload := public.get_guild_wall_feed(null, 20, null);
+
+    if (payload -> 'viewer' ->> 'is_global')::boolean = true
+       and payload::text like '%' || global_post_id::text || '%'
+       and (post_a_id is null or payload::text not like '%' || post_a_id::text || '%')
+       and payload::text not like '%member_cp%'
+       and payload::text not like '%cp_snapshots%'
+       and payload::text not like '%cp_value%' then
+      insert into milestone26c_guild_wall_results values ('feed', 'cross_guild_member_reads_global_wall_only', 'PASS', payload::text);
+    else
+      insert into milestone26c_guild_wall_results values ('feed', 'cross_guild_member_reads_global_wall_only', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('feed', 'cross_guild_member_reads_global_wall_only', 'FAIL', sqlerrm);
+  end;
+
+  begin
     perform set_config('request.jwt.claim.sub', owner_id::text, true);
     payload := public.get_guild_wall_feed(null, 20, null);
 
     if (payload -> 'viewer' ->> 'is_global')::boolean = true
+       and payload::text like '%' || global_post_id::text || '%'
        and payload::text not like '%member_cp%'
        and payload::text not like '%cp_snapshots%'
        and payload::text not like '%cp_value%' then
@@ -6134,6 +6185,55 @@ begin
     end if;
   exception when others then
     insert into milestone26c_guild_wall_results values ('feed', 'owner_global_feed_loads_without_scope_record_error', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', wrong_guild_member_id::text, true);
+    global_comment_id := public.create_wall_comment(global_post_id, 'Global wall validation comment');
+
+    if global_comment_id is not null then
+      insert into milestone26c_guild_wall_results values ('comment', 'approved_member_comments_global_post', 'PASS', global_comment_id::text);
+    else
+      insert into milestone26c_guild_wall_results values ('comment', 'approved_member_comments_global_post', 'FAIL', 'No global comment id returned.');
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('comment', 'approved_member_comments_global_post', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_b_id::text, true);
+    perform public.react_to_wall_post(global_post_id, 'fire');
+
+    select count(*) into direct_count
+    from public.wall_post_reactions
+    where post_id = global_post_id
+      and profile_id = member_b_id
+      and reaction_type = 'fire';
+
+    if direct_count = 1 then
+      insert into milestone26c_guild_wall_results values ('reaction', 'approved_member_reacts_global_post', 'PASS', 'Global post reaction stored once.');
+    else
+      insert into milestone26c_guild_wall_results values ('reaction', 'approved_member_reacts_global_post', 'FAIL', direct_count::text || ' global reaction rows found.');
+    end if;
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('reaction', 'approved_member_reacts_global_post', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', moderator_id::text, true);
+    perform public.pin_wall_post(global_post_id);
+    insert into milestone26c_guild_wall_results values ('moderation', 'scoped_staff_cannot_moderate_global_post', 'FAIL', 'Scoped staff pinned a global post.');
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('moderation', 'scoped_staff_cannot_moderate_global_post', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    perform public.pin_wall_post(global_post_id);
+    perform public.unpin_wall_post(global_post_id);
+    insert into milestone26c_guild_wall_results values ('moderation', 'owner_moderates_global_post', 'PASS', 'Owner pinned and unpinned a global post.');
+  exception when others then
+    insert into milestone26c_guild_wall_results values ('moderation', 'owner_moderates_global_post', 'FAIL', sqlerrm);
   end;
 
   begin

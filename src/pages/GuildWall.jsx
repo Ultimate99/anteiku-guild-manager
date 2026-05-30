@@ -22,18 +22,12 @@ import {
   unpinWallPost,
 } from '../services/guildWallService.js';
 
-const CORE_GUILD_OPTIONS = [
-  { id: '00000000-0000-0000-0000-000000000101', name: 'Anteiku', slug: 'anteiku' },
-  { id: '00000000-0000-0000-0000-000000000102', name: 'Anteiku:Re', slug: 'anteiku-re' },
-  { id: '00000000-0000-0000-0000-000000000103', name: 'Anteiku:Rose', slug: 'anteiku-rose' },
-  { id: '00000000-0000-0000-0000-000000000104', name: 'Anteiku:Goat', slug: 'anteiku-goat' },
-];
 const REACTION_ICONS = {
-  like: '👍',
-  fire: '🔥',
-  coffee: '☕',
-  skull: '💀',
-  trophy: '🏆',
+  like: '\u{1F44D}',
+  fire: '\u{1F525}',
+  coffee: '\u2615',
+  skull: '\u{1F480}',
+  trophy: '\u{1F3C6}',
 };
 
 function formatWallDate(value, language) {
@@ -114,9 +108,9 @@ function WallScopeSelector({ options, selectedScopeId, onChange }) {
   }
 
   return (
-    <section className="wall-scope-panel" aria-label={t('wall.guildOnly')}>
+    <section className="wall-scope-panel" aria-label={t('wall.scope')}>
       <div>
-        <StatusBadge tone="crimson">{t('wall.guildOnly')}</StatusBadge>
+        <StatusBadge tone="crimson">{t('wall.scope')}</StatusBadge>
         <strong>{t('wall.viewing', { scope: options.find((option) => option.id === selectedScopeId)?.name ?? '-' })}</strong>
       </div>
       <div className="wall-scope-chips">
@@ -136,9 +130,10 @@ function WallScopeSelector({ options, selectedScopeId, onChange }) {
   );
 }
 
-function WallComposer({ canPost, guildId, content, disabledReason, busy, onChange, onSubmit }) {
+function WallComposer({ canPost, guildId, isGlobal, content, disabledReason, busy, onChange, onSubmit }) {
   const { t } = useLanguage();
-  const canSubmit = canPost && guildId && content.trim().length > 0 && !busy;
+  const hasScope = isGlobal || Boolean(guildId);
+  const canSubmit = canPost && hasScope && content.trim().length > 0 && !busy;
 
   return (
     <section className="panel wall-composer-panel">
@@ -147,8 +142,8 @@ function WallComposer({ canPost, guildId, content, disabledReason, busy, onChang
           <p className="eyebrow">{t('wall.createPost')}</p>
           <h3>{t('wall.title')}</h3>
         </div>
-        <StatusBadge tone={canPost && guildId ? 'success' : 'warning'}>
-          {canPost && guildId ? t('common.ready') : t('wall.permissionDenied')}
+        <StatusBadge tone={canPost && hasScope ? 'success' : 'warning'}>
+          {canPost && hasScope ? t('common.ready') : t('wall.permissionDenied')}
         </StatusBadge>
       </div>
 
@@ -158,7 +153,7 @@ function WallComposer({ canPost, guildId, content, disabledReason, busy, onChang
           onChange={(event) => onChange(event.target.value)}
           placeholder={t('wall.writePost')}
           maxLength={1000}
-          disabled={!canPost || !guildId || busy}
+          disabled={!canPost || !hasScope || busy}
         />
         <div className="wall-composer-footer">
           <span>{disabledReason || t('wall.guildOnly')}</span>
@@ -244,9 +239,11 @@ function WallPostCard({
 }) {
   const { language, t } = useLanguage();
   const canModerateOnly = post.canModerate && !post.canDelete;
+  const authorGuild = post.guildName || post.authorGuildName || t('wall.guildOnly');
+  const scopeLabel = post.isGlobal ? `${t('wall.global')} · ${authorGuild}` : authorGuild;
 
   return (
-    <article className="panel wall-post-card" data-pinned={post.isPinned}>
+    <article className="panel wall-post-card" data-pinned={post.isPinned} data-global={post.isGlobal}>
       <header className="wall-post-header">
         <CosmeticPreview
           avatar={post.author.avatar}
@@ -258,9 +255,10 @@ function WallPostCard({
         <div className="wall-post-identity">
           <div>
             <strong>{authorName(post.author, t('common.unknown'))}</strong>
+            {post.isGlobal ? <StatusBadge tone="crimson">{t('wall.globalBadge')}</StatusBadge> : null}
             {post.isPinned ? <StatusBadge tone="crimson">{t('wall.pinned')}</StatusBadge> : null}
           </div>
-          <span>{post.guildName || t('wall.guildOnly')} · {formatWallDate(post.createdAt, language)}</span>
+          <span>{scopeLabel} · {formatWallDate(post.createdAt, language)}</span>
         </div>
       </header>
 
@@ -347,10 +345,9 @@ function WallPostCard({
 }
 
 export function GuildWall() {
-  const { guild, membership } = useAuth();
+  const { guild } = useAuth();
   const { t } = useLanguage();
-  const isOwner = membership?.role === 'owner';
-  const [selectedScopeId, setSelectedScopeId] = useState(() => (isOwner ? 'global' : guild?.id ?? ''));
+  const [selectedScopeId, setSelectedScopeId] = useState('guild');
   const [viewer, setViewer] = useState(null);
   const [posts, setPosts] = useState([]);
   const [postDraft, setPostDraft] = useState('');
@@ -362,31 +359,34 @@ export function GuildWall() {
   const [error, setError] = useState('');
 
   const scopeOptions = useMemo(() => {
-    if (isOwner) {
-      return [{ id: 'global', name: t('wall.globalScope'), guildId: null }, ...CORE_GUILD_OPTIONS.map((option) => ({
-        id: option.id,
-        name: option.name,
-        guildId: option.id,
-      }))];
-    }
-
-    if (!guild?.id) {
-      return [];
-    }
-
-    return [{ id: guild.id, name: guild.name ?? t('wall.guildOnly'), guildId: guild.id }];
-  }, [guild?.id, guild?.name, isOwner, t]);
+    return [
+      {
+        id: 'guild',
+        name: t('wall.myGuild'),
+        guildId: guild?.id ?? null,
+        isGlobal: false,
+      },
+      {
+        id: 'global',
+        name: t('wall.global'),
+        guildId: null,
+        isGlobal: true,
+      },
+    ];
+  }, [guild?.id, t]);
 
   const selectedScope = useMemo(
     () => scopeOptions.find((option) => option.id === selectedScopeId) ?? scopeOptions[0] ?? null,
     [scopeOptions, selectedScopeId],
   );
-  const selectedGuildId = selectedScope?.guildId ?? null;
-  const composerGuildId = selectedGuildId || (!isOwner ? guild?.id : null);
-  const viewerCanPost = Boolean(viewer?.canPost && composerGuildId && selectedScope?.id !== 'global');
+  const selectedGuildId = selectedScope?.isGlobal ? null : selectedScope?.guildId ?? guild?.id ?? null;
+  const composerGuildId = selectedScope?.isGlobal ? null : selectedGuildId;
+  const viewerCanPost = Boolean(viewer?.canPost && (selectedScope?.isGlobal || composerGuildId));
 
   const refreshFeed = useCallback(async ({ append = false, before = null } = {}) => {
-    if (!selectedScope) {
+    if (!selectedScope || (!selectedScope.isGlobal && !selectedGuildId)) {
+      setViewer(null);
+      setPosts([]);
       return;
     }
 
@@ -399,7 +399,7 @@ export function GuildWall() {
 
     try {
       const data = await loadGuildWallFeed({
-        guildId: selectedScope.guildId,
+        guildId: selectedScope.isGlobal ? null : selectedGuildId,
         before,
       });
 
@@ -418,7 +418,7 @@ export function GuildWall() {
       setLoading(false);
       setLoadingOlder(false);
     }
-  }, [selectedScope, t]);
+  }, [selectedScope, selectedGuildId, t]);
 
   useEffect(() => {
     setSelectedScopeId((current) =>
@@ -455,14 +455,14 @@ export function GuildWall() {
     event.preventDefault();
     const content = postDraft.trim();
 
-    if (!content || !composerGuildId) {
+    if (!content || (!selectedScope?.isGlobal && !composerGuildId)) {
       return;
     }
 
     runAction(
       'create-post',
       async () => {
-        await createWallPost({ guildId: composerGuildId, content });
+        await createWallPost({ guildId: selectedScope?.isGlobal ? null : composerGuildId, content });
         setPostDraft('');
       },
       t('wall.postCreated'),
@@ -496,18 +496,18 @@ export function GuildWall() {
     refreshFeed({ append: true, before: lastPost.createdAt });
   }
 
-  const disabledReason = selectedScope?.id === 'global'
-    ? t('wall.selectGuildToPost')
-    : viewer?.canPost
-      ? t('wall.guildOnly')
-      : t('wall.viewOnly');
+  const disabledReason = viewer?.canPost
+    ? selectedScope?.isGlobal
+      ? t('wall.postToGlobal')
+      : t('wall.postToGuild')
+    : t('wall.viewOnly');
 
   return (
     <div className="stack guild-wall-page">
       <section className="panel guild-wall-hero">
         <div className="section-heading-row">
           <div>
-            <p className="eyebrow">{t('wall.guildOnly')}</p>
+            <p className="eyebrow">{t('wall.guildWall')}</p>
             <h2>{t('wall.title')}</h2>
             <p>{t('wall.heroBody')}</p>
           </div>
@@ -522,6 +522,7 @@ export function GuildWall() {
       <WallComposer
         canPost={Boolean(viewer?.canPost)}
         guildId={composerGuildId}
+        isGlobal={Boolean(selectedScope?.isGlobal)}
         content={postDraft}
         disabledReason={disabledReason}
         busy={busyAction === 'create-post'}
