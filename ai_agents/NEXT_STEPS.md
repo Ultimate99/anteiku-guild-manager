@@ -2,6 +2,32 @@
 
 ## Current Recommendation
 
+Milestone 28B Push Notifications foundation is implemented and locally validated only.
+
+Recommended next step:
+- Configure Supabase Edge Function secrets for push sending before any remote rollout:
+  - `VAPID_PUBLIC_KEY`
+  - `VAPID_PRIVATE_KEY`
+  - `VAPID_SUBJECT`
+- Plan the production-direct rollout gate for `20260530000800_push_notifications_foundation.sql` only after secrets are ready.
+- Deploy the `send-push-notifications` Edge Function only after the DB migration is applied and verified on the target project.
+- Keep frontend push permission UI, service worker `push` / `notificationclick` listeners, and event hooks deferred to the next approved milestone.
+
+Do not yet:
+- Deploy push frontend/UI.
+- Deploy the Edge Function without VAPID secrets.
+- Send production test notifications without explicit approval.
+- Hook GvG, CP Update Window, 3v3, or Wall events into the outbox until a separate approved milestone.
+
+Recorded Milestone 28B status:
+- Added local migration `20260530000800_push_notifications_foundation.sql`.
+- Added RPC-only subscription/preference/outbox model and self-test enqueue RPC.
+- Added Edge Function foundation `supabase/functions/send-push-notifications/index.ts`.
+- Local DB reset passed, full validation passed, and Milestone 28B push validation reported `13 PASS / 0 FAIL / 0 SKIP`.
+- No frontend/service-worker/app build files changed, so `npm.cmd run build` was not required.
+
+## Previous Recommendation
+
 Social Profile Surfaces polish is live in production.
 
 Recommended next step:

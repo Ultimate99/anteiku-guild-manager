@@ -1,5 +1,12 @@
 # Code Index
 
+## Milestone 28B Push Notifications Foundation
+
+- `supabase/migrations/20260530000800_push_notifications_foundation.sql`: Adds the local-only push notification backend foundation: `push_subscriptions`, `push_notification_preferences`, `push_notification_outbox`, RLS/no-direct-client grants, fixed server-generated payload helpers, approved-recipient eligibility, and RPCs for own subscription registration, subscription disable, own preferences, preference update, and self-test notification enqueue.
+- `supabase/functions/send-push-notifications/index.ts`: Supabase Edge Function foundation for sending queued outbox notifications with Web Push/VAPID. Requires `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT` at runtime. Sends only fixed outbox title/body/type/route payloads and disables gone/invalid subscriptions.
+- `supabase/tests/local_validation_anteiku.sql`: Adds Milestone 28B validation for table existence, RLS, no direct grants, eligible member registration, pending denial, own preferences, own disable, self-test outbox enqueue, outbox payload privacy, direct outbox write denial, and active Owner count.
+- Status: local DB reset and validation passed. Production/staging do not have `20260530000800_push_notifications_foundation.sql`; Edge Function is not deployed and push sending is blocked until VAPID secrets are configured.
+
 ## Social Profile Surfaces Polish
 
 - `src/pages/PublicMemberProfile.jsx`: Frontend-only presentation polish for the authenticated public profile hero. Ghoul Rep now sits in the identity area as a compact social stat chip; safe public 3v3 Combined CP remains separate and labeled.

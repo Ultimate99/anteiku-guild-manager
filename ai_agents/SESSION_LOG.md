@@ -1,5 +1,28 @@
 # Session Log
 
+## 2026-05-30 - Milestone 28B Push Notifications Foundation
+
+- Implemented local backend/RPC foundation for Push Notifications.
+- Added migration `supabase/migrations/20260530000800_push_notifications_foundation.sql`.
+- Added RPC-only tables:
+  - `push_subscriptions`
+  - `push_notification_preferences`
+  - `push_notification_outbox`
+- Added public RPCs:
+  - `register_push_subscription`
+  - `disable_push_subscription`
+  - `get_my_push_preferences`
+  - `update_my_push_preferences`
+  - `create_my_test_push_notification`
+- Added private helpers for approved-recipient eligibility, preference initialization, safe fixed payload generation, and internal notification enqueue.
+- Added Supabase Edge Function foundation `supabase/functions/send-push-notifications/index.ts`.
+- Local reset applied the migration cleanly with `npx.cmd supabase db reset`.
+- Full local validation passed through Docker `psql`; Milestone 28B push block reported `13 PASS / 0 FAIL / 0 SKIP`.
+- Source sweep of the new migration and Edge Function found no `member_cp`, `cp_snapshots`, normal CP RPCs, or CP value paths.
+- No frontend/service-worker/package/app build files changed; `npm.cmd run build` was skipped as not applicable.
+- No staging/production migration, Edge Function deploy, frontend deploy, Vercel env change, or production notification send was performed.
+- Remote rollout remains blocked until `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT` are configured for the Supabase Edge Function.
+
 ## 2026-05-30 - Social Profile Surfaces Polish
 
 - Implemented and deployed a frontend-only polish pass for Public Member Profile and Guild Wall social surfaces.

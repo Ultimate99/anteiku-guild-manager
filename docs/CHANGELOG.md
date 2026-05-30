@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-05-30 - Milestone 28B Push Notifications Foundation
+
+- Added local backend/RPC foundation for Push Notifications.
+- New migration: `20260530000800_push_notifications_foundation.sql`.
+- Added RPC-only tables for push subscriptions, push preferences, and a safe notification outbox.
+- Added RPCs for own subscription registration/disable, own preference reads/updates, and a fixed self-test notification enqueue.
+- Added Supabase Edge Function foundation: `send-push-notifications`.
+- Notification payloads are fixed server-side by type and contain no CP values, email, auth IDs, audit/admin/private metadata, or arbitrary user content.
+- Local reset passed and full validation passed; push validation block reported `13 PASS / 0 FAIL / 0 SKIP`.
+- No frontend/service-worker/package files changed; no production/staging deploy or migration was performed.
+- Remote rollout is blocked until `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT` are configured.
+
 ## 2026-05-30 - Social Profile Surfaces Polish
 
 - Polished Public Member Profile and Guild Wall social surfaces.

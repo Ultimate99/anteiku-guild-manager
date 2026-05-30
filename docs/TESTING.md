@@ -1,5 +1,38 @@
 # Testing
 
+## Milestone 28B Push Notifications Foundation
+
+Push Notifications backend/RPC and Edge Function foundation passed local validation only.
+
+Commands:
+- `npx.cmd supabase db reset`
+- `Get-Content supabase\tests\local_validation_anteiku.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres`
+
+Results:
+- Local reset applied through `20260530000800_push_notifications_foundation.sql`.
+- Full local validation passed.
+- Push notification validation block: `13 PASS / 0 FAIL / 0 SKIP`.
+
+Validated:
+- Push tables exist and RLS is enabled.
+- No direct anon/authenticated grants exist on push tables.
+- Eligible member can register a subscription and update preferences.
+- Pending user is denied push subscription/preferences.
+- Another user cannot disable a member's subscription.
+- Own disable works.
+- Self-test notification queues only for the caller.
+- Outbox payload has no private field tokens.
+- Direct outbox insert is denied.
+- Active Owner count remains `1`.
+
+Source checks:
+- New push migration and Edge Function contain no `member_cp`, `cp_snapshots`, normal CP RPCs, or CP value paths.
+- No frontend/service-worker/package files changed; `npm.cmd run build` was skipped as not applicable.
+
+Pending:
+- VAPID secrets must be configured before Edge Function remote deploy/use.
+- No staging/production migration or push notification send has been performed.
+
 ## Social Profile Surfaces Polish
 
 Social Profile Surfaces polish passed build/source validation, deployment, and production smoke.

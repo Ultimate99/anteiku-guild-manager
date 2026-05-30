@@ -1,10 +1,38 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented through Ranking Public Profile links. Remote production is live through `20260530000700_ranking_public_profile_links.sql`.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented locally through Push Notifications foundation. Remote production is live through `20260530000700_ranking_public_profile_links.sql`; `20260530000800_push_notifications_foundation.sql` is local-only and not applied remotely yet.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
 Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, own Profile Ghoul Rep display, Public Member Profiles, and Ranking Public Profile links are implemented, locally validated, production applied, and production-smoke validated.
+
+## Push Notifications Foundation
+
+Migration `20260530000800_push_notifications_foundation.sql` is implemented and locally validated only.
+
+Tables:
+- `push_subscriptions`
+- `push_notification_preferences`
+- `push_notification_outbox`
+
+RPC behavior:
+- `register_push_subscription(...)` registers or refreshes the authenticated user's active Web Push endpoint.
+- `disable_push_subscription(p_endpoint)` disables only the authenticated user's matching endpoint.
+- `get_my_push_preferences()` returns own preference flags and active subscription count.
+- `update_my_push_preferences(...)` updates own preference flags.
+- `create_my_test_push_notification()` queues a fixed self-test outbox row for the authenticated user.
+
+Security:
+- Push registration/preferences require approved profile plus active primary membership with roster status `active`, `trial`, or `pending_transfer`.
+- Pending/rejected/suspended/left/kicked/inactive/on_break users are denied.
+- Notification payload title/body are generated server-side from fixed notification types.
+- No normal CP, `member_cp`, `cp_snapshots`, email, auth IDs, audit/admin/private metadata, or arbitrary user content is returned in payloads.
+- Direct anon/authenticated table access is revoked.
+
+Edge Function:
+- `send-push-notifications` is added locally under `supabase/functions`.
+- It requires VAPID secrets before remote deploy/use: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT`.
+- It is not deployed yet.
 
 ## Ranking Public Profile Links
 
@@ -108,6 +136,7 @@ Security:
 30. `20260530000500_my_ghoul_rep_profile.sql`
 31. `20260530000600_public_member_profiles.sql`
 32. `20260530000700_ranking_public_profile_links.sql`
+33. `20260530000800_push_notifications_foundation.sql`
 
 Migration `20260523000100_member_roster_status_system.sql` is locally validated, staging validated, and production applied/verified as of Milestone 15E.
 
@@ -138,6 +167,8 @@ Migration `20260530000500_my_ghoul_rep_profile.sql` is locally implemented/valid
 Migration `20260530000600_public_member_profiles.sql` is locally implemented/validated and production applied/verified. It adds authenticated Public Member Profiles and Profile Reactions.
 
 Migration `20260530000700_ranking_public_profile_links.sql` is locally implemented/validated and production applied/verified. It adds safe `profile_slug` to member-safe rankings for authenticated public-profile navigation.
+
+Migration `20260530000800_push_notifications_foundation.sql` is locally implemented/validated only. It has not been applied to staging or production.
 
 ## Milestone 25B 3v3 Team Finder Backend
 

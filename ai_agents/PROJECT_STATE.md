@@ -1,5 +1,35 @@
 # Project State
 
+## Milestone 28B Push Notifications Foundation Local
+
+Push Notifications backend/RPC and Edge Function foundation is implemented and locally validated only.
+
+Implemented locally:
+- Migration `20260530000800_push_notifications_foundation.sql`.
+- New RPC-only tables: `push_subscriptions`, `push_notification_preferences`, and `push_notification_outbox`.
+- Public RPCs: `register_push_subscription`, `disable_push_subscription`, `get_my_push_preferences`, `update_my_push_preferences`, and `create_my_test_push_notification`.
+- Private helpers for approved-member eligibility, preference initialization, fixed safe payload generation, and internal outbox enqueue.
+- Supabase Edge Function foundation: `send-push-notifications`.
+
+Security/behavior:
+- Eligible recipients are approved profiles with active primary guild membership and roster status `active`, `trial`, or `pending_transfer`.
+- Pending, rejected, suspended, left, kicked, inactive, and on-break users are blocked from push registration/preferences/test notification enqueue.
+- Notification payloads are fixed server-side by notification type and contain no CP values, email, auth IDs, audit/private metadata, or admin data.
+- No CP/GvG/Analytics/3v3/Guild Wall/cosmetics/member-status/auth/role/permission behavior was changed.
+- No frontend service worker push listener or notification permission UI was added in 28B.
+
+Validation:
+- `npx.cmd supabase db reset` passed locally through `20260530000800_push_notifications_foundation.sql`.
+- `supabase/tests/local_validation_anteiku.sql` passed through Docker `psql`.
+- Milestone 28B push block passed `13 PASS / 0 FAIL / 0 SKIP`.
+- Source sweep on the new migration and Edge Function found no `member_cp`, `cp_snapshots`, normal CP RPCs, or CP value paths.
+- `npm.cmd run build` was skipped because no frontend, service worker, package, or app build files changed.
+
+Rollout blockers:
+- Production/staging do not have `20260530000800_push_notifications_foundation.sql` yet.
+- Edge Function deploy/send is blocked until Supabase function secrets are configured: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT`.
+- Future production rollout still requires a clean production `supabase db push --dry-run`, DB verification, Edge Function deployment, and explicit approval before any controlled production test notification.
+
 ## Social Profile Surfaces Polish Live
 
 Public Profile and Guild Wall social surfaces received a frontend-only polish pass and are live in production.

@@ -1,8 +1,39 @@
 # Supabase RLS
 
-The Supabase RLS/RPC implementation has been validated through Ranking Public Profile links. Production is applied/verified through `20260530000700_ranking_public_profile_links.sql`.
+The Supabase RLS/RPC implementation has been validated locally through Push Notifications foundation. Production is applied/verified through `20260530000700_ranking_public_profile_links.sql`; `20260530000800_push_notifications_foundation.sql` is not applied remotely yet.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
+
+## Push Notifications RLS/RPC
+
+Milestone 28B Push Notifications foundation is implemented and locally validated only.
+
+Tables:
+- `push_subscriptions`
+- `push_notification_preferences`
+- `push_notification_outbox`
+
+RLS/grants:
+- RLS is enabled on all push tables.
+- Direct anon/authenticated table grants are revoked.
+- Client access should be RPC-only.
+- Outbox writes are private helper/internal flow only; clients cannot direct-write arbitrary payloads.
+
+RPC rules:
+- Public push RPCs use `auth.uid()` and do not accept arbitrary actor profile ids.
+- Registration, preferences, and self-test enqueue require approved profile plus active primary guild membership with roster status `active`, `trial`, or `pending_transfer`.
+- Pending/rejected/suspended/left/kicked/inactive/on_break users are denied.
+- `disable_push_subscription` only disables the caller's endpoint.
+
+Privacy:
+- Push payloads are fixed server-side by type.
+- No normal CP, `member_cp`, `cp_snapshots`, email, auth IDs, audit/admin/private metadata, or arbitrary user content should be included.
+- Edge Function service-role access is server-side only and must not be exposed to frontend/Vercel public env.
+
+Validation:
+- Local reset applied `20260530000800_push_notifications_foundation.sql`.
+- Milestone 28B validation passed `13 PASS / 0 FAIL / 0 SKIP`.
+- Remote rollout remains blocked until VAPID secrets are configured.
 
 ## Ranking Public Profile Links RLS/RPC
 

@@ -52,6 +52,15 @@ Current production checkpoint:
 - Cosmetics v1 uses approved repo static assets only. Do not add arbitrary URLs, player uploads, or Supabase Storage without a planned security review.
 - Vercel Preview env has not been configured for staging yet.
 
+Push Notifications pending checkpoint:
+- Milestone 28B Push Notifications foundation is local-only and validated.
+- Production has not received `20260530000800_push_notifications_foundation.sql`.
+- `send-push-notifications` Edge Function is not deployed.
+- Required Edge Function secrets must be configured before deploy/use: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT`.
+- Do not send controlled production test notifications without explicit approval.
+- Do not expose service-role keys to frontend/Vercel public env.
+- Do not include normal CP values, email, auth IDs, audit/admin/private metadata, or arbitrary user content in push payloads.
+
 Controlled guild onboarding checkpoint:
 
 - [x] Password recovery is fixed and production-validated.

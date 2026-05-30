@@ -2,6 +2,8 @@
 
 ## Current Backend Status
 
+Milestone 28B Push Notifications foundation is implemented and locally validated through `20260530000800_push_notifications_foundation.sql`. It is not applied to staging or production yet.
+
 Guild Wall / Global Wall Ghoul Rep backend support is applied and verified in production through `20260530000400_ghoul_rep_wall_reactions.sql`.
 
 Global Wall scope is applied and verified in production through `20260530000300_global_wall_scope.sql`.
@@ -22,7 +24,7 @@ Staging and production both have this migration applied and verified. Future new
 
 ## Production Deployment Status
 
-Production Supabase is live and migrated through `20260530000400_ghoul_rep_wall_reactions.sql`. Member Status, CP Update Window / Member CP Self-Submit, CP Leaderboard, Rank Badge / Profile Border, Cosmetics, Premium Cosmetics, Owner Cosmetics, Admin Analytics, Live CP Growth, 3v3 Team Finder, Guild Wall, Global Wall, and Ghoul Rep backend support are applied, verified, and live in production.
+Production Supabase is live and migrated through the public profile/ranking social migrations. Push Notifications migration `20260530000800_push_notifications_foundation.sql` is local-only and has not been applied remotely. Member Status, CP Update Window / Member CP Self-Submit, CP Leaderboard, Rank Badge / Profile Border, Cosmetics, Premium Cosmetics, Owner Cosmetics, Admin Analytics, Live CP Growth, 3v3 Team Finder, Guild Wall, Global Wall, Ghoul Rep backend support, Public Member Profiles, and Ranking public profile links are applied, verified, and live in production.
 
 Current local migration order:
 
@@ -55,6 +57,10 @@ Current local migration order:
 27. `20260530000200_guild_wall_scope_hotfix.sql`
 28. `20260530000300_global_wall_scope.sql`
 29. `20260530000400_ghoul_rep_wall_reactions.sql`
+30. `20260530000500_my_ghoul_rep_profile.sql`
+31. `20260530000600_public_member_profiles.sql`
+32. `20260530000700_ranking_public_profile_links.sql`
+33. `20260530000800_push_notifications_foundation.sql`
 
 Migration `20260523000100_member_roster_status_system.sql` is implemented, locally validated, staging validated, and production applied/verified.
 
@@ -81,6 +87,36 @@ Migration `20260530000200_guild_wall_scope_hotfix.sql` is implemented, locally v
 Migration `20260530000300_global_wall_scope.sql` is implemented, locally validated, and production applied/verified. It adds null-scope Global Wall support.
 
 Migration `20260530000400_ghoul_rep_wall_reactions.sql` is implemented, locally validated, and production applied/verified. It adds live-calculated Ghoul Rep fields to the Wall feed and safe reaction details RPC support.
+
+Migration `20260530000800_push_notifications_foundation.sql` is implemented and locally validated only. It has not been applied to staging or production.
+
+## Milestone 28B Push Notifications Foundation
+
+Migration:
+- `supabase/migrations/20260530000800_push_notifications_foundation.sql`
+
+New tables:
+- `push_subscriptions`: stores active/disabled Web Push endpoint/key material per profile.
+- `push_notification_preferences`: stores own opt-in/out flags for GvG, CP window, 3v3, Wall comments, Wall reactions, and profile reactions.
+- `push_notification_outbox`: stores fixed safe notification title/body/type/route rows for server-side delivery.
+
+RPCs:
+- `register_push_subscription(p_endpoint text, p_p256dh_key text, p_auth_key text, p_user_agent text default null)`
+- `disable_push_subscription(p_endpoint text)`
+- `get_my_push_preferences()`
+- `update_my_push_preferences(...)`
+- `create_my_test_push_notification()`
+
+Rules:
+- Push registration/preferences require an approved profile with active primary membership and roster status `active`, `trial`, or `pending_transfer`.
+- Pending/rejected/suspended/left/kicked/inactive/on_break users are denied registration/preferences/self-test enqueue.
+- Notification payload text is fixed by server-side notification type; callers cannot submit arbitrary notification title/body.
+- Direct anon/authenticated table access is revoked; frontend should use RPCs only.
+
+Edge Function:
+- `supabase/functions/send-push-notifications/index.ts` is a local foundation for queued Web Push delivery.
+- It requires `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT` before remote deployment/use.
+- It is not deployed yet.
 
 ## Ghoul Rep Wall Reaction Backend
 

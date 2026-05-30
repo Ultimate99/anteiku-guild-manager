@@ -1,5 +1,28 @@
 # Security Rules
 
+## Push Notification Security Rules
+
+Milestone 28B Push Notifications foundation is implemented and locally validated only. Production/staging do not have `20260530000800_push_notifications_foundation.sql` yet.
+
+Rules:
+- Push registration and preferences must use RPCs only.
+- Approved profile plus active primary membership is required.
+- Only roster statuses `active`, `trial`, and `pending_transfer` may register/receive self-test push notifications.
+- Pending, rejected, suspended, left, kicked, inactive, and on-break users are denied.
+- Frontend must never use service-role keys.
+- Edge Function service-role access is server-side only and must not be exposed to Vercel/frontend env.
+- Event hooks for GvG, CP Update Window, 3v3, and Wall notifications are deferred until a separately approved milestone.
+
+Payload privacy:
+- Notification title/body are fixed server-side by notification type.
+- No normal CP values, `member_cp`, `cp_snapshots`, CP history/growth, email, auth IDs, audit logs, admin permissions, private notes, private metadata, or arbitrary user content may be included in push payloads.
+- Push sender must not cache Supabase RPC/API/Auth responses.
+
+Deployment gate:
+- Configure Supabase Edge Function secrets before remote deploy/use: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT`.
+- Run a clean production dry-run before applying `20260530000800_push_notifications_foundation.sql`.
+- Do not send controlled production test notifications without explicit approval.
+
 ## Ranking Public Profile Link Security Rules
 
 Ranking to Public Member Profile links are live in production through `20260530000700_ranking_public_profile_links.sql` and commit `d806974 feat: link rankings to public profiles`.

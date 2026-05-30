@@ -1,5 +1,37 @@
 # Supabase RLS
 
+## Milestone 28B Push Notifications RLS/RPC
+
+Milestone 28B Push Notifications foundation is implemented and locally validated only through `20260530000800_push_notifications_foundation.sql`.
+
+Tables:
+- `push_subscriptions`
+- `push_notification_preferences`
+- `push_notification_outbox`
+
+RLS/grants:
+- RLS is enabled on all push tables.
+- Direct anon/authenticated table grants are revoked.
+- Frontend reads/writes should use only the public push RPCs.
+- Outbox writes are internal/private helper-driven; clients cannot direct-write arbitrary notification payloads.
+
+RPC security:
+- All public push RPCs use `auth.uid()`.
+- Registration, preference reads/updates, and self-test enqueue require an approved profile with active primary guild membership and roster status `active`, `trial`, or `pending_transfer`.
+- Pending/rejected/suspended/left/kicked/inactive/on_break users are denied.
+- `disable_push_subscription` only disables endpoints owned by the authenticated profile.
+
+Privacy:
+- Notification payloads are fixed server-side by notification type.
+- Payloads must not include CP values, `member_cp`, `cp_snapshots`, email, auth IDs, audit/admin/private metadata, or arbitrary user content.
+- The Edge Function sender reads only outbox/subscription rows server-side and does not expose service-role access to the frontend.
+
+Validation:
+- Local reset applied the migration cleanly.
+- Full local validation passed; Milestone 28B push block reported `13 PASS / 0 FAIL / 0 SKIP`.
+- Source sweep found no normal CP table/RPC paths in the new migration or Edge Function.
+- Production/staging rollout is pending and blocked until VAPID secrets are configured.
+
 ## Ghoul Rep Wall Reaction RLS/RPC
 
 Ghoul Rep backend support is implemented, locally validated, and production applied through `20260530000400_ghoul_rep_wall_reactions.sql`.

@@ -7108,4 +7108,266 @@ select count(*) filter (where status = 'PASS') as milestone_public_profile_total
        count(*) filter (where status = 'SKIP') as milestone_public_profile_total_skip
 from milestone_public_profile_results;
 
+-- Milestone 28B validation: Push Notifications backend/RPC foundation.
+-- Local-only and rolled back with the rest of this script.
+create temp table milestone_push_notification_results (
+  section text not null,
+  test_name text not null,
+  status text not null check (status in ('PASS', 'FAIL', 'SKIP')),
+  details text
+) on commit drop;
+
+do $$
+declare
+  owner_id constant uuid := '10000000-0000-0000-0000-000000000001';
+  member_id constant uuid := '10000000-0000-0000-0000-000000000006';
+  pending_id constant uuid := '10000000-0000-0000-0000-000000000007';
+  wrong_guild_id constant uuid := '10000000-0000-0000-0000-000000000009';
+  direct_grant_count integer;
+  direct_count integer;
+  owner_count integer;
+  payload jsonb;
+begin
+  begin
+    if to_regclass('public.push_subscriptions') is not null
+       and to_regclass('public.push_notification_preferences') is not null
+       and to_regclass('public.push_notification_outbox') is not null then
+      insert into milestone_push_notification_results values ('schema', 'push_tables_exist', 'PASS', 'Push tables exist.');
+    else
+      insert into milestone_push_notification_results values ('schema', 'push_tables_exist', 'FAIL', 'One or more push tables are missing.');
+    end if;
+
+    select count(*)
+    into direct_count
+    from pg_class c
+    join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'public'
+      and c.relname in ('push_subscriptions', 'push_notification_preferences', 'push_notification_outbox')
+      and c.relrowsecurity = true;
+
+    if direct_count = 3 then
+      insert into milestone_push_notification_results values ('schema', 'push_tables_rls_enabled', 'PASS', 'RLS enabled on all push tables.');
+    else
+      insert into milestone_push_notification_results values ('schema', 'push_tables_rls_enabled', 'FAIL', direct_count::text || ' push tables have RLS enabled.');
+    end if;
+
+    select count(*)
+    into direct_grant_count
+    from information_schema.table_privileges
+    where table_schema = 'public'
+      and table_name in ('push_subscriptions', 'push_notification_preferences', 'push_notification_outbox')
+      and grantee in ('anon', 'authenticated');
+
+    if direct_grant_count = 0 then
+      insert into milestone_push_notification_results values ('schema', 'push_tables_no_direct_client_grants', 'PASS', 'No direct anon/authenticated table grants.');
+    else
+      insert into milestone_push_notification_results values ('schema', 'push_tables_no_direct_client_grants', 'FAIL', direct_grant_count::text || ' unexpected direct grants.');
+    end if;
+  exception when others then
+    insert into milestone_push_notification_results values ('schema', 'push_schema_checks', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    payload := public.register_push_subscription(
+      'https://push.example.test/member-endpoint',
+      repeat('a', 88),
+      repeat('b', 24),
+      'local validation agent'
+    );
+
+    if payload ->> 'enabled' = 'true'
+       and (payload #>> '{preferences,notify_gvg}') = 'true'
+       and (payload #>> '{preferences,notify_wall_reactions}') = 'false' then
+      insert into milestone_push_notification_results values ('rpc', 'eligible_member_registers_subscription', 'PASS', payload::text);
+    else
+      insert into milestone_push_notification_results values ('rpc', 'eligible_member_registers_subscription', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_push_notification_results values ('rpc', 'eligible_member_registers_subscription', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', pending_id::text, true);
+    perform public.register_push_subscription(
+      'https://push.example.test/pending-endpoint',
+      repeat('a', 88),
+      repeat('b', 24),
+      'local validation agent'
+    );
+    insert into milestone_push_notification_results values ('eligibility', 'pending_user_denied_subscription', 'FAIL', 'Pending user registered push subscription.');
+  exception when others then
+    insert into milestone_push_notification_results values ('eligibility', 'pending_user_denied_subscription', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    payload := public.update_my_push_preferences(false, true, false, true, true, false);
+
+    if payload ->> 'notify_gvg' = 'false'
+       and payload ->> 'notify_3v3' = 'false'
+       and payload ->> 'notify_wall_reactions' = 'true'
+       and payload ->> 'notify_profile_reactions' = 'false' then
+      insert into milestone_push_notification_results values ('rpc', 'member_updates_own_preferences', 'PASS', payload::text);
+    else
+      insert into milestone_push_notification_results values ('rpc', 'member_updates_own_preferences', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_push_notification_results values ('rpc', 'member_updates_own_preferences', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', pending_id::text, true);
+    perform public.get_my_push_preferences();
+    insert into milestone_push_notification_results values ('eligibility', 'pending_user_denied_preferences', 'FAIL', 'Pending user read push preferences.');
+  exception when others then
+    insert into milestone_push_notification_results values ('eligibility', 'pending_user_denied_preferences', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.register_push_subscription(
+      'https://push.example.test/member-owned-endpoint',
+      repeat('c', 88),
+      repeat('d', 24),
+      'local validation agent'
+    );
+
+    perform set_config('request.jwt.claim.sub', wrong_guild_id::text, true);
+    perform public.disable_push_subscription('https://push.example.test/member-owned-endpoint');
+
+    select count(*)
+    into direct_count
+    from public.push_subscriptions
+    where endpoint = 'https://push.example.test/member-owned-endpoint'
+      and profile_id = member_id
+      and disabled_at is null;
+
+    if direct_count = 1 then
+      insert into milestone_push_notification_results values ('rpc', 'other_user_cannot_disable_subscription', 'PASS', 'Subscription remained active for owner.');
+    else
+      insert into milestone_push_notification_results values ('rpc', 'other_user_cannot_disable_subscription', 'FAIL', direct_count::text || ' active rows remain.');
+    end if;
+  exception when others then
+    insert into milestone_push_notification_results values ('rpc', 'other_user_cannot_disable_subscription', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    payload := public.disable_push_subscription('https://push.example.test/member-owned-endpoint');
+
+    select count(*)
+    into direct_count
+    from public.push_subscriptions
+    where endpoint = 'https://push.example.test/member-owned-endpoint'
+      and profile_id = member_id
+      and disabled_at is null;
+
+    if direct_count = 0 and payload ->> 'disabled' = 'true' then
+      insert into milestone_push_notification_results values ('rpc', 'member_disables_own_subscription', 'PASS', payload::text);
+    else
+      insert into milestone_push_notification_results values ('rpc', 'member_disables_own_subscription', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_push_notification_results values ('rpc', 'member_disables_own_subscription', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    payload := public.create_my_test_push_notification();
+
+    select count(*)
+    into direct_count
+    from public.push_notification_outbox
+    where recipient_profile_id = member_id
+      and type = 'self_test'
+      and title = 'Anteiku Guild Manager'
+      and body = 'Test notification from Anteiku.'
+      and coalesce(route, '') = '/';
+
+    if payload ->> 'queued' = 'true' and direct_count = 1 then
+      insert into milestone_push_notification_results values ('outbox', 'self_test_queues_only_for_self', 'PASS', payload::text);
+    else
+      insert into milestone_push_notification_results values ('outbox', 'self_test_queues_only_for_self', 'FAIL', coalesce(payload::text, '<null>') || ' rows=' || direct_count::text);
+    end if;
+  exception when others then
+    insert into milestone_push_notification_results values ('outbox', 'self_test_queues_only_for_self', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    select count(*)
+    into direct_count
+    from public.push_notification_outbox
+    where title ilike '%email%'
+       or title ilike '%member_cp%'
+       or title ilike '%cp_snapshots%'
+       or title ilike '%auth%'
+       or title ilike '%audit%'
+       or body ilike '%email%'
+       or body ilike '%member_cp%'
+       or body ilike '%cp_snapshots%'
+       or body ilike '%auth%'
+       or body ilike '%audit%';
+
+    if direct_count = 0 then
+      insert into milestone_push_notification_results values ('privacy', 'outbox_payload_has_no_private_fields', 'PASS', 'No private field tokens found in notification title/body.');
+    else
+      insert into milestone_push_notification_results values ('privacy', 'outbox_payload_has_no_private_fields', 'FAIL', direct_count::text || ' unsafe rows found.');
+    end if;
+  exception when others then
+    insert into milestone_push_notification_results values ('privacy', 'outbox_payload_has_no_private_fields', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    execute 'set local role authenticated';
+    begin
+      execute format(
+        'insert into public.push_notification_outbox (recipient_profile_id, type, title, body) values (%L::uuid, %L, %L, %L)',
+        owner_id::text,
+        'self_test',
+        'Unsafe',
+        'Direct write'
+      );
+      execute 'reset role';
+      insert into milestone_push_notification_results values ('rls', 'direct_outbox_write_denied', 'FAIL', 'Direct outbox insert succeeded.');
+    exception when others then
+      execute 'reset role';
+      insert into milestone_push_notification_results values ('rls', 'direct_outbox_write_denied', 'PASS', sqlerrm);
+    end;
+  exception when others then
+    begin
+      execute 'reset role';
+    exception when others then
+      null;
+    end;
+    insert into milestone_push_notification_results values ('rls', 'direct_outbox_write_denied', 'SKIP', sqlerrm);
+  end;
+
+  select count(*)
+  into owner_count
+  from public.guild_memberships gm
+  join public.profiles p on p.id = gm.profile_id
+  where gm.role = 'owner'
+    and gm.membership_status = 'active'
+    and p.approval_status = 'approved';
+
+  if owner_count = 1 then
+    insert into milestone_push_notification_results values ('regression', 'active_owner_count_remains_one', 'PASS', 'Exactly one active approved Owner membership exists.');
+  else
+    insert into milestone_push_notification_results values ('regression', 'active_owner_count_remains_one', 'FAIL', owner_count::text || ' active approved Owner memberships found.');
+  end if;
+end;
+$$;
+
+select section, test_name, status, details
+from milestone_push_notification_results
+order by section, test_name;
+
+select count(*) filter (where status = 'PASS') as milestone_push_notifications_total_pass,
+       count(*) filter (where status = 'FAIL') as milestone_push_notifications_total_fail,
+       count(*) filter (where status = 'SKIP') as milestone_push_notifications_total_skip
+from milestone_push_notification_results;
+
 rollback;
