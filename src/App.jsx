@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AuthProvider } from './context/AuthContext.jsx';
 import { LanguageProvider, useLanguage } from './context/LanguageContext.jsx';
 import { useAuth } from './hooks/useAuth.js';
+import { useActiveAdminContext } from './hooks/useActiveAdminContext.js';
 import { AppShell } from './layouts/AppShell.jsx';
 import { navigationItems } from './data/navigation.js';
 import { Dashboard } from './pages/Dashboard.jsx';
@@ -49,10 +50,6 @@ function readPublicProfileSlugFromPath() {
   } catch {
     return match[1];
   }
-}
-
-function isPrivilegedRole(role) {
-  return ['owner', 'leader', 'vice', 'admin'].includes(role);
 }
 
 function translateShellItem(item, t) {
@@ -106,6 +103,11 @@ function OfflineNotice() {
 
 function AppContent() {
   const { accessState, loading, membership, recoveryRequired } = useAuth();
+  const {
+    activeAdminContext,
+    activeAdminContextLoading,
+    canAccessAdminPanel,
+  } = useActiveAdminContext();
   const { t } = useLanguage();
   const [publicProfileSlug, setPublicProfileSlug] = useState(() => readPublicProfileSlugFromPath());
   const [activePage, setActivePage] = useState(() => (readPublicProfileSlugFromPath() ? 'publicProfile' : 'dashboard'));
@@ -153,7 +155,8 @@ function AppContent() {
       : 'suspended';
   const isRosterBlocked =
     accessState === 'approved' && (isHardBlockedRosterStatus(rosterStatus) || isHardMembershipState);
-  const canViewAdmin = accessState === 'approved' && !isRosterBlocked && isPrivilegedRole(membership?.role);
+  const canViewAdmin =
+    accessState === 'approved' && !isRosterBlocked && !activeAdminContextLoading && canAccessAdminPanel;
   const rosterBlockedItem = {
     id: `roster-${blockedRosterStatus}`,
     label: blockedRosterStatus === 'kicked' ? t('app.pages.removed') : t(`roster.status.${blockedRosterStatus}.label`),
@@ -229,14 +232,12 @@ function AppContent() {
     };
   }, []);
 
-  useEffect(() => {
-    if (activePage === 'admin' && !canViewAdmin) {
-      setActivePage('dashboard');
-    }
-  }, [activePage, canViewAdmin]);
-
-  const safeActivePage = activePage === 'admin' && !canViewAdmin ? 'dashboard' : activePage;
+  const safeActivePage = activePage;
   const activeItem = useMemo(() => {
+    if (safeActivePage === 'admin') {
+      return translateShellItem(navigationItems.find((item) => item.id === 'admin'), t);
+    }
+
     if (safeActivePage === 'publicProfile') {
       return {
         id: 'publicProfile',
@@ -312,7 +313,12 @@ function AppContent() {
       navigationItems={approvedNavigationItems}
       onNavigate={handleNavigate}
     >
-      <ActivePage profileSlug={publicProfileSlug} onNavigate={handleNavigate} />
+      <ActivePage
+        profileSlug={publicProfileSlug}
+        onNavigate={handleNavigate}
+        activeAdminContext={activeAdminContext}
+        activeAdminContextLoading={activeAdminContextLoading}
+      />
     </AppShell>
   );
 }

@@ -651,6 +651,10 @@ export const en = {
       accessUnavailable: 'Admin access unavailable',
       accessUnavailableBody: 'This area is reserved for authorized guild staff.',
     },
+    activeContextLoading: 'Checking active profile admin access...',
+    activeContextDenied: 'Admin access is not available for this active profile.',
+    activeContextDeniedDescription: 'Switch to a staff profile to use AdminPanel.',
+    activeProfileAdminAccess: 'Active profile admin access: {role}',
     tabs: {
       overview: 'Overview',
       analytics: 'Analytics',

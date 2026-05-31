@@ -376,7 +376,10 @@ function formatAuditEntity(row) {
   return '';
 }
 
-export function AdminPanel() {
+export function AdminPanel({
+  activeAdminContext = null,
+  activeAdminContextLoading = false,
+}) {
   const { language, t } = useLanguage();
   const { membership, guild } = useAuth();
   const [permissionKeys, setPermissionKeys] = useState([]);
@@ -433,7 +436,7 @@ export function AdminPanel() {
   const [activeAction, setActiveAction] = useState(null);
   const [confirmAction, setConfirmAction] = useState(null);
 
-  const canViewAdmin = ['owner', 'leader', 'vice', 'admin'].includes(membership?.role);
+  const canViewAdmin = Boolean(activeAdminContext?.canAccessAdminPanel);
   const allowedRoles = useMemo(() => getAllowedApprovalRoles(membership?.role), [membership?.role]);
   const canReviewQueue = canReviewApprovals({ membership, permissionKeys });
   const canViewMembers = canViewMemberManagement({ membership, permissionKeys });
@@ -494,6 +497,7 @@ export function AdminPanel() {
       `admin.permissions.catalog.${permission.key}.description`,
       humanizeAdminCopy(permission.description ?? permission.key),
     );
+  const activeAdminRoleLabel = activeAdminContext?.role ? formatAdminRole(activeAdminContext.role) : '';
 
   const filteredCpRoster = useMemo(() => {
     const normalizedSearch = cpSearch.trim().toLowerCase();
@@ -1940,13 +1944,25 @@ export function AdminPanel() {
     return <AdminToolsSection membership={membership} plannedSections={plannedSections} t={t} />;
   }
 
+  if (activeAdminContextLoading) {
+    return (
+      <div className="stack">
+        <section className="panel hero-panel compact-empty-state">
+          <StatusBadge tone="warning">{t('nav.admin')}</StatusBadge>
+          <h3>{t('admin.activeContextLoading')}</h3>
+          <p>{t('admin.shell.checkingPermissions')}</p>
+        </section>
+      </div>
+    );
+  }
+
   if (!canViewAdmin) {
     return (
       <div className="stack">
         <section className="panel hero-panel compact-empty-state">
           <StatusBadge tone="danger">{t('admin.common.restricted')}</StatusBadge>
-          <h3>{t('admin.shell.accessUnavailable')}</h3>
-          <p>{t('admin.shell.accessUnavailableBody')}</p>
+          <h3>{t('admin.activeContextDenied')}</h3>
+          <p>{t('admin.activeContextDeniedDescription')}</p>
         </section>
       </div>
     );
@@ -1958,6 +1974,11 @@ export function AdminPanel() {
         <StatusBadge tone={visibleTabs.length > 1 ? 'success' : 'warning'}>{t('nav.admin')}</StatusBadge>
         <h3>{t('admin.shell.title')}</h3>
         <p>{t('admin.shell.selectSection')}</p>
+        {activeAdminRoleLabel ? (
+          <p className="muted-line admin-active-context-line">
+            {t('admin.activeProfileAdminAccess', { role: activeAdminRoleLabel })}
+          </p>
+        ) : null}
         <button
           type="button"
           className="secondary-action compact-action admin-refresh-action"

@@ -652,6 +652,10 @@ export const de = {
       accessUnavailable: 'Adminzugang nicht verfügbar',
       accessUnavailableBody: 'Dieser Bereich ist nur für autorisierten Gildenstaff.',
     },
+    activeContextLoading: 'Adminzugang des aktiven Profils wird geprueft...',
+    activeContextDenied: 'Adminzugang ist fuer dieses aktive Profil nicht verfuegbar.',
+    activeContextDeniedDescription: 'Wechsle zu einem Staff-Profil, um AdminPanel zu nutzen.',
+    activeProfileAdminAccess: 'Adminzugang des aktiven Profils: {role}',
     tabs: {
       overview: 'Uebersicht',
       analytics: 'Analytics',

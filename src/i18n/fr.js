@@ -652,6 +652,10 @@ export const fr = {
       accessUnavailable: 'Accès admin indisponible',
       accessUnavailableBody: 'Cette zone est réservée au staff autorisé.',
     },
+    activeContextLoading: 'Verification de l acces admin du profil actif...',
+    activeContextDenied: 'L acces admin n est pas disponible pour ce profil actif.',
+    activeContextDeniedDescription: 'Passez sur un profil staff pour utiliser AdminPanel.',
+    activeProfileAdminAccess: 'Acces admin du profil actif : {role}',
     tabs: {
       overview: 'Apercu',
       analytics: 'Analytique',
