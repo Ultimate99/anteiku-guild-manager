@@ -2,6 +2,8 @@
 
 The Supabase RLS/RPC implementation has been validated and production-applied through `20260531001100_active_profile_cp_analytics_audit_admin.sql`.
 
+Milestone 29F final active-profile regression was frontend/i18n-only and added no RLS/RPC changes. The final smoke confirmed member Ranking remains CP-hidden, Admin CP/Analytics/Audit surfaces remain permissioned, and no protected direct table path was added.
+
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
 
 ## CP Admin + Analytics + Audit Logs Active Profile RLS/RPC

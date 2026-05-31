@@ -1,5 +1,45 @@
 # Testing And Validation
 
+## Milestone 29F Full Active-Profile Regression Validation
+
+Final active-profile regression validation passed after a tiny Account Switcher copy fix.
+
+Commands/gates:
+- `git status --short`
+- `git log -1 --oneline`
+- `Get-Content -Raw -LiteralPath ai_agents\INDEX.json | ConvertFrom-Json`
+- `npm.cmd run build`
+- Source scans for service-role/secret patterns, protected direct table paths, `member_cp`/`cp_snapshots` frontend reads, and localStorage/profile-id authority
+- Authenticated read-only production browser smoke
+- `git push origin main`
+
+Copy fix:
+- Commit `eaf16b5 fix: update account switcher rollout copy` is pushed to `main`.
+- Only `src/i18n/en.js`, `src/i18n/fr.js`, and `src/i18n/de.js` changed.
+- Stale Profile Settings / Account Switcher warning no longer appears.
+- Corrected EN copy: `Switching profiles reloads your active profile context across the app.`
+
+Production smoke:
+- Production served updated bundle `assets/index-CWFJowQv.js`.
+- Home loaded and topbar `Viewing as` reflected the active profile.
+- Profile loaded; Profile Settings / Account Switcher opened; single-profile state worked.
+- Ranking loaded and still stated CP values are hidden.
+- GvG loaded with no normal CP.
+- 3v3 loaded with public self-entered 3v3 Combined CP only.
+- Wall loaded Global scope with Ghoul Rep/reactions and no normal CP.
+- AdminPanel loaded for active Owner.
+- Admin CP, CP Ranking, Analytics, Audit Logs, Members, Permissions, and Tools loaded read-only.
+- No production mutation was performed.
+
+Security/source validation:
+- No SQL/migration, Supabase/RLS/RPC, service/logic, CP privacy, Admin permission, GvG, 3v3, Wall, Analytics, service-worker/PWA, package, or production data behavior changed.
+- No direct protected table read/write was added.
+- No service-role path, frontend secret, localStorage authority, or arbitrary frontend actor profile id was added.
+- The only captured console error was an old stale Supabase refresh-token entry from older bundle `index-KpKW2qdU.js`; no current-bundle blocker was found.
+
+Result:
+- Account Switcher active-profile migration can be marked complete for the planned 29B-29F scope.
+
 ## Milestone 29E.8E CP Admin + Analytics + Audit Logs Active-Profile Migration Validation
 
 CP-heavy Admin active-profile migration passed local backend validation, frontend build/source validation, production migration gates, production DB verification, and authenticated production smoke.

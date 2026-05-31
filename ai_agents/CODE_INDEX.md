@@ -1,5 +1,10 @@
 # Code Index
 
+## Milestone 29F Full Active-Profile Regression
+
+- `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`: Replaced stale Account Switcher rollout-warning copy with accurate active-profile context reload copy. No logic, service, SQL, RLS/RPC, or behavior files changed.
+- Production status: commit `eaf16b5 fix: update account switcher rollout copy` is deployed, build/source validation passed, final read-only production smoke passed across member-facing and Admin active-profile surfaces, and Account Switcher active-profile migration can be marked complete for the planned 29B-29F scope.
+
 ## Milestone 29E.8E CP Admin + Analytics + Audit Logs Active Profile
 
 - `supabase/migrations/20260531001100_active_profile_cp_analytics_audit_admin.sql`: Redefines Admin CP roster/window/update, Admin CP Ranking, Analytics/Weekly Growth, and Audit Logs RPCs to use selected active admin authority through `private.active_admin_profile_id()`.

@@ -1,5 +1,23 @@
 # Security Rules
 
+## Full Active-Profile Regression Security Checkpoint
+
+Milestone 29F final active-profile regression passed after i18n-only commit `eaf16b5 fix: update account switcher rollout copy`.
+
+Rules confirmed:
+- Frontend-selected profile ids remain UX state only; backend/RPC remains authority.
+- Normal CP remains visible only in approved own-profile and authorized Admin CP surfaces.
+- Member Ranking remains CP-hidden.
+- Public profiles, Wall, GvG, and normal member surfaces do not expose normal CP.
+- 3v3 Combined CP remains public/self-entered and separate from protected normal CP.
+- Admin CP, CP Ranking, Analytics/Weekly Growth, and Audit Logs remain active-profile permission gated.
+- Account Switcher copy no longer claims actions still use the original profile.
+
+Validation status:
+- Build passed.
+- Source checks found no SQL/migration, Supabase/RLS/RPC, service/logic, service-role, protected table, or localStorage authority changes in the copy fix.
+- Production smoke loaded the main member-facing and Admin surfaces read-only with no current-bundle blocker.
+
 ## CP Admin + Analytics + Audit Logs Active-Profile Security Rules
 
 Milestone 29E.8E CP Admin + Analytics + Audit Logs active-profile migration is live in production through `20260531001100_active_profile_cp_analytics_audit_admin.sql` and commit `9dbf374 feat: migrate cp analytics audit admin to active profile`.

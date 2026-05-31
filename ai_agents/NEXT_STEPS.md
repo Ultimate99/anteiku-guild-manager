@@ -2,19 +2,31 @@
 
 ## Current Recommendation
 
-Milestone 29E.8E CP Admin + Analytics + Audit Logs active-profile migration is live in production and locally/build/production-gate validated.
+Milestone 29F final active-profile regression is complete. The Account Switcher active-profile migration can be marked complete for the planned 29B-29F scope.
 
 Recommended next step:
-- Run a final Account Switcher active-profile regression checklist across already migrated systems.
-- Focus that checklist on profile switching, stale-data clearing, CP privacy, admin permission boundaries, and single-profile behavior.
-- Keep frontend selected profile ids as UX input only; backend/RPC remains the authority.
+- Move to normal targeted bug-fix or feature planning.
+- Treat future active-profile issues as specific regressions with focused fixes.
+- Keep frontend selected profile ids as UX input only; backend/RPC remains the authority for any future active-profile-sensitive behavior.
 
 Do not yet:
-- Broaden into unrelated feature work under the active-profile milestone.
+- Reopen broad active-profile migration work without a specific bug or new approved milestone.
 - Treat frontend-selected profile ids as authority.
 - Use localStorage-only profile switching.
 - Expose normal CP values or private auth/email/admin metadata in switcher payloads.
 - Change active-profile behavior for existing systems without a reviewed RPC/RLS migration.
+
+Recorded Account Switcher 29F status:
+- Commit `eaf16b5 fix: update account switcher rollout copy` is pushed to `main`.
+- Stale Profile Settings / Account Switcher warning was replaced with accurate active-context reload copy in EN/FR/DE.
+- Build passed and production served updated bundle `assets/index-CWFJowQv.js`.
+- Final read-only production smoke passed for Home, Profile Settings / Account Switcher, Ranking, GvG, 3v3, Wall, AdminPanel, Admin CP, CP Ranking, Analytics, Audit Logs, Members, Permissions, and Tools.
+- Member Ranking remained CP-hidden, Profile showed own CP only, 3v3 continued to show public self-entered Combined CP only, and no CP/privacy regression was observed.
+- The only captured console error was an old stale Supabase refresh-token entry tied to older bundle `index-KpKW2qdU.js`; no current-bundle blocker was found.
+
+## Previous Recommendation
+
+Milestone 29E.8E CP Admin + Analytics + Audit Logs active-profile migration is live in production and locally/build/production-gate validated.
 
 Recorded Account Switcher 29E.8E status:
 - Commit `9dbf374 feat: migrate cp analytics audit admin to active profile` is pushed to `main` and production serves the updated bundle.

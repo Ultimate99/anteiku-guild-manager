@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-05-31 - Milestone 29F Full Active-Profile Regression
+
+- Completed final Account Switcher active-profile regression validation.
+- Source fix deployed:
+  - `eaf16b5 fix: update account switcher rollout copy`
+- Source files changed:
+  - `src/i18n/en.js`
+  - `src/i18n/fr.js`
+  - `src/i18n/de.js`
+- Replaced stale Account Switcher copy that said some actions still use the original profile.
+- Corrected copy now explains that switching profiles reloads active profile context across the app.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production smoke passed read-only for Home, Profile, Profile Settings / Account Switcher, Ranking, GvG, 3v3, Wall, AdminPanel, Admin CP, CP Ranking, Analytics, Audit Logs, Members, Permissions, and Tools.
+- No production mutation was performed.
+- No SQL/migration, Supabase/RLS/RPC, service/logic, CP privacy, Admin permission, GvG, 3v3, Wall, Analytics, service-worker/PWA, package, or production data behavior changed.
+- Account Switcher active-profile migration can be marked complete for the planned 29B-29F scope.
+
 ## 2026-05-31 - Milestone 29E.8E CP Admin + Analytics + Audit Logs Active Profile
 
 - Migrated CP-heavy AdminPanel reads/actions to backend-resolved active admin identity.

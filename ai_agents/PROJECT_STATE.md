@@ -1,5 +1,30 @@
 # Project State
 
+## Milestone 29F Full Active-Profile Regression Complete
+
+Final Account Switcher active-profile regression validation passed after a tiny i18n-only copy fix.
+
+Copy fix:
+- Commit `eaf16b5 fix: update account switcher rollout copy` is pushed to `main` and production serves the updated bundle.
+- Replaced stale Account Switcher copy that said some actions still use the original profile.
+- New EN copy: `Switching profiles reloads your active profile context across the app.`
+- FR/DE Account Switcher copy was updated consistently.
+- Only `src/i18n/en.js`, `src/i18n/fr.js`, and `src/i18n/de.js` changed.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- `ai_agents/INDEX.json` parsed successfully before docs work.
+- Source checks found no SQL/migration, Supabase/RLS/RPC, service/logic, CP/privacy, service-role, protected table, or localStorage authority changes.
+- Production served bundle `assets/index-CWFJowQv.js` during final smoke.
+- Profile Settings / Account Switcher opened and showed the corrected copy; the stale warning no longer appeared.
+- Read-only production smoke passed for Home, Profile, Ranking, GvG, 3v3, Wall, Admin Overview, Admin CP, Admin CP Ranking, Analytics, Audit Logs, Members, Permissions, and Tools.
+- Member Ranking still stated CP values are hidden; Profile showed only own CP; Wall/GvG did not show normal CP; 3v3 showed only public self-entered 3v3 Combined CP.
+- The browser log still contains an old stale Supabase refresh-token entry from older bundle `index-KpKW2qdU.js`, but no current-bundle console blocker or visible UI blocker was found.
+
+Status:
+- Account Switcher active-profile migration can be marked complete for the planned 29B-29F scope.
+- Remaining active-profile work should be treated as targeted bug fixes or new feature milestones, not broad migration cleanup.
+
 ## Milestone 29E.8E CP Admin + Analytics + Audit Logs Active-Profile Migration Live
 
 CP-heavy AdminPanel authority now follows the selected active admin profile and is live in production through migration `20260531001100_active_profile_cp_analytics_audit_admin.sql` and commit `9dbf374 feat: migrate cp analytics audit admin to active profile`.

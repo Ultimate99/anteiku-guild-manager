@@ -1,5 +1,21 @@
 # Session Log
 
+## 2026-05-31 - Milestone 29F Full Active-Profile Regression
+
+- Ran final active-profile regression validation after the 29E.8E CP/Admin/Analytics/Audit rollout.
+- Found stale Account Switcher copy in Profile Settings saying some actions still use the original profile.
+- Applied an i18n-only fix in `src/i18n/en.js`, `src/i18n/fr.js`, and `src/i18n/de.js`.
+- New EN Account Switcher copy says `Switching profiles reloads your active profile context across the app.`
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no SQL/migration, Supabase/RLS/RPC, service/logic, CP/privacy, service-role, protected table, or localStorage authority changes.
+- Commit `eaf16b5 fix: update account switcher rollout copy` was pushed to `main`.
+- Production served updated bundle `assets/index-CWFJowQv.js`.
+- Profile Settings / Account Switcher opened and the stale warning no longer appeared.
+- Read-only production smoke passed for Home, Profile, Ranking, GvG, 3v3, Wall, Admin Overview, Admin CP, Admin CP Ranking, Analytics, Audit Logs, Members, Permissions, and Tools.
+- Member Ranking remained CP-hidden; Profile showed own CP only; Wall/GvG exposed no normal CP; 3v3 showed public self-entered Combined CP only.
+- The only captured console error was an old stale Supabase refresh-token entry tied to older bundle `index-KpKW2qdU.js`; no current-bundle console blocker or visible UI blocker was found.
+- Account Switcher active-profile migration can be marked complete for the planned 29B-29F scope.
+
 ## 2026-05-31 - Milestone 29E.8E CP Admin + Analytics + Audit Logs Active-Profile Migration
 
 - Implemented a focused CP-heavy Admin active-profile migration.

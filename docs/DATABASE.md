@@ -2,6 +2,8 @@
 
 The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and production-applied through `20260531001100_active_profile_cp_analytics_audit_admin.sql`.
 
+Milestone 29F final active-profile regression was frontend/i18n-only and added no database changes. Account Switcher active-profile migration can be marked complete for the planned 29B-29F scope.
+
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
 Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, own Profile Ghoul Rep display, Public Member Profiles, Ranking Public Profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, active-profile 3v3 RPCs, active-profile Push RPCs, active-profile Own CP RPCs, active-profile member GvG voting RPCs, active-profile GvG vote audit actor alignment, active-admin context foundation, non-CP Admin active-profile RPCs, and CP-heavy Admin active-profile RPCs are implemented, locally validated, production applied, and production-smoke or production-gate validated.

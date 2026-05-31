@@ -1,5 +1,35 @@
 # Testing
 
+## Milestone 29F Full Active-Profile Regression
+
+Final active-profile regression validation passed after an i18n-only Account Switcher copy fix.
+
+Results:
+- Commit `eaf16b5 fix: update account switcher rollout copy` is pushed to `main`.
+- Only `src/i18n/en.js`, `src/i18n/fr.js`, and `src/i18n/de.js` changed.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production served updated bundle `assets/index-CWFJowQv.js`.
+- Profile Settings / Account Switcher showed the corrected copy and no longer showed the stale original-profile migration warning.
+
+Production smoke:
+- Home loaded and topbar `Viewing as` matched the active profile.
+- Profile loaded with own CP only and Settings / Account Switcher opened.
+- Ranking loaded and remained CP-hidden for member Ranking.
+- GvG loaded with no normal CP exposure.
+- 3v3 loaded with public self-entered 3v3 Combined CP only.
+- Wall loaded Global scope with Ghoul Rep/reactions and no normal CP.
+- AdminPanel loaded for active Owner.
+- Admin CP, CP Ranking, Analytics, Audit Logs, Members, Permissions, and Tools loaded read-only.
+- No production mutation was performed.
+
+Security/source validation:
+- No SQL/migration, Supabase/RLS/RPC, service/logic, CP privacy, Admin permission, GvG, 3v3, Wall, Analytics, service-worker/PWA, package, or production data behavior changed.
+- No direct protected table read/write, service-role path, frontend secret, localStorage authority, or arbitrary frontend actor profile id was added.
+- One old stale Supabase refresh-token console entry from older bundle `index-KpKW2qdU.js` remains in browser history, but no current-bundle blocker was found.
+
+Result:
+- Account Switcher active-profile migration can be marked complete for the planned 29B-29F scope.
+
 ## Milestone 29E.8E CP Admin + Analytics + Audit Logs Active Profile
 
 CP-heavy Admin active-profile migration passed local validation, build/source validation, production rollout gates, DB verification, and authenticated production AdminPanel smoke.
