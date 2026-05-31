@@ -1,5 +1,30 @@
 # Supabase RLS
 
+## Milestone 29E.4 Active Profile Push Notifications RLS/RPC
+
+Milestone 29E.4 Push Notifications active-profile migration is implemented, locally validated, and production applied through `20260531000500_active_profile_push_notifications.sql`.
+
+Tables:
+- `push_subscriptions` now includes `auth_user_id` for auth/browser subscription ownership.
+- `push_notification_preferences` remains keyed by recipient profile.
+- `push_notification_outbox` remains profile-recipient based.
+
+RPC security:
+- `register_push_subscription(...)`, `get_my_push_preferences()`, `update_my_push_preferences(...)`, and `create_my_test_push_notification()` use `private.get_active_profile_id()` for selected-profile behavior.
+- `disable_push_subscription(p_endpoint text)` disables only active subscriptions owned by the current `auth.uid()` and endpoint.
+- No public push RPC accepts an arbitrary frontend actor profile id.
+- `send-push-notifications` resolves profile recipients to active linked auth users and sends only to active subscriptions.
+
+Privacy:
+- Notification payloads remain fixed server-side by type and return no normal CP, `member_cp`, `cp_snapshots`, email, auth IDs, service-role data in frontend, admin/private metadata, or audit-private metadata.
+- Frontend push paths remain RPC-only.
+
+Validation:
+- Local reset applied the migration cleanly.
+- Full local validation passed; Milestone 29E.4 block reported `12 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed only `20260531000500_active_profile_push_notifications.sql`; production migration is applied and remote migration list shows it applied.
+- Production verification confirmed the auth owner column/FK, push RLS/no broad direct grants, five authenticated push RPC grants, active Owner count `1`, and normal CP direct-read protection.
+
 ## Milestone 29E.3 Active Profile 3v3 Team Finder RLS/RPC
 
 Milestone 29E.3 3v3 Team Finder active-profile migration is implemented, locally validated, and production applied through `20260531000400_active_profile_three_v_three.sql`.

@@ -1,5 +1,30 @@
 # Changelog
 
+## 2026-05-31 - Milestone 29E.4 Push Notifications Active Profile
+
+- Migrated Push Notification settings, preferences, and self-test enqueue to active-profile identity while keeping browser subscriptions owned by the signed-in auth account.
+- New production migration:
+  - `20260531000500_active_profile_push_notifications.sql`
+- Commit deployed:
+  - `5a3302b feat: migrate push settings to active profile`
+- Source files changed:
+  - `src/pages/Profile.jsx`
+  - `src/styles/app.css`
+  - `src/i18n/en.js`
+  - `src/i18n/fr.js`
+  - `src/i18n/de.js`
+  - `supabase/functions/send-push-notifications/index.ts`
+  - `supabase/tests/local_validation_anteiku.sql`
+- Backend changes:
+  - `push_subscriptions.auth_user_id` owns the browser/auth subscription.
+  - Push preferences and test notifications use `private.get_active_profile_id()` for the selected profile.
+  - `disable_push_subscription` disables the current auth/browser endpoint.
+  - `send-push-notifications` sends profile-recipient notifications to active subscriptions owned by linked auth accounts.
+- Local validation passed with `12 PASS / 0 FAIL / 0 SKIP`, build passed, production dry-run/apply verification passed, DB verification passed, Edge Function redeploy passed, and production serves the updated bundle.
+- In-app browser Web Notifications are unsupported, so manual native permission/subscription/test notification smoke remains recommended in Chrome/Safari.
+- No CP get/submit, GvG, Admin, Analytics, permission, or audit actor behavior was migrated in this pass.
+- No normal CP, `member_cp`, `cp_snapshots`, CP RPCs, email/auth/admin/private metadata, uploads, Storage, frontend service-role path, localStorage authority, Supabase response caching, or direct frontend table access was added.
+
 ## 2026-05-31 - Milestone 29E.3 3v3 Team Finder Active Profile
 
 - Migrated 3v3 Team Finder actions to active-profile identity.

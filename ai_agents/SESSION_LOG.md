@@ -1,5 +1,27 @@
 # Session Log
 
+## 2026-05-31 - Milestone 29E.4 Push Notifications Active Profile Migration
+
+- Implemented active-profile migration for Push Notification settings/preferences/self-test while keeping the browser subscription owned by the signed-in auth account.
+- Added migration `supabase/migrations/20260531000500_active_profile_push_notifications.sql`.
+- Added `push_subscriptions.auth_user_id`, backfilled existing subscriptions through active profile links where possible, added FK/index, and preserved RLS/RPC-only access.
+- Updated public push RPCs so selected-profile behavior resolves through `private.get_active_profile_id()`.
+- Added preference-gated internal enqueue behavior for supported notification types while keeping `self_test` always allowed.
+- Updated `supabase/functions/send-push-notifications/index.ts` so queued profile-recipient notifications are delivered to active subscriptions owned by linked auth accounts.
+- Updated `src/pages/Profile.jsx` so Push Settings refresh when the active profile changes, show `Notifications for ...`, and label disable as browser-scoped.
+- Added EN/FR/DE labels and compact styling for the active-profile/browser push context.
+- Local DB reset passed through the new migration.
+- Full local validation passed; the active-profile Push block reported `12 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no normal CP RPC/table usage, frontend service-role path, localStorage authority, direct table path, Supabase response caching, or private notification payload content in the touched push path.
+- Production dry-run showed only `20260531000500_active_profile_push_notifications.sql`.
+- Production migration apply passed and remote migration list shows `20260531000500` applied.
+- Production DB verification confirmed `push_subscriptions.auth_user_id` and FK, push RLS/no broad direct grants, five authenticated public push RPC grants, active Owner count `1`, and simulated normal-member direct CP table reads returned zero visible rows.
+- Edge Function `send-push-notifications` was redeployed on production without exposing VAPID secrets.
+- Commit `5a3302b feat: migrate push settings to active profile` was pushed to `main`.
+- Production app/Profile loaded and the deployed bundle contains the new Push Settings labels; in-app browser notifications are unsupported, so native notification smoke remains a manual supported-browser check.
+- CP get/submit, GvG vote, Admin permissions/actions, Analytics, and audit actor behavior remain future subsystem migrations.
+
 ## 2026-05-31 - Milestone 29E.3 3v3 Team Finder Active Profile Migration
 
 - Implemented active-profile migration for 3v3 Team Finder actions only.

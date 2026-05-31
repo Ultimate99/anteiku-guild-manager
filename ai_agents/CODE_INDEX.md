@@ -1,5 +1,15 @@
 # Code Index
 
+## Milestone 29E.4 Push Notifications Active Profile Migration
+
+- `supabase/migrations/20260531000500_active_profile_push_notifications.sql`: Adds `push_subscriptions.auth_user_id`, migrates push RPCs so preferences/test notification recipients use `private.get_active_profile_id()`, keeps disable browser-auth scoped, and preference-gates supported notification types.
+- `supabase/functions/send-push-notifications/index.ts`: Delivers profile-recipient outbox rows to active subscriptions owned by auth users linked to that recipient profile, while preserving fixed safe notification payloads.
+- `supabase/tests/local_validation_anteiku.sql`: Adds Milestone 29E.4 validation for active-profile push subscription ownership, preference isolation, selected-profile self-test enqueue, browser-auth disable behavior, inactive/unlinked denial, payload privacy, disabled preference enqueue suppression, and active Owner count.
+- `src/pages/Profile.jsx`: Push Settings refresh when the selected active profile changes and labels settings as profile-scoped plus browser-subscription scoped.
+- `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`: Add active-profile/browser Push Settings labels.
+- `src/styles/app.css`: Adds compact active-profile Push Settings context styling.
+- Production status: migration `20260531000500_active_profile_push_notifications.sql` is applied, Edge Function `send-push-notifications` is redeployed, commit `5a3302b feat: migrate push settings to active profile` is pushed to `main`, local validation passed `12 PASS / 0 FAIL / 0 SKIP`, build/source validation passed, and limited production smoke confirmed app/Profile load plus deployed bundle strings.
+
 ## Milestone 29E.3 3v3 Team Finder Active Profile Migration
 
 - `supabase/migrations/20260531000400_active_profile_three_v_three.sql`: Migrates public 3v3 RPC actor/viewer identity to `private.get_active_profile_id()`. Covers Discord username update, public 3v3 Combined CP update, team create, team/status reads, join requests, cancel, approve/decline, remove member, close/reopen, and disband.

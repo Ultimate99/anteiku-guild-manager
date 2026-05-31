@@ -1,5 +1,31 @@
 # Testing
 
+## Milestone 29E.4 Push Notifications Active Profile
+
+Push Notifications active-profile migration passed local validation, build/source validation, production rollout gates, DB verification, Edge Function redeploy, and limited production smoke.
+
+Results:
+- Local DB reset applied through `20260531000500_active_profile_push_notifications.sql`.
+- Full local validation passed; the active-profile Push block reported `12 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production dry-run showed only `20260531000500_active_profile_push_notifications.sql`.
+- Production migration is applied and remote migration list shows `20260531000500` applied.
+- Edge Function `send-push-notifications` was redeployed on production.
+- Commit `5a3302b feat: migrate push settings to active profile` is pushed to `main` and production serves the updated bundle.
+
+Production smoke:
+- Signed-in production app loaded.
+- Profile loaded.
+- Production bundle contains the new Push Settings labels for profile context and browser subscription context.
+- In-app browser reports Web Notification support as unavailable, so native notification permission/subscription/test notification smoke remains a manual supported-browser check.
+
+Security/source validation:
+- Push preferences and self-test notification enqueue now use the selected active profile.
+- Browser subscriptions are owned by `auth_user_id`.
+- Frontend remains RPC-only for Push Settings and does not direct-read or direct-write push tables.
+- No normal CP, `member_cp`, `cp_snapshots`, CP RPCs, email/auth/admin/private metadata, uploads, Storage, frontend service-role paths, localStorage authority, Supabase response caching, or direct frontend table paths were added.
+- Simulated normal-member direct reads of `member_cp` and `cp_snapshots` returned zero visible rows.
+
 ## Milestone 29E.3 3v3 Team Finder Active Profile
 
 3v3 Team Finder active-profile migration passed local validation, build/source validation, production rollout gates, DB verification, and authenticated production smoke.

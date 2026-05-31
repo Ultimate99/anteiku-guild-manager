@@ -4,6 +4,25 @@ Vercel is the production hosting target.
 
 Milestone 13B completed Vercel setup, Supabase Auth URL configuration, deployment, and production smoke/security validation.
 
+## Active Profile Push Notifications Production Rollout
+
+Milestone 29E.4 Push Notifications active-profile migration is live in production.
+
+Production rollout:
+- Production dry-run showed exactly `20260531000500_active_profile_push_notifications.sql` pending.
+- Production migration apply passed and remote migration list shows `20260531000500` applied.
+- Production DB verification passed for `push_subscriptions.auth_user_id`, FK, push RLS/no broad direct grants, push RPC grants, active Owner count `1`, and normal CP direct-read protection.
+- Edge Function `send-push-notifications` was redeployed to production.
+- Frontend commit `5a3302b feat: migrate push settings to active profile` is pushed to `main`.
+- Production serves the updated bundle with profile-scoped and browser-scoped Push Settings labels.
+
+Safety notes:
+- VAPID secret values were not printed, stored, or committed.
+- Browser subscription ownership is auth-account scoped; preferences/test notifications are selected-active-profile scoped.
+- Notification payloads remain fixed server-generated text and route metadata only.
+- No Supabase RPC/API/Auth responses are cached.
+- In-app browser notification support is unavailable; manual native browser push smoke remains recommended if needed.
+
 ## Active Profile Profile/Cosmetics Production Rollout
 
 Milestone 29E.1 Own Profile + Cosmetics active-profile migration is live in production.

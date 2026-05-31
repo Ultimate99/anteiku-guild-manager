@@ -1,5 +1,39 @@
 # Project State
 
+## Milestone 29E.4 Push Notifications Active Profile Migration Live
+
+Push Notification settings, preferences, and self-test enqueue are migrated to active-profile identity and live in production through commit `5a3302b feat: migrate push settings to active profile`.
+
+Implemented:
+- New migration `20260531000500_active_profile_push_notifications.sql`.
+- `push_subscriptions` now stores `auth_user_id` so the browser subscription is owned by the signed-in auth account while notification preferences/test recipients resolve through the selected active profile.
+- Public push RPCs now resolve selected-profile behavior through `private.get_active_profile_id()` for `register_push_subscription`, `get_my_push_preferences`, `update_my_push_preferences`, and `create_my_test_push_notification`.
+- `disable_push_subscription` disables the current browser/auth subscription by endpoint, independent of which linked active profile is selected.
+- `send-push-notifications` now delivers queued profile-recipient notifications to active subscriptions owned by auth accounts linked to that recipient profile.
+- Profile Settings refreshes Push Settings when the active profile changes and labels notifications as profile-scoped plus browser-scoped.
+
+Behavior:
+- Notification recipient identity remains profile-based.
+- Browser subscription ownership remains auth/browser-based.
+- The same browser/auth account can receive notifications for linked profiles, subject to profile eligibility and preferences.
+- Preference toggles and self-test notifications apply to the selected active profile.
+- CP get/submit, GvG vote, Admin permissions/actions, Analytics, and audit actor behavior remain intentionally unmigrated in this milestone.
+
+Security/CP privacy:
+- Push RPCs accept no arbitrary frontend actor profile id.
+- No normal CP, `member_cp`, `cp_snapshots`, CP RPCs, email/auth/admin/private metadata, service-role path in frontend, localStorage authority, Supabase RPC/API caching, uploads, or Storage behavior was added.
+- Notification payload text remains fixed server-side by type and contains no CP/private data.
+- Production DB verification confirmed the new `push_subscriptions.auth_user_id` column/FK, push table RLS, zero broad direct push table grants, five authenticated push RPC grants, active Owner count `1`, and simulated normal-member direct reads of `member_cp` and `cp_snapshots` returned zero visible rows.
+
+Validation:
+- Local `npx.cmd supabase db reset` passed through `20260531000500_active_profile_push_notifications.sql`.
+- Full local validation passed; the new active-profile Push block reported `12 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source guard found no protected CP paths, frontend service-role path, localStorage authority, direct table path, or Supabase response caching in the touched frontend push path.
+- Production dry-run showed only `20260531000500_active_profile_push_notifications.sql`; production migration is applied and remote migration list shows it applied.
+- Supabase Edge Function `send-push-notifications` was redeployed on production without printing or storing secrets.
+- Production serves commit `5a3302b`; smoke confirmed the app/Profile page loads and the deployed bundle contains the new active-profile push UI labels. In-app browser Web Notification support is unavailable, so live permission/subscription/test notification smoke should be re-run manually in Chrome/Safari if needed.
+
 ## Milestone 29E.3 3v3 Team Finder Active Profile Migration Live
 
 3v3 Team Finder actions are migrated to active-profile identity and live in production through commit `a5eb9e6 feat: migrate 3v3 to active profile`.

@@ -2,11 +2,11 @@
 
 ## Current Recommendation
 
-Milestone 29E.3 3v3 Team Finder active-profile migration is live in production and locally/build/production-smoke validated.
+Milestone 29E.4 Push Notifications active-profile migration is live in production and locally/build/production-gate validated.
 
 Recommended next step:
 - Plan the next Account Switcher subsystem migration only if the product wants selected-profile identity to affect a specific remaining action surface.
-- CP get/submit, GvG vote, Push preferences/subscriptions, Admin permissions/actions, Analytics, and audit actor behavior still need separate approved backend/RPC/RLS milestones before they can use active-profile identity.
+- CP get/submit, GvG vote, Admin permissions/actions, Analytics, and audit actor behavior still need separate approved backend/RPC/RLS milestones before they can use active-profile identity.
 - Keep frontend selected profile ids as UX input only; backend/RPC remains the authority.
 
 Do not yet:
@@ -14,6 +14,20 @@ Do not yet:
 - Use localStorage-only profile switching.
 - Expose normal CP values or private auth/email/admin metadata in switcher payloads.
 - Change active-profile behavior for existing systems without a reviewed RPC/RLS migration.
+
+Recorded Account Switcher 29E.4 status:
+- Commit `5a3302b feat: migrate push settings to active profile` is pushed to `main` and production serves the updated bundle.
+- Production DB has `20260531000500_active_profile_push_notifications.sql` applied after a clean dry-run showing only that migration.
+- `push_subscriptions` now has `auth_user_id`; browser subscription ownership is auth/browser-scoped while notification preferences/test recipients are selected-active-profile scoped.
+- `send-push-notifications` was redeployed and now resolves recipient profile subscriptions through active `user_profile_links` plus legacy profile-owned subscriptions.
+- Local validation passed with the active-profile Push block at `12 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production DB verification passed for the new push auth owner column/FK, push RLS/no broad direct grants, push RPC grants, active Owner count `1`, and normal CP table protection.
+- Production smoke confirmed app/Profile load and updated bundle strings. In-app browser notifications are unsupported, so manual native notification smoke remains recommended in Chrome/Safari.
+
+## Previous Recommendation
+
+Milestone 29E.3 3v3 Team Finder active-profile migration is live in production and locally/build/production-smoke validated.
 
 Recorded Account Switcher 29E.3 status:
 - Commit `a5eb9e6 feat: migrate 3v3 to active profile` is pushed to `main` and Vercel reports deployment success.

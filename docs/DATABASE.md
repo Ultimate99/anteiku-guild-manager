@@ -1,10 +1,26 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and production-applied through `20260531000400_active_profile_three_v_three.sql`.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and production-applied through `20260531000500_active_profile_push_notifications.sql`.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
-Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, own Profile Ghoul Rep display, Public Member Profiles, Ranking Public Profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, and active-profile 3v3 RPCs are implemented, locally validated, production applied, and production-smoke or production-gate validated.
+Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, own Profile Ghoul Rep display, Public Member Profiles, Ranking Public Profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, active-profile 3v3 RPCs, and active-profile Push RPCs are implemented, locally validated, production applied, and production-smoke or production-gate validated.
+
+## Active Profile Push Notifications
+
+Migration `20260531000500_active_profile_push_notifications.sql` is applied and verified in production.
+
+Schema/RPC behavior:
+- `push_subscriptions.auth_user_id` stores the signed-in auth account that owns the browser subscription.
+- `push_subscriptions.profile_id` remains the registration-time active profile context.
+- `register_push_subscription`, `get_my_push_preferences`, `update_my_push_preferences`, and `create_my_test_push_notification` resolve selected-profile behavior through `private.get_active_profile_id()`.
+- `disable_push_subscription` disables the current auth/browser endpoint.
+- `send-push-notifications` resolves outbox recipient profiles to active linked auth users and sends to their active browser subscriptions.
+
+Security:
+- Push preferences/test behavior accepts no arbitrary frontend actor profile id.
+- Push tables remain RLS-enabled with no broad direct anon/authenticated table grants.
+- Notification payloads remain fixed server-side and contain no normal CP, `member_cp`, `cp_snapshots`, email/auth/admin/private metadata, or arbitrary user content.
 
 ## Active Profile 3v3 Team Finder
 
@@ -72,7 +88,7 @@ Security:
 - RLS is enabled on both account-link tables.
 - Direct anon/authenticated table grants are revoked.
 - Existing profiles are self-linked to preserve the current `auth.uid() === profiles.id` behavior.
-- CP/GvG/Push/Admin/Analytics/audit systems have not been switched to active-profile identity yet; own Profile identity/edit and Cosmetics read/equip are handled by 29E.1, Wall/Profile Reactions by 29E.2, and 3v3 by 29E.3.
+- CP/GvG/Admin/Analytics/audit systems have not been switched to active-profile identity yet; own Profile identity/edit and Cosmetics read/equip are handled by 29E.1, Wall/Profile Reactions by 29E.2, 3v3 by 29E.3, and Push preferences/test notifications by 29E.4.
 - Switcher payloads return no normal CP, `member_cp`, `cp_snapshots`, email, auth secrets, service-role data, or private admin/audit metadata.
 
 ## Push Notifications Foundation

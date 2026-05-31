@@ -1,5 +1,44 @@
 # Testing And Validation
 
+## Milestone 29E.4 Push Notifications Active Profile Validation
+
+Push Notifications active-profile migration passed local backend validation, frontend build/source validation, production migration gates, DB verification, Edge Function redeploy, and limited production smoke.
+
+Commands/gates:
+- `npx.cmd supabase db reset`
+- `Get-Content -Raw -LiteralPath supabase\tests\local_validation_anteiku.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres -v ON_ERROR_STOP=1`
+- `npm.cmd run build`
+- Production `npx.cmd supabase db push --dry-run`
+- Production `npx.cmd supabase db push`
+- Production `npx.cmd supabase migration list`
+- Production `npx.cmd supabase functions deploy send-push-notifications --project-ref mzflfyxxkascrfpteexz`
+- `git push origin main`
+- Authenticated production app/Profile smoke
+
+Results:
+- Local reset applied through `20260531000500_active_profile_push_notifications.sql`.
+- Full local validation passed.
+- Milestone 29E.4 active-profile Push block passed `12 PASS / 0 FAIL / 0 SKIP`.
+- Build passed with the existing Vite chunk-size warning only.
+- Production dry-run showed exactly one pending migration: `20260531000500_active_profile_push_notifications.sql`.
+- Production migration is applied and remote migration list shows `20260531000500` applied.
+- Edge Function `send-push-notifications` was redeployed on production.
+- Commit `5a3302b feat: migrate push settings to active profile` is pushed to `main`.
+
+Validated behavior:
+- Browser subscriptions are owned by `auth_user_id`.
+- Preferences and self-test notifications use the selected active profile.
+- Disabling a subscription uses the current auth/browser endpoint and is not bound to the selected profile.
+- Edge Function can find subscriptions for auth accounts linked to the recipient profile.
+- Production app and Profile loaded from the deployed bundle.
+- Production bundle contains the new active-profile Push Settings labels.
+
+Security/source validation:
+- No CP get/submit, GvG, Admin, Analytics, or audit actor behavior was migrated.
+- No normal CP, `member_cp`, `cp_snapshots`, CP RPCs, email/auth/admin/private metadata, service-role path in frontend, localStorage authority, Supabase RPC/API caching, uploads, Storage, or direct frontend table paths were added.
+- Simulated normal-member direct reads of `member_cp` and `cp_snapshots` returned zero visible rows in production verification.
+- In-app browser Web Notification support is unavailable, so native permission/subscription/test notification smoke should be repeated manually in a supported browser if needed.
+
 ## Milestone 29E.3 3v3 Team Finder Active Profile Validation
 
 3v3 Team Finder active-profile migration passed local backend validation, frontend build/source validation, production migration gates, DB verification, and authenticated production smoke.

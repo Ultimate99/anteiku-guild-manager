@@ -2,6 +2,8 @@
 
 ## Current Backend Status
 
+Milestone 29E.4 Push Notifications active-profile migration is applied and verified in production through `20260531000500_active_profile_push_notifications.sql`. It adds `push_subscriptions.auth_user_id` so browser subscriptions are auth-account owned while preference/test-notification recipient behavior follows the selected active profile.
+
 Milestone 29E.3 3v3 Team Finder active-profile migration is applied and verified in production through `20260531000400_active_profile_three_v_three.sql`. It switches public 3v3 RPC actor/viewer identity to `private.get_active_profile_id()` while preserving existing 3v3 rules and leaving CP/GvG/Push/Admin/Analytics/audit actor behavior unmigrated by design.
 
 Milestone 29E.1 Own Profile + Cosmetics active-profile migration is applied and verified in production through `20260531000200_active_profile_profile_cosmetics.sql`. It adds active-profile-aware Profile detail/update and Cosmetics read/equip RPCs while leaving CP get/submit and other action systems unmigrated by design.
@@ -30,7 +32,7 @@ Staging and production both have this migration applied and verified. Future new
 
 ## Production Deployment Status
 
-Production Supabase is live and migrated through the active-profile 3v3 migration. Member Status, CP Update Window / Member CP Self-Submit, CP Leaderboard, Rank Badge / Profile Border, Cosmetics, Premium Cosmetics, Owner Cosmetics, Admin Analytics, Live CP Growth, 3v3 Team Finder, Guild Wall, Global Wall, Ghoul Rep backend support, Public Member Profiles, Ranking public profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, and active-profile 3v3 RPCs are applied and verified in production.
+Production Supabase is live and migrated through the active-profile Push Notifications migration. Member Status, CP Update Window / Member CP Self-Submit, CP Leaderboard, Rank Badge / Profile Border, Cosmetics, Premium Cosmetics, Owner Cosmetics, Admin Analytics, Live CP Growth, 3v3 Team Finder, Guild Wall, Global Wall, Ghoul Rep backend support, Public Member Profiles, Ranking public profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, active-profile 3v3 RPCs, and active-profile Push RPCs are applied and verified in production.
 
 Current local migration order:
 
@@ -71,6 +73,23 @@ Current local migration order:
 35. `20260531000200_active_profile_profile_cosmetics.sql`
 36. `20260531000300_active_profile_wall_reactions.sql`
 37. `20260531000400_active_profile_three_v_three.sql`
+38. `20260531000500_active_profile_push_notifications.sql`
+
+## Active Profile Push Notifications
+
+Migration `20260531000500_active_profile_push_notifications.sql` is applied and verified in production.
+
+Schema/RPC behavior:
+- `push_subscriptions.auth_user_id` stores the browser/auth account that owns the subscription.
+- `profile_id` remains the registration-time active profile context.
+- `register_push_subscription`, `get_my_push_preferences`, `update_my_push_preferences`, and `create_my_test_push_notification` resolve selected-profile behavior through `private.get_active_profile_id()`.
+- `disable_push_subscription(p_endpoint text)` disables the current auth/browser subscription for the endpoint.
+- `send-push-notifications` resolves outbox recipient profiles to active linked auth users and their active browser subscriptions.
+
+Security:
+- Push preference/test behavior accepts no arbitrary frontend actor profile id.
+- Push tables remain RLS-enabled with no broad direct anon/authenticated table grants.
+- Notification payload text remains fixed server-side and contains no normal CP, `member_cp`, `cp_snapshots`, email/auth/admin/private metadata, or arbitrary user content.
 
 ## Active Profile 3v3 Team Finder
 
@@ -148,7 +167,7 @@ RPCs/helpers:
 - `owner_unlink_profile_from_auth_user(p_auth_email text, p_profile_slug text)`
 
 Important rollout note:
-- Own Profile identity/edit and Cosmetics read/equip have been switched to active-profile identity by Milestone 29E.1. Wall/Profile Reactions were switched by Milestone 29E.2. 3v3 Team Finder was switched by Milestone 29E.3. CP, GvG, Push, Admin, Analytics, audit actor, and auth flows remain on their existing behavior until later approved milestones.
+- Own Profile identity/edit and Cosmetics read/equip have been switched to active-profile identity by Milestone 29E.1. Wall/Profile Reactions were switched by Milestone 29E.2. 3v3 Team Finder was switched by Milestone 29E.3. Push preferences/test notifications were switched by Milestone 29E.4 while browser subscriptions remain auth-owned. CP, GvG, Admin, Analytics, audit actor, and auth flows remain on their existing behavior until later approved milestones.
 
 Migration `20260523000100_member_roster_status_system.sql` is implemented, locally validated, staging validated, and production applied/verified.
 

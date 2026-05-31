@@ -1,8 +1,28 @@
 # Supabase RLS
 
-The Supabase RLS/RPC implementation has been validated and production-applied through `20260531000400_active_profile_three_v_three.sql`.
+The Supabase RLS/RPC implementation has been validated and production-applied through `20260531000500_active_profile_push_notifications.sql`.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
+
+## Active Profile Push Notifications RLS/RPC
+
+Milestone 29E.4 Push Notifications active-profile migration is production-applied through `20260531000500_active_profile_push_notifications.sql`.
+
+Tables:
+- `push_subscriptions` includes `auth_user_id` for browser/auth subscription ownership.
+- `push_notification_preferences` remains keyed by profile recipient.
+- `push_notification_outbox` remains profile-recipient based.
+
+Rules:
+- Push preferences and self-test notification enqueue resolve selected profile with `private.get_active_profile_id()`.
+- Browser subscription disable is scoped to current `auth.uid()` plus endpoint.
+- `send-push-notifications` may deliver profile-recipient outbox rows to active subscriptions owned by linked auth accounts.
+- No Push Settings frontend path may send arbitrary actor/recipient profile ids.
+
+Privacy:
+- Notification payload text is fixed by server-side type mapping.
+- No normal CP, `member_cp`, `cp_snapshots`, email, auth IDs, admin/private metadata, arbitrary user content, or service-role data is exposed to the frontend.
+- Production verification confirmed active Owner count `1` and simulated normal-member direct CP table reads returned zero visible rows.
 
 ## Active Profile 3v3 Team Finder RLS/RPC
 
