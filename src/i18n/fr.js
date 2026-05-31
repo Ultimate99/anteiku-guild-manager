@@ -402,6 +402,7 @@ export const fr = {
   },
   profile: {
     settings: 'Parametres',
+    settingsBody: 'Gerez le compte et les notifications.',
     editProfile: 'Modifier le profil',
     editingIgn: 'IGN en édition',
     profileLocked: 'Profil verrouillé',
@@ -511,6 +512,18 @@ export const fr = {
       notify_wall_reactions: 'Reporte par defaut.',
       notify_profile_reactions: 'Reporte par defaut.',
     },
+  },
+  accountSwitcher: {
+    title: 'Changement de compte',
+    currentProfile: 'Profil actif actuel',
+    switchProfile: 'Changer',
+    active: 'Actif',
+    primary: 'Principal',
+    onlyOneProfile: 'Un seul profil lie.',
+    confirmSwitch: 'Passer a ce profil ?',
+    switchSuccess: 'Profil actif change. Rechargement...',
+    switchError: 'Changement de profil echoue.',
+    rolloutNote: 'Le changement de compte arrive par phases. Certaines actions peuvent encore utiliser votre profil original jusqu a la migration complete.',
   },
   cosmetics: {
     customize: 'Personnaliser',

@@ -32,6 +32,11 @@ import {
   subscribeToPush,
   updateMyPushPreferences,
 } from '../services/pushNotificationService.js';
+import {
+  loadActiveProfile,
+  loadSwitchableProfiles,
+  setActiveProfile,
+} from '../services/accountSwitcherService.js';
 
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY ?? '';
 
@@ -94,6 +99,12 @@ export function Profile() {
   const [pushSaving, setPushSaving] = useState(false);
   const [pushMessage, setPushMessage] = useState('');
   const [pushError, setPushError] = useState('');
+  const [accountProfiles, setAccountProfiles] = useState([]);
+  const [accountActiveProfile, setAccountActiveProfile] = useState(null);
+  const [accountLoading, setAccountLoading] = useState(false);
+  const [accountSwitchingProfileId, setAccountSwitchingProfileId] = useState('');
+  const [accountMessage, setAccountMessage] = useState('');
+  const [accountError, setAccountError] = useState('');
   const rosterStatus = membership?.roster_status ?? 'active';
   const rankVisualKey = rankSummary?.visualKey ?? 'unranked';
   const canSubmitCp = Boolean(cpWindowState?.can_submit);
@@ -315,6 +326,7 @@ export function Profile() {
   function openSettingsPanel() {
     setSettingsOpen(true);
     refreshPushSettings();
+    refreshAccountSwitcher();
   }
 
   async function saveProfile(event) {
@@ -414,6 +426,61 @@ export function Profile() {
       setPushError(loadError.message || t('pushNotifications.loadError'));
     } finally {
       setPushLoading(false);
+    }
+  }
+
+  async function refreshAccountSwitcher({ showMessage = false } = {}) {
+    setAccountLoading(true);
+    setAccountError('');
+    if (!showMessage) {
+      setAccountMessage('');
+    }
+
+    try {
+      const [switchableState, activeProfile] = await Promise.all([
+        loadSwitchableProfiles(),
+        loadActiveProfile(),
+      ]);
+
+      setAccountProfiles(switchableState.profiles);
+      setAccountActiveProfile(activeProfile);
+      if (showMessage) {
+        setAccountMessage(t('accountSwitcher.switchSuccess'));
+      }
+    } catch (loadError) {
+      setAccountProfiles([]);
+      setAccountActiveProfile(null);
+      setAccountError(loadError.message || t('accountSwitcher.switchError'));
+    } finally {
+      setAccountLoading(false);
+    }
+  }
+
+  async function switchAccountProfile(nextProfile) {
+    if (!nextProfile?.profileId || nextProfile.isActiveProfile || nextProfile.profileId === accountActiveProfile?.profileId) {
+      return;
+    }
+
+    const confirmed = window.confirm(t('accountSwitcher.confirmSwitch'));
+
+    if (!confirmed) {
+      return;
+    }
+
+    setAccountSwitchingProfileId(nextProfile.profileId);
+    setAccountError('');
+    setAccountMessage('');
+
+    try {
+      await setActiveProfile(nextProfile.profileId);
+      await refreshAccountSwitcher({ showMessage: true });
+      window.setTimeout(() => {
+        window.location.reload();
+      }, 700);
+    } catch (switchError) {
+      setAccountError(switchError.message || t('accountSwitcher.switchError'));
+    } finally {
+      setAccountSwitchingProfileId('');
     }
   }
 
@@ -841,7 +908,7 @@ export function Profile() {
                   {pushEnabled ? t('pushNotifications.enabledStatus') : t('pushNotifications.disabledStatus')}
                 </StatusBadge>
                 <h3>{t('profile.settings')}</h3>
-                <p>{t('pushNotifications.optionalBody')}</p>
+                <p>{t('profile.settingsBody')}</p>
               </div>
               <div className="cosmetic-modal-actions">
                 <button type="button" className="secondary-action compact-action" onClick={() => refreshPushSettings()} disabled={pushLoading || pushSaving}>
@@ -850,6 +917,82 @@ export function Profile() {
                 <button type="button" className="secondary-action compact-action" onClick={() => setSettingsOpen(false)}>
                   {t('common.close')}
                 </button>
+              </div>
+            </div>
+
+            <div className="account-switcher-card">
+              <div className="push-settings-heading">
+                <div>
+                  <h4>{t('accountSwitcher.title')}</h4>
+                  <p>{t('accountSwitcher.rolloutNote')}</p>
+                </div>
+                <button
+                  type="button"
+                  className="secondary-action compact-action"
+                  onClick={() => refreshAccountSwitcher()}
+                  disabled={accountLoading || Boolean(accountSwitchingProfileId)}
+                >
+                  {accountLoading ? t('common.loading') : t('common.refresh')}
+                </button>
+              </div>
+
+              {accountMessage ? <p className="notice-line">{accountMessage}</p> : null}
+              {accountError ? <p className="error-line">{accountError}</p> : null}
+
+              <div className="account-switcher-current">
+                <span>{t('accountSwitcher.currentProfile')}</span>
+                <strong>{accountActiveProfile?.ign ?? profile?.ign ?? t('common.unknown')}</strong>
+                <small>@{accountActiveProfile?.profileSlug ?? profile?.profile_slug ?? profile?.username ?? t('common.unknown')}</small>
+              </div>
+
+              {!accountLoading && accountProfiles.length <= 1 ? (
+                <p className="muted-line compact-state-line">{t('accountSwitcher.onlyOneProfile')}</p>
+              ) : null}
+
+              <div className="account-switcher-list">
+                {accountProfiles.map((switchProfile) => {
+                  const isActive = switchProfile.isActiveProfile || switchProfile.profileId === accountActiveProfile?.profileId;
+                  const isSwitching = accountSwitchingProfileId === switchProfile.profileId;
+
+                  return (
+                    <article className="account-switcher-profile-card" key={switchProfile.profileId} data-active={isActive}>
+                      <CosmeticPreview
+                        avatar={switchProfile.avatar}
+                        frame={switchProfile.frame}
+                        label={switchProfile.ign || switchProfile.username || t('common.unknown')}
+                        size="small"
+                      />
+                      <div className="account-switcher-profile-copy">
+                        <div className="account-switcher-profile-title">
+                          <strong>{switchProfile.ign || t('common.unknown')}</strong>
+                          <span>@{switchProfile.profileSlug || switchProfile.username || t('common.unknown')}</span>
+                        </div>
+                        <div className="account-switcher-meta-row">
+                          {switchProfile.guildName ? <span>{switchProfile.guildName}</span> : null}
+                          {switchProfile.role ? <span>{t(`roles.${switchProfile.role}`)}</span> : null}
+                          {switchProfile.rosterStatus ? <span>{t(`roster.status.${switchProfile.rosterStatus}.label`)}</span> : null}
+                        </div>
+                        <div className="account-switcher-chip-row">
+                          {isActive ? <StatusBadge tone="success">{t('accountSwitcher.active')}</StatusBadge> : null}
+                          {switchProfile.isPrimary ? <StatusBadge tone="muted">{t('accountSwitcher.primary')}</StatusBadge> : null}
+                          {switchProfile.approvalStatus ? (
+                            <StatusBadge tone={switchProfile.approvalStatus === 'approved' ? 'success' : 'warning'}>
+                              {t(`approvalStatus.${switchProfile.approvalStatus}`)}
+                            </StatusBadge>
+                          ) : null}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        className="secondary-action compact-action account-switcher-action"
+                        onClick={() => switchAccountProfile(switchProfile)}
+                        disabled={isActive || accountLoading || Boolean(accountSwitchingProfileId)}
+                      >
+                        {isSwitching ? t('common.working') : isActive ? t('accountSwitcher.active') : t('accountSwitcher.switchProfile')}
+                      </button>
+                    </article>
+                  );
+                })}
               </div>
             </div>
 

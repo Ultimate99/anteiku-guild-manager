@@ -402,6 +402,7 @@ export const de = {
   },
   profile: {
     settings: 'Einstellungen',
+    settingsBody: 'Verwalte Account- und Benachrichtigungseinstellungen.',
     editProfile: 'Profil bearbeiten',
     editingIgn: 'IGN bearbeiten',
     profileLocked: 'Profil gesperrt',
@@ -511,6 +512,18 @@ export const de = {
       notify_wall_reactions: 'Standardmaessig zurueckgestellt.',
       notify_profile_reactions: 'Standardmaessig zurueckgestellt.',
     },
+  },
+  accountSwitcher: {
+    title: 'Account-Wechsler',
+    currentProfile: 'Aktives Profil',
+    switchProfile: 'Wechseln',
+    active: 'Aktiv',
+    primary: 'Primaer',
+    onlyOneProfile: 'Nur ein Profil verknuepft.',
+    confirmSwitch: 'Zu diesem Profil wechseln?',
+    switchSuccess: 'Aktives Profil gewechselt. Laedt neu...',
+    switchError: 'Profilwechsel fehlgeschlagen.',
+    rolloutNote: 'Account-Wechsel wird phasenweise ausgerollt. Einige Aktionen koennen bis zur vollstaendigen Migration noch dein urspruengliches Profil nutzen.',
   },
   cosmetics: {
     customize: 'Anpassen',

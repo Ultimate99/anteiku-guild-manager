@@ -401,6 +401,7 @@ export const en = {
   },
   profile: {
     settings: 'Settings',
+    settingsBody: 'Manage account and notification settings.',
     editProfile: 'Edit profile',
     editingIgn: 'Editing IGN',
     profileLocked: 'Profile locked',
@@ -510,6 +511,18 @@ export const en = {
       notify_wall_reactions: 'Deferred by default.',
       notify_profile_reactions: 'Deferred by default.',
     },
+  },
+  accountSwitcher: {
+    title: 'Account Switcher',
+    currentProfile: 'Current active profile',
+    switchProfile: 'Switch',
+    active: 'Active',
+    primary: 'Primary',
+    onlyOneProfile: 'Only one profile linked.',
+    confirmSwitch: 'Switch to this profile?',
+    switchSuccess: 'Active profile switched. Reloading...',
+    switchError: 'Profile switch failed.',
+    rolloutNote: 'Account switching is being rolled out in phases. Some actions may still use your original profile until systems are fully migrated.',
   },
   cosmetics: {
     customize: 'Customize',
