@@ -1,5 +1,32 @@
 # Project State
 
+## Milestone 29E.7 Audit Actor Active-Profile Alignment Live
+
+Audit actor attribution for active-profile member GvG vote submits is live in production through migration `20260531000800_active_profile_audit_actor_alignment.sql` and commit `c48a3e9 feat: align active profile audit actor`.
+
+Implemented:
+- Redefined only `submit_gvg_vote(p_event_id uuid, p_vote_status text, p_absence_reason text default null)`.
+- GvG vote submit/update now writes a focused `gvg_vote_submitted` audit row with the selected active profile as `actor_profile_id` and `target_profile_id`.
+- Audit metadata includes event id/scope, old/new vote status, and absence-reason-present booleans.
+- Absence reason text itself is not written to audit metadata by this hotfix.
+
+Behavior:
+- Existing member GvG vote behavior remains unchanged: one vote row per selected profile/event, Present clears absence reason, and active-profile A/B vote state stays separate.
+- Legacy Admin GvG event management/results and Admin/Analytics permissioned actions remain on their existing legacy audit attribution until separately migrated.
+- Existing active-profile audit paths for own CP, Wall/Profile Reactions, 3v3, and cosmetics were inspected and already use selected active-profile actors where they write audit rows.
+- Old audit rows were not backfilled.
+
+Security/CP privacy:
+- No normal CP, `member_cp`, `cp_snapshots`, CP RPCs, service-role path, localStorage authority, frontend profile id authority, or CP/private metadata exposure was added.
+- Production verification confirmed `submit_gvg_vote` uses `private.get_active_profile_id()`, writes `private.write_audit_log(...)`, has no CP table references, authenticated execute remains granted, active Owner count is `1`, and rollback-wrapped direct access probes for `member_cp`, `cp_snapshots`, `gvg_votes`, and `audit_logs` remained protected.
+
+Validation:
+- Local `npx.cmd supabase db reset` passed through `20260531000800_active_profile_audit_actor_alignment.sql`.
+- Full local validation passed; the active-profile GvG block now reports `17 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` was skipped because no frontend/runtime source changed.
+- Production dry-run showed only `20260531000800_active_profile_audit_actor_alignment.sql`; production migration is applied and remote migration list shows it applied.
+- Production verification was DB/read-only plus rollback-wrapped RLS probes; no production GvG vote mutation smoke was performed.
+
 ## Milestone 29E.6 GvG Voting Active Profile Migration Live
 
 Member-facing GvG event visibility, own-vote lookup, and vote submit/update now use active-profile identity and are live in production through commit `a9e5c2c feat: migrate gvg voting to active profile`.

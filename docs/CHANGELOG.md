@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-05-31 - Milestone 29E.7 Audit Actor Active-Profile Alignment
+
+- Aligned audit actor attribution for active-profile member GvG vote submit/update.
+- New production migration:
+  - `20260531000800_active_profile_audit_actor_alignment.sql`
+- Commit deployed:
+  - `c48a3e9 feat: align active profile audit actor`
+- Source files changed:
+  - `supabase/migrations/20260531000800_active_profile_audit_actor_alignment.sql`
+  - `supabase/tests/local_validation_anteiku.sql`
+- Updated `submit_gvg_vote(...)` to write `gvg_vote_submitted` audit rows with selected active profile as actor/target.
+- Audit metadata records event id/scope, old/new vote status, and absence-reason-present booleans; absence reason text is not copied.
+- Local validation passed with the active-profile GvG block at `17 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run/apply/list verification passed and production DB verification confirmed RPC body/grant, active Owner count `1`, and rollback-wrapped direct access protections.
+- `npm.cmd run build` was skipped because no frontend/runtime source changed.
+- No production vote mutation smoke was performed by design.
+- No legacy Admin GvG/Admin/Analytics audit attribution, CP privacy behavior, normal CP RPC/table path, frontend service-role path, localStorage authority, or existing GvG vote behavior was changed.
+
 ## 2026-05-31 - Milestone 29E.6 GvG Voting Active Profile
 
 - Migrated member-facing GvG active-event visibility, own-vote lookup, and vote submit/update to active-profile identity.

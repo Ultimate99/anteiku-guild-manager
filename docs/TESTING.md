@@ -1,5 +1,31 @@
 # Testing
 
+## Milestone 29E.7 Audit Actor Active-Profile Alignment
+
+Audit actor alignment for active-profile member GvG vote submit/update passed local validation, production rollout gates, and production DB verification.
+
+Results:
+- Local DB reset applied through `20260531000800_active_profile_audit_actor_alignment.sql`.
+- Full local validation passed; the active-profile GvG block reported `17 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` was skipped because no frontend/runtime source changed.
+- Production dry-run showed only `20260531000800_active_profile_audit_actor_alignment.sql`.
+- Production migration is applied and remote migration list shows `20260531000800` applied.
+- Commit `c48a3e9 feat: align active profile audit actor` is pushed to `main`.
+
+Production verification:
+- `submit_gvg_vote(...)` uses `private.get_active_profile_id()`.
+- `submit_gvg_vote(...)` writes `gvg_vote_submitted` through `private.write_audit_log(...)`.
+- Authenticated execute remains granted.
+- Active Owner count remains `1`.
+- Rollback-wrapped direct access probes for `member_cp`, `cp_snapshots`, `gvg_votes`, and `audit_logs` remained protected.
+- No production vote mutation smoke was performed by design.
+
+Security/source validation:
+- New migration has no normal CP, `member_cp`, `cp_snapshots`, CP RPC, service-role, or localStorage references.
+- Audit metadata records event id/scope, old/new vote status, and absence-reason-present booleans only.
+- Absence reason text is not copied into audit metadata.
+- Legacy Admin GvG event management/results and Admin/Analytics audit attribution were unchanged.
+
 ## Milestone 29E.6 GvG Voting Active Profile
 
 GvG member-facing vote/current-user behavior passed local validation, build/source validation, production rollout gates, DB verification, and authenticated production GvG smoke.

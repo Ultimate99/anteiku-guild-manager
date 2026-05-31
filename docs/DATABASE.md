@@ -1,19 +1,35 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and production-applied through `20260531000700_active_profile_gvg_voting.sql`.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and production-applied through `20260531000800_active_profile_audit_actor_alignment.sql`.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
-Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, own Profile Ghoul Rep display, Public Member Profiles, Ranking Public Profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, active-profile 3v3 RPCs, active-profile Push RPCs, active-profile Own CP RPCs, and active-profile member GvG voting RPCs are implemented, locally validated, production applied, and production-smoke or production-gate validated.
+Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, own Profile Ghoul Rep display, Public Member Profiles, Ranking Public Profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, active-profile 3v3 RPCs, active-profile Push RPCs, active-profile Own CP RPCs, active-profile member GvG voting RPCs, and active-profile GvG vote audit actor alignment are implemented, locally validated, production applied, and production-smoke or production-gate validated.
+
+## Active Profile Audit Actor Alignment
+
+Migration `20260531000800_active_profile_audit_actor_alignment.sql` is applied and verified in production.
+
+Behavior:
+- Redefines only `submit_gvg_vote(...)`.
+- Adds `gvg_vote_submitted` audit rows for member GvG vote submit/update.
+- Audit actor and target are the selected active profile resolved by `private.get_active_profile_id()`.
+- Audit metadata is sanitized to event id/scope, old/new vote status, and absence-reason-present booleans.
+- Absence reason text is not copied into audit metadata.
+
+Boundaries:
+- Legacy Admin GvG event management/results and Admin/Analytics audit attribution remain unchanged until separately migrated.
+- No old audit rows were backfilled.
+- No CP tables/RPCs or private metadata were touched.
 
 ## Active Profile GvG Voting
 
-Migration `20260531000700_active_profile_gvg_voting.sql` is applied and verified in production.
+Migration `20260531000700_active_profile_gvg_voting.sql` is applied and verified in production. Follow-up migration `20260531000800_active_profile_audit_actor_alignment.sql` adds active-profile actor audit logging for `submit_gvg_vote(...)`.
 
 Schema/RPC behavior:
 - `get_my_active_gvg_events()` resolves visible active events for the selected active profile.
 - `get_my_gvg_vote(p_event_id uuid)` returns only the selected active profile's own vote for an eligible active event.
-- `submit_gvg_vote(p_event_id uuid, p_vote_status text, p_absence_reason text default null)` resolves identity through `private.get_active_profile_id()` and upserts one selected-profile vote row per event.
+- `submit_gvg_vote(p_event_id uuid, p_vote_status text, p_absence_reason text default null)` resolves identity through `private.get_active_profile_id()`, upserts one selected-profile vote row per event, and writes sanitized `gvg_vote_submitted` audit metadata.
 - Member active-event and own-vote RLS policies now use selected active-profile identity.
 
 Security:

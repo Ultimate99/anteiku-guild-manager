@@ -1,5 +1,11 @@
 # Code Index
 
+## Milestone 29E.7 Audit Actor Active-Profile Alignment
+
+- `supabase/migrations/20260531000800_active_profile_audit_actor_alignment.sql`: Redefines only `submit_gvg_vote(...)` to keep active-profile GvG vote behavior and add sanitized `gvg_vote_submitted` audit rows with selected active profile as actor/target.
+- `supabase/tests/local_validation_anteiku.sql`: Extends the active-profile GvG validation block to confirm GvG vote audit actor attribution, sanitized metadata without absence reason text/CP refs, legacy Admin GvG status audit attribution unchanged, and active Owner count.
+- Production status: migration `20260531000800_active_profile_audit_actor_alignment.sql` is applied, commit `c48a3e9 feat: align active profile audit actor` is pushed to `main`, local validation passed with the active-profile GvG block at `17 PASS / 0 FAIL / 0 SKIP`, production dry-run/apply/DB verification passed, and no production vote mutation smoke was performed.
+
 ## Milestone 29E.6 GvG Voting Active Profile Migration
 
 - `supabase/migrations/20260531000700_active_profile_gvg_voting.sql`: Migrates member-facing GvG active-event visibility, own-vote lookup, and `submit_gvg_vote(...)` to `private.get_active_profile_id()`. Adds `get_my_active_gvg_events()` and `get_my_gvg_vote(p_event_id uuid)`, and updates member active-event/own-vote RLS policies.

@@ -2,11 +2,11 @@
 
 ## Current Recommendation
 
-Milestone 29E.6 GvG voting active-profile migration is live in production and locally/build/production-gate validated.
+Milestone 29E.7 audit actor active-profile alignment is live in production and locally/production-gate validated.
 
 Recommended next step:
 - Plan the next Account Switcher subsystem migration only if the product wants selected-profile identity to affect a specific remaining action surface.
-- Admin permissions/actions, Analytics/Weekly Growth, Ranking/rank badge, own Ghoul Rep, and audit actor behavior outside migrated surfaces still need separate approved backend/RPC/RLS milestones before they can use active-profile identity.
+- Admin permissions/actions, Analytics/Weekly Growth, Ranking/rank badge, own Ghoul Rep, and legacy Admin audit actor behavior still need separate approved backend/RPC/RLS milestones before they can use active-profile identity.
 - Keep frontend selected profile ids as UX input only; backend/RPC remains the authority.
 
 Do not yet:
@@ -14,6 +14,20 @@ Do not yet:
 - Use localStorage-only profile switching.
 - Expose normal CP values or private auth/email/admin metadata in switcher payloads.
 - Change active-profile behavior for existing systems without a reviewed RPC/RLS migration.
+
+Recorded Account Switcher 29E.7 status:
+- Commit `c48a3e9 feat: align active profile audit actor` is pushed to `main`; production DB has `20260531000800_active_profile_audit_actor_alignment.sql` applied after a clean dry-run showing only that migration.
+- Only `submit_gvg_vote(...)` was redefined. It now writes `gvg_vote_submitted` audit rows with the selected active profile as actor/target and sanitized metadata.
+- Audit metadata records event id/scope, old/new vote status, and absence-reason-present booleans, but not absence reason text.
+- Legacy Admin GvG event management/results and Admin/Analytics permissioned audit attribution remain unchanged until separately migrated.
+- Local reset and full validation passed; the active-profile GvG block now reports `17 PASS / 0 FAIL / 0 SKIP`.
+- Build was skipped because no frontend/runtime source changed.
+- Production DB verification passed for RPC body/grant, active Owner count `1`, and rollback-wrapped direct access probes for `member_cp`, `cp_snapshots`, `gvg_votes`, and `audit_logs`.
+- Production mutation smoke was not performed by design.
+
+## Previous Recommendation
+
+Milestone 29E.6 GvG voting active-profile migration is live in production and locally/build/production-gate validated.
 
 Recorded Account Switcher 29E.6 status:
 - Commit `a9e5c2c feat: migrate gvg voting to active profile` is pushed to `main` and production serves the updated GvG bundle.

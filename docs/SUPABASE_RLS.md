@@ -1,8 +1,26 @@
 # Supabase RLS
 
-The Supabase RLS/RPC implementation has been validated and production-applied through `20260531000700_active_profile_gvg_voting.sql`.
+The Supabase RLS/RPC implementation has been validated and production-applied through `20260531000800_active_profile_audit_actor_alignment.sql`.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
+
+## Active Profile Audit Actor Alignment
+
+Milestone 29E.7 audit actor alignment is production-applied through `20260531000800_active_profile_audit_actor_alignment.sql`.
+
+Changed function:
+- `submit_gvg_vote(p_event_id uuid, p_vote_status text, p_absence_reason text default null)`
+
+Rules:
+- GvG vote submit/update resolves actor identity through `private.get_active_profile_id()`.
+- The audit row action is `gvg_vote_submitted`.
+- Audit actor and target are the selected active profile.
+- Audit metadata is sanitized and does not include absence reason text.
+- Legacy Admin GvG/Admin/Analytics audit attribution is intentionally unchanged.
+
+Privacy:
+- No normal CP, `member_cp`, `cp_snapshots`, CP RPC, service-role path, localStorage authority, or arbitrary frontend profile id was added.
+- Production verification confirmed active Owner count `1` and rollback-wrapped direct access probes for `member_cp`, `cp_snapshots`, `gvg_votes`, and `audit_logs` remained protected.
 
 ## Active Profile GvG Voting RLS/RPC
 

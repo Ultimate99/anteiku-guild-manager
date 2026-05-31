@@ -1,5 +1,26 @@
 # Supabase RLS
 
+## Milestone 29E.7 Active Profile Audit Actor Alignment
+
+Milestone 29E.7 audit actor alignment is implemented, locally validated, and production applied through `20260531000800_active_profile_audit_actor_alignment.sql`.
+
+Changed RPC:
+- `submit_gvg_vote(p_event_id uuid, p_vote_status text, p_absence_reason text default null)`
+
+RPC/audit security:
+- Member GvG vote submit/update still resolves actor identity through `private.get_active_profile_id()`.
+- The RPC writes `gvg_vote_submitted` audit rows with selected active profile as actor and target.
+- Metadata is sanitized to event id/scope, old/new vote status, and absence-reason-present booleans.
+- Absence reason text is not copied into audit metadata.
+- No arbitrary frontend actor profile id, service-role path, localStorage authority, CP RPC, `member_cp`, or `cp_snapshots` reference was added.
+- Legacy Admin GvG event management/results and Admin/Analytics audit attribution remain unchanged until separately migrated.
+
+Validation:
+- Local reset applied the migration cleanly.
+- Full local validation passed; the active-profile GvG block reported `17 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed only `20260531000800_active_profile_audit_actor_alignment.sql`; production migration is applied and remote migration list shows it applied.
+- Production verification confirmed RPC body/grant, active Owner count `1`, and rollback-wrapped direct access probes for `member_cp`, `cp_snapshots`, `gvg_votes`, and `audit_logs` remained protected.
+
 ## Milestone 29E.6 Active Profile GvG Voting RLS/RPC
 
 Milestone 29E.6 GvG voting active-profile migration is implemented, locally validated, and production applied through `20260531000700_active_profile_gvg_voting.sql`.

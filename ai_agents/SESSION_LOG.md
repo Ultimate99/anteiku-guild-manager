@@ -1,5 +1,22 @@
 # Session Log
 
+## 2026-05-31 - Milestone 29E.7 Audit Actor Active-Profile Alignment
+
+- Implemented a focused audit actor alignment migration for active-profile member GvG vote submit/update only.
+- Added migration `supabase/migrations/20260531000800_active_profile_audit_actor_alignment.sql`.
+- Redefined `submit_gvg_vote(...)` so it preserves active-profile vote behavior and writes `gvg_vote_submitted` with selected active profile as actor/target.
+- Audit metadata records event id/scope, old/new vote status, and absence-reason-present booleans; absence reason text is intentionally excluded.
+- Preserved legacy Admin GvG event management/results and Admin/Analytics audit attribution for a future approved Admin migration.
+- Local DB reset passed through the new migration.
+- Full local validation passed; the active-profile GvG block reported `17 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` was skipped because no frontend/runtime source changed.
+- Source validation found no normal CP, `member_cp`, `cp_snapshots`, CP RPC, service-role, or localStorage references in the new migration.
+- Production dry-run showed only `20260531000800_active_profile_audit_actor_alignment.sql`.
+- Production migration apply passed and remote migration list shows `20260531000800` applied.
+- Production DB verification confirmed the RPC body/grant, active Owner count `1`, and rollback-wrapped direct access probes for `member_cp`, `cp_snapshots`, `gvg_votes`, and `audit_logs`.
+- Commit `c48a3e9 feat: align active profile audit actor` was pushed to `main`.
+- Production vote mutation smoke was not performed by design.
+
 ## 2026-05-31 - Milestone 29E.6 GvG Voting Active Profile Migration
 
 - Implemented active-profile migration for member-facing GvG event visibility, own-vote lookup, and vote submit/update only.

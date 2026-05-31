@@ -1,5 +1,40 @@
 # Testing And Validation
 
+## Milestone 29E.7 Audit Actor Active-Profile Alignment Validation
+
+Audit actor alignment for active-profile member GvG vote submit/update passed local backend validation, production migration gates, and DB verification.
+
+Commands/gates:
+- `npx.cmd supabase db reset`
+- `Get-Content -Raw -LiteralPath supabase\tests\local_validation_anteiku.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres -v ON_ERROR_STOP=1`
+- Production `npx.cmd supabase db push --dry-run`
+- Production `npx.cmd supabase db push`
+- Production `npx.cmd supabase migration list`
+- Production read-only/RLS-probe DB verification
+- `git push origin main`
+
+Results:
+- Local reset applied through `20260531000800_active_profile_audit_actor_alignment.sql`.
+- Full local validation passed.
+- Active-profile GvG validation block passed `17 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` was skipped because no frontend/runtime source changed.
+- Production dry-run showed exactly one pending migration: `20260531000800_active_profile_audit_actor_alignment.sql`.
+- Production migration is applied and remote migration list shows `20260531000800` applied.
+- Commit `c48a3e9 feat: align active profile audit actor` is pushed to `main`.
+
+Validated behavior:
+- `submit_gvg_vote(...)` still resolves selected-profile identity through `private.get_active_profile_id()`.
+- GvG vote submit/update writes `gvg_vote_submitted` audit rows with selected active profile as actor/target.
+- Audit metadata includes event id/scope, old/new vote status, and absence-reason-present booleans.
+- Audit metadata does not include absence reason text.
+- Legacy Admin GvG event status audit remains `auth.uid()`/legacy-attributed until Admin migration.
+- No old audit rows were backfilled.
+
+Security/source validation:
+- New migration has no `member_cp`, `cp_snapshots`, normal CP RPC, service-role, or localStorage references.
+- Production verification confirmed authenticated execute on `submit_gvg_vote`, active Owner count `1`, and rollback-wrapped direct access probes for `member_cp`, `cp_snapshots`, `gvg_votes`, and `audit_logs` stayed protected.
+- Production mutation smoke was not performed by design.
+
 ## Milestone 29E.6 GvG Voting Active Profile Validation
 
 GvG member-facing vote/current-user behavior passed local backend validation, frontend build/source validation, production migration gates, DB verification, and authenticated production GvG smoke.

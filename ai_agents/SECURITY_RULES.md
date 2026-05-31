@@ -1,5 +1,26 @@
 # Security Rules
 
+## Active Profile Audit Actor Security Rules
+
+Milestone 29E.7 audit actor active-profile alignment is live in production through `20260531000800_active_profile_audit_actor_alignment.sql` and commit `c48a3e9 feat: align active profile audit actor`.
+
+Rules:
+- Active-profile migrated action RPCs that write audit logs must audit the same backend-resolved profile used by the action.
+- `submit_gvg_vote(...)` must audit the selected active profile as actor/target for member GvG vote submit/update.
+- GvG vote audit metadata may include event id/scope, old/new vote status, and absence-reason-present booleans.
+- GvG vote audit metadata must not include absence reason text.
+- Legacy Admin GvG event management/results and Admin/Analytics permissioned actions remain legacy-attributed until a separately approved Admin active-profile migration.
+- Frontend-selected profile ids remain UX state only and must not be treated as authority.
+
+Privacy:
+- Audit actor alignment must not expose normal CP, `member_cp`, `cp_snapshots`, CP history/growth, email/auth IDs, service-role data, localStorage authority, admin/private metadata, or arbitrary frontend profile ids.
+- Existing CP audit metadata redaction through `get_audit_logs` remains the control for CP-sensitive audit metadata.
+
+Validation status:
+- Local validation passed with the active-profile GvG block at `17 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed only `20260531000800_active_profile_audit_actor_alignment.sql`; production apply/list verification passed.
+- Production DB verification confirmed `submit_gvg_vote` uses active-profile identity and writes audit rows with no CP table refs, authenticated execute remains granted, active Owner count remains `1`, and direct access protections stayed in place.
+
 ## Active Profile GvG Voting Security Rules
 
 Milestone 29E.6 GvG voting active-profile migration is live in production through `20260531000700_active_profile_gvg_voting.sql` and commit `a9e5c2c feat: migrate gvg voting to active profile`.
