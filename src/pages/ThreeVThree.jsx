@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { CosmeticPreview } from '../components/CosmeticPreview.jsx';
 import { StatusBadge } from '../components/StatusBadge.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
+import { useActiveProfileSummary } from '../hooks/useActiveProfileSummary.js';
 import {
   approveRequest,
   cancelRequest,
@@ -742,6 +743,7 @@ function MyRequestsTab({
 
 export function ThreeVThree({ onNavigate }) {
   const { language, t } = useLanguage();
+  const { activeProfile } = useActiveProfileSummary();
   const [activeTab, setActiveTab] = useState('findTeam');
   const [teamsState, setTeamsState] = useState({ viewer: null, teams: [] });
   const [myStatus, setMyStatus] = useState(null);
@@ -758,6 +760,7 @@ export function ThreeVThree({ onNavigate }) {
   const [setupEditing, setSetupEditing] = useState(false);
 
   const threeVThreeProfile = myStatus?.profile ?? teamsState.viewer;
+  const activeProfileId = activeProfile?.profileId || '';
   const teams = teamsState.teams;
   const hasActiveTeam = Boolean(myStatus?.currentTeam);
   const openPublicProfile = useCallback((profileSlug) => {
@@ -784,8 +787,13 @@ export function ThreeVThree({ onNavigate }) {
   }, [t]);
 
   useEffect(() => {
+    setRequestingTeamId('');
+    setRequestDrafts({});
+    setSetupEditing(false);
+    setMessage('');
+    setError('');
     refresh();
-  }, [refresh]);
+  }, [activeProfileId, refresh]);
 
   useEffect(() => {
     const nextProfile = myStatus?.profile ?? teamsState.viewer;

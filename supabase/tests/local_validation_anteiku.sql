@@ -8221,6 +8221,435 @@ begin
 end;
 $$;
 
+create temp table if not exists milestone_active_profile_three_v_three_results (
+  section text not null,
+  test_name text not null,
+  status text not null check (status in ('PASS', 'FAIL', 'SKIP')),
+  details text
+) on commit drop;
+
+do $$
+declare
+  anteiku_id constant uuid := '00000000-0000-0000-0000-000000000101';
+  anteiku_re_id constant uuid := '00000000-0000-0000-0000-000000000102';
+  owner_id constant uuid := '10000000-0000-0000-0000-000000000001';
+  member_id constant uuid := '10000000-0000-0000-0000-000000000006';
+  active_3v3_a_id constant uuid := '10000000-0000-0000-0000-000000000093';
+  active_3v3_b_id constant uuid := '10000000-0000-0000-0000-000000000094';
+  active_3v3_inactive_id constant uuid := '10000000-0000-0000-0000-000000000095';
+  team_a_id uuid;
+  request_b_id uuid;
+  owner_count integer;
+  payload jsonb;
+  profile_a_cp bigint;
+  profile_b_cp bigint;
+  active_member_count integer;
+begin
+  begin
+    delete from public.three_v_three_join_requests r
+    where r.requester_profile_id in (active_3v3_a_id, active_3v3_b_id, active_3v3_inactive_id)
+       or r.team_id in (
+         select t.id
+         from public.three_v_three_teams t
+         where t.owner_profile_id in (active_3v3_a_id, active_3v3_b_id, active_3v3_inactive_id)
+       );
+
+    delete from public.three_v_three_team_members tm
+    where tm.profile_id in (active_3v3_a_id, active_3v3_b_id, active_3v3_inactive_id)
+       or tm.team_id in (
+         select t.id
+         from public.three_v_three_teams t
+         where t.owner_profile_id in (active_3v3_a_id, active_3v3_b_id, active_3v3_inactive_id)
+       );
+
+    delete from public.three_v_three_teams t
+    where t.owner_profile_id in (active_3v3_a_id, active_3v3_b_id, active_3v3_inactive_id);
+
+    delete from public.three_v_three_player_profiles tvp
+    where tvp.profile_id in (active_3v3_a_id, active_3v3_b_id, active_3v3_inactive_id);
+
+    insert into auth.users (
+      instance_id,
+      id,
+      aud,
+      role,
+      email,
+      encrypted_password,
+      email_confirmed_at,
+      raw_app_meta_data,
+      raw_user_meta_data,
+      created_at,
+      updated_at
+    )
+    values
+      (
+        '00000000-0000-0000-0000-000000000000',
+        active_3v3_a_id,
+        'authenticated',
+        'authenticated',
+        'active-3v3-a.local@example.test',
+        'local-only',
+        now(),
+        '{"provider":"email","providers":["email"]}'::jsonb,
+        '{}'::jsonb,
+        now(),
+        now()
+      ),
+      (
+        '00000000-0000-0000-0000-000000000000',
+        active_3v3_b_id,
+        'authenticated',
+        'authenticated',
+        'active-3v3-b.local@example.test',
+        'local-only',
+        now(),
+        '{"provider":"email","providers":["email"]}'::jsonb,
+        '{}'::jsonb,
+        now(),
+        now()
+      ),
+      (
+        '00000000-0000-0000-0000-000000000000',
+        active_3v3_inactive_id,
+        'authenticated',
+        'authenticated',
+        'active-3v3-inactive.local@example.test',
+        'local-only',
+        now(),
+        '{"provider":"email","providers":["email"]}'::jsonb,
+        '{}'::jsonb,
+        now(),
+        now()
+      )
+    on conflict (id) do nothing;
+
+    insert into public.profiles (id, username, profile_slug, ign, approval_status, approved_at)
+    values
+      (active_3v3_a_id, 'active_3v3_a', 'active_3v3_a', 'Active 3v3 A', 'approved', now()),
+      (active_3v3_b_id, 'active_3v3_b', 'active_3v3_b', 'Active 3v3 B', 'approved', now()),
+      (active_3v3_inactive_id, 'active_3v3_inactive', 'active_3v3_inactive', 'Active 3v3 Inactive', 'approved', now())
+    on conflict (id) do update
+    set username = excluded.username,
+        profile_slug = excluded.profile_slug,
+        ign = excluded.ign,
+        approval_status = excluded.approval_status,
+        approved_at = excluded.approved_at;
+
+    insert into public.guild_memberships (profile_id, guild_id, role, membership_status, roster_status, is_primary, assigned_by)
+    values
+      (active_3v3_a_id, anteiku_id, 'member', 'active', 'active', true, owner_id),
+      (active_3v3_b_id, anteiku_re_id, 'member', 'active', 'active', true, owner_id),
+      (active_3v3_inactive_id, anteiku_id, 'member', 'active', 'inactive', true, owner_id)
+    on conflict (profile_id, guild_id) do update
+    set role = excluded.role,
+        membership_status = excluded.membership_status,
+        roster_status = excluded.roster_status,
+        is_primary = excluded.is_primary,
+        assigned_by = excluded.assigned_by;
+
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    perform public.owner_unlink_profile_from_auth_user('active-3v3-a.local@example.test', 'active_3v3_a');
+    perform public.owner_unlink_profile_from_auth_user('active-3v3-b.local@example.test', 'active_3v3_b');
+    perform public.owner_unlink_profile_from_auth_user('active-3v3-inactive.local@example.test', 'active_3v3_inactive');
+    perform public.owner_link_profile_to_auth_user('member.local@example.test', 'active_3v3_a', 'owner');
+    perform public.owner_link_profile_to_auth_user('member.local@example.test', 'active_3v3_b', 'owner');
+    perform public.owner_link_profile_to_auth_user('member.local@example.test', 'active_3v3_inactive', 'owner');
+
+    insert into milestone_active_profile_three_v_three_results values ('setup', 'active_3v3_profiles_linked', 'PASS', 'Member auth linked to active 3v3 test profiles.');
+  exception when others then
+    insert into milestone_active_profile_three_v_three_results values ('setup', 'active_3v3_profiles_linked', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    if to_regprocedure('public.get_3v3_teams()') is not null
+       and to_regprocedure('public.request_join_3v3_team(uuid,bigint)') is not null
+       and to_regprocedure('public.approve_3v3_request(uuid)') is not null then
+      insert into milestone_active_profile_three_v_three_results values ('schema', 'three_v_three_rpcs_exist', 'PASS', '3v3 RPCs exist.');
+    else
+      insert into milestone_active_profile_three_v_three_results values ('schema', 'three_v_three_rpcs_exist', 'FAIL', 'Expected 3v3 RPCs missing.');
+    end if;
+  exception when others then
+    insert into milestone_active_profile_three_v_three_results values ('schema', 'three_v_three_rpcs_exist', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_3v3_a_id);
+    perform public.update_my_discord_username('@active3v3a');
+    perform public.update_my_3v3_combined_cp(3100000);
+    payload := public.create_3v3_team('Active 3v3 Alpha', 3100000);
+    team_a_id := (payload ->> 'id')::uuid;
+
+    if payload ->> 'is_owner' = 'true'
+       and exists (
+         select 1
+         from public.three_v_three_teams t
+         join public.three_v_three_team_members tm on tm.team_id = t.id
+         where t.id = team_a_id
+           and t.owner_profile_id = active_3v3_a_id
+           and tm.profile_id = active_3v3_a_id
+           and tm.slot_number = 1
+           and tm.role = 'owner'
+           and tm.left_at is null
+       ) then
+      insert into milestone_active_profile_three_v_three_results values ('team', 'active_profile_a_creates_team_slot_one', 'PASS', payload::text);
+    else
+      insert into milestone_active_profile_three_v_three_results values ('team', 'active_profile_a_creates_team_slot_one', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_profile_three_v_three_results values ('team', 'active_profile_a_creates_team_slot_one', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_3v3_b_id);
+    payload := public.get_my_3v3_status();
+
+    if payload #>> '{profile,profile_id}' = active_3v3_b_id::text
+       and payload -> 'current_team' = 'null'::jsonb
+       and payload -> 'owned_team' = 'null'::jsonb then
+      insert into milestone_active_profile_three_v_three_results values ('status', 'switch_to_b_does_not_show_a_team', 'PASS', payload::text);
+    else
+      insert into milestone_active_profile_three_v_three_results values ('status', 'switch_to_b_does_not_show_a_team', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_profile_three_v_three_results values ('status', 'switch_to_b_does_not_show_a_team', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_3v3_b_id);
+    perform public.update_my_discord_username('@active3v3b');
+    payload := public.update_my_3v3_combined_cp(3200000);
+
+    select combined_cp into profile_a_cp
+    from public.three_v_three_player_profiles
+    where profile_id = active_3v3_a_id;
+
+    select combined_cp into profile_b_cp
+    from public.three_v_three_player_profiles
+    where profile_id = active_3v3_b_id;
+
+    if payload ->> 'profile_id' = active_3v3_b_id::text
+       and profile_a_cp = 3100000
+       and profile_b_cp = 3200000 then
+      insert into milestone_active_profile_three_v_three_results values ('profile', 'discord_cp_update_selected_profile_only', 'PASS', payload::text);
+    else
+      insert into milestone_active_profile_three_v_three_results values ('profile', 'discord_cp_update_selected_profile_only', 'FAIL', 'a=' || coalesce(profile_a_cp::text, '<null>') || ' b=' || coalesce(profile_b_cp::text, '<null>') || ' payload=' || coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_profile_three_v_three_results values ('profile', 'discord_cp_update_selected_profile_only', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_3v3_b_id);
+    payload := public.request_join_3v3_team(team_a_id, 3200000);
+    request_b_id := (payload ->> 'id')::uuid;
+
+    if payload ->> 'status' = 'pending'
+       and exists (
+         select 1
+         from public.three_v_three_join_requests r
+         where r.id = request_b_id
+           and r.requester_profile_id = active_3v3_b_id
+           and r.team_id = team_a_id
+       ) then
+      insert into milestone_active_profile_three_v_three_results values ('request', 'active_profile_b_requests_a_team', 'PASS', payload::text);
+    else
+      insert into milestone_active_profile_three_v_three_results values ('request', 'active_profile_b_requests_a_team', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_profile_three_v_three_results values ('request', 'active_profile_b_requests_a_team', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_3v3_b_id);
+    perform public.close_3v3_team(team_a_id);
+    insert into milestone_active_profile_three_v_three_results values ('owner', 'non_owner_active_profile_cannot_close_team', 'FAIL', 'Active profile B closed A-owned team.');
+  exception when others then
+    insert into milestone_active_profile_three_v_three_results values ('owner', 'non_owner_active_profile_cannot_close_team', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_3v3_a_id);
+    payload := public.get_my_3v3_status();
+
+    if jsonb_array_length(payload -> 'incoming_requests') = 1
+       and payload #>> '{incoming_requests,0,requester_profile_id}' = active_3v3_b_id::text then
+      insert into milestone_active_profile_three_v_three_results values ('owner', 'active_profile_a_sees_b_incoming_request', 'PASS', payload::text);
+    else
+      insert into milestone_active_profile_three_v_three_results values ('owner', 'active_profile_a_sees_b_incoming_request', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_profile_three_v_three_results values ('owner', 'active_profile_a_sees_b_incoming_request', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_3v3_a_id);
+    payload := public.approve_3v3_request(request_b_id);
+
+    if payload ->> 'status' = 'approved'
+       and exists (
+         select 1
+         from public.three_v_three_team_members tm
+         where tm.team_id = team_a_id
+           and tm.profile_id = active_3v3_b_id
+           and tm.slot_number = 2
+           and tm.left_at is null
+       ) then
+      insert into milestone_active_profile_three_v_three_results values ('owner', 'active_profile_a_approves_b_request', 'PASS', payload::text);
+    else
+      insert into milestone_active_profile_three_v_three_results values ('owner', 'active_profile_a_approves_b_request', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_profile_three_v_three_results values ('owner', 'active_profile_a_approves_b_request', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_3v3_b_id);
+    payload := public.get_my_3v3_status();
+
+    if payload #>> '{profile,profile_id}' = active_3v3_b_id::text
+       and payload #>> '{current_team,id}' = team_a_id::text
+       and payload -> 'owned_team' = 'null'::jsonb then
+      insert into milestone_active_profile_three_v_three_results values ('status', 'active_profile_b_current_team_after_approval', 'PASS', payload::text);
+    else
+      insert into milestone_active_profile_three_v_three_results values ('status', 'active_profile_b_current_team_after_approval', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_profile_three_v_three_results values ('status', 'active_profile_b_current_team_after_approval', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_3v3_a_id);
+    payload := public.remove_3v3_member(team_a_id, active_3v3_b_id);
+
+    if payload ->> 'removed_profile_id' = active_3v3_b_id::text
+       and exists (
+         select 1
+         from public.three_v_three_team_members tm
+         where tm.team_id = team_a_id
+           and tm.profile_id = active_3v3_b_id
+           and tm.left_at is not null
+           and tm.removed_by = active_3v3_a_id
+       ) then
+      insert into milestone_active_profile_three_v_three_results values ('owner', 'active_profile_owner_removes_member', 'PASS', payload::text);
+    else
+      insert into milestone_active_profile_three_v_three_results values ('owner', 'active_profile_owner_removes_member', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_profile_three_v_three_results values ('owner', 'active_profile_owner_removes_member', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_3v3_a_id);
+    perform public.close_3v3_team(team_a_id);
+    payload := public.reopen_3v3_team(team_a_id);
+
+    if payload ->> 'id' = team_a_id::text
+       and payload ->> 'status' = 'open' then
+      insert into milestone_active_profile_three_v_three_results values ('owner', 'active_profile_owner_close_reopen_team', 'PASS', payload::text);
+    else
+      insert into milestone_active_profile_three_v_three_results values ('owner', 'active_profile_owner_close_reopen_team', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_profile_three_v_three_results values ('owner', 'active_profile_owner_close_reopen_team', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_3v3_inactive_id);
+    payload := public.get_3v3_teams();
+    begin
+      perform public.update_my_discord_username('@inactive3v3');
+      perform public.update_my_3v3_combined_cp(2500000);
+      perform public.create_3v3_team('Inactive Active 3v3', 2500000);
+      insert into milestone_active_profile_three_v_three_results values ('eligibility', 'inactive_active_profile_view_only', 'FAIL', 'Inactive active profile created a team.');
+    exception when others then
+      if payload #>> '{viewer,profile_id}' = active_3v3_inactive_id::text
+         and payload #>> '{viewer,can_create_or_request}' = 'false' then
+        insert into milestone_active_profile_three_v_three_results values ('eligibility', 'inactive_active_profile_view_only', 'PASS', sqlerrm);
+      else
+        insert into milestone_active_profile_three_v_three_results values ('eligibility', 'inactive_active_profile_view_only', 'FAIL', coalesce(payload::text, '<null>') || ' error=' || sqlerrm);
+      end if;
+    end;
+  exception when others then
+    insert into milestone_active_profile_three_v_three_results values ('eligibility', 'inactive_active_profile_view_only', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    perform public.owner_unlink_profile_from_auth_user('member.local@example.test', 'active_3v3_inactive');
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_3v3_inactive_id);
+    insert into milestone_active_profile_three_v_three_results values ('security', 'unlinked_active_profile_switch_denied', 'FAIL', 'Unlinked profile was selected.');
+  exception when others then
+    insert into milestone_active_profile_three_v_three_results values ('security', 'unlinked_active_profile_switch_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_3v3_a_id);
+    payload := public.get_3v3_teams();
+
+    if payload::text not ilike '%member_cp%'
+       and payload::text not ilike '%cp_snapshots%'
+       and payload::text not ilike '%cp_value%'
+       and payload::text not ilike '%current_cp%'
+       and payload::text not ilike '%email%'
+       and payload::text not ilike '%admin_permissions%'
+       and payload::text not ilike '%audit%' then
+      insert into milestone_active_profile_three_v_three_results values ('privacy', 'three_v_three_payload_has_no_normal_cp_private_tokens', 'PASS', payload::text);
+    else
+      insert into milestone_active_profile_three_v_three_results values ('privacy', 'three_v_three_payload_has_no_normal_cp_private_tokens', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_profile_three_v_three_results values ('privacy', 'three_v_three_payload_has_no_normal_cp_private_tokens', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_3v3_a_id);
+    payload := public.disband_3v3_team(team_a_id);
+
+    select count(*) into active_member_count
+    from public.three_v_three_team_members tm
+    where tm.team_id = team_a_id
+      and tm.left_at is null;
+
+    if payload ->> 'status' = 'disbanded'
+       and active_member_count = 0 then
+      insert into milestone_active_profile_three_v_three_results values ('owner', 'active_profile_owner_disbands_team', 'PASS', payload::text);
+    else
+      insert into milestone_active_profile_three_v_three_results values ('owner', 'active_profile_owner_disbands_team', 'FAIL', coalesce(payload::text, '<null>') || ' active_members=' || active_member_count::text);
+    end if;
+  exception when others then
+    insert into milestone_active_profile_three_v_three_results values ('owner', 'active_profile_owner_disbands_team', 'FAIL', sqlerrm);
+  end;
+
+  select count(*)
+  into owner_count
+  from public.guild_memberships gm
+  join public.profiles p on p.id = gm.profile_id
+  where gm.role = 'owner'
+    and gm.membership_status = 'active'
+    and p.approval_status = 'approved';
+
+  if owner_count = 1 then
+    insert into milestone_active_profile_three_v_three_results values ('regression', 'active_owner_count_remains_one', 'PASS', 'Exactly one active approved Owner membership exists.');
+  else
+    insert into milestone_active_profile_three_v_three_results values ('regression', 'active_owner_count_remains_one', 'FAIL', owner_count::text || ' active approved Owner memberships found.');
+  end if;
+end;
+$$;
+
 select section, test_name, status, details
 from milestone_push_notification_results
 order by section, test_name;
@@ -8256,5 +8685,14 @@ select count(*) filter (where status = 'PASS') as milestone_active_profile_wall_
        count(*) filter (where status = 'FAIL') as milestone_active_profile_wall_total_fail,
        count(*) filter (where status = 'SKIP') as milestone_active_profile_wall_total_skip
 from milestone_active_profile_wall_results;
+
+select section, test_name, status, details
+from milestone_active_profile_three_v_three_results
+order by section, test_name;
+
+select count(*) filter (where status = 'PASS') as milestone_active_profile_three_v_three_total_pass,
+       count(*) filter (where status = 'FAIL') as milestone_active_profile_three_v_three_total_fail,
+       count(*) filter (where status = 'SKIP') as milestone_active_profile_three_v_three_total_skip
+from milestone_active_profile_three_v_three_results;
 
 rollback;
