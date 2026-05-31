@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { CosmeticPreview } from '../components/CosmeticPreview.jsx';
 import { StatusBadge } from '../components/StatusBadge.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
+import { useActiveProfileSummary } from '../hooks/useActiveProfileSummary.js';
 import { loadMemberCpRankings, normalizeLeaderboardScope } from '../services/cpLeaderboardService.js';
 
 const SCOPES = ['guild', 'global'];
@@ -113,6 +114,7 @@ function LeaderboardCompetitorCard({ row, scope, t, variant = 'row' }) {
 
 export function Leaderboard({ onNavigate }) {
   const { t } = useLanguage();
+  const { activeProfile } = useActiveProfileSummary();
   const [scope, setScope] = useState('guild');
   const [rankings, setRankings] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -120,13 +122,25 @@ export function Leaderboard({ onNavigate }) {
   const [reloadTick, setReloadTick] = useState(0);
 
   const normalizedScope = normalizeLeaderboardScope(scope);
+  const activeProfileKey = activeProfile?.profileId || activeProfile?.profileSlug || '';
+  const activeProfileSlug = activeProfile?.profileSlug || '';
   const scopeLabel = useMemo(
     () => (normalizedScope === 'global' ? t('leaderboard.global') : t('leaderboard.myGuild')),
     [normalizedScope, t],
   );
-  const currentUserRanking = useMemo(() => rankings.find((row) => row.isCurrentUser) ?? null, [rankings]);
-  const podiumRankings = rankings.length >= 3 ? rankings.slice(0, 3) : [];
-  const listRankings = podiumRankings.length === 3 ? rankings.slice(3) : rankings;
+  const visibleRankings = useMemo(() => {
+    if (!activeProfileSlug) {
+      return rankings;
+    }
+
+    return rankings.map((row) => ({
+      ...row,
+      isCurrentUser: row.profileSlug === activeProfileSlug,
+    }));
+  }, [activeProfileSlug, rankings]);
+  const currentUserRanking = useMemo(() => visibleRankings.find((row) => row.isCurrentUser) ?? null, [visibleRankings]);
+  const podiumRankings = visibleRankings.length >= 3 ? visibleRankings.slice(0, 3) : [];
+  const listRankings = podiumRankings.length === 3 ? visibleRankings.slice(3) : visibleRankings;
   const handleOpenProfile = (profileSlug) => {
     if (!profileSlug) {
       return;
@@ -160,6 +174,7 @@ export function Leaderboard({ onNavigate }) {
     async function loadRankings() {
       setLoading(true);
       setError('');
+      setRankings([]);
 
       try {
         const nextRankings = await loadMemberCpRankings(normalizedScope);
@@ -184,7 +199,7 @@ export function Leaderboard({ onNavigate }) {
     return () => {
       cancelled = true;
     };
-  }, [normalizedScope, reloadTick, t]);
+  }, [activeProfileKey, normalizedScope, reloadTick, t]);
 
   return (
     <div className="stack leaderboard-page">
