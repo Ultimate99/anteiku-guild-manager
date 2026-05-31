@@ -1,10 +1,26 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and production-applied through `20260531000100_account_switcher_foundation.sql`.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and production-applied through `20260531000200_active_profile_profile_cosmetics.sql`.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
-Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, own Profile Ghoul Rep display, Public Member Profiles, Ranking Public Profile links, Push Notifications, and Account Switcher foundation are implemented, locally validated, production applied, and production-smoke or production-gate validated.
+Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, own Profile Ghoul Rep display, Public Member Profiles, Ranking Public Profile links, Push Notifications, Account Switcher foundation, and active-profile Profile/Cosmetics RPCs are implemented, locally validated, production applied, and production-smoke or production-gate validated.
+
+## Active Profile Profile/Cosmetics
+
+Migration `20260531000200_active_profile_profile_cosmetics.sql` is applied and verified in production.
+
+RPC behavior:
+- `get_my_active_profile_details()` returns safe identity/details for the selected active profile.
+- `update_my_active_profile(p_ign text)` updates IGN only for the selected active profile.
+- `get_my_active_cosmetics()` returns cosmetics catalog/equipped/unlock state for the selected active profile.
+- `equip_my_active_avatar(p_avatar_key text)` and `equip_my_active_frame(p_frame_key text)` equip only the selected active profile.
+
+Security:
+- All active Profile/Cosmetics RPCs resolve identity with `private.get_active_profile_id()` and accept no arbitrary frontend profile id.
+- Active cosmetics equip preserves free-or-unlocked checks and writes only the active profile's equipped row.
+- Payloads return no normal CP, `member_cp`, `cp_snapshots`, email, auth IDs, service-role data, admin/private metadata, or audit-private metadata.
+- CP get/submit, GvG, 3v3, Wall/Global Wall actions, Profile reactions, Push preferences/subscriptions, Admin permissions/actions, Analytics, and audit actor behavior are not active-profile migrated by this migration.
 
 ## Account Switcher Foundation
 
@@ -25,7 +41,7 @@ Security:
 - RLS is enabled on both account-link tables.
 - Direct anon/authenticated table grants are revoked.
 - Existing profiles are self-linked to preserve the current `auth.uid() === profiles.id` behavior.
-- No existing CP/GvG/3v3/Wall/Profile Reaction/Cosmetics/Push/Admin systems have been switched to active-profile identity yet.
+- Existing CP/GvG/3v3/Wall/Profile Reaction/Push/Admin systems have not been switched to active-profile identity yet; own Profile identity/edit and Cosmetics read/equip are now handled by the 29E.1 active-profile RPCs.
 - Switcher payloads return no normal CP, `member_cp`, `cp_snapshots`, email, auth secrets, service-role data, or private admin/audit metadata.
 
 ## Push Notifications Foundation

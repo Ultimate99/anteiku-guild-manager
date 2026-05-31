@@ -1,5 +1,28 @@
 # Security Rules
 
+## Active Profile Profile/Cosmetics Security Rules
+
+Milestone 29E.1 Own Profile + Cosmetics active-profile migration is live in production through `20260531000200_active_profile_profile_cosmetics.sql` and commit `401e67e feat: migrate profile cosmetics to active profile`.
+
+Rules:
+- Own Profile identity/details and IGN edit may use active-profile RPCs only: `get_my_active_profile_details()` and `update_my_active_profile(p_ign text)`.
+- Profile Customize may use active-profile cosmetics RPCs only: `get_my_active_cosmetics()`, `equip_my_active_avatar(p_avatar_key text)`, and `equip_my_active_frame(p_frame_key text)`.
+- Active-profile RPCs must resolve the selected profile through `private.get_active_profile_id()`.
+- Frontend must not provide arbitrary profile ids for Profile or Cosmetics actions.
+- Frontend must not direct-read or direct-write `cosmetic_catalog`, `profile_cosmetic_unlocks`, or `profile_equipped_cosmetics`.
+- Active cosmetics equip must enforce free-or-unlocked checks for the selected active profile.
+- CP get/submit is not migrated in 29E.1. If active profile differs from the legacy auth profile, Profile must not render legacy own CP and should show the CP-switching-not-enabled state.
+- GvG, 3v3, Wall/Global Wall actions, Profile reactions, Push preferences/subscriptions, Admin permissions/actions, Analytics, and audit actor behavior remain separate future migrations.
+
+Privacy:
+- Active Profile/Cosmetics payloads may show safe profile identity, guild/status, and cosmetics fields only.
+- They must not return or display normal CP, `member_cp`, `cp_snapshots`, email, auth secrets, passwords, service-role data, admin private metadata, audit-private metadata, or arbitrary linked profile ids.
+
+Validation status:
+- Local validation passed with the active-profile Profile/Cosmetics block at `10 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed only `20260531000200_active_profile_profile_cosmetics.sql`; production apply passed and migration list shows it applied.
+- Production smoke passed for Profile active identity/details, active cosmetics modal load, frame equip-and-restore, single-profile CP unchanged, and no captured console errors.
+
 ## Account Switcher Security Rules
 
 Account Switcher backend foundation is live in production through `20260531000100_account_switcher_foundation.sql`. The Profile Settings Account Switcher UI is live through commit `b8f6162 feat: add account switcher UI`, and low-risk viewer-state display is live through commit `14c3837 feat: add active profile viewer state`.
@@ -13,8 +36,8 @@ Rules:
 - Topbar/Dashboard active-profile display must not imply high-risk action systems have migrated.
 - Normal members cannot link or unlink profiles.
 - Owner-only profile linking must use `owner_link_profile_to_auth_user(...)` / `owner_unlink_profile_from_auth_user(...)`.
-- Do not update existing CP/GvG/3v3/Wall/Profile Reaction/Cosmetics/Push/Admin RPCs to use active profile without a separately approved, subsystem-specific milestone.
-- CP get/submit, GvG vote, 3v3 create/request/approve, Wall posting/commenting/reactions, Profile reactions, cosmetics equip, push preferences/subscriptions, Admin permissions/actions, and audit actor behavior remain legacy-profile based until explicitly migrated.
+- Do not update existing CP/GvG/3v3/Wall/Profile Reaction/Push/Admin RPCs to use active profile without a separately approved, subsystem-specific milestone.
+- CP get/submit, GvG vote, 3v3 create/request/approve, Wall posting/commenting/reactions, Profile reactions, push preferences/subscriptions, Admin permissions/actions, and audit actor behavior remain legacy-profile based until explicitly migrated.
 
 Privacy:
 - Switcher payloads may show safe profile identity/status/guild/cosmetic fields only.
@@ -303,7 +326,7 @@ Boundary:
 Milestone 22E is live in production. Production has `20260525000100_cosmetics_catalog_unlocks.sql` applied and verified, and the cosmetics picker/assets are deployed.
 
 Production cosmetics rules:
-- Load/equip cosmetics through RPCs only: `get_my_cosmetics`, `equip_my_avatar`, and `equip_my_frame`.
+- Load/equip cosmetics through RPCs only. Current Profile Customize uses active-profile RPCs `get_my_active_cosmetics`, `equip_my_active_avatar`, and `equip_my_active_frame`; legacy own-user paths remain `get_my_cosmetics`, `equip_my_avatar`, and `equip_my_frame` where still used outside the migrated Profile surface.
 - Do not direct-read or direct-write `cosmetic_catalog`, `profile_cosmetic_unlocks`, or `profile_equipped_cosmetics` from frontend code.
 - Do not expose `admin_grant_cosmetic(...)` in member-facing UI.
 - Do not add upload, arbitrary URL, or Supabase Storage avatar/frame behavior.
@@ -318,7 +341,7 @@ Production cosmetics rules:
 Milestone 22C was frontend-only during implementation and is now deployed through Milestone 22E.
 
 Frontend picker rules:
-- Load cosmetics through `get_my_cosmetics()` only.
+- Load cosmetics through RPCs only. Profile Customize now uses `get_my_active_cosmetics()`; legacy own-user cosmetics surfaces may still use `get_my_cosmetics()`.
 - Equip avatars through `equip_my_avatar(...)` only.
 - Equip frames through `equip_my_frame(...)` only.
 - Do not direct-read or direct-write `cosmetic_catalog`, `profile_cosmetic_unlocks`, or `profile_equipped_cosmetics` from frontend code.

@@ -4,6 +4,22 @@ Vercel is the production hosting target.
 
 Milestone 13B completed Vercel setup, Supabase Auth URL configuration, deployment, and production smoke/security validation.
 
+## Active Profile Profile/Cosmetics Production Rollout
+
+Milestone 29E.1 Own Profile + Cosmetics active-profile migration is live in production.
+
+Production rollout:
+- Production dry-run showed exactly `20260531000200_active_profile_profile_cosmetics.sql` pending.
+- Production migration apply passed and remote migration list shows `20260531000200` applied.
+- Frontend commit `401e67e feat: migrate profile cosmetics to active profile` is pushed to `main`.
+- Production smoke passed for Profile active identity/details, single-profile own CP unchanged, Customize active cosmetics load, active frame equip-and-restore, and no captured console errors.
+
+Safety notes:
+- Active Profile/Cosmetics RPCs use `private.get_active_profile_id()` and accept no arbitrary frontend profile id.
+- CP get/submit is not migrated yet; switched active profiles must not render legacy own CP.
+- GvG, 3v3, Wall/Profile Reaction, Push, Admin, Analytics, permission, and audit actor behavior remain future subsystem migrations.
+- No normal CP, `member_cp`, `cp_snapshots`, service-role path, direct cosmetics table path, or private metadata exposure was added.
+
 ## Push Notifications Production Rollout
 
 Push Notifications are live in production.

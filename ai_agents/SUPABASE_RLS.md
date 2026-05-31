@@ -1,5 +1,34 @@
 # Supabase RLS
 
+## Milestone 29E.1 Active Profile Profile/Cosmetics RLS/RPC
+
+Milestone 29E.1 Own Profile + Cosmetics active-profile migration is implemented, locally validated, and production applied through `20260531000200_active_profile_profile_cosmetics.sql`.
+
+RPCs:
+- `get_my_active_profile_details()`
+- `update_my_active_profile(p_ign text)`
+- `get_my_active_cosmetics()`
+- `equip_my_active_avatar(p_avatar_key text)`
+- `equip_my_active_frame(p_frame_key text)`
+
+RPC security:
+- All five RPCs use `private.get_active_profile_id()` and accept no arbitrary actor/target profile id.
+- Detail/update RPCs require an approved active profile.
+- Cosmetics read/equip requires approved active membership for the selected active profile.
+- Avatar/frame equip still requires free-or-unlocked cosmetics for the selected active profile.
+- Active equip writes update only `profile_equipped_cosmetics` for the selected active profile; avatar sync writes only that active profile.
+- Audit rows for active cosmetics equip use the active profile as actor/target.
+
+Privacy:
+- Active Profile/Cosmetics payloads return safe profile/guild/status/cosmetic fields only.
+- No normal CP, `member_cp`, `cp_snapshots`, email, auth IDs, service-role data, admin/private metadata, or audit-private metadata is returned.
+- CP get/submit remains legacy-own only and is not active-profile migrated in this milestone.
+
+Validation:
+- Local reset applied the migration cleanly.
+- Full local validation passed; Milestone 29E.1 block reported `10 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed only `20260531000200_active_profile_profile_cosmetics.sql`; production apply passed and remote migration list shows it applied.
+
 ## Milestone 29B Account Switcher RLS/RPC
 
 Milestone 29B Account Switcher backend foundation is implemented, locally validated, and production applied through `20260531000100_account_switcher_foundation.sql`.

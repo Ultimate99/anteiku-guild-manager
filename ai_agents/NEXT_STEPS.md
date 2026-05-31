@@ -2,12 +2,11 @@
 
 ## Current Recommendation
 
-Milestone 29D Active Profile Viewer State / low-risk reads are live in production and build/source/production-smoke validated.
+Milestone 29E.1 Own Profile + Cosmetics active-profile migration is live in production and build/source/production-smoke validated.
 
 Recommended next step:
-- Plan the next Account Switcher subsystem migration only if the product wants selected-profile identity to affect a specific action surface.
-- Recommended next subsystem migration: start with a low-risk non-CP surface, such as Dashboard/Profile display follow-up or a safe profile-social read path, before any CP/GvG/Admin action migration.
-- Migrate CP/GvG/3v3/Wall/Profile Reaction/Cosmetics/Push/Admin behavior to active-profile identity only through separately approved subsystem-specific backend/RPC/RLS milestones.
+- Plan the next Account Switcher subsystem migration only if the product wants selected-profile identity to affect a specific remaining action surface.
+- CP get/submit, GvG vote, 3v3 actions, Wall actions, Profile reactions, Push preferences/subscriptions, Admin permissions/actions, Analytics, and audit actor behavior still need separate approved backend/RPC/RLS milestones before they can use active-profile identity.
 - Keep frontend selected profile ids as UX input only; backend/RPC remains the authority.
 
 Do not yet:
@@ -15,6 +14,21 @@ Do not yet:
 - Use localStorage-only profile switching.
 - Expose normal CP values or private auth/email/admin metadata in switcher payloads.
 - Change active-profile behavior for existing systems without a reviewed RPC/RLS migration.
+
+Recorded Account Switcher 29E.1 status:
+- Commit `401e67e feat: migrate profile cosmetics to active profile` is pushed to `main` and deployed to production.
+- Production DB received `20260531000200_active_profile_profile_cosmetics.sql` after a clean dry-run showing only that migration.
+- New RPCs use `private.get_active_profile_id()` and accept no arbitrary frontend profile id: `get_my_active_profile_details`, `update_my_active_profile`, `get_my_active_cosmetics`, `equip_my_active_avatar`, and `equip_my_active_frame`.
+- Own Profile identity/details and IGN edit now use active-profile RPCs.
+- Profile Customize loads/equips cosmetics for the selected active profile.
+- Single-profile users keep the existing own CP card; switched active profiles show a locked `CP switching is not enabled yet.` state instead of legacy own CP.
+- Local validation passed with the active-profile Profile/Cosmetics block at `10 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production smoke passed for Profile load, active identity/details, Customize load, active frame equip-and-restore, own CP single-profile behavior, and no captured console errors.
+
+## Previous Recommendation
+
+Milestone 29D Active Profile Viewer State / low-risk reads are live in production and build/source/production-smoke validated.
 
 Recorded Account Switcher 29D status:
 - Commit `14c3837 feat: add active profile viewer state` is pushed to `main` and deployed to production.
@@ -24,7 +38,7 @@ Recorded Account Switcher 29D status:
 - Profile Settings Account Switcher copy now clarifies active profile and reload behavior.
 - `npm.cmd run build` passed with the existing Vite chunk-size warning only.
 - Production smoke passed for app load, topbar viewer state, Dashboard/Home load, Profile Settings Account Switcher active-profile card, single-profile state, Push Settings still present, and no captured console errors.
-- CP get/submit, GvG vote, 3v3 actions, Wall actions, Profile reactions, cosmetics equip, push preferences/subscriptions, Admin permissions/actions, and audit actor behavior remain unmigrated by design.
+- CP get/submit, GvG vote, 3v3 actions, Wall actions, Profile reactions, push preferences/subscriptions, Admin permissions/actions, and audit actor behavior remain unmigrated by design.
 
 ## Previous Recommendation
 

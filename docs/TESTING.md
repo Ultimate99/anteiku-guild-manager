@@ -1,5 +1,32 @@
 # Testing
 
+## Milestone 29E.1 Own Profile + Cosmetics Active Profile
+
+Own Profile identity/edit and Cosmetics read/equip active-profile migration passed local validation, build/source validation, production rollout gates, and production smoke.
+
+Results:
+- Local DB reset applied through `20260531000200_active_profile_profile_cosmetics.sql`.
+- Full local validation passed; the active-profile Profile/Cosmetics block reported `10 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production dry-run showed only `20260531000200_active_profile_profile_cosmetics.sql`.
+- Production migration apply passed and remote migration list shows `20260531000200` applied.
+- Commit `401e67e feat: migrate profile cosmetics to active profile` is pushed to `main` and deployed.
+
+Production smoke:
+- Signed-in approved user opened Profile.
+- Active-profile identity/details rendered.
+- Single-profile own `Your CP` card remained unchanged.
+- Customize opened with active-profile cosmetics copy.
+- Active frame equip-and-restore passed.
+- No captured console errors.
+
+Security/source validation:
+- New RPCs use `private.get_active_profile_id()` and accept no arbitrary frontend profile id.
+- Profile active identity/edit uses `get_my_active_profile_details` and `update_my_active_profile`.
+- Cosmetics active read/equip uses `get_my_active_cosmetics`, `equip_my_active_avatar`, and `equip_my_active_frame`.
+- No direct cosmetics table reads/writes, normal CP RPCs, `member_cp`, `cp_snapshots`, service-role paths, localStorage authority, or private metadata display was added.
+- CP get/submit is not migrated; switched active profiles show a locked CP-not-enabled state instead of legacy own CP.
+
 ## Milestone 29D Active Profile Viewer State
 
 Active Profile Viewer State / low-risk reads passed frontend build/source validation and production smoke.

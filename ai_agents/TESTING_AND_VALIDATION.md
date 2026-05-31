@@ -1,5 +1,49 @@
 # Testing And Validation
 
+## Milestone 29E.1 Own Profile + Cosmetics Active Profile Validation
+
+Own Profile identity/edit and Cosmetics read/equip active-profile migration passed local backend validation, frontend build/source validation, production migration gates, and production smoke.
+
+Commands/gates:
+- `npx.cmd supabase db reset`
+- `Get-Content -Raw -LiteralPath supabase\tests\local_validation_anteiku.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres -v ON_ERROR_STOP=1`
+- `npm.cmd run build`
+- Production `npx.cmd supabase db push --dry-run`
+- Production `npx.cmd supabase db push`
+- Production `npx.cmd supabase migration list`
+- `git push origin main`
+- Authenticated production browser smoke
+
+Results:
+- Local reset applied through `20260531000200_active_profile_profile_cosmetics.sql`.
+- Full local validation passed.
+- Milestone 29E.1 active-profile Profile/Cosmetics block passed `10 PASS / 0 FAIL / 0 SKIP`.
+- Build passed with the existing Vite chunk-size warning only.
+- Production dry-run showed exactly one pending migration: `20260531000200_active_profile_profile_cosmetics.sql`.
+- Production migration apply passed and remote migration list shows `20260531000200` applied.
+- Commit `401e67e feat: migrate profile cosmetics to active profile` is pushed to `main`.
+
+Validated behavior:
+- `get_my_active_profile_details()` returns safe active-profile identity/details and no CP/private fields.
+- `update_my_active_profile(...)` updates only the selected active profile IGN.
+- `get_my_active_cosmetics()` returns active-profile avatar/frame catalog state with no CP/private fields.
+- `equip_my_active_avatar(...)` and `equip_my_active_frame(...)` apply only to the selected active profile and enforce unlock checks.
+- Pending/disabled active-profile contexts are denied for active cosmetics.
+- Production Profile opened for a signed-in approved single-profile user.
+- Active-profile identity/details rendered.
+- Single-profile own `Your CP` card remained unchanged.
+- Customize opened through active-profile cosmetics.
+- A production frame equip-and-restore smoke passed.
+- No captured console errors.
+
+Security/source validation:
+- New RPCs use `private.get_active_profile_id()` and accept no arbitrary frontend profile id.
+- No SQL/RLS/RPC outside the focused active-profile Profile/Cosmetics migration was changed.
+- Frontend active Profile/Cosmetics path uses RPC wrappers only.
+- No direct `profile_equipped_cosmetics`, `profile_cosmetic_unlocks`, or `cosmetic_catalog` table paths were added.
+- Guard search found no `member_cp`, `cp_snapshots`, normal CP RPCs, service-role paths, or localStorage authority in the touched Profile/Cosmetics path except defensive deny-list strings.
+- CP get/submit remains unmigrated; switched active profiles show a locked CP-not-enabled state instead of legacy own CP.
+
 ## Milestone 29D Active Profile Viewer State Validation
 
 Active Profile Viewer State / low-risk reads passed frontend build/source validation and production smoke.

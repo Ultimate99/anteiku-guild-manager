@@ -2,6 +2,8 @@
 
 ## Current Backend Status
 
+Milestone 29E.1 Own Profile + Cosmetics active-profile migration is applied and verified in production through `20260531000200_active_profile_profile_cosmetics.sql`. It adds active-profile-aware Profile detail/update and Cosmetics read/equip RPCs while leaving CP get/submit and other action systems unmigrated by design.
+
 Milestone 29B Account Switcher backend foundation is applied and verified in production through `20260531000100_account_switcher_foundation.sql`. It adds `user_profile_links`, `user_active_profiles`, safe active-profile helper/RPCs, Owner-only link management RPCs, and self-link/backfill support while intentionally leaving existing runtime behavior unchanged.
 
 Milestone 28 Push Notifications is applied and verified in production through `20260530000800_push_notifications_foundation.sql` plus the deployed `send-push-notifications` Edge Function.
@@ -26,7 +28,7 @@ Staging and production both have this migration applied and verified. Future new
 
 ## Production Deployment Status
 
-Production Supabase is live and migrated through the Account Switcher backend foundation. Member Status, CP Update Window / Member CP Self-Submit, CP Leaderboard, Rank Badge / Profile Border, Cosmetics, Premium Cosmetics, Owner Cosmetics, Admin Analytics, Live CP Growth, 3v3 Team Finder, Guild Wall, Global Wall, Ghoul Rep backend support, Public Member Profiles, Ranking public profile links, Push Notifications, and Account Switcher foundation are applied and verified in production.
+Production Supabase is live and migrated through the active-profile Profile/Cosmetics migration. Member Status, CP Update Window / Member CP Self-Submit, CP Leaderboard, Rank Badge / Profile Border, Cosmetics, Premium Cosmetics, Owner Cosmetics, Admin Analytics, Live CP Growth, 3v3 Team Finder, Guild Wall, Global Wall, Ghoul Rep backend support, Public Member Profiles, Ranking public profile links, Push Notifications, Account Switcher foundation, and active-profile Profile/Cosmetics RPCs are applied and verified in production.
 
 Current local migration order:
 
@@ -64,6 +66,29 @@ Current local migration order:
 32. `20260530000700_ranking_public_profile_links.sql`
 33. `20260530000800_push_notifications_foundation.sql`
 34. `20260531000100_account_switcher_foundation.sql`
+35. `20260531000200_active_profile_profile_cosmetics.sql`
+
+## Active Profile Profile/Cosmetics
+
+Migration `20260531000200_active_profile_profile_cosmetics.sql` is applied and verified in production.
+
+RPCs:
+- `get_my_active_profile_details()`
+- `update_my_active_profile(p_ign text)`
+- `get_my_active_cosmetics()`
+- `equip_my_active_avatar(p_avatar_key text)`
+- `equip_my_active_frame(p_frame_key text)`
+
+Behavior:
+- RPCs resolve the selected profile through `private.get_active_profile_id()`.
+- Profile details/update accept no arbitrary frontend profile id.
+- Cosmetics read/equip applies to the selected active profile and preserves free-or-unlocked checks.
+- Active cosmetics equip updates only the selected active profile's equipped cosmetics row.
+
+Important rollout note:
+- This migration covers own Profile identity/edit and Cosmetics read/equip only.
+- CP get/submit, GvG, 3v3, Wall/Global Wall actions, Profile reactions, Push preferences/subscriptions, Admin permissions/actions, Analytics, and audit actor behavior remain separate future subsystem migrations.
+- Profile must not render legacy own CP for a selected linked profile that differs from the legacy auth profile.
 
 ## Account Switcher Foundation
 
@@ -89,7 +114,7 @@ RPCs/helpers:
 - `owner_unlink_profile_from_auth_user(p_auth_email text, p_profile_slug text)`
 
 Important rollout note:
-- Existing application systems have not been switched to active-profile identity yet. CP, GvG, 3v3, Wall, Profile Reaction, Cosmetics, Push, Admin, and auth flows remain on their existing behavior until later approved milestones.
+- Own Profile identity/edit and Cosmetics read/equip have been switched to active-profile identity by Milestone 29E.1. CP, GvG, 3v3, Wall, Profile Reaction, Push, Admin, and auth flows remain on their existing behavior until later approved milestones.
 
 Migration `20260523000100_member_roster_status_system.sql` is implemented, locally validated, staging validated, and production applied/verified.
 
@@ -117,7 +142,11 @@ Migration `20260530000300_global_wall_scope.sql` is implemented, locally validat
 
 Migration `20260530000400_ghoul_rep_wall_reactions.sql` is implemented, locally validated, and production applied/verified. It adds live-calculated Ghoul Rep fields to the Wall feed and safe reaction details RPC support.
 
-Migration `20260530000800_push_notifications_foundation.sql` is implemented and locally validated only. It has not been applied to staging or production.
+Migration `20260530000800_push_notifications_foundation.sql` is implemented, locally validated, production applied, and production-smoke verified.
+
+Migration `20260531000100_account_switcher_foundation.sql` is implemented, locally validated, and production applied/verified.
+
+Migration `20260531000200_active_profile_profile_cosmetics.sql` is implemented, locally validated, and production applied/verified.
 
 ## Milestone 28B Push Notifications Foundation
 

@@ -1,5 +1,37 @@
 # Project State
 
+## Milestone 29E.1 Own Profile + Cosmetics Active Profile Migration Live
+
+Own Profile identity/edit and Cosmetics read/equip are migrated to active-profile identity and live in production through commit `401e67e feat: migrate profile cosmetics to active profile`.
+
+Implemented:
+- New migration `20260531000200_active_profile_profile_cosmetics.sql`.
+- Active-profile RPCs: `get_my_active_profile_details()`, `update_my_active_profile(p_ign text)`, `get_my_active_cosmetics()`, `equip_my_active_avatar(p_avatar_key text)`, and `equip_my_active_frame(p_frame_key text)`.
+- `Profile.jsx` now renders own Profile identity/details from `get_my_active_profile_details()` and saves IGN through `update_my_active_profile(...)`.
+- Profile Customize now loads/equips cosmetics through active-profile cosmetics RPCs.
+- Active-profile detail/cosmetics service wrappers include defensive private-field deny-list mapping.
+- EN/FR/DE copy clarifies active-profile cosmetics and the CP migration boundary.
+
+Behavior:
+- Single-profile users keep existing Profile behavior and the own `Your CP` card remains visible.
+- When the selected active profile differs from the legacy auth profile, Profile hides legacy own CP/rank/Ghoul Rep stats and shows `CP switching is not enabled yet.` instead of rendering potentially wrong legacy CP.
+- Avatar/frame equip updates the selected active profile only and keeps unlock checks backend-enforced.
+- CP get/submit, GvG, 3v3, Wall/Global Wall actions, Profile reactions, Push preferences/subscriptions, Admin permissions/actions, Analytics, and audit actor behavior are intentionally not migrated in this milestone.
+
+Security/CP privacy:
+- RPCs resolve identity through `private.get_active_profile_id()` and accept no frontend-supplied arbitrary profile id.
+- Frontend uses RPC-only active profile/cosmetics paths and does not direct-read or direct-write cosmetics tables.
+- No `member_cp`, `cp_snapshots`, normal CP RPC usage, CP exposure, service-role path, localStorage authority, or private/auth/email/admin metadata display was added.
+- Active cosmetics require approved active membership on the selected active profile.
+
+Validation:
+- Local `npx.cmd supabase db reset` passed through `20260531000200_active_profile_profile_cosmetics.sql`.
+- Full local validation passed; the new active-profile Profile/Cosmetics block reported `10 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source guard confirmed only defensive `member_cp` / `cp_snapshots` deny-list strings in the touched Profile/cosmetics path.
+- Production dry-run showed only `20260531000200_active_profile_profile_cosmetics.sql`; production migration apply passed and remote migration list shows it applied.
+- Production serves commit `401e67e`; authenticated production smoke passed for Profile load, active-profile identity/details display, own CP single-profile card unchanged, Customize load, active frame equip-and-restore, and no captured console errors.
+
 ## Milestone 29D Active Profile Viewer State Live
 
 Active Profile Viewer State / low-risk reads are implemented and live in production through commit `14c3837 feat: add active profile viewer state`.

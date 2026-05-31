@@ -1,8 +1,31 @@
 # Supabase RLS
 
-The Supabase RLS/RPC implementation has been validated and production-applied through `20260531000100_account_switcher_foundation.sql`.
+The Supabase RLS/RPC implementation has been validated and production-applied through `20260531000200_active_profile_profile_cosmetics.sql`.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
+
+## Active Profile Profile/Cosmetics RLS/RPC
+
+Milestone 29E.1 Own Profile + Cosmetics active-profile migration is production-applied through `20260531000200_active_profile_profile_cosmetics.sql`.
+
+Functions:
+- `get_my_active_profile_details()`
+- `update_my_active_profile(p_ign text)`
+- `get_my_active_cosmetics()`
+- `equip_my_active_avatar(p_avatar_key text)`
+- `equip_my_active_frame(p_frame_key text)`
+
+Rules:
+- All functions resolve the selected profile through `private.get_active_profile_id()`.
+- No active Profile/Cosmetics RPC accepts an arbitrary frontend actor/target profile id.
+- Active Profile update requires an approved active profile and updates only that selected profile.
+- Active Cosmetics read/equip requires approved active membership on the selected active profile.
+- Active avatar/frame equip enforces free-or-unlocked checks and writes only the selected active profile's equipped cosmetics row.
+- CP get/submit is not active-profile migrated; frontend must not display legacy own CP when the selected active profile differs from the legacy auth profile.
+
+Privacy:
+- Active Profile/Cosmetics payloads expose safe profile/guild/status/cosmetic fields only.
+- No normal CP, `member_cp`, `cp_snapshots`, email, auth IDs, admin/private metadata, service-role data, or audit-private metadata is returned.
 
 ## Account Switcher RLS/RPC
 
@@ -26,7 +49,7 @@ RPC rules:
 Privacy:
 - Switcher payloads expose safe profile/guild/cosmetic/status fields only.
 - No normal CP, `member_cp`, `cp_snapshots`, email, auth secrets, admin/private metadata, or service-role data is returned.
-- Existing systems are not yet migrated to active-profile identity.
+- Own Profile identity/edit and Cosmetics read/equip are active-profile migrated by Milestone 29E.1; remaining action systems still require separate migrations.
 
 ## Push Notifications RLS/RPC
 

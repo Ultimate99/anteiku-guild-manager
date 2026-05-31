@@ -1,5 +1,31 @@
 # Session Log
 
+## 2026-05-31 - Milestone 29E.1 Own Profile + Cosmetics Active Profile Migration
+
+- Implemented active-profile migration for own Profile identity/edit and Cosmetics read/equip only.
+- Added migration `supabase/migrations/20260531000200_active_profile_profile_cosmetics.sql`.
+- Added active-profile RPCs:
+  - `get_my_active_profile_details()`
+  - `update_my_active_profile(p_ign text)`
+  - `get_my_active_cosmetics()`
+  - `equip_my_active_avatar(p_avatar_key text)`
+  - `equip_my_active_frame(p_frame_key text)`
+- Updated `src/services/profileService.js` with active-profile detail/update wrappers and defensive private-field mapping.
+- Updated `src/services/cosmeticsService.js` with active-profile cosmetics load/equip wrappers.
+- Updated `src/pages/Profile.jsx` so own Profile identity/details and inline IGN edit use active-profile RPCs.
+- Updated Profile Customize to load/equip cosmetics for the selected active profile.
+- Added EN/FR/DE labels for active-profile cosmetics and the CP migration boundary.
+- Added a Profile CP locked note for switched active profiles because CP get/submit is not migrated in this milestone.
+- Local DB reset passed through the new migration.
+- Full local validation passed; the active-profile Profile/Cosmetics block reported `10 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no normal CP RPC/table usage, no direct cosmetics table calls, no service-role path, and no localStorage authority in the touched active Profile/Cosmetics path except defensive deny-list strings.
+- Production dry-run showed only `20260531000200_active_profile_profile_cosmetics.sql`.
+- Production migration apply passed and remote migration list shows `20260531000200` applied.
+- Commit `401e67e feat: migrate profile cosmetics to active profile` was pushed to `main`.
+- Production smoke passed for Profile load, active-profile identity/details, single-profile own CP card unchanged, Customize load, active frame equip-and-restore, and no captured console errors.
+- CP get/submit, GvG vote, 3v3 actions, Wall actions, Profile reactions, Push preferences/subscriptions, Admin permissions/actions, Analytics, and audit actor behavior remain future subsystem migrations.
+
 ## 2026-05-31 - Milestone 29D Active Profile Viewer State
 
 - Implemented frontend-only Active Profile Viewer State / low-risk reads.

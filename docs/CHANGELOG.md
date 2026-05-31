@@ -1,5 +1,32 @@
 # Changelog
 
+## 2026-05-31 - Milestone 29E.1 Own Profile + Cosmetics Active Profile
+
+- Migrated own Profile identity/edit and Cosmetics read/equip to active-profile identity.
+- New production migration:
+  - `20260531000200_active_profile_profile_cosmetics.sql`
+- Commit deployed:
+  - `401e67e feat: migrate profile cosmetics to active profile`
+- Source files changed:
+  - `src/services/profileService.js`
+  - `src/services/cosmeticsService.js`
+  - `src/pages/Profile.jsx`
+  - `src/styles/app.css`
+  - `src/i18n/en.js`
+  - `src/i18n/fr.js`
+  - `src/i18n/de.js`
+- Added active-profile RPCs:
+  - `get_my_active_profile_details`
+  - `update_my_active_profile`
+  - `get_my_active_cosmetics`
+  - `equip_my_active_avatar`
+  - `equip_my_active_frame`
+- Own Profile now renders active-profile identity/details and saves IGN against the selected active profile.
+- Profile Customize now loads/equips cosmetics against the selected active profile.
+- Single-profile users keep existing own CP display; switched active profiles show the CP-switching-not-enabled state because CP get/submit is not migrated yet.
+- Local validation passed with `10 PASS / 0 FAIL / 0 SKIP`, build passed, production dry-run/apply passed, and production smoke passed for Profile, Customize, active frame equip-and-restore, and no captured console errors.
+- No CP get/submit, GvG, 3v3, Wall/Global Wall, Profile Reaction, Push, Admin, Analytics, permission, or audit actor behavior was migrated in this pass.
+
 ## 2026-05-31 - Milestone 29D Active Profile Viewer State
 
 - Added frontend-only Active Profile Viewer State / low-risk reads.

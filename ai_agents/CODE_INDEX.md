@@ -1,5 +1,16 @@
 # Code Index
 
+## Milestone 29E.1 Own Profile + Cosmetics Active Profile Migration
+
+- `supabase/migrations/20260531000200_active_profile_profile_cosmetics.sql`: Adds active-profile-aware own Profile and Cosmetics RPCs. All identity resolution uses `private.get_active_profile_id()`, not frontend-supplied profile ids. Adds `get_my_active_profile_details`, `update_my_active_profile`, `get_my_active_cosmetics`, `equip_my_active_avatar`, and `equip_my_active_frame`.
+- `supabase/tests/local_validation_anteiku.sql`: Adds Milestone 29E.1 validation for active-profile detail payload privacy, active IGN update scope, active cosmetics payload privacy, active avatar/frame equip scope, locked manual frame denial, pending/disabled active profile denial, and active Owner count.
+- `src/services/profileService.js`: Adds RPC-only `loadMyActiveProfileDetails()` and `updateMyActiveProfile(...)` plus defensive private-field deny-list mapping.
+- `src/services/cosmeticsService.js`: Adds shared cosmetics RPC mapping and active-profile wrappers `loadMyActiveCosmetics()`, `equipMyActiveAvatar(...)`, and `equipMyActiveFrame(...)`.
+- `src/pages/Profile.jsx`: Own Profile identity/details now render from active-profile details. Inline IGN edit uses `update_my_active_profile`. Customize uses active-profile cosmetics RPCs. CP/rank/Ghoul Rep legacy own stats are hidden behind a locked note when selected active profile differs from legacy auth profile.
+- `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`: Add active-profile Profile/Cosmetics and CP-boundary labels.
+- `src/styles/app.css`: Adds compact locked CP note styling.
+- Production status: migration `20260531000200_active_profile_profile_cosmetics.sql` is applied, commit `401e67e feat: migrate profile cosmetics to active profile` is deployed, local validation passed `10 PASS / 0 FAIL / 0 SKIP`, build/source validation passed, and production smoke passed.
+
 ## Milestone 29D Active Profile Viewer State
 
 - `src/hooks/useActiveProfileSummary.js`: Read-only active-profile display hook. Calls `get_my_active_profile()` through `accountSwitcherService`, stores active-profile summary/loading/error, and exposes `refreshActiveProfile()`. It does not replace AuthContext, use localStorage authority, direct-read account-link tables, or call CP/high-risk action RPCs.
