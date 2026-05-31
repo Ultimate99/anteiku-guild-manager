@@ -1,32 +1,5 @@
 import { supabase } from '../config/supabaseClient.js';
 
-const SAFE_MEMBER_ROSTER_SELECT = `
-  id,
-  profile_id,
-  guild_id,
-  role,
-  membership_status,
-  roster_status,
-  is_primary,
-  created_at,
-  updated_at,
-  profile:profiles!guild_memberships_profile_id_fkey!inner(
-    id,
-    username,
-    profile_slug,
-    ign,
-    avatar_key,
-    approval_status,
-    created_at,
-    updated_at
-  ),
-  guild:guilds!guild_memberships_guild_id_fkey(
-    id,
-    name,
-    slug
-  )
-`;
-
 const RELEVANT_MEMBER_PERMISSIONS = ['manage_members', 'edit_member_ign', 'reset_profile_slug', 'manage_roles'];
 const PROFILE_SLUG_PATTERN = /^[a-z0-9](?:[a-z0-9_-]{1,30}[a-z0-9])$/;
 const HARD_BLOCKED_ROSTER_STATUSES = ['suspended', 'left', 'kicked'];
@@ -246,13 +219,7 @@ export function getAllowedMemberRoleOptions({ membership, permissionKeys = [] })
 
 export async function loadMemberRoster() {
   const client = requireSupabase();
-  const { data, error } = await client
-    .from('guild_memberships')
-    .select(SAFE_MEMBER_ROSTER_SELECT)
-    .eq('is_primary', true)
-    .in('membership_status', ['active', 'suspended', 'left'])
-    .eq('profile.approval_status', 'approved')
-    .order('created_at', { ascending: true });
+  const { data, error } = await client.rpc('get_admin_member_roster');
 
   if (error) {
     throw error;

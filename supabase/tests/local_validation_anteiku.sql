@@ -9628,16 +9628,15 @@ begin
     join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public'
       and p.proname = 'set_gvg_event_status'
-      and pg_get_functiondef(p.oid) ilike '%actor_id uuid := auth.uid()%'
-      and pg_get_functiondef(p.oid) not ilike '%private.get_active_profile_id%';
+      and pg_get_functiondef(p.oid) ilike '%private.active_admin_profile_id%';
 
     if row_count = 1 then
-      insert into milestone_active_profile_gvg_results values ('schema', 'legacy_admin_gvg_audit_stays_legacy', 'PASS', 'Admin GvG event status audit remains auth.uid based until Admin migration.');
+      insert into milestone_active_profile_gvg_results values ('schema', 'admin_gvg_audit_migrated_to_active_admin', 'PASS', 'Admin GvG event status audit is now active-admin scoped.');
     else
-      insert into milestone_active_profile_gvg_results values ('schema', 'legacy_admin_gvg_audit_stays_legacy', 'FAIL', row_count::text || ' legacy Admin GvG status definitions matched.');
+      insert into milestone_active_profile_gvg_results values ('schema', 'admin_gvg_audit_migrated_to_active_admin', 'FAIL', row_count::text || ' active-admin Admin GvG status definitions matched.');
     end if;
   exception when others then
-    insert into milestone_active_profile_gvg_results values ('schema', 'legacy_admin_gvg_audit_stays_legacy', 'FAIL', sqlerrm);
+    insert into milestone_active_profile_gvg_results values ('schema', 'admin_gvg_audit_migrated_to_active_admin', 'FAIL', sqlerrm);
   end;
 
   begin
@@ -10196,6 +10195,396 @@ begin
 end;
 $$;
 
+create temp table if not exists milestone_active_admin_non_cp_results (
+  section text not null,
+  test_name text not null,
+  status text not null check (status in ('PASS', 'FAIL', 'SKIP')),
+  details text
+) on commit drop;
+
+do $$
+declare
+  anteiku_id constant uuid := '00000000-0000-0000-0000-000000000101';
+  anteiku_re_id constant uuid := '00000000-0000-0000-0000-000000000102';
+  owner_id constant uuid := '10000000-0000-0000-0000-000000000001';
+  leader_id constant uuid := '10000000-0000-0000-0000-000000000002';
+  admin_cp_id constant uuid := '10000000-0000-0000-0000-000000000005';
+  member_id constant uuid := '10000000-0000-0000-0000-000000000006';
+  wrong_guild_id constant uuid := '10000000-0000-0000-0000-000000000009';
+  active_admin_member_id constant uuid := '10000000-0000-0000-0000-000000000120';
+  non_cp_pending_id constant uuid := '10000000-0000-0000-0000-000000000124';
+  non_cp_target_id constant uuid := '10000000-0000-0000-0000-000000000125';
+  row_count integer;
+  event_payload public.gvg_events%rowtype;
+  target_membership_id uuid;
+  admin_membership_id uuid;
+  cosmetic_key text;
+  owner_count integer;
+begin
+  begin
+    insert into auth.users (
+      instance_id,
+      id,
+      aud,
+      role,
+      email,
+      encrypted_password,
+      email_confirmed_at,
+      raw_app_meta_data,
+      raw_user_meta_data,
+      created_at,
+      updated_at
+    )
+    values
+      ('00000000-0000-0000-0000-000000000000', non_cp_pending_id, 'authenticated', 'authenticated', 'active-admin-noncp-pending.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', non_cp_target_id, 'authenticated', 'authenticated', 'active-admin-noncp-target.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now())
+    on conflict (id) do nothing;
+
+    insert into public.profiles (id, username, profile_slug, ign, approval_status, approved_at)
+    values
+      (non_cp_pending_id, 'active_admin_noncp_pending', 'active_admin_noncp_pending', 'Active Admin NonCP Pending', 'pending', null),
+      (non_cp_target_id, 'active_admin_noncp_target', 'active_admin_noncp_target', 'Active Admin NonCP Target', 'approved', now())
+    on conflict (id) do update
+    set username = excluded.username,
+        profile_slug = excluded.profile_slug,
+        ign = excluded.ign,
+        approval_status = excluded.approval_status,
+        approved_at = excluded.approved_at;
+
+    insert into public.guild_memberships (profile_id, guild_id, role, membership_status, roster_status, is_primary, assigned_by)
+    values
+      (non_cp_pending_id, anteiku_id, 'member', 'pending', 'active', true, null),
+      (non_cp_target_id, anteiku_id, 'member', 'active', 'active', true, owner_id)
+    on conflict (profile_id, guild_id) do update
+    set role = excluded.role,
+        membership_status = excluded.membership_status,
+        roster_status = excluded.roster_status,
+        is_primary = excluded.is_primary,
+        assigned_by = excluded.assigned_by;
+
+    insert into milestone_active_admin_non_cp_results values ('setup', 'non_cp_admin_profiles_seeded', 'PASS', 'Pending/target profiles seeded.');
+  exception when others then
+    insert into milestone_active_admin_non_cp_results values ('setup', 'non_cp_admin_profiles_seeded', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    select count(*)
+    into row_count
+    from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public'
+      and p.proname in (
+        'get_admin_approval_queue',
+        'get_admin_member_roster',
+        'get_admin_permission_management',
+        'get_admin_gvg_events'
+      );
+
+    if row_count = 4 then
+      insert into milestone_active_admin_non_cp_results values ('schema', 'active_admin_read_rpcs_exist', 'PASS', 'All focused non-CP Admin read RPCs exist.');
+    else
+      insert into milestone_active_admin_non_cp_results values ('schema', 'active_admin_read_rpcs_exist', 'FAIL', row_count::text || ' read RPCs found.');
+    end if;
+  exception when others then
+    insert into milestone_active_admin_non_cp_results values ('schema', 'active_admin_read_rpcs_exist', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    select count(*)
+    into row_count
+    from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public'
+      and p.proname in (
+        'approve_registration',
+        'reject_registration',
+        'admin_update_member_ign',
+        'admin_reset_profile_slug',
+        'assign_member_role',
+        'transfer_member_guild',
+        'grant_admin_permission',
+        'revoke_admin_permission',
+        'update_member_roster_status',
+        'create_gvg_event',
+        'set_gvg_event_status',
+        'get_gvg_results',
+        'admin_grant_cosmetic',
+        'admin_grant_cosmetic_by_slug'
+      )
+      and pg_get_functiondef(p.oid) ilike '%private.active_admin_profile_id%'
+      and pg_get_functiondef(p.oid) not ilike '%member_cp%'
+      and pg_get_functiondef(p.oid) not ilike '%cp_snapshots%';
+
+    if row_count = 14 then
+      insert into milestone_active_admin_non_cp_results values ('schema', 'non_cp_admin_actions_use_active_admin_without_cp', 'PASS', 'All in-scope non-CP Admin RPCs use active-admin identity and no CP table refs.');
+    else
+      insert into milestone_active_admin_non_cp_results values ('schema', 'non_cp_admin_actions_use_active_admin_without_cp', 'FAIL', row_count::text || ' matching action RPC definitions.');
+    end if;
+  exception when others then
+    insert into milestone_active_admin_non_cp_results values ('schema', 'non_cp_admin_actions_use_active_admin_without_cp', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    delete from public.user_active_profiles where auth_user_id = owner_id;
+
+    select count(*) into row_count
+    from public.get_admin_approval_queue()
+    where profile_id = non_cp_pending_id;
+
+    if row_count = 1 then
+      insert into milestone_active_admin_non_cp_results values ('rpc', 'active_owner_reads_approval_queue', 'PASS', 'Owner active profile sees pending approval.');
+    else
+      insert into milestone_active_admin_non_cp_results values ('rpc', 'active_owner_reads_approval_queue', 'FAIL', 'Owner queue did not include pending target.');
+    end if;
+  exception when others then
+    insert into milestone_active_admin_non_cp_results values ('rpc', 'active_owner_reads_approval_queue', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    perform public.set_my_active_profile(active_admin_member_id);
+
+    perform public.get_admin_approval_queue();
+    insert into milestone_active_admin_non_cp_results values ('security', 'linked_owner_active_member_read_denied', 'FAIL', 'Active Member inherited approval queue.');
+  exception when others then
+    insert into milestone_active_admin_non_cp_results values ('security', 'linked_owner_active_member_read_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    perform public.set_my_active_profile(active_admin_member_id);
+
+    perform public.approve_registration(non_cp_pending_id, anteiku_id, 'member');
+    insert into milestone_active_admin_non_cp_results values ('security', 'linked_owner_active_member_approve_denied', 'FAIL', 'Active Member inherited approval action.');
+  exception when others then
+    insert into milestone_active_admin_non_cp_results values ('security', 'linked_owner_active_member_approve_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    delete from public.user_active_profiles where auth_user_id = owner_id;
+
+    perform public.approve_registration(non_cp_pending_id, anteiku_id, 'member');
+
+    if exists (
+      select 1
+      from public.profiles p
+      where p.id = non_cp_pending_id
+        and p.approval_status = 'approved'
+        and p.approved_by = owner_id
+    ) then
+      insert into milestone_active_admin_non_cp_results values ('rpc', 'active_owner_approves_with_active_actor', 'PASS', 'Owner approved pending target with active actor.');
+    else
+      insert into milestone_active_admin_non_cp_results values ('rpc', 'active_owner_approves_with_active_actor', 'FAIL', 'Approved target/actor mismatch.');
+    end if;
+  exception when others then
+    insert into milestone_active_admin_non_cp_results values ('rpc', 'active_owner_approves_with_active_actor', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', leader_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    delete from public.user_active_profiles where auth_user_id = leader_id;
+
+    select count(*) into row_count
+    from public.get_admin_member_roster()
+    where guild_id = anteiku_re_id
+       or profile_id = wrong_guild_id;
+
+    if row_count = 0 then
+      insert into milestone_active_admin_non_cp_results values ('scope', 'leader_member_roster_scoped_to_own_guild', 'PASS', 'Leader roster excludes wrong guild.');
+    else
+      insert into milestone_active_admin_non_cp_results values ('scope', 'leader_member_roster_scoped_to_own_guild', 'FAIL', row_count::text || ' wrong-guild rows returned.');
+    end if;
+  exception when others then
+    insert into milestone_active_admin_non_cp_results values ('scope', 'leader_member_roster_scoped_to_own_guild', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    perform public.set_my_active_profile(active_admin_member_id);
+
+    perform public.admin_update_member_ign(non_cp_target_id, 'Should Not Save');
+    insert into milestone_active_admin_non_cp_results values ('security', 'linked_owner_active_member_member_update_denied', 'FAIL', 'Active Member inherited member update.');
+  exception when others then
+    insert into milestone_active_admin_non_cp_results values ('security', 'linked_owner_active_member_member_update_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    delete from public.user_active_profiles where auth_user_id = owner_id;
+
+    event_payload := public.create_gvg_event('Active Admin NonCP Validation', 'guild', anteiku_id, now(), now() + interval '1 hour');
+    event_payload := public.set_gvg_event_status(event_payload.id, 'active');
+    perform public.get_gvg_results(event_payload.id);
+
+    if event_payload.created_by = owner_id and event_payload.status = 'active' then
+      insert into milestone_active_admin_non_cp_results values ('rpc', 'active_owner_gvg_admin_actions_allowed', 'PASS', event_payload.id::text);
+    else
+      insert into milestone_active_admin_non_cp_results values ('rpc', 'active_owner_gvg_admin_actions_allowed', 'FAIL', 'GvG event actor/status mismatch.');
+    end if;
+  exception when others then
+    insert into milestone_active_admin_non_cp_results values ('rpc', 'active_owner_gvg_admin_actions_allowed', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_cp_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    delete from public.user_active_profiles where auth_user_id = admin_cp_id;
+
+    event_payload := public.create_gvg_event('Active Admin Scoped GvG Validation', 'guild', anteiku_id, now(), now() + interval '1 hour');
+
+    begin
+      perform public.create_gvg_event('Wrong Guild Scoped GvG Validation', 'guild', anteiku_re_id, now(), now() + interval '1 hour');
+      insert into milestone_active_admin_non_cp_results values ('scope', 'scoped_admin_wrong_guild_gvg_denied', 'FAIL', 'Scoped Admin created wrong-guild GvG event.');
+    exception when others then
+      insert into milestone_active_admin_non_cp_results values ('scope', 'scoped_admin_wrong_guild_gvg_denied', 'PASS', sqlerrm);
+    end;
+
+    if event_payload.guild_id = anteiku_id then
+      insert into milestone_active_admin_non_cp_results values ('rpc', 'scoped_admin_gvg_own_guild_allowed', 'PASS', event_payload.id::text);
+    else
+      insert into milestone_active_admin_non_cp_results values ('rpc', 'scoped_admin_gvg_own_guild_allowed', 'FAIL', 'Scoped Admin GvG event guild mismatch.');
+    end if;
+  exception when others then
+    insert into milestone_active_admin_non_cp_results values ('rpc', 'scoped_admin_gvg_own_guild_allowed', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    perform public.set_my_active_profile(active_admin_member_id);
+
+    perform public.create_gvg_event('Blocked Active Member GvG', 'guild', anteiku_id, now(), now() + interval '1 hour');
+    insert into milestone_active_admin_non_cp_results values ('security', 'linked_owner_active_member_gvg_denied', 'FAIL', 'Active Member inherited GvG Admin action.');
+  exception when others then
+    insert into milestone_active_admin_non_cp_results values ('security', 'linked_owner_active_member_gvg_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    delete from public.user_active_profiles where auth_user_id = owner_id;
+
+    select key into cosmetic_key
+    from public.cosmetic_catalog
+    where is_active = true
+      and unlock_type in ('manual', 'admin_grant')
+    order by sort_order, key
+    limit 1;
+
+    if cosmetic_key is null then
+      insert into milestone_active_admin_non_cp_results values ('owner_tools', 'active_owner_cosmetic_grant_allowed', 'SKIP', 'No manual/admin_grant cosmetic exists.');
+    else
+      perform public.admin_grant_cosmetic_by_slug('active_admin_noncp_target', cosmetic_key, 'active admin validation');
+      insert into milestone_active_admin_non_cp_results values ('owner_tools', 'active_owner_cosmetic_grant_allowed', 'PASS', cosmetic_key);
+    end if;
+  exception when others then
+    insert into milestone_active_admin_non_cp_results values ('owner_tools', 'active_owner_cosmetic_grant_allowed', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    perform public.set_my_active_profile(active_admin_member_id);
+
+    perform public.admin_grant_cosmetic_by_slug('active_admin_noncp_target', coalesce(cosmetic_key, 'not-real'), 'blocked active member');
+    insert into milestone_active_admin_non_cp_results values ('security', 'linked_owner_active_member_cosmetic_denied', 'FAIL', 'Active Member inherited Owner Cosmetics grant.');
+  exception when others then
+    insert into milestone_active_admin_non_cp_results values ('security', 'linked_owner_active_member_cosmetic_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', leader_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    delete from public.user_active_profiles where auth_user_id = leader_id;
+
+    select id into admin_membership_id
+    from public.guild_memberships
+    where profile_id = admin_cp_id
+      and guild_id = anteiku_id
+    limit 1;
+
+    perform public.grant_admin_permission(admin_membership_id, 'manage_members');
+    perform public.revoke_admin_permission(admin_membership_id, 'manage_members');
+    insert into milestone_active_admin_non_cp_results values ('rpc', 'scoped_leader_permission_toggle_allowed', 'PASS', 'Leader toggled non-CP permission in own guild.');
+  exception when others then
+    insert into milestone_active_admin_non_cp_results values ('rpc', 'scoped_leader_permission_toggle_allowed', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', leader_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    delete from public.user_active_profiles where auth_user_id = leader_id;
+
+    perform public.grant_admin_permission(admin_membership_id, 'view_cp');
+    insert into milestone_active_admin_non_cp_results values ('security', 'scoped_leader_cp_permission_denied', 'FAIL', 'Leader granted CP permission.');
+  exception when others then
+    insert into milestone_active_admin_non_cp_results values ('security', 'scoped_leader_cp_permission_denied', 'PASS', sqlerrm);
+  end;
+
+  select count(*)
+  into row_count
+  from pg_proc p
+  join pg_namespace n on n.oid = p.pronamespace
+  where n.nspname = 'public'
+    and p.proname in (
+      'update_member_cp',
+      'get_current_cp_roster',
+      'get_admin_cp_rankings',
+      'get_admin_cp_analytics',
+      'get_admin_live_cp_growth'
+    )
+    and pg_get_functiondef(p.oid) ilike '%private.active_admin_profile_id%';
+
+  if row_count = 0 then
+    insert into milestone_active_admin_non_cp_results values ('regression', 'cp_admin_rpcs_not_migrated_in_29e8d', 'PASS', 'CP-heavy Admin RPCs remain out of scope.');
+  else
+    insert into milestone_active_admin_non_cp_results values ('regression', 'cp_admin_rpcs_not_migrated_in_29e8d', 'FAIL', row_count::text || ' CP-heavy RPCs referenced active-admin helper.');
+  end if;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    delete from public.user_active_profiles where auth_user_id = member_id;
+
+    execute 'set local role authenticated';
+    select count(*) into row_count from public.member_cp;
+    execute 'reset role';
+
+    if row_count = 0 then
+      insert into milestone_active_admin_non_cp_results values ('rls', 'member_direct_member_cp_still_blocked', 'PASS', 'Direct member_cp read returned no rows.');
+    else
+      insert into milestone_active_admin_non_cp_results values ('rls', 'member_direct_member_cp_still_blocked', 'FAIL', row_count::text || ' member_cp rows visible.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone_active_admin_non_cp_results values ('rls', 'member_direct_member_cp_still_blocked', 'PASS', sqlerrm);
+  end;
+
+  select count(*)
+  into owner_count
+  from public.guild_memberships gm
+  join public.profiles p on p.id = gm.profile_id
+  where gm.role = 'owner'
+    and gm.membership_status = 'active'
+    and p.approval_status = 'approved';
+
+  if owner_count = 1 then
+    insert into milestone_active_admin_non_cp_results values ('regression', 'active_owner_count_remains_one', 'PASS', 'Exactly one active approved Owner membership exists.');
+  else
+    insert into milestone_active_admin_non_cp_results values ('regression', 'active_owner_count_remains_one', 'FAIL', owner_count::text || ' active approved Owners found.');
+  end if;
+end;
+$$;
+
 select section, test_name, status, details
 from milestone_push_notification_results
 order by section, test_name;
@@ -10276,5 +10665,14 @@ select count(*) filter (where status = 'PASS') as milestone_active_admin_context
        count(*) filter (where status = 'FAIL') as milestone_active_admin_context_total_fail,
        count(*) filter (where status = 'SKIP') as milestone_active_admin_context_total_skip
 from milestone_active_admin_context_results;
+
+select section, test_name, status, details
+from milestone_active_admin_non_cp_results
+order by section, test_name;
+
+select count(*) filter (where status = 'PASS') as milestone_active_admin_non_cp_total_pass,
+       count(*) filter (where status = 'FAIL') as milestone_active_admin_non_cp_total_fail,
+       count(*) filter (where status = 'SKIP') as milestone_active_admin_non_cp_total_skip
+from milestone_active_admin_non_cp_results;
 
 rollback;

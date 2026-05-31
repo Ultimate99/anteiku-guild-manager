@@ -1,22 +1,5 @@
 import { supabase } from '../config/supabaseClient.js';
 
-const SAFE_GVG_EVENT_SELECT = `
-  id,
-  guild_id,
-  scope,
-  title,
-  status,
-  starts_at,
-  ends_at,
-  created_at,
-  updated_at,
-  guild:guilds!gvg_events_guild_id_fkey(
-    id,
-    name,
-    slug
-  )
-`;
-
 function requireSupabase() {
   if (!supabase) {
     throw new Error('Supabase is not configured.');
@@ -104,11 +87,7 @@ export async function loadMemberActiveGvgEvents() {
 
 export async function loadManageableGvgEvents() {
   const client = requireSupabase();
-  const { data, error } = await client
-    .from('gvg_events')
-    .select(SAFE_GVG_EVENT_SELECT)
-    .order('created_at', { ascending: false })
-    .limit(20);
+  const { data, error } = await client.rpc('get_admin_gvg_events');
 
   if (error) {
     throw error;

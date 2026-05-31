@@ -16,7 +16,6 @@ import {
   approveRegistration,
   canReviewApprovals,
   getAllowedApprovalRoles,
-  getOwnAdminPermissionKeys,
   loadApprovalQueue,
   rejectRegistration,
 } from '../services/adminApprovalService.js';
@@ -381,7 +380,7 @@ export function AdminPanel({
   activeAdminContextLoading = false,
 }) {
   const { language, t } = useLanguage();
-  const { membership, guild } = useAuth();
+  const { membership: authMembership, guild } = useAuth();
   const [permissionKeys, setPermissionKeys] = useState([]);
   const [permissionLoading, setPermissionLoading] = useState(true);
   const [loadedTabs, setLoadedTabs] = useState({});
@@ -436,6 +435,26 @@ export function AdminPanel({
   const [activeAction, setActiveAction] = useState(null);
   const [confirmAction, setConfirmAction] = useState(null);
 
+  const membership = useMemo(() => {
+    if (!activeAdminContext) {
+      return authMembership;
+    }
+
+    return {
+      ...(authMembership ?? {}),
+      role: activeAdminContext.role,
+      guild_id: activeAdminContext.guildId,
+      guild: activeAdminContext.guildId
+        ? {
+            id: activeAdminContext.guildId,
+            name: activeAdminContext.guildName,
+            slug: activeAdminContext.guildSlug,
+          }
+        : null,
+      guild_name: activeAdminContext.guildName,
+      guild_slug: activeAdminContext.guildSlug,
+    };
+  }, [activeAdminContext, authMembership]);
   const canViewAdmin = Boolean(activeAdminContext?.canAccessAdminPanel);
   const allowedRoles = useMemo(() => getAllowedApprovalRoles(membership?.role), [membership?.role]);
   const canReviewQueue = canReviewApprovals({ membership, permissionKeys });
@@ -727,7 +746,7 @@ export function AdminPanel({
 
       try {
         const nextPermissionKeys =
-          membership?.role === 'admin' ? await getOwnAdminPermissionKeys(membership?.id) : [];
+          activeAdminContext?.permissionKeys ?? [];
 
         if (!cancelled) {
           setPermissionKeys(nextPermissionKeys);
@@ -749,7 +768,7 @@ export function AdminPanel({
     return () => {
       cancelled = true;
     };
-  }, [canViewAdmin, membership?.id, membership?.role]);
+  }, [activeAdminContext?.permissionKeys, canViewAdmin, membership?.role]);
 
   useEffect(() => {
     if (permissionLoading || visibleTabs.length === 0) {
