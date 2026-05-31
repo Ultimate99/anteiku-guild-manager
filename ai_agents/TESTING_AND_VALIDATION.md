@@ -1,5 +1,46 @@
 # Testing And Validation
 
+## Milestone 29E.5 Own CP Active Profile Validation
+
+Own CP active-profile migration passed local backend validation, frontend build/source validation, production migration gates, DB verification, and authenticated production Profile smoke.
+
+Commands/gates:
+- `npx.cmd supabase db reset`
+- `Get-Content -Raw -LiteralPath supabase\tests\local_validation_anteiku.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres -v ON_ERROR_STOP=1`
+- `npm.cmd run build`
+- Production `npx.cmd supabase db push --dry-run`
+- Production `npx.cmd supabase db push`
+- Production `npx.cmd supabase migration list`
+- `git push origin main`
+- Authenticated production Profile smoke
+
+Results:
+- Local reset applied through `20260531000600_active_profile_own_cp.sql`.
+- Full local validation passed.
+- Milestone 29E.5 active-profile Own CP block passed `13 PASS / 0 FAIL / 0 SKIP`.
+- Build passed with the existing Vite chunk-size warning only.
+- Production dry-run showed exactly one pending migration: `20260531000600_active_profile_own_cp.sql`.
+- Production migration is applied and remote migration list shows `20260531000600` applied.
+- Commit `9e13864 feat: migrate own cp to active profile` is pushed to `main`.
+
+Validated behavior:
+- `get_my_cp`, `get_active_cp_update_window_for_me`, and `submit_my_cp_update` resolve selected-profile identity through `private.get_active_profile_id()`.
+- Single-profile fallback `get_my_cp` behavior is unchanged.
+- Linked active profile A/B local tests returned each selected profile's own CP and selected-guild CP update window.
+- Submitting CP as active profile B updated B only; A remained unchanged and audit used B as actor/target.
+- Pending and restricted active profiles were denied.
+- Disabled/unlinked active profile use was denied.
+- Existing Admin CP update/roster read still works.
+- Production Profile smoke confirmed `Your CP` loads, the CP update window state displays, and Settings showed only one linked profile in the logged-in session.
+
+Security/source validation:
+- No arbitrary frontend `profile_id` was added to the own CP path.
+- No direct frontend `member_cp` or `cp_snapshots` table reads were added.
+- No CP fields were added to Public Profile, Ranking rows, Guild Wall, or 3v3.
+- Simulated normal-member direct reads of `member_cp` and `cp_snapshots` returned zero visible rows in production verification.
+- Admin CP, CP Analytics, Weekly Growth, GvG voting, member Ranking CP-hidden behavior, and Admin permissions/actions were not migrated or changed.
+- No CP submit mutation was performed during production browser smoke.
+
 ## Milestone 29E.4 Push Notifications Active Profile Validation
 
 Push Notifications active-profile migration passed local backend validation, frontend build/source validation, production migration gates, DB verification, Edge Function redeploy, and limited production smoke.

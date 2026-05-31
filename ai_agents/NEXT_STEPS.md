@@ -2,11 +2,11 @@
 
 ## Current Recommendation
 
-Milestone 29E.4 Push Notifications active-profile migration is live in production and locally/build/production-gate validated.
+Milestone 29E.5 Own CP active-profile migration is live in production and locally/build/production-gate validated.
 
 Recommended next step:
 - Plan the next Account Switcher subsystem migration only if the product wants selected-profile identity to affect a specific remaining action surface.
-- CP get/submit, GvG vote, Admin permissions/actions, Analytics, and audit actor behavior still need separate approved backend/RPC/RLS milestones before they can use active-profile identity.
+- GvG vote, Admin permissions/actions, Analytics/Weekly Growth, Ranking/rank badge, and audit actor behavior outside migrated surfaces still need separate approved backend/RPC/RLS milestones before they can use active-profile identity.
 - Keep frontend selected profile ids as UX input only; backend/RPC remains the authority.
 
 Do not yet:
@@ -14,6 +14,20 @@ Do not yet:
 - Use localStorage-only profile switching.
 - Expose normal CP values or private auth/email/admin metadata in switcher payloads.
 - Change active-profile behavior for existing systems without a reviewed RPC/RLS migration.
+
+Recorded Account Switcher 29E.5 status:
+- Commit `9e13864 feat: migrate own cp to active profile` is pushed to `main` and production serves the updated Profile bundle.
+- Production DB has `20260531000600_active_profile_own_cp.sql` applied after a clean dry-run showing only that migration.
+- `get_my_cp`, `get_active_cp_update_window_for_me`, and `submit_my_cp_update` now resolve the selected active profile through `private.get_active_profile_id()` and accept no frontend `profile_id`.
+- Profile `Your CP` now loads for the selected active profile; the temporary CP switching disabled state is removed from the CP card.
+- Local validation passed with the active-profile Own CP block at `13 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production DB verification passed for active-profile RPC bodies, authenticated execute grants, active Owner count `1`, and normal CP table protection.
+- Production single-profile Profile smoke passed. Multi-profile switch smoke was not available in the logged-in session, and no CP submit mutation was performed.
+
+## Previous Recommendation
+
+Milestone 29E.4 Push Notifications active-profile migration is live in production and locally/build/production-gate validated.
 
 Recorded Account Switcher 29E.4 status:
 - Commit `5a3302b feat: migrate push settings to active profile` is pushed to `main` and production serves the updated bundle.

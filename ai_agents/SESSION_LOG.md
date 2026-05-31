@@ -1,5 +1,23 @@
 # Session Log
 
+## 2026-05-31 - Milestone 29E.5 Own CP Active Profile Migration
+
+- Implemented active-profile migration for member-own CP read, CP update-window lookup, and CP self-submit only.
+- Added migration `supabase/migrations/20260531000600_active_profile_own_cp.sql`.
+- Updated `get_my_cp`, `get_active_cp_update_window_for_me`, and `submit_my_cp_update` so acting identity resolves through `private.get_active_profile_id()`.
+- Updated `src/pages/Profile.jsx` so Profile `Your CP` uses active-profile readiness instead of the temporary legacy-profile-only CP disabled state.
+- Preserved Admin CP roster/update/ranking, Analytics/Weekly Growth, GvG voting, Ranking CP-hidden behavior, Admin permissions/actions, rank badge, Ghoul Rep, and unrelated audit behavior.
+- Local DB reset passed through the new migration.
+- Full local validation passed; the active-profile Own CP block reported `13 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no arbitrary frontend `profile_id`, no direct `member_cp`/`cp_snapshots` reads, no CP fields added to Public Profile/Ranking/Guild Wall/3v3, and no localStorage authority in the touched own-CP path.
+- Production dry-run showed only `20260531000600_active_profile_own_cp.sql`.
+- Production migration apply passed and remote migration list shows `20260531000600` applied.
+- Production DB verification confirmed all three own-CP RPCs use `private.get_active_profile_id()`, authenticated execute grants exist, active Owner count remains `1`, and simulated normal-member direct reads of `member_cp`/`cp_snapshots` returned zero rows.
+- Commit `9e13864 feat: migrate own cp to active profile` was pushed to `main`.
+- Production Profile smoke passed for the logged-in single-profile account: own CP loaded, CP update-window state displayed Open, Settings showed only one linked profile, and no CP submit mutation was performed.
+- Multi-profile production switch smoke was not available in the logged-in session.
+
 ## 2026-05-31 - Milestone 29E.4 Push Notifications Active Profile Migration
 
 - Implemented active-profile migration for Push Notification settings/preferences/self-test while keeping the browser subscription owned by the signed-in auth account.

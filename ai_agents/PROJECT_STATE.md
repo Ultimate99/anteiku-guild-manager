@@ -1,5 +1,36 @@
 # Project State
 
+## Milestone 29E.5 Own CP Active Profile Migration Live
+
+Member-own CP read, CP update-window lookup, and CP self-submit now use active-profile identity and are live in production through commit `9e13864 feat: migrate own cp to active profile`.
+
+Implemented:
+- New migration `20260531000600_active_profile_own_cp.sql`.
+- `get_my_cp()`, `get_active_cp_update_window_for_me()`, and `submit_my_cp_update(p_cp_value integer)` now resolve the acting profile through `private.get_active_profile_id()`.
+- Profile's `Your CP` card now loads for the selected active profile instead of showing the temporary `CP switching is not enabled yet` state.
+- CP self-submit writes `member_cp` only for the selected active profile and audits `member_cp_self_submitted` with the selected active profile as actor/target.
+
+Behavior:
+- Single-profile users behave unchanged.
+- Linked multi-profile accounts can use Profile `Your CP` for the selected active profile once switched.
+- CP update-window state is evaluated from the selected active profile's active primary guild.
+- Admin CP roster/update/ranking, CP Analytics, Weekly Growth, GvG voting, Ranking CP-hidden behavior, Admin permissions/actions, and audit actor behavior outside own CP remain unchanged.
+- Rank badge and own Ghoul Rep display remain legacy-profile scoped until separately migrated.
+
+Security/CP privacy:
+- The migrated own-CP RPCs accept no arbitrary frontend `profile_id`.
+- Members still cannot see other members' CP.
+- Normal CP is still visible only through own Profile or existing admin-authorized surfaces.
+- Production DB verification confirmed the three own-CP RPCs use `private.get_active_profile_id()`, authenticated execute grants exist, active Owner count remains `1`, and simulated normal-member direct reads of `member_cp` and `cp_snapshots` returned zero visible rows.
+
+Validation:
+- Local `npx.cmd supabase db reset` passed through `20260531000600_active_profile_own_cp.sql`.
+- Full local validation passed; the new active-profile Own CP block reported `13 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production dry-run showed only `20260531000600_active_profile_own_cp.sql`; production migration is applied and remote migration list shows it applied.
+- Production Profile smoke passed for the logged-in single-profile account: Profile opened, `Your CP` displayed the own CP value, CP update-window state displayed Open, Settings confirmed only one linked profile, and no CP submit was performed.
+- Multi-profile production browser switching was not available in the logged-in smoke session.
+
 ## Milestone 29E.4 Push Notifications Active Profile Migration Live
 
 Push Notification settings, preferences, and self-test enqueue are migrated to active-profile identity and live in production through commit `5a3302b feat: migrate push settings to active profile`.

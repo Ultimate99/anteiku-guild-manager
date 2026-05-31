@@ -2,6 +2,8 @@
 
 ## Current Backend Status
 
+Milestone 29E.5 Own CP active-profile migration is applied and verified in production through `20260531000600_active_profile_own_cp.sql`. It switches member-own CP read, CP update-window lookup, and CP self-submit to `private.get_active_profile_id()` while preserving Admin CP, Analytics, Ranking CP-hidden behavior, GvG, permissions, and unrelated audit behavior.
+
 Milestone 29E.4 Push Notifications active-profile migration is applied and verified in production through `20260531000500_active_profile_push_notifications.sql`. It adds `push_subscriptions.auth_user_id` so browser subscriptions are auth-account owned while preference/test-notification recipient behavior follows the selected active profile.
 
 Milestone 29E.3 3v3 Team Finder active-profile migration is applied and verified in production through `20260531000400_active_profile_three_v_three.sql`. It switches public 3v3 RPC actor/viewer identity to `private.get_active_profile_id()` while preserving existing 3v3 rules and leaving CP/GvG/Push/Admin/Analytics/audit actor behavior unmigrated by design.
@@ -32,7 +34,7 @@ Staging and production both have this migration applied and verified. Future new
 
 ## Production Deployment Status
 
-Production Supabase is live and migrated through the active-profile Push Notifications migration. Member Status, CP Update Window / Member CP Self-Submit, CP Leaderboard, Rank Badge / Profile Border, Cosmetics, Premium Cosmetics, Owner Cosmetics, Admin Analytics, Live CP Growth, 3v3 Team Finder, Guild Wall, Global Wall, Ghoul Rep backend support, Public Member Profiles, Ranking public profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, active-profile 3v3 RPCs, and active-profile Push RPCs are applied and verified in production.
+Production Supabase is live and migrated through the active-profile Own CP migration. Member Status, CP Update Window / Member CP Self-Submit, CP Leaderboard, Rank Badge / Profile Border, Cosmetics, Premium Cosmetics, Owner Cosmetics, Admin Analytics, Live CP Growth, 3v3 Team Finder, Guild Wall, Global Wall, Ghoul Rep backend support, Public Member Profiles, Ranking public profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, active-profile 3v3 RPCs, active-profile Push RPCs, and active-profile Own CP RPCs are applied and verified in production.
 
 Current local migration order:
 
@@ -74,6 +76,22 @@ Current local migration order:
 36. `20260531000300_active_profile_wall_reactions.sql`
 37. `20260531000400_active_profile_three_v_three.sql`
 38. `20260531000500_active_profile_push_notifications.sql`
+39. `20260531000600_active_profile_own_cp.sql`
+
+## Active Profile Own CP
+
+Migration `20260531000600_active_profile_own_cp.sql` is applied and verified in production.
+
+RPC behavior:
+- `get_my_cp()` resolves the selected active profile through `private.get_active_profile_id()` and returns only that profile's own CP.
+- `get_active_cp_update_window_for_me()` uses the selected active profile's active primary guild/window context.
+- `submit_my_cp_update(p_cp_value integer)` updates only the selected active profile's `member_cp`, records `updated_by` as the selected active profile, and writes `member_cp_self_submitted` audit with the selected active profile as actor/target.
+
+Security:
+- The migrated own-CP RPCs accept no arbitrary frontend profile id.
+- Members still cannot see other members' CP.
+- Direct member reads of `member_cp` and `cp_snapshots` remain blocked.
+- Admin CP roster/update/ranking, Analytics/Weekly Growth, GvG voting, Ranking CP-hidden behavior, Admin permissions/actions, rank badge, own Ghoul Rep, and unrelated audit actor behavior are unchanged by this migration.
 
 ## Active Profile Push Notifications
 

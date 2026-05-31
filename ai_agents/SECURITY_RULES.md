@@ -1,5 +1,27 @@
 # Security Rules
 
+## Active Profile Own CP Security Rules
+
+Milestone 29E.5 Own CP active-profile migration is live in production through `20260531000600_active_profile_own_cp.sql` and commit `9e13864 feat: migrate own cp to active profile`.
+
+Rules:
+- Member-own CP reads, CP update-window lookup, and CP self-submit must resolve actor identity through `private.get_active_profile_id()`.
+- Frontend must not provide arbitrary actor/target profile ids to own CP RPCs.
+- `get_my_cp()` may return only the selected active profile's own CP.
+- `get_active_cp_update_window_for_me()` may use only the selected active profile's active primary guild/window context.
+- `submit_my_cp_update(...)` may update only the selected active profile's `member_cp` and must audit the selected active profile as actor/target.
+- Admin CP roster/update/ranking, CP Analytics, Weekly Growth, GvG voting, Ranking CP-hidden behavior, Admin permissions/actions, rank badge, own Ghoul Rep, and unrelated audit actor behavior remain separate migrations or unchanged systems.
+
+Privacy:
+- Members must never see other members' normal CP through Profile.
+- Public Profile, Ranking, Guild Wall, and 3v3 surfaces must not receive normal CP values, CP snapshots, CP history, or CP growth from this migration.
+- Frontend Profile must not direct-read `member_cp` or `cp_snapshots`.
+
+Validation status:
+- Local validation passed with the active-profile Own CP block at `13 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed only `20260531000600_active_profile_own_cp.sql`; production apply/list verification passed.
+- Production DB verification confirmed all three own-CP RPCs use `private.get_active_profile_id()`, authenticated execute grants exist, active Owner count remains `1`, and simulated normal-member direct reads of `member_cp` and `cp_snapshots` returned zero visible rows.
+
 ## Active Profile Push Notifications Security Rules
 
 Milestone 29E.4 Push Notifications active-profile migration is live in production through `20260531000500_active_profile_push_notifications.sql` and commit `5a3302b feat: migrate push settings to active profile`.

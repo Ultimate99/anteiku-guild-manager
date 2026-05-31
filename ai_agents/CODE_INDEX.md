@@ -1,5 +1,12 @@
 # Code Index
 
+## Milestone 29E.5 Own CP Active Profile Migration
+
+- `supabase/migrations/20260531000600_active_profile_own_cp.sql`: Migrates member-own CP read, CP update-window lookup, and CP self-submit to `private.get_active_profile_id()`. Replaces only `get_my_cp()`, `get_active_cp_update_window_for_me()`, and `submit_my_cp_update(p_cp_value integer)`.
+- `supabase/tests/local_validation_anteiku.sql`: Adds Milestone 29E.5 validation for active-profile own CP reads, update-window scope, self-submit updating only the selected profile, pending/restricted/unlinked denial, direct CP table protection, existing Admin CP behavior, and active Owner count.
+- `src/pages/Profile.jsx`: Profile `Your CP` now loads when the active profile is ready, so linked accounts can use own CP for the selected active profile. Rank badge and own Ghoul Rep remain legacy-profile scoped until separately migrated.
+- Production status: migration `20260531000600_active_profile_own_cp.sql` is applied, commit `9e13864 feat: migrate own cp to active profile` is pushed to `main`, local validation passed `13 PASS / 0 FAIL / 0 SKIP`, build/source validation passed, production dry-run/apply/DB verification passed, and production Profile smoke passed for the logged-in single-profile account without CP submit mutation.
+
 ## Milestone 29E.4 Push Notifications Active Profile Migration
 
 - `supabase/migrations/20260531000500_active_profile_push_notifications.sql`: Adds `push_subscriptions.auth_user_id`, migrates push RPCs so preferences/test notification recipients use `private.get_active_profile_id()`, keeps disable browser-auth scoped, and preference-gates supported notification types.

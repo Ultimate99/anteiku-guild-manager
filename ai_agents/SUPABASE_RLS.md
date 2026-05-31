@@ -1,5 +1,33 @@
 # Supabase RLS
 
+## Milestone 29E.5 Active Profile Own CP RLS/RPC
+
+Milestone 29E.5 Own CP active-profile migration is implemented, locally validated, and production applied through `20260531000600_active_profile_own_cp.sql`.
+
+RPCs:
+- `get_my_cp()`
+- `get_active_cp_update_window_for_me()`
+- `submit_my_cp_update(p_cp_value integer)`
+
+RPC security:
+- All three member-own CP RPCs use `private.get_active_profile_id()` for actor identity.
+- No migrated own-CP RPC accepts an arbitrary frontend profile id.
+- `get_my_cp()` returns only the selected active profile's CP and active primary guild context.
+- `get_active_cp_update_window_for_me()` resolves window visibility/submission state from the selected active profile's active primary guild.
+- `submit_my_cp_update(...)` writes only the selected active profile's `member_cp` row and records the selected active profile as audit actor/target.
+- Admin CP roster/update/ranking, CP Analytics, Weekly Growth, GvG voting, Ranking CP-hidden behavior, Admin permissions/actions, rank badge, own Ghoul Rep, and unrelated audit actor behavior were not migrated in this pass.
+
+Privacy:
+- Members still cannot see other members' CP.
+- Frontend Profile remains free of direct `member_cp`/`cp_snapshots` reads and does not send arbitrary profile ids.
+- Public Profile, Ranking, Guild Wall, and 3v3 surfaces do not receive new CP fields.
+
+Validation:
+- Local reset applied the migration cleanly.
+- Full local validation passed; Milestone 29E.5 block reported `13 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed only `20260531000600_active_profile_own_cp.sql`; production migration is applied and remote migration list shows it applied.
+- Production verification confirmed active-profile RPC bodies, authenticated execute grants, active Owner count `1`, and simulated normal-member direct reads of `member_cp` and `cp_snapshots` returned zero visible rows.
+
 ## Milestone 29E.4 Active Profile Push Notifications RLS/RPC
 
 Milestone 29E.4 Push Notifications active-profile migration is implemented, locally validated, and production applied through `20260531000500_active_profile_push_notifications.sql`.

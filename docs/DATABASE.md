@@ -1,10 +1,26 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and production-applied through `20260531000500_active_profile_push_notifications.sql`.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and production-applied through `20260531000600_active_profile_own_cp.sql`.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
-Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, own Profile Ghoul Rep display, Public Member Profiles, Ranking Public Profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, active-profile 3v3 RPCs, and active-profile Push RPCs are implemented, locally validated, production applied, and production-smoke or production-gate validated.
+Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, own Profile Ghoul Rep display, Public Member Profiles, Ranking Public Profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, active-profile 3v3 RPCs, active-profile Push RPCs, and active-profile Own CP RPCs are implemented, locally validated, production applied, and production-smoke or production-gate validated.
+
+## Active Profile Own CP
+
+Migration `20260531000600_active_profile_own_cp.sql` is applied and verified in production.
+
+Schema/RPC behavior:
+- `get_my_cp()` resolves identity through `private.get_active_profile_id()` and returns only the selected active profile's CP.
+- `get_active_cp_update_window_for_me()` resolves the selected active profile's active primary guild and update window.
+- `submit_my_cp_update(p_cp_value integer)` writes only the selected active profile's `member_cp` and audits the selected active profile as actor/target.
+
+Security:
+- Own CP RPCs accept no arbitrary frontend profile id.
+- Members cannot see other members' CP.
+- Direct `member_cp` and `cp_snapshots` reads remain blocked.
+- Public Profile, Ranking, Guild Wall, and 3v3 surfaces receive no normal CP values from this migration.
+- Admin CP, Analytics/Weekly Growth, GvG voting, permissions, rank badge, Ghoul Rep, and unrelated audit actor behavior are unchanged.
 
 ## Active Profile Push Notifications
 
@@ -225,6 +241,9 @@ Security:
 34. `20260531000100_account_switcher_foundation.sql`
 35. `20260531000200_active_profile_profile_cosmetics.sql`
 36. `20260531000300_active_profile_wall_reactions.sql`
+37. `20260531000400_active_profile_three_v_three.sql`
+38. `20260531000500_active_profile_push_notifications.sql`
+39. `20260531000600_active_profile_own_cp.sql`
 
 Migration `20260523000100_member_roster_status_system.sql` is locally validated, staging validated, and production applied/verified as of Milestone 15E.
 
@@ -263,6 +282,12 @@ Migration `20260531000100_account_switcher_foundation.sql` is locally implemente
 Migration `20260531000200_active_profile_profile_cosmetics.sql` is locally implemented/validated and production applied/verified. It migrates own Profile identity/edit and Cosmetics read/equip to active-profile identity.
 
 Migration `20260531000300_active_profile_wall_reactions.sql` is locally implemented/validated and production applied/verified. It migrates Guild Wall / Global Wall actions and Public Profile reactions to active-profile identity.
+
+Migration `20260531000400_active_profile_three_v_three.sql` is locally implemented/validated and production applied/verified. It migrates 3v3 Team Finder setup/team/request/owner actions to active-profile identity.
+
+Migration `20260531000500_active_profile_push_notifications.sql` is locally implemented/validated and production applied/verified. It migrates Push preferences/test notification recipient behavior to active-profile identity while keeping browser subscriptions auth-owned.
+
+Migration `20260531000600_active_profile_own_cp.sql` is locally implemented/validated and production applied/verified. It migrates member-own CP read, CP update-window lookup, and CP self-submit to active-profile identity.
 
 ## Milestone 25B 3v3 Team Finder Backend
 

@@ -1,8 +1,30 @@
 # Supabase RLS
 
-The Supabase RLS/RPC implementation has been validated and production-applied through `20260531000500_active_profile_push_notifications.sql`.
+The Supabase RLS/RPC implementation has been validated and production-applied through `20260531000600_active_profile_own_cp.sql`.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
+
+## Active Profile Own CP RLS/RPC
+
+Milestone 29E.5 Own CP active-profile migration is production-applied through `20260531000600_active_profile_own_cp.sql`.
+
+Functions:
+- `get_my_cp()`
+- `get_active_cp_update_window_for_me()`
+- `submit_my_cp_update(p_cp_value integer)`
+
+Rules:
+- Member-own CP RPCs resolve actor identity through `private.get_active_profile_id()`.
+- No own-CP RPC accepts arbitrary frontend actor/target profile ids.
+- `get_my_cp()` returns only the selected active profile's own CP.
+- CP update-window lookup and self-submit use the selected active profile's active primary guild context.
+- CP self-submit updates only the selected active profile and audits that profile as actor/target.
+
+Privacy:
+- Members cannot see other members' CP.
+- Frontend Profile does not direct-read `member_cp` or `cp_snapshots`.
+- Public Profile, Ranking, Guild Wall, and 3v3 surfaces do not receive normal CP fields.
+- Production verification confirmed active Owner count `1` and simulated normal-member direct CP table reads returned zero visible rows.
 
 ## Active Profile Push Notifications RLS/RPC
 

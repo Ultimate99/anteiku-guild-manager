@@ -1,5 +1,31 @@
 # Testing
 
+## Milestone 29E.5 Own CP Active Profile
+
+Own CP active-profile migration passed local validation, build/source validation, production rollout gates, DB verification, and authenticated production Profile smoke.
+
+Results:
+- Local DB reset applied through `20260531000600_active_profile_own_cp.sql`.
+- Full local validation passed; the active-profile Own CP block reported `13 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production dry-run showed only `20260531000600_active_profile_own_cp.sql`.
+- Production migration is applied and remote migration list shows `20260531000600` applied.
+- Commit `9e13864 feat: migrate own cp to active profile` is pushed to `main`.
+
+Production smoke:
+- Signed-in production Profile loaded.
+- `Your CP` showed the logged-in single-profile account's own CP.
+- CP update-window state displayed Open.
+- Settings showed only one linked profile in the smoke session.
+- No CP submit mutation was performed.
+
+Security/source validation:
+- Own CP RPCs use `private.get_active_profile_id()` and accept no arbitrary frontend profile id.
+- No direct `member_cp` or `cp_snapshots` frontend reads were added.
+- No normal CP fields were added to Public Profile, Ranking, Guild Wall, or 3v3.
+- Simulated normal-member direct reads of `member_cp` and `cp_snapshots` returned zero visible rows.
+- Admin CP, Analytics/Weekly Growth, GvG voting, Ranking CP-hidden behavior, Admin permissions/actions, rank badge, own Ghoul Rep, and unrelated audit actor behavior were unchanged.
+
 ## Milestone 29E.4 Push Notifications Active Profile
 
 Push Notifications active-profile migration passed local validation, build/source validation, production rollout gates, DB verification, Edge Function redeploy, and limited production smoke.

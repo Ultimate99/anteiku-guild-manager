@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-05-31 - Milestone 29E.5 Own CP Active Profile
+
+- Migrated Profile own CP read, CP update-window lookup, and CP self-submit to active-profile identity.
+- New production migration:
+  - `20260531000600_active_profile_own_cp.sql`
+- Commit deployed:
+  - `9e13864 feat: migrate own cp to active profile`
+- Source files changed:
+  - `src/pages/Profile.jsx`
+  - `supabase/tests/local_validation_anteiku.sql`
+- Updated own CP RPC behavior:
+  - `get_my_cp()`
+  - `get_active_cp_update_window_for_me()`
+  - `submit_my_cp_update(p_cp_value integer)`
+- Profile `Your CP` now loads for the selected active profile instead of showing the temporary CP-switching disabled state.
+- Local validation passed with `13 PASS / 0 FAIL / 0 SKIP`, build passed, production dry-run/apply verification passed, DB verification passed, and authenticated production Profile smoke passed for the logged-in single-profile account.
+- No CP submit mutation was performed during production smoke.
+- No Admin CP roster/update/ranking, CP Analytics, Weekly Growth, GvG voting, Ranking CP-hidden behavior, Admin permissions/actions, rank badge, own Ghoul Rep, or unrelated audit actor behavior was changed.
+- No other-member CP exposure, arbitrary frontend profile id, direct `member_cp`/`cp_snapshots` frontend read, Public Profile CP field, Ranking CP field, Guild Wall CP field, or 3v3 normal CP usage was added.
+
 ## 2026-05-31 - Milestone 29E.4 Push Notifications Active Profile
 
 - Migrated Push Notification settings, preferences, and self-test enqueue to active-profile identity while keeping browser subscriptions owned by the signed-in auth account.
