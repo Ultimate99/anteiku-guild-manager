@@ -535,9 +535,9 @@ export const de = {
     activeProfileLoadError: 'Aktive Profilanzeige konnte nicht geladen werden.',
     switchingNotice: 'Nur Anzeigezustand ist aktiv.',
     reloadAfterSwitch: 'Die App laedt nach dem Wechsel neu, um die Anzeige zu aktualisieren.',
-    limitedRolloutNote: 'Die Anzeige nutzt das aktive Profil. Einige Aktionen nutzen bis zur Migration weiter dein urspruengliches Profil.',
-    rolloutNote: 'Account-Wechsel wird phasenweise ausgerollt. Einige Aktionen koennen bis zur vollstaendigen Migration noch dein urspruengliches Profil nutzen.',
-    actionsNotMigratedNotice: 'Einige Aktionen nutzen bis zur Migration weiter dein urspruengliches Profil.',
+    limitedRolloutNote: 'Beim Profilwechsel wird dein aktiver Profilkontext in der ganzen App neu geladen.',
+    rolloutNote: 'Der Account-Wechsel ist aktiv. Geschuetzte Ansichten aktualisieren sich nach dem Profilwechsel.',
+    actionsNotMigratedNotice: 'Beim Profilwechsel wird dein aktiver Profilkontext in der ganzen App neu geladen.',
   },
   cosmetics: {
     customize: 'Anpassen',

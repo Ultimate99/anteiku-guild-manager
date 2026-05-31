@@ -535,9 +535,9 @@ export const fr = {
     activeProfileLoadError: 'Affichage du profil actif impossible.',
     switchingNotice: 'Etat de vue uniquement actif.',
     reloadAfterSwitch: 'L app se recharge apres un changement pour actualiser l affichage.',
-    limitedRolloutNote: 'L affichage suit le profil actif. Certaines actions utilisent encore le profil original jusqu a leur migration.',
-    rolloutNote: 'Le changement de compte arrive par phases. Certaines actions peuvent encore utiliser votre profil original jusqu a la migration complete.',
-    actionsNotMigratedNotice: "Certaines actions utilisent encore le profil original jusqu'a leur migration.",
+    limitedRolloutNote: 'Changer de profil recharge le contexte du profil actif dans toute l app.',
+    rolloutNote: 'Le changement de compte est actif. Les vues protegees se rafraichissent apres un changement de profil.',
+    actionsNotMigratedNotice: 'Changer de profil recharge le contexte du profil actif dans toute l app.',
   },
   cosmetics: {
     customize: 'Personnaliser',

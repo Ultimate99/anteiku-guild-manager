@@ -534,9 +534,9 @@ export const en = {
     activeProfileLoadError: 'Active profile display could not be loaded.',
     switchingNotice: 'Display-only viewer state is active.',
     reloadAfterSwitch: 'The app reloads after switching to refresh display state.',
-    limitedRolloutNote: 'Viewer display is active. Some actions still use your original profile until each system is migrated.',
-    rolloutNote: 'Account switching is being rolled out in phases. Some actions may still use your original profile until systems are fully migrated.',
-    actionsNotMigratedNotice: 'Some actions still use your original profile until each system is migrated.',
+    limitedRolloutNote: 'Switching profiles reloads your active profile context across the app.',
+    rolloutNote: 'Account switching is active. Protected views refresh after switching profiles.',
+    actionsNotMigratedNotice: 'Switching profiles reloads your active profile context across the app.',
   },
   cosmetics: {
     customize: 'Customize',
