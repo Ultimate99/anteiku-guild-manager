@@ -115,6 +115,7 @@ export function Profile() {
   const activeProfileMatchesLegacy = activeProfileReady && activeProfileId === legacyProfileId;
   const activeProfileDiffersFromLegacy = activeProfileReady && Boolean(legacyProfileId) && activeProfileId !== legacyProfileId;
   const canUseLegacyOwnProfileStats = activeProfileReady && activeProfileMatchesLegacy;
+  const canUseActiveOwnCp = activeProfileReady;
   const displayProfile = activeProfileDetails ?? {
     profileId: profile?.id ?? null,
     username: profile?.username ?? '',
@@ -190,7 +191,7 @@ export function Profile() {
     let cancelled = false;
 
     async function loadCpPanel() {
-      if (!canUseLegacyOwnProfileStats || !membership?.id) {
+      if (!canUseActiveOwnCp) {
         setCpState(null);
         setCpWindowState(null);
         setCpDraft('');
@@ -230,7 +231,7 @@ export function Profile() {
     return () => {
       cancelled = true;
     };
-  }, [canUseLegacyOwnProfileStats, membership?.id, t]);
+  }, [canUseActiveOwnCp, activeProfileId, t]);
 
   useEffect(() => {
     let cancelled = false;
@@ -482,7 +483,7 @@ export function Profile() {
   }
 
   async function refreshCpPanel({ showMessage = false } = {}) {
-    if (!canUseLegacyOwnProfileStats) {
+    if (!canUseActiveOwnCp) {
       setCpState(null);
       setCpWindowState(null);
       setCpDraft('');
@@ -790,8 +791,8 @@ export function Profile() {
   async function saveCp(event) {
     event.preventDefault();
 
-    if (!canUseLegacyOwnProfileStats) {
-      setCpError(t('profile.cpSwitchingPending'));
+    if (!canUseActiveOwnCp) {
+      setCpError(t('accountSwitcher.activeProfileLoadError'));
       return;
     }
 
@@ -1259,23 +1260,23 @@ export function Profile() {
           <div className="member-profile-block member-profile-cp-block">
             <div className="member-profile-block-heading">
               <div>
-                <StatusBadge tone={canUseLegacyOwnProfileStats && canSubmitCp ? 'success' : 'warning'}>
-                  {canUseLegacyOwnProfileStats
+                <StatusBadge tone={canUseActiveOwnCp && canSubmitCp ? 'success' : 'warning'}>
+                  {canUseActiveOwnCp
                     ? canSubmitCp
                       ? t('admin.cp.windowOpen')
                       : t('admin.cp.windowClosed')
-                    : t('profile.profileLocked')}
+                    : t('common.loading')}
                 </StatusBadge>
                 <h4>{t('profile.yourCp')}</h4>
               </div>
-              {canUseLegacyOwnProfileStats ? (
+              {canUseActiveOwnCp ? (
                 <button type="button" className="secondary-action compact-action profile-refresh-action" onClick={() => refreshCpPanel()} disabled={cpLoading || cpSubmitting}>
                   {cpLoading ? t('common.loading') : t('common.refresh')}
                 </button>
               ) : null}
             </div>
 
-            {canUseLegacyOwnProfileStats ? (
+            {canUseActiveOwnCp ? (
               <>
                 <div className="profile-mini-stat-grid">
                   <div>
@@ -1314,7 +1315,7 @@ export function Profile() {
                 )}
               </>
             ) : (
-              <p className="muted-line compact-state-line profile-cp-locked-note">{t('profile.cpSwitchingPending')}</p>
+              <p className="muted-line compact-state-line profile-cp-locked-note">{t('common.loading')}</p>
             )}
           </div>
 

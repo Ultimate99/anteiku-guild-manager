@@ -9019,6 +9019,409 @@ begin
 end;
 $$;
 
+create temp table if not exists milestone_active_profile_own_cp_results (
+  section text not null,
+  test_name text not null,
+  status text not null check (status in ('PASS', 'FAIL', 'SKIP')),
+  details text
+) on commit drop;
+
+do $$
+declare
+  anteiku_id constant uuid := '00000000-0000-0000-0000-000000000101';
+  anteiku_re_id constant uuid := '00000000-0000-0000-0000-000000000102';
+  owner_id constant uuid := '10000000-0000-0000-0000-000000000001';
+  admin_cp_id constant uuid := '10000000-0000-0000-0000-000000000005';
+  member_id constant uuid := '10000000-0000-0000-0000-000000000006';
+  active_cp_a_id constant uuid := '10000000-0000-0000-0000-000000000099';
+  active_cp_b_id constant uuid := '10000000-0000-0000-0000-000000000100';
+  active_cp_pending_id constant uuid := '10000000-0000-0000-0000-000000000101';
+  active_cp_restricted_id constant uuid := '10000000-0000-0000-0000-000000000102';
+  open_window_a_id uuid;
+  open_window_b_id uuid;
+  admin_cp_membership_id uuid;
+  cp_state record;
+  window_state record;
+  submit_state record;
+  row_count integer;
+  direct_count integer;
+  cp_a integer;
+  cp_b integer;
+  owner_count integer;
+begin
+  begin
+    update public.cp_update_windows
+    set status = 'closed',
+        closed_by = coalesce(closed_by, owner_id),
+        updated_at = now()
+    where guild_id in (anteiku_id, anteiku_re_id)
+      and status = 'open';
+
+    insert into auth.users (
+      instance_id,
+      id,
+      aud,
+      role,
+      email,
+      encrypted_password,
+      email_confirmed_at,
+      raw_app_meta_data,
+      raw_user_meta_data,
+      created_at,
+      updated_at
+    )
+    values
+      (
+        '00000000-0000-0000-0000-000000000000',
+        active_cp_a_id,
+        'authenticated',
+        'authenticated',
+        'active-cp-a.local@example.test',
+        'local-only',
+        now(),
+        '{"provider":"email","providers":["email"]}'::jsonb,
+        '{}'::jsonb,
+        now(),
+        now()
+      ),
+      (
+        '00000000-0000-0000-0000-000000000000',
+        active_cp_b_id,
+        'authenticated',
+        'authenticated',
+        'active-cp-b.local@example.test',
+        'local-only',
+        now(),
+        '{"provider":"email","providers":["email"]}'::jsonb,
+        '{}'::jsonb,
+        now(),
+        now()
+      ),
+      (
+        '00000000-0000-0000-0000-000000000000',
+        active_cp_pending_id,
+        'authenticated',
+        'authenticated',
+        'active-cp-pending.local@example.test',
+        'local-only',
+        now(),
+        '{"provider":"email","providers":["email"]}'::jsonb,
+        '{}'::jsonb,
+        now(),
+        now()
+      ),
+      (
+        '00000000-0000-0000-0000-000000000000',
+        active_cp_restricted_id,
+        'authenticated',
+        'authenticated',
+        'active-cp-restricted.local@example.test',
+        'local-only',
+        now(),
+        '{"provider":"email","providers":["email"]}'::jsonb,
+        '{}'::jsonb,
+        now(),
+        now()
+      )
+    on conflict (id) do nothing;
+
+    insert into public.profiles (id, username, profile_slug, ign, approval_status, approved_at)
+    values
+      (active_cp_a_id, 'active_cp_a', 'active_cp_a', 'Active CP A', 'approved', now()),
+      (active_cp_b_id, 'active_cp_b', 'active_cp_b', 'Active CP B', 'approved', now()),
+      (active_cp_pending_id, 'active_cp_pending', 'active_cp_pending', 'Active CP Pending', 'pending', null),
+      (active_cp_restricted_id, 'active_cp_restricted', 'active_cp_restricted', 'Active CP Restricted', 'approved', now())
+    on conflict (id) do update
+    set username = excluded.username,
+        profile_slug = excluded.profile_slug,
+        ign = excluded.ign,
+        approval_status = excluded.approval_status,
+        approved_at = excluded.approved_at;
+
+    insert into public.guild_memberships (profile_id, guild_id, role, membership_status, roster_status, is_primary, assigned_by)
+    values
+      (active_cp_a_id, anteiku_id, 'member', 'active', 'active', true, owner_id),
+      (active_cp_b_id, anteiku_re_id, 'member', 'active', 'active', true, owner_id),
+      (active_cp_pending_id, anteiku_id, 'member', 'pending', 'active', true, owner_id),
+      (active_cp_restricted_id, anteiku_id, 'member', 'active', 'suspended', true, owner_id)
+    on conflict (profile_id, guild_id) do update
+    set role = excluded.role,
+        membership_status = excluded.membership_status,
+        roster_status = excluded.roster_status,
+        is_primary = excluded.is_primary,
+        assigned_by = excluded.assigned_by;
+
+    update public.user_profile_links upl
+    set disabled_at = now(),
+        is_primary = false
+    where upl.profile_id in (active_cp_a_id, active_cp_b_id, active_cp_pending_id, active_cp_restricted_id)
+      and upl.disabled_at is null;
+
+    delete from public.user_active_profiles where auth_user_id = member_id;
+
+    insert into public.user_profile_links (auth_user_id, profile_id, link_type, is_primary, created_by_profile_id)
+    values
+      (member_id, active_cp_a_id, 'owner', false, owner_id),
+      (member_id, active_cp_b_id, 'owner', false, owner_id),
+      (member_id, active_cp_pending_id, 'owner', false, owner_id),
+      (member_id, active_cp_restricted_id, 'owner', false, owner_id);
+
+    insert into public.member_cp (profile_id, guild_id, cp_value, updated_by, updated_at)
+    values
+      (member_id, anteiku_id, 777777, member_id, now()),
+      (active_cp_a_id, anteiku_id, 1111111, active_cp_a_id, now()),
+      (active_cp_b_id, anteiku_re_id, 2222222, active_cp_b_id, now())
+    on conflict (profile_id) do update
+    set guild_id = excluded.guild_id,
+        cp_value = excluded.cp_value,
+        updated_by = excluded.updated_by,
+        updated_at = excluded.updated_at;
+
+    insert into public.cp_update_windows (guild_id, status, created_by, note)
+    values (anteiku_id, 'open', owner_id, 'active profile CP local validation A')
+    returning id into open_window_a_id;
+
+    insert into public.cp_update_windows (guild_id, status, created_by, note)
+    values (anteiku_re_id, 'open', owner_id, 'active profile CP local validation B')
+    returning id into open_window_b_id;
+
+    select id into admin_cp_membership_id
+    from public.guild_memberships
+    where profile_id = admin_cp_id
+      and guild_id = anteiku_id;
+
+    insert into public.admin_permissions (membership_id, permission_key, granted_by)
+    values
+      (admin_cp_membership_id, 'view_cp', owner_id),
+      (admin_cp_membership_id, 'update_cp', owner_id)
+    on conflict (membership_id, permission_key) do nothing;
+
+    insert into milestone_active_profile_own_cp_results values ('setup', 'active_cp_profiles_linked', 'PASS', 'Member auth linked to active CP test profiles.');
+  exception when others then
+    insert into milestone_active_profile_own_cp_results values ('setup', 'active_cp_profiles_linked', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    select count(*)
+    into row_count
+    from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public'
+      and p.proname in ('get_my_cp', 'get_active_cp_update_window_for_me', 'submit_my_cp_update')
+      and pg_get_functiondef(p.oid) ilike '%private.get_active_profile_id%';
+
+    if row_count = 3 then
+      insert into milestone_active_profile_own_cp_results values ('schema', 'own_cp_rpcs_use_active_profile_helper', 'PASS', 'All own CP RPCs resolve active profile identity.');
+    else
+      insert into milestone_active_profile_own_cp_results values ('schema', 'own_cp_rpcs_use_active_profile_helper', 'FAIL', row_count::text || ' RPCs reference active profile helper.');
+    end if;
+  exception when others then
+    insert into milestone_active_profile_own_cp_results values ('schema', 'own_cp_rpcs_use_active_profile_helper', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    delete from public.user_active_profiles where auth_user_id = member_id;
+
+    select * into cp_state
+    from public.get_my_cp();
+
+    if cp_state.guild_id = anteiku_id
+       and cp_state.cp_value = 777777 then
+      insert into milestone_active_profile_own_cp_results values ('rpc', 'single_profile_fallback_get_my_cp_unchanged', 'PASS', row_to_json(cp_state)::text);
+    else
+      insert into milestone_active_profile_own_cp_results values ('rpc', 'single_profile_fallback_get_my_cp_unchanged', 'FAIL', coalesce(row_to_json(cp_state)::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_profile_own_cp_results values ('rpc', 'single_profile_fallback_get_my_cp_unchanged', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_cp_a_id);
+
+    select * into cp_state
+    from public.get_my_cp();
+
+    select * into window_state
+    from public.get_active_cp_update_window_for_me();
+
+    if cp_state.guild_id = anteiku_id
+       and cp_state.cp_value = 1111111
+       and window_state.guild_id = anteiku_id
+       and window_state.window_id = open_window_a_id
+       and window_state.can_submit = true then
+      insert into milestone_active_profile_own_cp_results values ('rpc', 'active_profile_a_reads_a_cp_and_window', 'PASS', row_to_json(cp_state)::text || ' ' || row_to_json(window_state)::text);
+    else
+      insert into milestone_active_profile_own_cp_results values ('rpc', 'active_profile_a_reads_a_cp_and_window', 'FAIL', coalesce(row_to_json(cp_state)::text, '<null>') || ' ' || coalesce(row_to_json(window_state)::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_profile_own_cp_results values ('rpc', 'active_profile_a_reads_a_cp_and_window', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_cp_b_id);
+
+    select * into cp_state
+    from public.get_my_cp();
+
+    select * into window_state
+    from public.get_active_cp_update_window_for_me();
+
+    if cp_state.guild_id = anteiku_re_id
+       and cp_state.cp_value = 2222222
+       and window_state.guild_id = anteiku_re_id
+       and window_state.window_id = open_window_b_id
+       and window_state.can_submit = true then
+      insert into milestone_active_profile_own_cp_results values ('rpc', 'active_profile_b_reads_b_cp_and_window', 'PASS', row_to_json(cp_state)::text || ' ' || row_to_json(window_state)::text);
+    else
+      insert into milestone_active_profile_own_cp_results values ('rpc', 'active_profile_b_reads_b_cp_and_window', 'FAIL', coalesce(row_to_json(cp_state)::text, '<null>') || ' ' || coalesce(row_to_json(window_state)::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_profile_own_cp_results values ('rpc', 'active_profile_b_reads_b_cp_and_window', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_cp_b_id);
+
+    select * into submit_state
+    from public.submit_my_cp_update(3333333);
+
+    select cp_value into cp_a
+    from public.member_cp
+    where profile_id = active_cp_a_id;
+
+    select cp_value into cp_b
+    from public.member_cp
+    where profile_id = active_cp_b_id
+      and guild_id = anteiku_re_id
+      and updated_by = active_cp_b_id;
+
+    select count(*) into row_count
+    from public.audit_logs
+    where action = 'member_cp_self_submitted'
+      and actor_profile_id = active_cp_b_id
+      and target_profile_id = active_cp_b_id
+      and guild_id = anteiku_re_id
+      and metadata ->> 'window_id' = open_window_b_id::text;
+
+    if submit_state.cp_value = 3333333
+       and submit_state.window_id = open_window_b_id
+       and cp_a = 1111111
+       and cp_b = 3333333
+       and row_count >= 1 then
+      insert into milestone_active_profile_own_cp_results values ('rpc', 'submit_updates_selected_profile_only', 'PASS', row_to_json(submit_state)::text);
+    else
+      insert into milestone_active_profile_own_cp_results values ('rpc', 'submit_updates_selected_profile_only', 'FAIL', 'submit=' || coalesce(row_to_json(submit_state)::text, '<null>') || ' a=' || coalesce(cp_a::text, '<null>') || ' b=' || coalesce(cp_b::text, '<null>') || ' audits=' || row_count::text);
+    end if;
+  exception when others then
+    insert into milestone_active_profile_own_cp_results values ('rpc', 'submit_updates_selected_profile_only', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_cp_pending_id);
+    perform public.get_my_cp();
+    insert into milestone_active_profile_own_cp_results values ('eligibility', 'pending_active_profile_denied', 'FAIL', 'Pending active profile read CP.');
+  exception when others then
+    insert into milestone_active_profile_own_cp_results values ('eligibility', 'pending_active_profile_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_cp_restricted_id);
+    perform public.get_active_cp_update_window_for_me();
+    insert into milestone_active_profile_own_cp_results values ('eligibility', 'restricted_active_profile_denied', 'FAIL', 'Restricted active profile read CP window.');
+  exception when others then
+    insert into milestone_active_profile_own_cp_results values ('eligibility', 'restricted_active_profile_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_cp_b_id);
+
+    update public.user_profile_links upl
+    set disabled_at = now(),
+        is_primary = false
+    where upl.auth_user_id = member_id
+      and upl.profile_id = active_cp_b_id
+      and upl.disabled_at is null;
+
+    perform public.get_my_cp();
+    insert into milestone_active_profile_own_cp_results values ('security', 'disabled_link_active_profile_denied', 'FAIL', 'Disabled active profile link still read CP.');
+  exception when others then
+    insert into milestone_active_profile_own_cp_results values ('security', 'disabled_link_active_profile_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    execute 'set local role authenticated';
+    select count(*) into direct_count from public.member_cp;
+    execute 'reset role';
+
+    if direct_count = 0 then
+      insert into milestone_active_profile_own_cp_results values ('rls', 'member_direct_member_cp_still_blocked', 'PASS', 'Direct member_cp read returned no rows.');
+    else
+      insert into milestone_active_profile_own_cp_results values ('rls', 'member_direct_member_cp_still_blocked', 'FAIL', direct_count::text || ' rows visible.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone_active_profile_own_cp_results values ('rls', 'member_direct_member_cp_still_blocked', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    execute 'set local role authenticated';
+    select count(*) into direct_count from public.cp_snapshots;
+    execute 'reset role';
+
+    if direct_count = 0 then
+      insert into milestone_active_profile_own_cp_results values ('rls', 'member_direct_cp_snapshots_still_blocked', 'PASS', 'Direct cp_snapshots read returned no rows.');
+    else
+      insert into milestone_active_profile_own_cp_results values ('rls', 'member_direct_cp_snapshots_still_blocked', 'FAIL', direct_count::text || ' rows visible.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone_active_profile_own_cp_results values ('rls', 'member_direct_cp_snapshots_still_blocked', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_cp_id::text, true);
+    perform public.update_member_cp(active_cp_a_id, 1666666, 'active profile own CP regression');
+
+    select count(*) into row_count
+    from public.get_current_cp_roster(anteiku_id)
+    where profile_id = active_cp_a_id
+      and cp_value = 1666666;
+
+    if row_count = 1 then
+      insert into milestone_active_profile_own_cp_results values ('regression', 'admin_cp_roster_update_still_works', 'PASS', 'Admin CP update and roster read still work.');
+    else
+      insert into milestone_active_profile_own_cp_results values ('regression', 'admin_cp_roster_update_still_works', 'FAIL', row_count::text || ' matching roster rows.');
+    end if;
+  exception when others then
+    insert into milestone_active_profile_own_cp_results values ('regression', 'admin_cp_roster_update_still_works', 'FAIL', sqlerrm);
+  end;
+
+  select count(*)
+  into owner_count
+  from public.guild_memberships gm
+  join public.profiles p on p.id = gm.profile_id
+  where gm.role = 'owner'
+    and gm.membership_status = 'active'
+    and p.approval_status = 'approved';
+
+  if owner_count = 1 then
+    insert into milestone_active_profile_own_cp_results values ('regression', 'active_owner_count_remains_one', 'PASS', 'Exactly one active approved Owner membership exists.');
+  else
+    insert into milestone_active_profile_own_cp_results values ('regression', 'active_owner_count_remains_one', 'FAIL', owner_count::text || ' active approved Owner memberships found.');
+  end if;
+end;
+$$;
+
 select section, test_name, status, details
 from milestone_push_notification_results
 order by section, test_name;
@@ -9072,5 +9475,14 @@ select count(*) filter (where status = 'PASS') as milestone_active_profile_push_
        count(*) filter (where status = 'FAIL') as milestone_active_profile_push_total_fail,
        count(*) filter (where status = 'SKIP') as milestone_active_profile_push_total_skip
 from milestone_active_profile_push_results;
+
+select section, test_name, status, details
+from milestone_active_profile_own_cp_results
+order by section, test_name;
+
+select count(*) filter (where status = 'PASS') as milestone_active_profile_own_cp_total_pass,
+       count(*) filter (where status = 'FAIL') as milestone_active_profile_own_cp_total_fail,
+       count(*) filter (where status = 'SKIP') as milestone_active_profile_own_cp_total_skip
+from milestone_active_profile_own_cp_results;
 
 rollback;
