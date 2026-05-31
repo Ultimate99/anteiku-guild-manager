@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { CosmeticPreview } from '../components/CosmeticPreview.jsx';
 import { StatusBadge } from '../components/StatusBadge.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
+import { useActiveProfileSummary } from '../hooks/useActiveProfileSummary.js';
 import { useAuth } from '../hooks/useAuth.js';
 import {
   WALL_REACTION_TYPES,
@@ -505,6 +506,7 @@ function WallPostCard({
 
 export function GuildWall({ onNavigate }) {
   const { guild } = useAuth();
+  const { activeProfile } = useActiveProfileSummary();
   const { t } = useLanguage();
   const [selectedScopeId, setSelectedScopeId] = useState('global');
   const [viewer, setViewer] = useState(null);
@@ -525,6 +527,8 @@ export function GuildWall({ onNavigate }) {
     reactions: [],
   });
 
+  const activeGuildId = activeProfile?.guildId ?? guild?.id ?? null;
+
   const scopeOptions = useMemo(() => {
     return [
       {
@@ -536,17 +540,17 @@ export function GuildWall({ onNavigate }) {
       {
         id: 'guild',
         name: t('wall.myOrg'),
-        guildId: guild?.id ?? null,
+        guildId: activeGuildId,
         isGlobal: false,
       },
     ];
-  }, [guild?.id, t]);
+  }, [activeGuildId, t]);
 
   const selectedScope = useMemo(
     () => scopeOptions.find((option) => option.id === selectedScopeId) ?? scopeOptions[0] ?? null,
     [scopeOptions, selectedScopeId],
   );
-  const selectedGuildId = selectedScope?.isGlobal ? null : selectedScope?.guildId ?? guild?.id ?? null;
+  const selectedGuildId = selectedScope?.isGlobal ? null : selectedScope?.guildId ?? activeGuildId ?? null;
   const composerGuildId = selectedScope?.isGlobal ? null : selectedGuildId;
   const viewerCanPost = Boolean(viewer?.canPost && (selectedScope?.isGlobal || composerGuildId));
   const openPublicProfile = useCallback((profileSlug) => {

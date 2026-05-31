@@ -7882,6 +7882,345 @@ begin
 end;
 $$;
 
+create temp table if not exists milestone_active_profile_wall_results (
+  section text not null,
+  test_name text not null,
+  status text not null check (status in ('PASS', 'FAIL', 'SKIP')),
+  details text
+) on commit drop;
+
+do $$
+declare
+  anteiku_id constant uuid := '00000000-0000-0000-0000-000000000101';
+  anteiku_re_id constant uuid := '00000000-0000-0000-0000-000000000102';
+  owner_id constant uuid := '10000000-0000-0000-0000-000000000001';
+  member_id constant uuid := '10000000-0000-0000-0000-000000000006';
+  active_wall_profile_id constant uuid := '10000000-0000-0000-0000-000000000092';
+  wall_post_id uuid;
+  wall_comment_id uuid;
+  global_post_id uuid;
+  global_comment_id uuid;
+  legacy_post_id uuid;
+  reaction_count integer;
+  owner_count integer;
+  rep_before bigint;
+  rep_after bigint;
+  payload jsonb;
+begin
+  begin
+    insert into auth.users (
+      instance_id,
+      id,
+      aud,
+      role,
+      email,
+      encrypted_password,
+      email_confirmed_at,
+      raw_app_meta_data,
+      raw_user_meta_data,
+      created_at,
+      updated_at
+    )
+    values (
+      '00000000-0000-0000-0000-000000000000',
+      active_wall_profile_id,
+      'authenticated',
+      'authenticated',
+      'active-wall-profile.local@example.test',
+      'local-only',
+      now(),
+      '{"provider":"email","providers":["email"]}'::jsonb,
+      '{}'::jsonb,
+      now(),
+      now()
+    )
+    on conflict (id) do nothing;
+
+    insert into public.profiles (id, username, profile_slug, ign, approval_status, approved_at)
+    values (active_wall_profile_id, 'active_wall_profile', 'active_wall_profile', 'Active Wall Profile', 'approved', now())
+    on conflict (id) do update
+    set username = excluded.username,
+        profile_slug = excluded.profile_slug,
+        ign = excluded.ign,
+        approval_status = excluded.approval_status,
+        approved_at = excluded.approved_at;
+
+    insert into public.guild_memberships (profile_id, guild_id, role, membership_status, roster_status, is_primary, assigned_by)
+    values (active_wall_profile_id, anteiku_re_id, 'member', 'active', 'active', true, owner_id)
+    on conflict (profile_id, guild_id) do update
+    set role = excluded.role,
+        membership_status = excluded.membership_status,
+        roster_status = excluded.roster_status,
+        is_primary = excluded.is_primary,
+        assigned_by = excluded.assigned_by;
+
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    perform public.owner_unlink_profile_from_auth_user('active-wall-profile.local@example.test', 'active_wall_profile');
+    perform public.owner_link_profile_to_auth_user('member.local@example.test', 'active_wall_profile', 'owner');
+
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_wall_profile_id);
+
+    insert into milestone_active_profile_wall_results values ('setup', 'active_wall_profile_linked', 'PASS', 'Member auth linked to active wall test profile.');
+  exception when others then
+    insert into milestone_active_profile_wall_results values ('setup', 'active_wall_profile_linked', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    if to_regprocedure('public.create_wall_post(uuid,text)') is not null
+       and to_regprocedure('public.react_to_public_profile(uuid,text)') is not null then
+      insert into milestone_active_profile_wall_results values ('schema', 'wall_profile_reaction_rpcs_exist', 'PASS', 'Wall and Profile Reaction RPCs exist.');
+    else
+      insert into milestone_active_profile_wall_results values ('schema', 'wall_profile_reaction_rpcs_exist', 'FAIL', 'Expected RPCs missing.');
+    end if;
+  exception when others then
+    insert into milestone_active_profile_wall_results values ('schema', 'wall_profile_reaction_rpcs_exist', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    wall_post_id := public.create_wall_post(anteiku_re_id, 'Active profile guild wall post');
+
+    if exists (
+      select 1
+      from public.wall_posts wp
+      where wp.id = wall_post_id
+        and wp.author_profile_id = active_wall_profile_id
+        and wp.guild_id = anteiku_re_id
+    ) then
+      insert into milestone_active_profile_wall_results values ('wall', 'guild_post_created_as_active_profile', 'PASS', wall_post_id::text);
+    else
+      insert into milestone_active_profile_wall_results values ('wall', 'guild_post_created_as_active_profile', 'FAIL', wall_post_id::text);
+    end if;
+  exception when others then
+    insert into milestone_active_profile_wall_results values ('wall', 'guild_post_created_as_active_profile', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.create_wall_post(anteiku_id, 'Wrong active guild should fail');
+    insert into milestone_active_profile_wall_results values ('wall', 'active_profile_wrong_guild_post_denied', 'FAIL', 'Active Anteiku:Re profile posted to Anteiku.');
+  exception when others then
+    insert into milestone_active_profile_wall_results values ('wall', 'active_profile_wrong_guild_post_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    wall_comment_id := public.create_wall_comment(wall_post_id, 'Active profile guild wall comment');
+    perform public.react_to_wall_post(wall_post_id, 'fire');
+    perform public.react_to_wall_comment(wall_comment_id, 'coffee');
+
+    if exists (
+      select 1 from public.wall_comments wc
+      where wc.id = wall_comment_id
+        and wc.author_profile_id = active_wall_profile_id
+    ) and exists (
+      select 1 from public.wall_post_reactions wpr
+      where wpr.post_id = wall_post_id
+        and wpr.profile_id = active_wall_profile_id
+        and wpr.reaction_type = 'fire'
+    ) and exists (
+      select 1 from public.wall_comment_reactions wcr
+      where wcr.comment_id = wall_comment_id
+        and wcr.profile_id = active_wall_profile_id
+        and wcr.reaction_type = 'coffee'
+    ) then
+      insert into milestone_active_profile_wall_results values ('wall', 'guild_comment_and_reactions_use_active_profile', 'PASS', 'Guild comment/post reaction/comment reaction use active profile.');
+    else
+      insert into milestone_active_profile_wall_results values ('wall', 'guild_comment_and_reactions_use_active_profile', 'FAIL', 'Expected active profile rows missing.');
+    end if;
+  exception when others then
+    insert into milestone_active_profile_wall_results values ('wall', 'guild_comment_and_reactions_use_active_profile', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    payload := public.get_guild_wall_feed(anteiku_re_id, 20, null);
+
+    if payload #>> '{viewer,profile_id}' = active_wall_profile_id::text
+       and payload::text like '%"can_delete": true%'
+       and payload::text like '%"reacted_by_me": true%' then
+      insert into milestone_active_profile_wall_results values ('wall', 'guild_feed_marks_active_profile_state', 'PASS', payload::text);
+    else
+      insert into milestone_active_profile_wall_results values ('wall', 'guild_feed_marks_active_profile_state', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_profile_wall_results values ('wall', 'guild_feed_marks_active_profile_state', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    global_post_id := public.create_wall_post(null, 'Active profile global wall post');
+    global_comment_id := public.create_wall_comment(global_post_id, 'Active profile global wall comment');
+    perform public.react_to_wall_post(global_post_id, 'trophy');
+    perform public.react_to_wall_comment(global_comment_id, 'like');
+
+    if exists (
+      select 1 from public.wall_posts wp
+      where wp.id = global_post_id
+        and wp.guild_id is null
+        and wp.author_profile_id = active_wall_profile_id
+    ) and exists (
+      select 1 from public.wall_comments wc
+      where wc.id = global_comment_id
+        and wc.author_profile_id = active_wall_profile_id
+    ) and exists (
+      select 1 from public.wall_post_reactions wpr
+      where wpr.post_id = global_post_id
+        and wpr.profile_id = active_wall_profile_id
+        and wpr.reaction_type = 'trophy'
+    ) and exists (
+      select 1 from public.wall_comment_reactions wcr
+      where wcr.comment_id = global_comment_id
+        and wcr.profile_id = active_wall_profile_id
+        and wcr.reaction_type = 'like'
+    ) then
+      insert into milestone_active_profile_wall_results values ('global_wall', 'global_post_comment_reactions_use_active_profile', 'PASS', 'Global Wall author/reaction rows use active profile.');
+    else
+      insert into milestone_active_profile_wall_results values ('global_wall', 'global_post_comment_reactions_use_active_profile', 'FAIL', 'Expected global active-profile rows missing.');
+    end if;
+  exception when others then
+    insert into milestone_active_profile_wall_results values ('global_wall', 'global_post_comment_reactions_use_active_profile', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.delete_wall_comment(global_comment_id);
+    perform public.delete_wall_post(global_post_id);
+
+    if exists (
+      select 1 from public.wall_comments wc
+      where wc.id = global_comment_id
+        and wc.deleted_by = active_wall_profile_id
+        and wc.deleted_at is not null
+    ) and exists (
+      select 1 from public.wall_posts wp
+      where wp.id = global_post_id
+        and wp.deleted_by = active_wall_profile_id
+        and wp.deleted_at is not null
+    ) then
+      insert into milestone_active_profile_wall_results values ('global_wall', 'active_profile_can_delete_own_global_content', 'PASS', 'Active profile deleted own Global Wall post/comment.');
+    else
+      insert into milestone_active_profile_wall_results values ('global_wall', 'active_profile_can_delete_own_global_content', 'FAIL', 'Deleted-by active profile markers missing.');
+    end if;
+  exception when others then
+    insert into milestone_active_profile_wall_results values ('global_wall', 'active_profile_can_delete_own_global_content', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    delete from public.user_active_profiles where auth_user_id = member_id;
+    legacy_post_id := public.create_wall_post(null, 'Legacy member global wall post before active switch');
+    perform public.set_my_active_profile(active_wall_profile_id);
+
+    if legacy_post_id is not null then
+      insert into milestone_active_profile_wall_results values ('wall', 'legacy_auth_post_prepared', 'PASS', legacy_post_id::text);
+    else
+      insert into milestone_active_profile_wall_results values ('wall', 'legacy_auth_post_prepared', 'FAIL', 'Legacy post id was null.');
+    end if;
+  exception when others then
+    insert into milestone_active_profile_wall_results values ('wall', 'legacy_auth_post_prepared', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.delete_wall_post(legacy_post_id);
+    insert into milestone_active_profile_wall_results values ('wall', 'active_profile_cannot_delete_legacy_auth_post', 'FAIL', 'Active linked profile deleted legacy auth profile post.');
+  exception when others then
+    insert into milestone_active_profile_wall_results values ('wall', 'active_profile_cannot_delete_legacy_auth_post', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    rep_before := private.get_profile_ghoul_rep(member_id);
+    perform public.react_to_wall_post(legacy_post_id, 'skull');
+    rep_after := private.get_profile_ghoul_rep(member_id);
+
+    if rep_after = rep_before + 1 then
+      insert into milestone_active_profile_wall_results values ('ghoul_rep', 'active_profile_wall_reaction_counts_for_target_author', 'PASS', 'Ghoul Rep incremented by active linked profile reaction.');
+    else
+      insert into milestone_active_profile_wall_results values ('ghoul_rep', 'active_profile_wall_reaction_counts_for_target_author', 'FAIL', 'before=' || coalesce(rep_before::text, '<null>') || ' after=' || coalesce(rep_after::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_profile_wall_results values ('ghoul_rep', 'active_profile_wall_reaction_counts_for_target_author', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.react_to_public_profile(member_id, 'trophy');
+
+    select count(*) into reaction_count
+    from public.profile_reactions pr
+    where pr.target_profile_id = member_id
+      and pr.reactor_profile_id = active_wall_profile_id
+      and pr.reaction_type = 'trophy';
+
+    if reaction_count = 1 then
+      insert into milestone_active_profile_wall_results values ('profile_reactions', 'public_profile_reaction_uses_active_profile', 'PASS', 'Profile reaction row uses active profile as reactor.');
+    else
+      insert into milestone_active_profile_wall_results values ('profile_reactions', 'public_profile_reaction_uses_active_profile', 'FAIL', reaction_count::text || ' active reaction rows found.');
+    end if;
+  exception when others then
+    insert into milestone_active_profile_wall_results values ('profile_reactions', 'public_profile_reaction_uses_active_profile', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    payload := public.get_public_member_profile('member_local');
+
+    if payload #>> '{viewer,is_self}' = 'false'
+       and payload::text like '%"reacted_by_me": true%' then
+      insert into milestone_active_profile_wall_results values ('profile_reactions', 'public_profile_viewer_state_uses_active_profile', 'PASS', payload::text);
+    else
+      insert into milestone_active_profile_wall_results values ('profile_reactions', 'public_profile_viewer_state_uses_active_profile', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_profile_wall_results values ('profile_reactions', 'public_profile_viewer_state_uses_active_profile', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.react_to_public_profile(active_wall_profile_id, 'like');
+    insert into milestone_active_profile_wall_results values ('profile_reactions', 'active_profile_self_reaction_blocked', 'FAIL', 'Active profile reacted to itself.');
+  exception when others then
+    insert into milestone_active_profile_wall_results values ('profile_reactions', 'active_profile_self_reaction_blocked', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.remove_public_profile_reaction(member_id, 'trophy');
+
+    select count(*) into reaction_count
+    from public.profile_reactions pr
+    where pr.target_profile_id = member_id
+      and pr.reactor_profile_id = active_wall_profile_id
+      and pr.reaction_type = 'trophy';
+
+    if reaction_count = 0 then
+      insert into milestone_active_profile_wall_results values ('profile_reactions', 'remove_public_profile_reaction_uses_active_profile', 'PASS', 'Active profile reaction removed.');
+    else
+      insert into milestone_active_profile_wall_results values ('profile_reactions', 'remove_public_profile_reaction_uses_active_profile', 'FAIL', reaction_count::text || ' active reaction rows remain.');
+    end if;
+  exception when others then
+    insert into milestone_active_profile_wall_results values ('profile_reactions', 'remove_public_profile_reaction_uses_active_profile', 'FAIL', sqlerrm);
+  end;
+
+  select count(*)
+  into owner_count
+  from public.guild_memberships gm
+  join public.profiles p on p.id = gm.profile_id
+  where gm.role = 'owner'
+    and gm.membership_status = 'active'
+    and p.approval_status = 'approved';
+
+  if owner_count = 1 then
+    insert into milestone_active_profile_wall_results values ('regression', 'active_owner_count_remains_one', 'PASS', 'Exactly one active approved Owner membership exists.');
+  else
+    insert into milestone_active_profile_wall_results values ('regression', 'active_owner_count_remains_one', 'FAIL', owner_count::text || ' active approved Owner memberships found.');
+  end if;
+end;
+$$;
+
 select section, test_name, status, details
 from milestone_push_notification_results
 order by section, test_name;
@@ -7908,5 +8247,14 @@ select count(*) filter (where status = 'PASS') as milestone_active_profile_profi
        count(*) filter (where status = 'FAIL') as milestone_active_profile_profile_total_fail,
        count(*) filter (where status = 'SKIP') as milestone_active_profile_profile_total_skip
 from milestone_active_profile_profile_results;
+
+select section, test_name, status, details
+from milestone_active_profile_wall_results
+order by section, test_name;
+
+select count(*) filter (where status = 'PASS') as milestone_active_profile_wall_total_pass,
+       count(*) filter (where status = 'FAIL') as milestone_active_profile_wall_total_fail,
+       count(*) filter (where status = 'SKIP') as milestone_active_profile_wall_total_skip
+from milestone_active_profile_wall_results;
 
 rollback;
