@@ -103,6 +103,43 @@ textarea:disabled {
   flex: 0 0 auto;
 }
 
+.topbar-active-profile {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  max-width: 190px;
+  padding: 6px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 3px solid rgba(197, 22, 39, 0.72);
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.topbar-active-profile[data-switched="true"] {
+  border-color: rgba(197, 22, 39, 0.5);
+  background:
+    linear-gradient(135deg, rgba(197, 22, 39, 0.16), transparent 66%),
+    rgba(0, 0, 0, 0.3);
+}
+
+.topbar-active-profile span,
+.topbar-active-profile small {
+  min-width: 0;
+  color: #a7a7af;
+  font-size: 0.62rem;
+  font-weight: 900;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+  text-transform: uppercase;
+}
+
+.topbar-active-profile strong {
+  min-width: 0;
+  color: #fff;
+  font-size: 0.82rem;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
 .language-switcher {
   display: block;
   width: auto;
@@ -603,6 +640,30 @@ button.command-card:focus-visible {
 
 .dashboard-status-row {
   align-self: start;
+}
+
+.active-profile-viewer-note {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid rgba(197, 22, 39, 0.32);
+  border-left: 3px solid #c51627;
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.active-profile-viewer-note span {
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 950;
+  overflow-wrap: anywhere;
+}
+
+.active-profile-viewer-note small {
+  color: #bdbdc5;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.35;
 }
 
 .dashboard-command-meta {
@@ -4335,6 +4396,12 @@ button.command-card:focus-visible {
   .topbar {
     gap: 8px;
     padding: 9px;
+  }
+
+  .topbar-active-profile {
+    order: 3;
+    flex: 1 1 100%;
+    max-width: none;
   }
 
   .brand-mark {

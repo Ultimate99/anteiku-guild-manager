@@ -2,12 +2,17 @@ import React from 'react';
 import { AppNav } from '../components/AppNav.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import { useAuth } from '../hooks/useAuth.js';
+import { useActiveProfileSummary } from '../hooks/useActiveProfileSummary.js';
 
 export function AppShell({ activeItem, activePage, children, navigationItems, onNavigate }) {
-  const { accessState, signOut } = useAuth();
+  const { accessState, profile, signOut } = useAuth();
+  const { activeProfile } = useActiveProfileSummary();
   const { language, languageOptions, setLanguage, t } = useLanguage();
   const showShellSignOut = accessState === 'approved';
   const pageContent = React.isValidElement(children) ? React.cloneElement(children, { onNavigate }) : children;
+  const activeProfileName = activeProfile?.ign || profile?.ign || '';
+  const activeProfileSlug = activeProfile?.profileSlug || profile?.profile_slug || profile?.username || '';
+  const activeDiffersFromLegacy = Boolean(activeProfile?.profileId && profile?.id && activeProfile.profileId !== profile.id);
 
   return (
     <div className="app-shell">
@@ -20,6 +25,13 @@ export function AppShell({ activeItem, activePage, children, navigationItems, on
           </div>
         </div>
         <div className="topbar-actions">
+          {showShellSignOut && activeProfileName ? (
+            <div className="topbar-active-profile" data-switched={activeDiffersFromLegacy}>
+              <span>{t('accountSwitcher.viewingAsLabel')}</span>
+              <strong>{activeProfileName}</strong>
+              {activeProfileSlug ? <small>@{activeProfileSlug}</small> : null}
+            </div>
+          ) : null}
           <label className="language-switcher">
             <span>{t('language.label')}</span>
             <select value={language} onChange={(event) => setLanguage(event.target.value)}>

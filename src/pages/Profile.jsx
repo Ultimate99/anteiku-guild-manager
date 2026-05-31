@@ -924,7 +924,7 @@ export function Profile() {
               <div className="push-settings-heading">
                 <div>
                   <h4>{t('accountSwitcher.title')}</h4>
-                  <p>{t('accountSwitcher.rolloutNote')}</p>
+                  <p>{t('accountSwitcher.limitedRolloutNote')}</p>
                 </div>
                 <button
                   type="button"
@@ -940,9 +940,10 @@ export function Profile() {
               {accountError ? <p className="error-line">{accountError}</p> : null}
 
               <div className="account-switcher-current">
-                <span>{t('accountSwitcher.currentProfile')}</span>
+                <span>{t('accountSwitcher.activeProfile')}</span>
                 <strong>{accountActiveProfile?.ign ?? profile?.ign ?? t('common.unknown')}</strong>
                 <small>@{accountActiveProfile?.profileSlug ?? profile?.profile_slug ?? profile?.username ?? t('common.unknown')}</small>
+                <small>{t('accountSwitcher.reloadAfterSwitch')}</small>
               </div>
 
               {!accountLoading && accountProfiles.length <= 1 ? (

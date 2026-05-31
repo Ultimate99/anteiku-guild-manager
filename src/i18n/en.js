@@ -515,6 +515,9 @@ export const en = {
   accountSwitcher: {
     title: 'Account Switcher',
     currentProfile: 'Current active profile',
+    activeProfile: 'Active profile',
+    viewingAsLabel: 'Viewing as',
+    viewingAs: 'Viewing as {ign}',
     switchProfile: 'Switch',
     active: 'Active',
     primary: 'Primary',
@@ -522,6 +525,10 @@ export const en = {
     confirmSwitch: 'Switch to this profile?',
     switchSuccess: 'Active profile switched. Reloading...',
     switchError: 'Profile switch failed.',
+    activeProfileLoadError: 'Active profile display could not be loaded.',
+    switchingNotice: 'Display-only viewer state is active.',
+    reloadAfterSwitch: 'The app reloads after switching to refresh display state.',
+    limitedRolloutNote: 'Viewer display is active. Some actions still use your original profile until each system is migrated.',
     rolloutNote: 'Account switching is being rolled out in phases. Some actions may still use your original profile until systems are fully migrated.',
   },
   cosmetics: {

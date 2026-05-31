@@ -516,6 +516,9 @@ export const de = {
   accountSwitcher: {
     title: 'Account-Wechsler',
     currentProfile: 'Aktives Profil',
+    activeProfile: 'Aktives Profil',
+    viewingAsLabel: 'Ansicht als',
+    viewingAs: 'Ansicht als {ign}',
     switchProfile: 'Wechseln',
     active: 'Aktiv',
     primary: 'Primaer',
@@ -523,6 +526,10 @@ export const de = {
     confirmSwitch: 'Zu diesem Profil wechseln?',
     switchSuccess: 'Aktives Profil gewechselt. Laedt neu...',
     switchError: 'Profilwechsel fehlgeschlagen.',
+    activeProfileLoadError: 'Aktive Profilanzeige konnte nicht geladen werden.',
+    switchingNotice: 'Nur Anzeigezustand ist aktiv.',
+    reloadAfterSwitch: 'Die App laedt nach dem Wechsel neu, um die Anzeige zu aktualisieren.',
+    limitedRolloutNote: 'Die Anzeige nutzt das aktive Profil. Einige Aktionen nutzen bis zur Migration weiter dein urspruengliches Profil.',
     rolloutNote: 'Account-Wechsel wird phasenweise ausgerollt. Einige Aktionen koennen bis zur vollstaendigen Migration noch dein urspruengliches Profil nutzen.',
   },
   cosmetics: {
