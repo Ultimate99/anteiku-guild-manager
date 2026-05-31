@@ -1,10 +1,30 @@
 # Supabase RLS
 
-The Supabase RLS/RPC implementation has been validated and production-applied through `20260531001100_active_profile_cp_analytics_audit_admin.sql`.
+The Supabase RLS/RPC implementation has been validated and production-applied through `20260531001300_active_profile_member_ranking.sql`.
 
-Milestone 29F final active-profile regression was frontend/i18n-only and added no RLS/RPC changes. The final smoke confirmed member Ranking remains CP-hidden, Admin CP/Analytics/Audit surfaces remain permissioned, and no protected direct table path was added.
+Milestone 29F final active-profile regression was frontend/i18n-only. Follow-up migration `20260531001300_active_profile_member_ranking.sql` fixes member Ranking viewer identity/scope for linked active profiles while preserving CP-hidden member Ranking payloads.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
+
+## Member Ranking Active Profile RLS/RPC
+
+The focused member Ranking active-profile fix is production-applied through `20260531001300_active_profile_member_ranking.sql`.
+
+Function:
+- `get_member_cp_rankings(p_scope text default 'guild')`
+
+Rules:
+- The RPC resolves viewer identity with `private.get_active_profile_id()`.
+- My Guild scope uses the selected active profile's primary guild.
+- `is_current_user` marks the selected active profile.
+- Global scope lists eligible ranked members globally and highlights the selected active profile.
+- Invalid/unavailable active profile links are denied by the existing active-profile helper behavior.
+
+Privacy:
+- Member Ranking remains CP-hidden.
+- The return payload contains no CP values, CP history, CP growth, profile ids, usernames, timestamps, snapshots, email/auth/admin/private metadata, `member_cp`, or `cp_snapshots`.
+- Production verification confirmed active Owner count `1` and simulated authenticated direct `member_cp`/`cp_snapshots` reads returned zero rows.
+- Admin CP Ranking permissions and CP-bearing Admin surfaces were not changed.
 
 ## CP Admin + Analytics + Audit Logs Active Profile RLS/RPC
 

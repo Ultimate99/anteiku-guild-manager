@@ -1,5 +1,44 @@
 # Testing And Validation
 
+## Member Ranking Active-Profile Fix Validation
+
+The member-safe Ranking active-profile viewer fix passed local validation, production migration gates, production DB verification, build/source validation, and linked-account production smoke.
+
+Commands/gates:
+- `npx.cmd supabase db reset`
+- `Get-Content -Raw -LiteralPath supabase\tests\local_validation_anteiku.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres -v ON_ERROR_STOP=1`
+- Focused linked-profile Ranking validation through local Docker `psql`
+- `npm.cmd run build`
+- Production `npx.cmd supabase link --project-ref mzflfyxxkascrfpteexz`
+- Production `npx.cmd supabase migration list`
+- Production `npx.cmd supabase db push --dry-run`
+- Production `npx.cmd supabase db push`
+- Production read-only DB verification through `npx.cmd supabase db query --linked`
+- `git push origin main`
+- Authenticated linked-profile production browser smoke
+
+Results:
+- Local reset applied through `20260531001300_active_profile_member_ranking.sql`.
+- Full local validation passed through Docker `psql`.
+- Focused linked-profile Ranking validation passed `9 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production dry-run showed exactly one pending migration: `20260531001300_active_profile_member_ranking.sql`.
+- Production migration is applied and remote migration list shows `20260531001300` applied.
+- Commit `d23d5eb fix: use active profile for member ranking` is pushed to `main`.
+
+Validated behavior:
+- Active Account A My Guild Ranking used Account A guild and marked Account A.
+- Active Account B My Guild Ranking used Account B guild and marked Account B.
+- Global Ranking marked Account B after the switch.
+- Production smoke confirmed `安定区×Ulti` was marked before switching, `安定区xWata` was marked after switching, My Guild followed Anteiku:Re, and Global highlighted `安定区xWata`.
+- The browser active profile was restored to `安定区×Ulti` after smoke.
+
+Security/source validation:
+- Member Ranking payload remained CP-hidden.
+- Production DB verification confirmed active Owner count `1`.
+- Simulated authenticated direct reads of `member_cp` and `cp_snapshots` returned zero rows.
+- Source checks found no direct `member_cp`/`cp_snapshots` frontend calls, no CP RPC additions, no localStorage authority, no arbitrary frontend actor `profile_id`, and no Admin CP Ranking permission change.
+
 ## Milestone 29F Full Active-Profile Regression Validation
 
 Final active-profile regression validation passed after a tiny Account Switcher copy fix.

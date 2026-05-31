@@ -1,5 +1,28 @@
 # Project State
 
+## Member Ranking Active-Profile Viewer Fix Live
+
+Member-safe Ranking now resolves viewer identity and My Guild scope from the selected active profile.
+
+Production fix:
+- Migration `20260531001300_active_profile_member_ranking.sql` is applied in production.
+- Commit `d23d5eb fix: use active profile for member ranking` is pushed to `main`.
+- `get_member_cp_rankings(p_scope)` now uses `private.get_active_profile_id()` for the viewer profile, current-user marker, and My Guild scope.
+- `Leaderboard.jsx` refetches when the active profile summary changes and defensively aligns visible `You` highlighting with safe `profile_slug`.
+
+Validation:
+- Local `npx.cmd supabase db reset` applied the new migration cleanly.
+- Full local validation passed through Docker `psql`.
+- Focused linked-profile Ranking validation passed `9 PASS / 0 FAIL / 0 SKIP`: Account A scoped/highlighted A, switched active Account B scoped/highlighted B, Global highlighted B, direct `member_cp`/`cp_snapshots` reads returned zero rows, payload columns stayed CP-hidden, and active Owner count remained `1`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production dry-run showed only `20260531001300_active_profile_member_ranking.sql`; production apply/list verification passed.
+- Production DB verification confirmed the RPC uses `private.get_active_profile_id()`, no longer assigns actor identity from `auth.uid()`, keeps the auth guard, keeps the member payload CP-hidden, active Owner count is `1`, and simulated authenticated direct `member_cp`/`cp_snapshots` reads returned zero rows.
+- Production smoke passed with linked profiles: active `安定区×Ulti` highlighted `安定区×Ulti`; after switching to active `安定区xWata`, My Guild Ranking scoped to Anteiku:Re and highlighted `安定区xWata`; Global Ranking highlighted `安定区xWata`; the original `安定区×Ulti` row was no longer marked current. The browser active profile was restored to `安定区×Ulti` after smoke.
+
+Security/CP privacy:
+- Member Ranking remains rank-only and CP-hidden.
+- No frontend direct `member_cp`/`cp_snapshots` calls, service-role path, localStorage authority, arbitrary frontend `profile_id`, Admin CP Ranking permission change, or unrelated subsystem behavior change was added.
+
 ## Milestone 29F Full Active-Profile Regression Complete
 
 Final Account Switcher active-profile regression validation passed after a tiny i18n-only copy fix.

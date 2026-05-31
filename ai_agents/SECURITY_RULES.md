@@ -1,5 +1,22 @@
 # Security Rules
 
+## Member Ranking Active-Profile Security Checkpoint
+
+The focused member Ranking active-profile fix is live through migration `20260531001300_active_profile_member_ranking.sql` and commit `d23d5eb fix: use active profile for member ranking`.
+
+Rules confirmed:
+- Member Ranking viewer identity must resolve through `private.get_active_profile_id()`.
+- My Guild Ranking scope must use the selected active profile's primary guild, not the legacy auth profile's guild.
+- `is_current_user` must mark the selected active profile, not another linked profile under the same auth account.
+- Global Ranking may list all eligible ranked members but must highlight only the selected active profile.
+- Member Ranking remains CP-hidden and must not return/render CP values, CP history, CP growth, `member_cp`, `cp_snapshots`, profile ids, email/auth IDs, admin/private metadata, timestamps, or private CP metadata.
+
+Validation status:
+- Local reset/full validation passed; focused linked-profile Ranking validation passed `9 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed only the focused Ranking migration.
+- Production DB verification confirmed `get_member_cp_rankings` uses `private.get_active_profile_id()`, keeps an auth guard, keeps CP-hidden return columns, active Owner count remains `1`, and simulated authenticated direct `member_cp`/`cp_snapshots` reads return zero rows.
+- Production linked-profile smoke confirmed My Guild and Global Ranking highlight the selected active profile after switching.
+
 ## Full Active-Profile Regression Security Checkpoint
 
 Milestone 29F final active-profile regression passed after i18n-only commit `eaf16b5 fix: update account switcher rollout copy`.

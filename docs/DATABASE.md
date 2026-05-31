@@ -1,12 +1,31 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and production-applied through `20260531001100_active_profile_cp_analytics_audit_admin.sql`.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and production-applied through `20260531001300_active_profile_member_ranking.sql`.
 
-Milestone 29F final active-profile regression was frontend/i18n-only and added no database changes. Account Switcher active-profile migration can be marked complete for the planned 29B-29F scope.
+Milestone 29F final active-profile regression was frontend/i18n-only, and a focused follow-up migration fixed member Ranking active-profile viewer identity/scope.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
-Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, own Profile Ghoul Rep display, Public Member Profiles, Ranking Public Profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, active-profile 3v3 RPCs, active-profile Push RPCs, active-profile Own CP RPCs, active-profile member GvG voting RPCs, active-profile GvG vote audit actor alignment, active-admin context foundation, non-CP Admin active-profile RPCs, and CP-heavy Admin active-profile RPCs are implemented, locally validated, production applied, and production-smoke or production-gate validated.
+Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, own Profile Ghoul Rep display, Public Member Profiles, Ranking Public Profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, active-profile 3v3 RPCs, active-profile Push RPCs, active-profile Own CP RPCs, active-profile member GvG voting RPCs, active-profile GvG vote audit actor alignment, active-admin context foundation, non-CP Admin active-profile RPCs, CP-heavy Admin active-profile RPCs, and member Ranking active-profile viewer identity are implemented, locally validated, production applied, and production-smoke or production-gate validated.
+
+## Member Ranking Active Profile
+
+Migration `20260531001300_active_profile_member_ranking.sql` is applied and verified in production.
+
+Schema/RPC behavior:
+- Redefines `get_member_cp_rankings(p_scope text default 'guild')`.
+- Uses `private.get_active_profile_id()` as the selected viewer profile.
+- My Guild Ranking scope now resolves from the selected active profile's primary guild.
+- `is_current_user` now marks the selected active profile.
+- Global Ranking still lists eligible ranked members globally and highlights the selected active profile.
+- Ranking order and tie-breakers are unchanged.
+- `profile_slug` remains returned only as a safe routing field for authenticated public profile links.
+
+Security:
+- Member Ranking remains rank-only and CP-hidden.
+- The RPC return payload still excludes CP values, CP history, CP growth, profile ids, usernames, timestamps, snapshots, email/auth/admin/private metadata, `member_cp`, and `cp_snapshots`.
+- Production verification confirmed active Owner count `1` and simulated authenticated direct `member_cp`/`cp_snapshots` reads returning zero rows.
+- No Admin CP Ranking, Admin CP, Analytics, Weekly Growth, Own CP, GvG, 3v3, Wall, Profile Reactions, Cosmetics, Push, auth, role, or member-status behavior changed.
 
 ## CP Admin + Analytics + Audit Logs Active Profile
 

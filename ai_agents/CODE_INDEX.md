@@ -1,5 +1,11 @@
 # Code Index
 
+## Member Ranking Active-Profile Fix
+
+- `supabase/migrations/20260531001300_active_profile_member_ranking.sql`: Redefines member-safe `get_member_cp_rankings(p_scope text default 'guild')` so selected active profile identity from `private.get_active_profile_id()` controls My Guild scope and `is_current_user`. Ranking order and CP-hidden return payload are unchanged.
+- `src/pages/Leaderboard.jsx`: Uses `useActiveProfileSummary()` to refetch on active profile changes and defensively align visible `You` highlighting with safe `profile_slug`. Public profile links continue to use `/members/:profileSlug`.
+- Production status: migration `20260531001300_active_profile_member_ranking.sql` is applied, commit `d23d5eb fix: use active profile for member ranking` is pushed to `main`, local reset/full validation passed, focused linked-profile Ranking validation passed `9 PASS / 0 FAIL / 0 SKIP`, build/source validation passed, production dry-run/apply/DB verification passed, and linked-profile production smoke passed for `安定区×Ulti` -> `安定区xWata`.
+
 ## Milestone 29F Full Active-Profile Regression
 
 - `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`: Replaced stale Account Switcher rollout-warning copy with accurate active-profile context reload copy. No logic, service, SQL, RLS/RPC, or behavior files changed.

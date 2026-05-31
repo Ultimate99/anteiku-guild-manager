@@ -2,7 +2,7 @@
 
 ## Current Recommendation
 
-Milestone 29F final active-profile regression is complete. The Account Switcher active-profile migration can be marked complete for the planned 29B-29F scope.
+The member Ranking active-profile bug is fixed in production. Account Switcher active-profile migration remains complete for the planned 29B-29F scope, with Ranking now covered by a focused follow-up fix.
 
 Recommended next step:
 - Move to normal targeted bug-fix or feature planning.
@@ -15,6 +15,15 @@ Do not yet:
 - Use localStorage-only profile switching.
 - Expose normal CP values or private auth/email/admin metadata in switcher payloads.
 - Change active-profile behavior for existing systems without a reviewed RPC/RLS migration.
+
+Recorded member Ranking active-profile fix:
+- Migration `20260531001300_active_profile_member_ranking.sql` is applied in production.
+- Commit `d23d5eb fix: use active profile for member ranking` is pushed to `main`.
+- `get_member_cp_rankings(p_scope)` now uses `private.get_active_profile_id()` for My Guild scope and `is_current_user`.
+- `Leaderboard.jsx` refetches on active profile summary changes and defensively aligns visible highlighting with safe `profile_slug`.
+- Local reset/full validation passed; focused linked-profile Ranking validation passed `9 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run/apply/DB verification passed, including CP-hidden payload checks, active Owner count `1`, and simulated authenticated direct `member_cp`/`cp_snapshots` reads returning zero rows.
+- Production linked-profile smoke passed for `安定区×Ulti` -> `安定区xWata`; My Guild followed Anteiku:Re after switching, Global highlighted `安定区xWata`, and the original profile was no longer marked `You`.
 
 Recorded Account Switcher 29F status:
 - Commit `eaf16b5 fix: update account switcher rollout copy` is pushed to `main`.

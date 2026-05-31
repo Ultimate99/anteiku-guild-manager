@@ -1,5 +1,36 @@
 # Testing
 
+## Member Ranking Active-Profile Fix
+
+Focused active-profile Ranking validation passed after migrating member-safe Ranking to backend-selected active profile identity.
+
+Results:
+- Migration `20260531001300_active_profile_member_ranking.sql` is applied in production.
+- Commit `d23d5eb fix: use active profile for member ranking` is pushed to `main`.
+- `npx.cmd supabase db reset` passed locally.
+- Full `supabase/tests/local_validation_anteiku.sql` passed through Docker `psql`.
+- Focused linked-profile Ranking validation passed `9 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production dry-run showed only `20260531001300_active_profile_member_ranking.sql`.
+- Production migration apply/list verification passed.
+
+Production verification:
+- `get_member_cp_rankings(p_scope)` uses `private.get_active_profile_id()`.
+- Member Ranking return columns remain CP-hidden.
+- Active Owner count remains `1`.
+- Simulated authenticated direct reads of `member_cp` and `cp_snapshots` returned zero rows.
+
+Production smoke:
+- Active `安定区×Ulti` Ranking highlighted `安定区×Ulti`.
+- After switching active profile to `安定区xWata`, My Guild Ranking scoped to Anteiku:Re and highlighted `安定区xWata`.
+- Global Ranking highlighted `安定区xWata`.
+- The original `安定区×Ulti` row was no longer marked `You`.
+- Browser active profile was restored to `安定区×Ulti` after smoke.
+
+Security/source validation:
+- No CP values are visible in member Ranking.
+- No direct `member_cp`/`cp_snapshots` frontend calls, CP RPC additions, localStorage authority, arbitrary frontend actor `profile_id`, Admin CP Ranking permission change, or unrelated subsystem behavior change was added.
+
 ## Milestone 29F Full Active-Profile Regression
 
 Final active-profile regression validation passed after an i18n-only Account Switcher copy fix.

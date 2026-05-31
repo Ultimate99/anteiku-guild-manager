@@ -1,5 +1,24 @@
 # Session Log
 
+## 2026-05-31 - Member Ranking Active-Profile Fix
+
+- Investigated the production linked-account Ranking bug where switching from Account A to Account B still highlighted Account A.
+- Confirmed root cause: `get_member_cp_rankings(p_scope)` still resolved actor identity with legacy `auth.uid()` for My Guild scope and `is_current_user`.
+- Added migration `supabase/migrations/20260531001300_active_profile_member_ranking.sql`.
+- Redefined only `get_member_cp_rankings(p_scope)` to use `private.get_active_profile_id()` for selected active profile identity and guild scope.
+- Updated `src/pages/Leaderboard.jsx` to refetch when the active profile summary changes and defensively align visible `You` highlighting to safe `profile_slug`.
+- Local `npx.cmd supabase db reset` passed through the new migration.
+- Full local validation passed through Docker `psql`.
+- Focused local linked-profile Ranking validation passed `9 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production dry-run showed only `20260531001300_active_profile_member_ranking.sql`.
+- Production migration apply/list verification passed.
+- Production DB verification confirmed the RPC uses `private.get_active_profile_id()`, active Owner count remains `1`, return columns remain CP-hidden, and simulated authenticated direct `member_cp`/`cp_snapshots` reads returned zero rows.
+- Commit `d23d5eb fix: use active profile for member ranking` was pushed to `main`.
+- Vercel deployed a new production bundle after the push.
+- Production linked-account smoke passed: `安定区×Ulti` highlighted before switching; after switching to `安定区xWata`, My Guild Ranking scoped to Anteiku:Re, `安定区xWata` was marked `You`, Global Ranking also highlighted `安定区xWata`, and the original `安定区×Ulti` row was no longer marked current.
+- Restored the browser active profile back to `安定区×Ulti` after smoke.
+
 ## 2026-05-31 - Milestone 29F Full Active-Profile Regression
 
 - Ran final active-profile regression validation after the 29E.8E CP/Admin/Analytics/Audit rollout.

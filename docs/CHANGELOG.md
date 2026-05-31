@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-05-31 - Member Ranking Active-Profile Fix
+
+- Fixed member Ranking viewer identity for linked accounts.
+- New production migration:
+  - `20260531001300_active_profile_member_ranking.sql`
+- Commit deployed:
+  - `d23d5eb fix: use active profile for member ranking`
+- Source files changed:
+  - `supabase/migrations/20260531001300_active_profile_member_ranking.sql`
+  - `src/pages/Leaderboard.jsx`
+- `get_member_cp_rankings(p_scope)` now uses `private.get_active_profile_id()` for My Guild scope and `is_current_user`.
+- Ranking still uses the same rank math/order and still hides member CP values.
+- Leaderboard refetches on active profile summary changes and aligns visible `You` highlighting with safe `profile_slug`.
+- Local reset/full validation passed; focused linked-profile Ranking validation passed `9 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production dry-run/apply/DB verification passed.
+- Production linked-account smoke confirmed switching from `安定区×Ulti` to `安定区xWata` makes My Guild scope follow Anteiku:Re and highlights `安定区xWata` in My Guild and Global Ranking.
+- No CP exposure, Admin CP Ranking permission change, frontend direct `member_cp`/`cp_snapshots` calls, localStorage authority, arbitrary frontend actor `profile_id`, or unrelated subsystem behavior change was added.
+
 ## 2026-05-31 - Milestone 29F Full Active-Profile Regression
 
 - Completed final Account Switcher active-profile regression validation.
