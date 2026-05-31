@@ -1,14 +1,36 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented locally through Push Notifications foundation. Remote production is live through `20260530000700_ranking_public_profile_links.sql`; `20260530000800_push_notifications_foundation.sql` is local-only and not applied remotely yet.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and production-applied through `20260531000100_account_switcher_foundation.sql`.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
-Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, own Profile Ghoul Rep display, Public Member Profiles, and Ranking Public Profile links are implemented, locally validated, production applied, and production-smoke validated.
+Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, own Profile Ghoul Rep display, Public Member Profiles, Ranking Public Profile links, Push Notifications, and Account Switcher foundation are implemented, locally validated, production applied, and production-smoke or production-gate validated.
+
+## Account Switcher Foundation
+
+Migration `20260531000100_account_switcher_foundation.sql` is applied and verified in production.
+
+Tables:
+- `user_profile_links`
+- `user_active_profiles`
+
+RPC/helper behavior:
+- `private.get_active_profile_id()` resolves the selected linked profile and falls back to the legacy self profile when no active selection exists.
+- `get_my_switchable_profiles()` returns safe linked-profile summaries for the current auth user.
+- `get_my_active_profile()` returns the active/fallback profile summary.
+- `set_my_active_profile(p_profile_id uuid)` stores a selected active profile only if it is actively linked to the current auth user.
+- `owner_link_profile_to_auth_user(...)` and `owner_unlink_profile_from_auth_user(...)` are Owner-only link management RPCs.
+
+Security:
+- RLS is enabled on both account-link tables.
+- Direct anon/authenticated table grants are revoked.
+- Existing profiles are self-linked to preserve the current `auth.uid() === profiles.id` behavior.
+- No existing CP/GvG/3v3/Wall/Profile Reaction/Cosmetics/Push/Admin systems have been switched to active-profile identity yet.
+- Switcher payloads return no normal CP, `member_cp`, `cp_snapshots`, email, auth secrets, service-role data, or private admin/audit metadata.
 
 ## Push Notifications Foundation
 
-Migration `20260530000800_push_notifications_foundation.sql` is implemented and locally validated only.
+Migration `20260530000800_push_notifications_foundation.sql` is implemented, locally validated, production applied, and production-smoke verified.
 
 Tables:
 - `push_subscriptions`
@@ -32,7 +54,7 @@ Security:
 Edge Function:
 - `send-push-notifications` is added locally under `supabase/functions`.
 - It requires VAPID secrets before remote deploy/use: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT`.
-- It is not deployed yet.
+- It is deployed in production as `send-push-notifications`.
 
 ## Ranking Public Profile Links
 

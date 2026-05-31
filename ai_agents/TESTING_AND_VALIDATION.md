@@ -1,5 +1,39 @@
 # Testing And Validation
 
+## Milestone 29B Account Switcher Backend Validation
+
+Account Switcher backend foundation passed local validation and production rollout gates.
+
+Commands/gates:
+- `npx.cmd supabase db reset`
+- `Get-Content supabase\tests\local_validation_anteiku.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres`
+- Production `npx.cmd supabase db push --dry-run`
+- Production `npx.cmd supabase db push`
+- Production read-only DB verification through `npx.cmd supabase db query --linked`
+
+Results:
+- Local reset applied through `20260531000100_account_switcher_foundation.sql`.
+- Full local validation passed.
+- Milestone 29B account switcher block passed `19 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed exactly one pending migration: `20260531000100_account_switcher_foundation.sql`.
+- Production migration apply passed and remote migration list shows `20260531000100` applied.
+
+Validated behavior:
+- Account-link tables exist and have RLS enabled.
+- No direct anon/authenticated grants exist on `user_profile_links` or `user_active_profiles`.
+- Existing one-profile users are self-linked.
+- `get_my_switchable_profiles()` returns only linked profiles and no CP tokens.
+- `get_my_active_profile()` falls back to the legacy self profile when no active row exists.
+- `set_my_active_profile(...)` allows linked profiles and denies unlinked/disabled profiles.
+- Owner can link/unlink profiles; non-Owner cannot.
+- Unlinking an active profile clears/replaces the active selection safely.
+- The only active Owner profile cannot be unlinked.
+- Active Owner count remains `1`.
+- Production member-context direct reads of `member_cp` and `cp_snapshots` returned `0` visible rows.
+
+Build:
+- `npm.cmd run build` was skipped because 29B changed backend SQL/tests/docs only and no frontend/runtime source changed.
+
 ## Milestone 28 Push Notifications Production Validation
 
 Push Notifications passed local validation, production rollout gates, and manual production smoke.

@@ -1,5 +1,30 @@
 # Session Log
 
+## 2026-05-31 - Milestone 29B Account Switcher Backend Foundation
+
+- Implemented backend-only Account Switcher foundation.
+- Added migration:
+  - `20260531000100_account_switcher_foundation.sql`
+- Added RPC-only account link tables:
+  - `user_profile_links`
+  - `user_active_profiles`
+- Added private helper:
+  - `private.get_active_profile_id()`
+- Added public switcher RPCs:
+  - `get_my_switchable_profiles()`
+  - `get_my_active_profile()`
+  - `set_my_active_profile(p_profile_id uuid)`
+- Added Owner-only link management RPCs:
+  - `owner_link_profile_to_auth_user(p_auth_email text, p_profile_slug text, p_link_type text default 'owner')`
+  - `owner_unlink_profile_from_auth_user(p_auth_email text, p_profile_slug text)`
+- Existing behavior was intentionally not switched over; CP/GvG/3v3/Wall/Profile Reaction/Cosmetics/Push/Admin RPCs still use existing identity assumptions pending later milestones.
+- Local `npx.cmd supabase db reset` passed.
+- Full local validation passed through Docker `psql`; Account Switcher block reported `19 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed only `20260531000100_account_switcher_foundation.sql`.
+- Production migration apply passed and remote migration list shows `20260531000100` applied.
+- Production DB verification passed for table/RLS/RPC presence, no direct account-link grants, self-links for all current profiles, active Owner count `1`, switcher payload no-CP tokens, and member-context direct CP table reads returning no visible rows.
+- `npm.cmd run build` was skipped because there were no frontend/runtime source changes.
+
 ## 2026-05-30 - Push Notifications Production Rollout
 
 - Production rollout completed for Push Notifications.

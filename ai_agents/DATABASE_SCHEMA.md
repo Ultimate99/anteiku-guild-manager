@@ -2,7 +2,9 @@
 
 ## Current Backend Status
 
-Milestone 28B Push Notifications foundation is implemented and locally validated through `20260530000800_push_notifications_foundation.sql`. It is not applied to staging or production yet.
+Milestone 29B Account Switcher backend foundation is applied and verified in production through `20260531000100_account_switcher_foundation.sql`. It adds `user_profile_links`, `user_active_profiles`, safe active-profile helper/RPCs, Owner-only link management RPCs, and self-link/backfill support while intentionally leaving existing runtime behavior unchanged.
+
+Milestone 28 Push Notifications is applied and verified in production through `20260530000800_push_notifications_foundation.sql` plus the deployed `send-push-notifications` Edge Function.
 
 Guild Wall / Global Wall Ghoul Rep backend support is applied and verified in production through `20260530000400_ghoul_rep_wall_reactions.sql`.
 
@@ -24,7 +26,7 @@ Staging and production both have this migration applied and verified. Future new
 
 ## Production Deployment Status
 
-Production Supabase is live and migrated through the public profile/ranking social migrations. Push Notifications migration `20260530000800_push_notifications_foundation.sql` is local-only and has not been applied remotely. Member Status, CP Update Window / Member CP Self-Submit, CP Leaderboard, Rank Badge / Profile Border, Cosmetics, Premium Cosmetics, Owner Cosmetics, Admin Analytics, Live CP Growth, 3v3 Team Finder, Guild Wall, Global Wall, Ghoul Rep backend support, Public Member Profiles, and Ranking public profile links are applied, verified, and live in production.
+Production Supabase is live and migrated through the Account Switcher backend foundation. Member Status, CP Update Window / Member CP Self-Submit, CP Leaderboard, Rank Badge / Profile Border, Cosmetics, Premium Cosmetics, Owner Cosmetics, Admin Analytics, Live CP Growth, 3v3 Team Finder, Guild Wall, Global Wall, Ghoul Rep backend support, Public Member Profiles, Ranking public profile links, Push Notifications, and Account Switcher foundation are applied and verified in production.
 
 Current local migration order:
 
@@ -61,6 +63,33 @@ Current local migration order:
 31. `20260530000600_public_member_profiles.sql`
 32. `20260530000700_ranking_public_profile_links.sql`
 33. `20260530000800_push_notifications_foundation.sql`
+34. `20260531000100_account_switcher_foundation.sql`
+
+## Account Switcher Foundation
+
+Migration `20260531000100_account_switcher_foundation.sql` is applied and verified in production.
+
+Tables:
+- `user_profile_links`: links Supabase auth users to controllable in-game profiles with `link_type`, `is_primary`, `created_by_profile_id`, timestamps, and soft-disable support.
+- `user_active_profiles`: stores the selected active profile for an auth user.
+
+Constraints/security model:
+- Unique active `(auth_user_id, profile_id)` link.
+- One active owner link per profile in v1.
+- One primary active profile per auth user.
+- Active profile rows must point to an active link.
+- RLS is enabled and direct anon/authenticated table grants are revoked.
+
+RPCs/helpers:
+- `private.get_active_profile_id()` resolves the selected linked profile, falling back to the legacy `profiles.id = auth.uid()` profile when no active selection exists.
+- `get_my_switchable_profiles()`
+- `get_my_active_profile()`
+- `set_my_active_profile(p_profile_id uuid)`
+- `owner_link_profile_to_auth_user(p_auth_email text, p_profile_slug text, p_link_type text default 'owner')`
+- `owner_unlink_profile_from_auth_user(p_auth_email text, p_profile_slug text)`
+
+Important rollout note:
+- Existing application systems have not been switched to active-profile identity yet. CP, GvG, 3v3, Wall, Profile Reaction, Cosmetics, Push, Admin, and auth flows remain on their existing behavior until later approved milestones.
 
 Migration `20260523000100_member_roster_status_system.sql` is implemented, locally validated, staging validated, and production applied/verified.
 

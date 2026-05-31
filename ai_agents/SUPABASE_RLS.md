@@ -1,8 +1,38 @@
 # Supabase RLS
 
-## Milestone 28B Push Notifications RLS/RPC
+## Milestone 29B Account Switcher RLS/RPC
 
-Milestone 28B Push Notifications foundation is implemented and locally validated only through `20260530000800_push_notifications_foundation.sql`.
+Milestone 29B Account Switcher backend foundation is implemented, locally validated, and production applied through `20260531000100_account_switcher_foundation.sql`.
+
+Tables:
+- `user_profile_links`
+- `user_active_profiles`
+
+RLS/grants:
+- RLS is enabled on both account-link tables.
+- Direct anon/authenticated table grants are revoked.
+- Clients must use the switcher/link-management RPCs; no direct table access is allowed.
+
+RPC security:
+- `get_my_switchable_profiles()` returns only profiles actively linked to `auth.uid()`.
+- `get_my_active_profile()` returns the selected linked profile, or the legacy self profile when no active row exists.
+- `set_my_active_profile(p_profile_id uuid)` requires an active link for the signed-in auth user.
+- Owner-only link/unlink RPCs resolve by auth email plus profile slug/username and do not expose auth secrets.
+- Disabled links are denied.
+
+Privacy:
+- Switcher payloads include safe profile/guild/cosmetic/status fields only.
+- No CP values, `member_cp`, `cp_snapshots`, email, password/auth secrets, audit/admin/private metadata, or service-role data are returned.
+
+Validation:
+- Local DB reset passed.
+- Full local validation passed; Milestone 29B account switcher block reported `19 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed only `20260531000100_account_switcher_foundation.sql`; production apply passed.
+- Production verification confirmed table existence, RLS, no direct account-link table grants, five public switcher RPCs with authenticated execute grants, self-links for all current profiles, active Owner count `1`, and normal CP direct reads still returning no visible rows for a member-context check.
+
+## Milestone 28 Push Notifications RLS/RPC
+
+Milestone 28 Push Notifications is implemented, locally validated, production applied, and production-smoke verified through `20260530000800_push_notifications_foundation.sql` plus the deployed `send-push-notifications` Edge Function.
 
 Tables:
 - `push_subscriptions`
@@ -30,7 +60,7 @@ Validation:
 - Local reset applied the migration cleanly.
 - Full local validation passed; Milestone 28B push block reported `13 PASS / 0 FAIL / 0 SKIP`.
 - Source sweep found no normal CP table/RPC paths in the new migration or Edge Function.
-- Production/staging rollout is pending and blocked until VAPID secrets are configured.
+- Production rollout passed after VAPID secrets were configured by name; secret values are not documented.
 
 ## Ghoul Rep Wall Reaction RLS/RPC
 

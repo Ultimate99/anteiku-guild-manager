@@ -1,12 +1,36 @@
 # Supabase RLS
 
-The Supabase RLS/RPC implementation has been validated locally through Push Notifications foundation. Production is applied/verified through `20260530000700_ranking_public_profile_links.sql`; `20260530000800_push_notifications_foundation.sql` is not applied remotely yet.
+The Supabase RLS/RPC implementation has been validated and production-applied through `20260531000100_account_switcher_foundation.sql`.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
 
+## Account Switcher RLS/RPC
+
+Milestone 29B Account Switcher foundation is production-applied through `20260531000100_account_switcher_foundation.sql`.
+
+Tables:
+- `user_profile_links`
+- `user_active_profiles`
+
+RLS/grants:
+- RLS is enabled on both account-link tables.
+- Direct anon/authenticated table grants are revoked.
+- Frontend account switching must use RPCs only.
+
+RPC rules:
+- `get_my_switchable_profiles()` returns only active links for `auth.uid()`.
+- `get_my_active_profile()` returns the selected linked profile or legacy self profile fallback.
+- `set_my_active_profile(p_profile_id uuid)` requires an active link and denies unlinked/disabled profiles.
+- Owner-only link management is restricted to active approved Owner profiles.
+
+Privacy:
+- Switcher payloads expose safe profile/guild/cosmetic/status fields only.
+- No normal CP, `member_cp`, `cp_snapshots`, email, auth secrets, admin/private metadata, or service-role data is returned.
+- Existing systems are not yet migrated to active-profile identity.
+
 ## Push Notifications RLS/RPC
 
-Milestone 28B Push Notifications foundation is implemented and locally validated only.
+Milestone 28 Push Notifications is implemented, locally validated, production applied, and production-smoke verified.
 
 Tables:
 - `push_subscriptions`
@@ -33,7 +57,7 @@ Privacy:
 Validation:
 - Local reset applied `20260530000800_push_notifications_foundation.sql`.
 - Milestone 28B validation passed `13 PASS / 0 FAIL / 0 SKIP`.
-- Remote rollout remains blocked until VAPID secrets are configured.
+- Production rollout passed after VAPID secrets were configured by name; secret values are not documented.
 
 ## Ranking Public Profile Links RLS/RPC
 

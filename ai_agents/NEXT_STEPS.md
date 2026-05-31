@@ -2,16 +2,33 @@
 
 ## Current Recommendation
 
+Milestone 29B Account Switcher backend foundation is live in production and locally/production-gate validated.
+
+Recommended next step:
+- Start Milestone 29C planning/implementation for Profile Settings Account Switcher UI.
+- Keep 29C frontend-only if it only displays linked profiles and calls the 29B switcher RPCs.
+- Do not migrate existing CP/GvG/3v3/Wall/Profile Reaction/Cosmetics/Push/Admin behavior to active-profile identity until later approved subsystem-specific milestones.
+
+Do not yet:
+- Treat frontend-selected profile ids as authority.
+- Use localStorage-only profile switching.
+- Expose normal CP values or private auth/email/admin metadata in switcher payloads.
+- Change active-profile behavior for existing systems without a reviewed RPC/RLS migration.
+
+Recorded Account Switcher 29B status:
+- Production DB received `20260531000100_account_switcher_foundation.sql` after a clean dry-run showing exactly that migration.
+- Added `user_profile_links`, `user_active_profiles`, `private.get_active_profile_id()`, switcher RPCs, and Owner-only link/unlink RPCs.
+- Existing profiles are self-linked; active-profile selection exists but existing app behavior is unchanged.
+- Local validation passed with Account Switcher block `19 PASS / 0 FAIL / 0 SKIP`.
+- Production DB verification passed for RLS/no direct account-link grants, RPC grants, all current profiles self-linked, active Owner count `1`, switcher payload no-CP tokens, and normal CP direct-read protection.
+
+## Previous Recommendation
+
 Milestone 28 Push Notifications is live in production and manual push smoke passed.
 
 Recommended next step:
 - Continue with the next user-prioritized milestone.
 - For future notification event hooks, keep each source-specific notification path in a separately approved milestone.
-
-Do not yet:
-- Add GvG, CP Update Window, 3v3, Wall, or profile-reaction automatic push event hooks without a separate backend/RPC and privacy review.
-- Include normal CP values, email, auth IDs, audit/admin/private metadata, arbitrary user content, or service-role data in notification payloads.
-- Expose `VAPID_PRIVATE_KEY` in frontend, Vercel public env, docs, logs, or committed files.
 
 Recorded Push Notifications production status:
 - Production DB received `20260530000800_push_notifications_foundation.sql` after a clean dry-run showing exactly that migration.

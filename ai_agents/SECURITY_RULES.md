@@ -1,5 +1,26 @@
 # Security Rules
 
+## Account Switcher Security Rules
+
+Account Switcher backend foundation is live in production through `20260531000100_account_switcher_foundation.sql`.
+
+Rules:
+- Frontend must not choose arbitrary `profile_id` for identity-sensitive actions.
+- Account switching must use `get_my_switchable_profiles()`, `get_my_active_profile()`, and `set_my_active_profile(p_profile_id uuid)`.
+- Backend must verify `auth.uid()` has an active, non-disabled link to the selected profile.
+- Normal members cannot link or unlink profiles.
+- Owner-only profile linking must use `owner_link_profile_to_auth_user(...)` / `owner_unlink_profile_from_auth_user(...)`.
+- Do not update existing CP/GvG/3v3/Wall/Profile Reaction/Cosmetics/Push/Admin RPCs to use active profile without a separately approved, subsystem-specific milestone.
+
+Privacy:
+- Switcher payloads may show safe profile identity/status/guild/cosmetic fields only.
+- Switcher payloads must not include normal CP, `member_cp`, `cp_snapshots`, email, auth secrets, passwords, service-role data, admin private metadata, or audit-private metadata.
+- Active Owner access must not be orphaned by unlinking.
+
+Validation status:
+- Local validation passed with the Account Switcher block at `19 PASS / 0 FAIL / 0 SKIP`.
+- Production DB verification passed for RLS/no direct account-link grants, RPC grants, self-link backfill, active Owner count `1`, and normal CP direct-read protection.
+
 ## Push Notification Security Rules
 
 Push Notifications are live in production. Production has `20260530000800_push_notifications_foundation.sql` applied, `send-push-notifications` deployed, required Supabase Edge Function secret names configured, Vercel `VITE_VAPID_PUBLIC_KEY` configured, and manual production push smoke passed.

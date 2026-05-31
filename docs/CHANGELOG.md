@@ -1,5 +1,28 @@
 # Changelog
 
+## 2026-05-31 - Milestone 29B Account Switcher Backend Foundation
+
+- Added backend-only Account Switcher foundation.
+- New migration:
+  - `20260531000100_account_switcher_foundation.sql`
+- Added RPC-only tables:
+  - `user_profile_links`
+  - `user_active_profiles`
+- Added active-profile helper and switcher RPCs:
+  - `private.get_active_profile_id()`
+  - `get_my_switchable_profiles()`
+  - `get_my_active_profile()`
+  - `set_my_active_profile(p_profile_id uuid)`
+- Added Owner-only link management RPCs:
+  - `owner_link_profile_to_auth_user(...)`
+  - `owner_unlink_profile_from_auth_user(...)`
+- Existing profiles are self-linked/backfilled to preserve the current one-auth-user/one-profile behavior.
+- Existing CP, GvG, 3v3, Wall, Profile Reaction, Cosmetics, Push, Admin, and auth behavior was intentionally not switched to active-profile identity yet.
+- Local DB reset passed and full local validation passed; Account Switcher block reported `19 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed only `20260531000100_account_switcher_foundation.sql`; production migration apply passed.
+- Production DB verification passed for table existence, RLS, no direct account-link grants, switcher RPC grants, self-links for all current profiles, active Owner count `1`, switcher payload no-CP tokens, and normal CP direct-read protection.
+- `npm.cmd run build` was skipped because no frontend/runtime source changed.
+
 ## 2026-05-30 - Push Notifications Production Rollout
 
 - Completed production rollout for Push Notifications.

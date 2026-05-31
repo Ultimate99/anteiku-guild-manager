@@ -7361,6 +7361,342 @@ begin
 end;
 $$;
 
+create temp table if not exists milestone_account_switcher_results (
+  section text not null,
+  test_name text not null,
+  status text not null check (status in ('PASS', 'FAIL', 'SKIP')),
+  details text
+) on commit drop;
+
+do $$
+declare
+  anteiku_id constant uuid := '00000000-0000-0000-0000-000000000101';
+  owner_id constant uuid := '10000000-0000-0000-0000-000000000001';
+  member_id constant uuid := '10000000-0000-0000-0000-000000000006';
+  wrong_guild_id constant uuid := '10000000-0000-0000-0000-000000000009';
+  controller_auth_id constant uuid := '10000000-0000-0000-0000-000000000011';
+  switch_profile_id constant uuid := '10000000-0000-0000-0000-000000000012';
+  direct_count integer;
+  direct_grant_count integer;
+  owner_count integer;
+  payload jsonb;
+  linked_profile_count integer;
+  active_profile_count integer;
+begin
+  begin
+    insert into auth.users (
+      instance_id,
+      id,
+      aud,
+      role,
+      email,
+      encrypted_password,
+      email_confirmed_at,
+      raw_app_meta_data,
+      raw_user_meta_data,
+      created_at,
+      updated_at
+    )
+    values
+      ('00000000-0000-0000-0000-000000000000', controller_auth_id, 'authenticated', 'authenticated', 'switch-controller.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', switch_profile_id, 'authenticated', 'authenticated', 'switch-profile.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now())
+    on conflict (id) do nothing;
+
+    insert into public.profiles (id, username, profile_slug, ign, approval_status, approved_at)
+    values (
+      switch_profile_id,
+      'switch_local',
+      'switch_local',
+      'Switch Local',
+      'approved',
+      now()
+    )
+    on conflict (id) do update
+    set username = excluded.username,
+        profile_slug = excluded.profile_slug,
+        ign = excluded.ign,
+        approval_status = excluded.approval_status,
+        approved_at = excluded.approved_at;
+
+    insert into public.guild_memberships (profile_id, guild_id, role, membership_status, is_primary, assigned_by, roster_status)
+    values (switch_profile_id, anteiku_id, 'member', 'active', true, owner_id, 'active')
+    on conflict (profile_id, guild_id) do update
+    set role = excluded.role,
+        membership_status = excluded.membership_status,
+        is_primary = excluded.is_primary,
+        assigned_by = excluded.assigned_by,
+        roster_status = excluded.roster_status;
+
+    insert into milestone_account_switcher_results values ('setup', 'switcher_test_users_seeded', 'PASS', 'Controller auth user and switchable profile seeded locally.');
+  exception when others then
+    insert into milestone_account_switcher_results values ('setup', 'switcher_test_users_seeded', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    if to_regclass('public.user_profile_links') is not null
+       and to_regclass('public.user_active_profiles') is not null then
+      insert into milestone_account_switcher_results values ('schema', 'account_link_tables_exist', 'PASS', 'Account-link tables exist.');
+    else
+      insert into milestone_account_switcher_results values ('schema', 'account_link_tables_exist', 'FAIL', 'One or more account-link tables are missing.');
+    end if;
+
+    select count(*)
+    into direct_count
+    from pg_class c
+    join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'public'
+      and c.relname in ('user_profile_links', 'user_active_profiles')
+      and c.relrowsecurity = true;
+
+    if direct_count = 2 then
+      insert into milestone_account_switcher_results values ('schema', 'account_link_tables_rls_enabled', 'PASS', 'RLS enabled on both account-link tables.');
+    else
+      insert into milestone_account_switcher_results values ('schema', 'account_link_tables_rls_enabled', 'FAIL', direct_count::text || ' account-link tables have RLS enabled.');
+    end if;
+
+    select count(*)
+    into direct_grant_count
+    from information_schema.table_privileges
+    where table_schema = 'public'
+      and table_name in ('user_profile_links', 'user_active_profiles')
+      and grantee in ('anon', 'authenticated');
+
+    if direct_grant_count = 0 then
+      insert into milestone_account_switcher_results values ('schema', 'account_link_tables_no_direct_client_grants', 'PASS', 'No direct anon/authenticated table grants.');
+    else
+      insert into milestone_account_switcher_results values ('schema', 'account_link_tables_no_direct_client_grants', 'FAIL', direct_grant_count::text || ' unexpected direct grants.');
+    end if;
+  exception when others then
+    insert into milestone_account_switcher_results values ('schema', 'account_link_schema_checks', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    select count(*)
+    into linked_profile_count
+    from public.user_profile_links upl
+    where upl.auth_user_id = member_id
+      and upl.profile_id = member_id
+      and upl.is_primary = true
+      and upl.disabled_at is null;
+
+    if linked_profile_count = 1 then
+      insert into milestone_account_switcher_results values ('backfill', 'existing_one_profile_user_self_linked', 'PASS', 'Self-link/backfill trigger created the current profile link.');
+    else
+      insert into milestone_account_switcher_results values ('backfill', 'existing_one_profile_user_self_linked', 'FAIL', linked_profile_count::text || ' active self-links found.');
+    end if;
+  exception when others then
+    insert into milestone_account_switcher_results values ('backfill', 'existing_one_profile_user_self_linked', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    payload := public.get_my_switchable_profiles();
+
+    if jsonb_array_length(payload -> 'profiles') = 1
+       and payload #>> '{profiles,0,profile_id}' = member_id::text
+       and payload::text not ilike '%member_cp%'
+       and payload::text not ilike '%cp_snapshots%'
+       and payload::text not ilike '%cp_value%'
+       and payload::text not ilike '%current_cp%'
+       and payload::text not ilike '%combined_cp%' then
+      insert into milestone_account_switcher_results values ('rpc', 'switchable_profiles_only_linked_no_cp', 'PASS', payload::text);
+    else
+      insert into milestone_account_switcher_results values ('rpc', 'switchable_profiles_only_linked_no_cp', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_account_switcher_results values ('rpc', 'switchable_profiles_only_linked_no_cp', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    delete from public.user_active_profiles where auth_user_id = member_id;
+
+    payload := public.get_my_active_profile();
+
+    if payload #>> '{profile,profile_id}' = member_id::text
+       and payload #>> '{profile,is_active_profile}' = 'true' then
+      insert into milestone_account_switcher_results values ('rpc', 'active_profile_fallback_self', 'PASS', payload::text);
+    else
+      insert into milestone_account_switcher_results values ('rpc', 'active_profile_fallback_self', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_account_switcher_results values ('rpc', 'active_profile_fallback_self', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    payload := public.set_my_active_profile(member_id);
+
+    if payload #>> '{profile,profile_id}' = member_id::text then
+      insert into milestone_account_switcher_results values ('rpc', 'set_active_profile_linked_allowed', 'PASS', payload::text);
+    else
+      insert into milestone_account_switcher_results values ('rpc', 'set_active_profile_linked_allowed', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_account_switcher_results values ('rpc', 'set_active_profile_linked_allowed', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(wrong_guild_id);
+    insert into milestone_account_switcher_results values ('rpc', 'set_active_profile_unlinked_denied', 'FAIL', 'Unlinked profile was selected.');
+  exception when others then
+    insert into milestone_account_switcher_results values ('rpc', 'set_active_profile_unlinked_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.owner_link_profile_to_auth_user('switch-controller.local@example.test', 'switch_local', 'owner');
+    insert into milestone_account_switcher_results values ('owner_rpc', 'non_owner_cannot_link_profile', 'FAIL', 'Non-owner linked a profile.');
+  exception when others then
+    insert into milestone_account_switcher_results values ('owner_rpc', 'non_owner_cannot_link_profile', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    payload := public.owner_unlink_profile_from_auth_user('switch-profile.local@example.test', 'switch_local');
+
+    if payload ->> 'unlinked' = 'true' then
+      insert into milestone_account_switcher_results values ('owner_rpc', 'owner_unlinks_profile', 'PASS', payload::text);
+    else
+      insert into milestone_account_switcher_results values ('owner_rpc', 'owner_unlinks_profile', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_account_switcher_results values ('owner_rpc', 'owner_unlinks_profile', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    payload := public.owner_link_profile_to_auth_user('switch-controller.local@example.test', 'switch_local', 'owner');
+
+    select count(*)
+    into linked_profile_count
+    from public.user_profile_links upl
+    where upl.profile_id = switch_profile_id
+      and upl.disabled_at is null;
+
+    if payload ->> 'linked' = 'true'
+       and payload #>> '{profile,profile_id}' = switch_profile_id::text
+       and linked_profile_count = 1 then
+      insert into milestone_account_switcher_results values ('owner_rpc', 'owner_links_profile_to_auth_user', 'PASS', payload::text);
+    else
+      insert into milestone_account_switcher_results values ('owner_rpc', 'owner_links_profile_to_auth_user', 'FAIL', coalesce(payload::text, '<null>') || ' active_links=' || linked_profile_count::text);
+    end if;
+  exception when others then
+    insert into milestone_account_switcher_results values ('owner_rpc', 'owner_links_profile_to_auth_user', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', controller_auth_id::text, true);
+    payload := public.set_my_active_profile(switch_profile_id);
+
+    if payload #>> '{profile,profile_id}' = switch_profile_id::text
+       and payload #>> '{profile,is_active_profile}' = 'true' then
+      insert into milestone_account_switcher_results values ('rpc', 'linked_controller_sets_active_profile', 'PASS', payload::text);
+    else
+      insert into milestone_account_switcher_results values ('rpc', 'linked_controller_sets_active_profile', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_account_switcher_results values ('rpc', 'linked_controller_sets_active_profile', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    payload := public.owner_unlink_profile_from_auth_user('switch-controller.local@example.test', 'switch_local');
+
+    select count(*)
+    into active_profile_count
+    from public.user_active_profiles uap
+    where uap.auth_user_id = controller_auth_id;
+
+    if payload ->> 'unlinked' = 'true'
+       and active_profile_count = 0 then
+      insert into milestone_account_switcher_results values ('owner_rpc', 'unlink_active_profile_clears_selection', 'PASS', payload::text);
+    else
+      insert into milestone_account_switcher_results values ('owner_rpc', 'unlink_active_profile_clears_selection', 'FAIL', coalesce(payload::text, '<null>') || ' active_rows=' || active_profile_count::text);
+    end if;
+  exception when others then
+    insert into milestone_account_switcher_results values ('owner_rpc', 'unlink_active_profile_clears_selection', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', controller_auth_id::text, true);
+    perform public.set_my_active_profile(switch_profile_id);
+    insert into milestone_account_switcher_results values ('rpc', 'disabled_link_denied', 'FAIL', 'Disabled/unlinked profile was selected.');
+  exception when others then
+    insert into milestone_account_switcher_results values ('rpc', 'disabled_link_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    perform public.owner_unlink_profile_from_auth_user('owner.local@example.test', 'owner_local');
+    insert into milestone_account_switcher_results values ('owner_rpc', 'only_owner_profile_unlink_blocked', 'FAIL', 'Only active Owner profile link was disabled.');
+  exception when others then
+    insert into milestone_account_switcher_results values ('owner_rpc', 'only_owner_profile_unlink_blocked', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    execute 'set local role authenticated';
+    begin
+      execute 'select count(*) from public.user_profile_links';
+      execute 'reset role';
+      insert into milestone_account_switcher_results values ('rls', 'direct_account_link_read_denied', 'FAIL', 'Direct user_profile_links SELECT succeeded.');
+    exception when others then
+      execute 'reset role';
+      insert into milestone_account_switcher_results values ('rls', 'direct_account_link_read_denied', 'PASS', sqlerrm);
+    end;
+  exception when others then
+    begin
+      execute 'reset role';
+    exception when others then
+      null;
+    end;
+    insert into milestone_account_switcher_results values ('rls', 'direct_account_link_read_denied', 'SKIP', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    execute 'set local role authenticated';
+    begin
+      execute format(
+        'insert into public.user_active_profiles (auth_user_id, active_profile_id) values (%L::uuid, %L::uuid)',
+        member_id::text,
+        wrong_guild_id::text
+      );
+      execute 'reset role';
+      insert into milestone_account_switcher_results values ('rls', 'direct_active_profile_write_denied', 'FAIL', 'Direct user_active_profiles insert succeeded.');
+    exception when others then
+      execute 'reset role';
+      insert into milestone_account_switcher_results values ('rls', 'direct_active_profile_write_denied', 'PASS', sqlerrm);
+    end;
+  exception when others then
+    begin
+      execute 'reset role';
+    exception when others then
+      null;
+    end;
+    insert into milestone_account_switcher_results values ('rls', 'direct_active_profile_write_denied', 'SKIP', sqlerrm);
+  end;
+
+  select count(*)
+  into owner_count
+  from public.guild_memberships gm
+  join public.profiles p on p.id = gm.profile_id
+  where gm.role = 'owner'
+    and gm.membership_status = 'active'
+    and p.approval_status = 'approved';
+
+  if owner_count = 1 then
+    insert into milestone_account_switcher_results values ('regression', 'active_owner_count_remains_one', 'PASS', 'Exactly one active approved Owner membership exists.');
+  else
+    insert into milestone_account_switcher_results values ('regression', 'active_owner_count_remains_one', 'FAIL', owner_count::text || ' active approved Owner memberships found.');
+  end if;
+end;
+$$;
+
 select section, test_name, status, details
 from milestone_push_notification_results
 order by section, test_name;
@@ -7369,5 +7705,14 @@ select count(*) filter (where status = 'PASS') as milestone_push_notifications_t
        count(*) filter (where status = 'FAIL') as milestone_push_notifications_total_fail,
        count(*) filter (where status = 'SKIP') as milestone_push_notifications_total_skip
 from milestone_push_notification_results;
+
+select section, test_name, status, details
+from milestone_account_switcher_results
+order by section, test_name;
+
+select count(*) filter (where status = 'PASS') as milestone_account_switcher_total_pass,
+       count(*) filter (where status = 'FAIL') as milestone_account_switcher_total_fail,
+       count(*) filter (where status = 'SKIP') as milestone_account_switcher_total_skip
+from milestone_account_switcher_results;
 
 rollback;

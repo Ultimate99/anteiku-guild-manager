@@ -1,5 +1,36 @@
 # Project State
 
+## Milestone 29B Account Switcher Backend Foundation Complete
+
+Account Switcher / multi-profile backend foundation is implemented, locally validated, and production applied through `20260531000100_account_switcher_foundation.sql`.
+
+Implemented:
+- New RPC-only tables: `user_profile_links` and `user_active_profiles`.
+- Private helper `private.get_active_profile_id()` for future active-profile resolution.
+- Self-link/backfill trigger for current one-auth-user/one-profile behavior.
+- Public switcher RPCs: `get_my_switchable_profiles()`, `get_my_active_profile()`, and `set_my_active_profile(p_profile_id uuid)`.
+- Owner-only link management RPCs: `owner_link_profile_to_auth_user(p_auth_email text, p_profile_slug text, p_link_type text default 'owner')` and `owner_unlink_profile_from_auth_user(p_auth_email text, p_profile_slug text)`.
+
+Behavior:
+- Existing app behavior is intentionally unchanged. Existing CP, GvG, 3v3, Wall, Profile Reaction, Cosmetics, Push, Admin, and auth RPCs still use the current one-profile assumptions until later approved milestones.
+- Existing profiles are self-linked to their matching auth user, preserving `auth.uid() === profiles.id` behavior for current users.
+- Active profile selection is stored but not yet wired into existing application systems.
+
+Security/CP privacy:
+- Direct anon/authenticated access to the new link tables is revoked and RLS is enabled.
+- Users can only switch to actively linked profiles through backend RPC checks.
+- Normal members cannot link/unlink profiles.
+- Switcher payloads return safe profile/guild/cosmetic/status fields only and no CP, email, auth secrets, admin/private metadata, `member_cp`, or `cp_snapshots`.
+- Active Owner count remains `1`.
+
+Validation:
+- `npx.cmd supabase db reset` passed locally through `20260531000100_account_switcher_foundation.sql`.
+- Full `supabase/tests/local_validation_anteiku.sql` passed through Docker `psql`.
+- Milestone 29B account switcher validation block passed `19 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed only `20260531000100_account_switcher_foundation.sql`.
+- Production migration apply passed and remote migration list shows `20260531000100` applied.
+- Production DB verification passed for table existence, RLS, no direct account-link table grants, five switcher RPCs with authenticated execute grants, `87` self-links for `87` profiles, active Owner count `1`, and direct member-context normal CP table reads returning `0` visible rows.
+
 ## Milestone 28 Push Notifications Production Complete
 
 Push Notifications backend/RPC, Profile Settings frontend, service worker handling, and the `send-push-notifications` Edge Function are live in production.

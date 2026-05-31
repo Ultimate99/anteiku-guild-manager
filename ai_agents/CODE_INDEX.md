@@ -1,5 +1,11 @@
 # Code Index
 
+## Milestone 29B Account Switcher Foundation
+
+- `supabase/migrations/20260531000100_account_switcher_foundation.sql`: Adds backend-only Account Switcher foundation. New tables are `user_profile_links` and `user_active_profiles`, with RLS enabled and direct anon/authenticated table grants revoked. Adds self-link/backfill trigger for current one-auth-user/one-profile behavior, `private.get_active_profile_id()`, switcher RPCs, and Owner-only link/unlink RPCs. Existing app systems are not switched to active-profile identity yet.
+- `supabase/tests/local_validation_anteiku.sql`: Adds Milestone 29B validation for table existence/RLS/no direct grants, self-link/backfill, safe switchable/active profile payloads, linked/unlinked/disabled active selection, Owner-only link/unlink, active-selection clearing on unlink, only-Owner safety, direct table denial, and active Owner count.
+- Production status: migration `20260531000100_account_switcher_foundation.sql` is applied to production after a clean dry-run; local Account Switcher validation passed `19 PASS / 0 FAIL / 0 SKIP`; production DB verification passed.
+
 ## Milestone 28 Push Notifications Production
 
 - Production migration `20260530000800_push_notifications_foundation.sql` is applied.
