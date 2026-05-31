@@ -9449,6 +9449,11 @@ declare
   status_a text;
   status_b text;
   reason_b text;
+  audit_actor_id uuid;
+  audit_target_id uuid;
+  audit_guild_id uuid;
+  audit_entity_table text;
+  audit_metadata jsonb;
 begin
   begin
     insert into auth.users (
@@ -9596,6 +9601,46 @@ begin
   end;
 
   begin
+    select count(*)
+    into row_count
+    from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public'
+      and p.proname = 'submit_gvg_vote'
+      and pg_get_functiondef(p.oid) ilike '%private.write_audit_log%'
+      and pg_get_functiondef(p.oid) ilike '%gvg_vote_submitted%'
+      and pg_get_functiondef(p.oid) not ilike '%member_cp%'
+      and pg_get_functiondef(p.oid) not ilike '%cp_snapshots%';
+
+    if row_count = 1 then
+      insert into milestone_active_profile_gvg_results values ('schema', 'gvg_vote_audit_is_active_profile_scoped', 'PASS', 'submit_gvg_vote writes a focused active-profile audit row without CP table references.');
+    else
+      insert into milestone_active_profile_gvg_results values ('schema', 'gvg_vote_audit_is_active_profile_scoped', 'FAIL', row_count::text || ' matching submit_gvg_vote definitions.');
+    end if;
+  exception when others then
+    insert into milestone_active_profile_gvg_results values ('schema', 'gvg_vote_audit_is_active_profile_scoped', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    select count(*)
+    into row_count
+    from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public'
+      and p.proname = 'set_gvg_event_status'
+      and pg_get_functiondef(p.oid) ilike '%actor_id uuid := auth.uid()%'
+      and pg_get_functiondef(p.oid) not ilike '%private.get_active_profile_id%';
+
+    if row_count = 1 then
+      insert into milestone_active_profile_gvg_results values ('schema', 'legacy_admin_gvg_audit_stays_legacy', 'PASS', 'Admin GvG event status audit remains auth.uid based until Admin migration.');
+    else
+      insert into milestone_active_profile_gvg_results values ('schema', 'legacy_admin_gvg_audit_stays_legacy', 'FAIL', row_count::text || ' legacy Admin GvG status definitions matched.');
+    end if;
+  exception when others then
+    insert into milestone_active_profile_gvg_results values ('schema', 'legacy_admin_gvg_audit_stays_legacy', 'FAIL', sqlerrm);
+  end;
+
+  begin
     perform set_config('request.jwt.claim.sub', member_id::text, true);
     perform set_config('request.jwt.claim.role', 'authenticated', true);
     delete from public.user_active_profiles where auth_user_id = member_id;
@@ -9710,6 +9755,45 @@ begin
     end if;
   exception when others then
     insert into milestone_active_profile_gvg_results values ('vote', 'active_profile_vote_update_one_row', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    select al.actor_profile_id,
+           al.target_profile_id,
+           al.guild_id,
+           al.entity_table,
+           al.metadata
+    into audit_actor_id,
+         audit_target_id,
+         audit_guild_id,
+         audit_entity_table,
+         audit_metadata
+    from public.audit_logs al
+    where al.action = 'gvg_vote_submitted'
+      and al.actor_profile_id = active_gvg_b_id
+      and al.target_profile_id = active_gvg_b_id
+      and al.metadata->>'event_id' = global_event_id::text
+      and al.metadata->>'vote_status_new' = 'present'
+    order by al.created_at desc
+    limit 1;
+
+    if audit_actor_id = active_gvg_b_id
+       and audit_target_id = active_gvg_b_id
+       and audit_guild_id is null
+       and audit_entity_table = 'gvg_votes'
+       and audit_metadata->>'event_scope' = 'global'
+       and audit_metadata->>'vote_status_old' = 'absent'
+       and audit_metadata->>'absence_reason_provided_old' = 'true'
+       and audit_metadata->>'absence_reason_provided_new' = 'false'
+       and audit_metadata::text not ilike '%Active profile B absence%'
+       and audit_metadata::text not ilike '%member_cp%'
+       and audit_metadata::text not ilike '%cp_snapshots%' then
+      insert into milestone_active_profile_gvg_results values ('audit', 'gvg_vote_audit_actor_matches_active_profile', 'PASS', audit_metadata::text);
+    else
+      insert into milestone_active_profile_gvg_results values ('audit', 'gvg_vote_audit_actor_matches_active_profile', 'FAIL', 'actor=' || coalesce(audit_actor_id::text, '<null>') || ' target=' || coalesce(audit_target_id::text, '<null>') || ' guild=' || coalesce(audit_guild_id::text, '<null>') || ' table=' || coalesce(audit_entity_table, '<null>') || ' metadata=' || coalesce(audit_metadata::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_profile_gvg_results values ('audit', 'gvg_vote_audit_actor_matches_active_profile', 'FAIL', sqlerrm);
   end;
 
   begin
