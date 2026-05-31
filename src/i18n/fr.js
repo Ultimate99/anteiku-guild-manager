@@ -538,6 +538,13 @@ export const fr = {
     limitedRolloutNote: 'Changer de profil recharge le contexte du profil actif dans toute l app.',
     rolloutNote: 'Le changement de compte est actif. Les vues protegees se rafraichissent apres un changement de profil.',
     actionsNotMigratedNotice: 'Changer de profil recharge le contexte du profil actif dans toute l app.',
+    linkAnotherAccount: 'Lier un autre compte',
+    linkAccountBody: 'Verifiez un second compte et ajoutez son profil a ce selecteur.',
+    linkAccountSafety: 'Le mot de passe sert uniquement a verifier le compte avec Supabase. Il n est pas stocke.',
+    verifiedLink: 'Verifie',
+    linkAccount: 'Lier le compte',
+    linkSuccess: 'Compte lie. Selecteur actualise.',
+    linkFailed: 'Compte impossible a lier. Verifiez l email et le mot de passe, puis reessayez.',
   },
   cosmetics: {
     customize: 'Personnaliser',

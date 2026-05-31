@@ -7697,6 +7697,152 @@ begin
 end;
 $$;
 
+create temp table if not exists milestone_automated_account_linking_results (
+  section text not null,
+  test_name text not null,
+  status text not null check (status in ('PASS', 'FAIL', 'SKIP')),
+  details text
+) on commit drop;
+
+do $$
+declare
+  anteiku_id constant uuid := '00000000-0000-0000-0000-000000000101';
+  account_a constant uuid := '20000000-0000-0000-0000-000000000101';
+  account_b constant uuid := '20000000-0000-0000-0000-000000000102';
+  account_c constant uuid := '20000000-0000-0000-0000-000000000103';
+  link_count integer;
+  owner_link_count integer;
+  verified_link_count integer;
+  payload jsonb;
+begin
+  begin
+    insert into auth.users (
+      instance_id,
+      id,
+      aud,
+      role,
+      email,
+      encrypted_password,
+      email_confirmed_at,
+      raw_app_meta_data,
+      raw_user_meta_data,
+      created_at,
+      updated_at
+    )
+    values
+      ('00000000-0000-0000-0000-000000000000', account_a, 'authenticated', 'authenticated', 'auto-link-a.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', account_b, 'authenticated', 'authenticated', 'auto-link-b.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', account_c, 'authenticated', 'authenticated', 'auto-link-c.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now())
+    on conflict (id) do nothing;
+
+    insert into public.profiles (id, username, profile_slug, ign, approval_status, approved_at)
+    values
+      (account_a, 'auto_link_a', 'auto_link_a', 'Auto Link A', 'approved', now()),
+      (account_b, 'auto_link_b', 'auto_link_b', 'Auto Link B', 'approved', now()),
+      (account_c, 'auto_link_c', 'auto_link_c', 'Auto Link C', 'approved', now())
+    on conflict (id) do update
+    set username = excluded.username,
+        profile_slug = excluded.profile_slug,
+        ign = excluded.ign,
+        approval_status = excluded.approval_status,
+        approved_at = excluded.approved_at;
+
+    insert into public.guild_memberships (profile_id, guild_id, role, membership_status, is_primary, assigned_by, roster_status)
+    values
+      (account_a, anteiku_id, 'member', 'active', true, account_a, 'active'),
+      (account_b, anteiku_id, 'member', 'active', true, account_a, 'active'),
+      (account_c, anteiku_id, 'member', 'active', true, account_a, 'active')
+    on conflict (profile_id, guild_id) do update
+    set role = excluded.role,
+        membership_status = excluded.membership_status,
+        is_primary = excluded.is_primary,
+        assigned_by = excluded.assigned_by,
+        roster_status = excluded.roster_status;
+
+    insert into milestone_automated_account_linking_results values ('setup', 'automated_link_test_accounts_seeded', 'PASS', 'Credential-link test accounts seeded locally.');
+  exception when others then
+    insert into milestone_automated_account_linking_results values ('setup', 'automated_link_test_accounts_seeded', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    insert into public.user_profile_links (auth_user_id, profile_id, link_type, is_primary, created_by_profile_id)
+    values (account_a, account_b, 'verified', false, account_a);
+
+    select count(*), count(*) filter (where link_type = 'owner'), count(*) filter (where link_type = 'verified')
+    into link_count, owner_link_count, verified_link_count
+    from public.user_profile_links
+    where profile_id = account_b
+      and disabled_at is null;
+
+    if link_count = 2 and owner_link_count = 1 and verified_link_count = 1 then
+      insert into milestone_automated_account_linking_results values ('schema', 'verified_link_coexists_with_owner_self_link', 'PASS', 'owner=1 verified=1');
+    else
+      insert into milestone_automated_account_linking_results values ('schema', 'verified_link_coexists_with_owner_self_link', 'FAIL', 'owner=' || owner_link_count || ', verified=' || verified_link_count || ', total=' || link_count);
+    end if;
+  exception when others then
+    insert into milestone_automated_account_linking_results values ('schema', 'verified_link_coexists_with_owner_self_link', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', account_a::text, true);
+    payload := public.set_my_active_profile(account_b);
+
+    if payload #>> '{profile,profile_id}' = account_b::text then
+      insert into milestone_automated_account_linking_results values ('rpc', 'verified_link_can_be_selected_active_profile', 'PASS', 'Verified profile selected.');
+    else
+      insert into milestone_automated_account_linking_results values ('rpc', 'verified_link_can_be_selected_active_profile', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_automated_account_linking_results values ('rpc', 'verified_link_can_be_selected_active_profile', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', account_a::text, true);
+    payload := public.get_my_switchable_profiles();
+
+    if payload::text like '%' || account_b::text || '%'
+       and payload::text not ilike '%member_cp%'
+       and payload::text not ilike '%cp_snapshots%'
+       and payload::text not ilike '%cp_value%' then
+      insert into milestone_automated_account_linking_results values ('security', 'switcher_payload_has_verified_profile_no_cp', 'PASS', 'Verified link appears without CP fields.');
+    else
+      insert into milestone_automated_account_linking_results values ('security', 'switcher_payload_has_verified_profile_no_cp', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_automated_account_linking_results values ('security', 'switcher_payload_has_verified_profile_no_cp', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    insert into public.user_profile_links (auth_user_id, profile_id, link_type, is_primary, created_by_profile_id)
+    values (account_c, account_b, 'owner', false, account_c);
+    insert into milestone_automated_account_linking_results values ('security', 'second_owner_link_still_blocked', 'FAIL', 'Second owner link inserted.');
+  exception when others then
+    insert into milestone_automated_account_linking_results values ('security', 'second_owner_link_still_blocked', 'PASS', sqlerrm);
+  end;
+
+  select count(*)
+  into owner_link_count
+  from public.guild_memberships gm
+  join public.profiles p on p.id = gm.profile_id
+  where gm.role = 'owner'
+    and gm.membership_status = 'active'
+    and p.approval_status = 'approved';
+
+  if owner_link_count = 1 then
+    insert into milestone_automated_account_linking_results values ('regression', 'active_owner_count_remains_one', 'PASS', 'Exactly one active approved Owner membership exists.');
+  else
+    insert into milestone_automated_account_linking_results values ('regression', 'active_owner_count_remains_one', 'FAIL', owner_link_count::text || ' active approved Owner memberships found.');
+  end if;
+end;
+$$;
+
+select * from milestone_automated_account_linking_results order by section, test_name;
+select
+  count(*) filter (where status = 'PASS') as milestone_automated_account_linking_total_pass,
+  count(*) filter (where status = 'FAIL') as milestone_automated_account_linking_total_fail,
+  count(*) filter (where status = 'SKIP') as milestone_automated_account_linking_total_skip
+from milestone_automated_account_linking_results;
+
 create temp table if not exists milestone_active_profile_profile_results (
   section text not null,
   test_name text not null,

@@ -1,4 +1,5 @@
-import { supabase } from '../config/supabaseClient.js';
+import { createClient } from '@supabase/supabase-js';
+import { supabase, supabaseAnonKey, supabaseUrl } from '../config/supabaseClient.js';
 
 const SAFE_AVATAR_PREFIX = '/cosmetics/avatars/';
 const SAFE_FRAME_PREFIX = '/cosmetics/frames/';
@@ -22,6 +23,14 @@ function requireSupabase() {
   }
 
   return supabase;
+}
+
+function requireSupabaseConfig() {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Supabase is not configured.');
+  }
+
+  return { supabaseUrl, supabaseAnonKey };
 }
 
 function safeString(value) {
@@ -138,4 +147,56 @@ export async function setActiveProfile(profileId) {
   assertNoPrivateAccountSwitcherFields(data);
 
   return mapProfile(data?.profile);
+}
+
+export async function linkAccountWithCredentials({ email, password }) {
+  const client = requireSupabase();
+  const { supabaseUrl: configuredUrl, supabaseAnonKey: configuredAnonKey } = requireSupabaseConfig();
+  const normalizedEmail = safeString(email).toLowerCase();
+
+  if (!normalizedEmail || !password) {
+    throw new Error('Account could not be linked.');
+  }
+
+  const temporaryClient = createClient(configuredUrl, configuredAnonKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+      storageKey: `agm-temp-link-${Date.now()}`,
+    },
+  });
+
+  try {
+    const { data: verificationState, error: verificationError } = await temporaryClient.auth.signInWithPassword({
+      email: normalizedEmail,
+      password,
+    });
+
+    const verifiedAccessToken = verificationState?.session?.access_token;
+
+    if (verificationError || !verifiedAccessToken) {
+      throw new Error('Account could not be linked.');
+    }
+
+    const { data, error } = await client.functions.invoke('link-profile-by-token', {
+      body: {
+        account_b_access_token: verifiedAccessToken,
+      },
+    });
+
+    if (error || data?.error) {
+      throw new Error('Account could not be linked.');
+    }
+
+    assertNoPrivateAccountSwitcherFields(data);
+
+    return {
+      linked: Boolean(data?.linked),
+      alreadyLinked: Boolean(data?.already_linked),
+      profile: mapProfile(data?.profile),
+    };
+  } finally {
+    await temporaryClient.auth.signOut().catch(() => {});
+  }
 }

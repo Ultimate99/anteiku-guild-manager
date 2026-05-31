@@ -33,6 +33,7 @@ import {
   updateMyPushPreferences,
 } from '../services/pushNotificationService.js';
 import {
+  linkAccountWithCredentials,
   loadActiveProfile,
   loadSwitchableProfiles,
   setActiveProfile,
@@ -109,6 +110,9 @@ export function Profile() {
   const [accountSwitchingProfileId, setAccountSwitchingProfileId] = useState('');
   const [accountMessage, setAccountMessage] = useState('');
   const [accountError, setAccountError] = useState('');
+  const [linkAccountEmail, setLinkAccountEmail] = useState('');
+  const [linkAccountPassword, setLinkAccountPassword] = useState('');
+  const [accountLinking, setAccountLinking] = useState(false);
   const legacyProfileId = profile?.id ?? null;
   const activeProfileId = activeProfileDetails?.profileId ?? null;
   const activeProfileReady = activeProfileChecked && Boolean(activeProfileId);
@@ -620,6 +624,29 @@ export function Profile() {
       setAccountError(switchError.message || t('accountSwitcher.switchError'));
     } finally {
       setAccountSwitchingProfileId('');
+    }
+  }
+
+  async function linkAnotherAccount(event) {
+    event.preventDefault();
+
+    setAccountLinking(true);
+    setAccountError('');
+    setAccountMessage('');
+
+    try {
+      await linkAccountWithCredentials({
+        email: linkAccountEmail,
+        password: linkAccountPassword,
+      });
+      setLinkAccountEmail('');
+      await refreshAccountSwitcher();
+      setAccountMessage(t('accountSwitcher.linkSuccess'));
+    } catch (_linkError) {
+      setAccountError(t('accountSwitcher.linkFailed'));
+    } finally {
+      setLinkAccountPassword('');
+      setAccountLinking(false);
     }
   }
 
@@ -1152,6 +1179,48 @@ export function Profile() {
                   );
                 })}
               </div>
+
+              <form className="account-link-form" onSubmit={linkAnotherAccount}>
+                <div className="account-link-heading">
+                  <div>
+                    <h5>{t('accountSwitcher.linkAnotherAccount')}</h5>
+                    <p>{t('accountSwitcher.linkAccountBody')}</p>
+                  </div>
+                  <StatusBadge tone="muted">{t('accountSwitcher.verifiedLink')}</StatusBadge>
+                </div>
+                <p className="account-link-safety">{t('accountSwitcher.linkAccountSafety')}</p>
+                <div className="account-link-fields">
+                  <label>
+                    <span>{t('auth.email')}</span>
+                    <input
+                      type="email"
+                      value={linkAccountEmail}
+                      onChange={(event) => setLinkAccountEmail(event.target.value)}
+                      placeholder={t('auth.emailPlaceholder')}
+                      autoComplete="email"
+                      disabled={accountLinking}
+                    />
+                  </label>
+                  <label>
+                    <span>{t('auth.password')}</span>
+                    <input
+                      type="password"
+                      value={linkAccountPassword}
+                      onChange={(event) => setLinkAccountPassword(event.target.value)}
+                      placeholder={t('auth.passwordPlaceholder')}
+                      autoComplete="current-password"
+                      disabled={accountLinking}
+                    />
+                  </label>
+                </div>
+                <button
+                  type="submit"
+                  className="primary-action account-link-submit"
+                  disabled={accountLinking || !linkAccountEmail.trim() || !linkAccountPassword}
+                >
+                  {accountLinking ? t('common.working') : t('accountSwitcher.linkAccount')}
+                </button>
+              </form>
             </div>
 
             <div className="push-settings-card">

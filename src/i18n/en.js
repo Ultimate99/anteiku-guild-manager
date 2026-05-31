@@ -537,6 +537,13 @@ export const en = {
     limitedRolloutNote: 'Switching profiles reloads your active profile context across the app.',
     rolloutNote: 'Account switching is active. Protected views refresh after switching profiles.',
     actionsNotMigratedNotice: 'Switching profiles reloads your active profile context across the app.',
+    linkAnotherAccount: 'Link another account',
+    linkAccountBody: 'Verify a second account and add its profile to this switcher.',
+    linkAccountSafety: 'Your password is only used to verify the account with Supabase. It is not stored.',
+    verifiedLink: 'Verified',
+    linkAccount: 'Link Account',
+    linkSuccess: 'Account linked. Switcher refreshed.',
+    linkFailed: 'Account could not be linked. Check the email and password, then try again.',
   },
   cosmetics: {
     customize: 'Customize',

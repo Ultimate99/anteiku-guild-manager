@@ -538,6 +538,13 @@ export const de = {
     limitedRolloutNote: 'Beim Profilwechsel wird dein aktiver Profilkontext in der ganzen App neu geladen.',
     rolloutNote: 'Der Account-Wechsel ist aktiv. Geschuetzte Ansichten aktualisieren sich nach dem Profilwechsel.',
     actionsNotMigratedNotice: 'Beim Profilwechsel wird dein aktiver Profilkontext in der ganzen App neu geladen.',
+    linkAnotherAccount: 'Weiteres Konto verknuepfen',
+    linkAccountBody: 'Verifiziere ein zweites Konto und fuege sein Profil diesem Wechsler hinzu.',
+    linkAccountSafety: 'Das Passwort wird nur zur Verifizierung mit Supabase verwendet. Es wird nicht gespeichert.',
+    verifiedLink: 'Verifiziert',
+    linkAccount: 'Konto verknuepfen',
+    linkSuccess: 'Konto verknuepft. Wechsler aktualisiert.',
+    linkFailed: 'Konto konnte nicht verknuepft werden. Pruefe E-Mail und Passwort und versuche es erneut.',
   },
   cosmetics: {
     customize: 'Anpassen',
