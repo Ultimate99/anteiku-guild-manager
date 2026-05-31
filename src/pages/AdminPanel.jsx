@@ -768,7 +768,13 @@ export function AdminPanel({
     return () => {
       cancelled = true;
     };
-  }, [activeAdminContext?.permissionKeys, canViewAdmin, membership?.role]);
+  }, [
+    activeAdminContext?.activeProfileId,
+    activeAdminContext?.guildId,
+    activeAdminContext?.permissionKeys,
+    canViewAdmin,
+    membership?.role,
+  ]);
 
   useEffect(() => {
     if (permissionLoading || visibleTabs.length === 0) {

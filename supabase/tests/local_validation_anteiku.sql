@@ -10544,10 +10544,10 @@ begin
     )
     and pg_get_functiondef(p.oid) ilike '%private.active_admin_profile_id%';
 
-  if row_count = 0 then
-    insert into milestone_active_admin_non_cp_results values ('regression', 'cp_admin_rpcs_not_migrated_in_29e8d', 'PASS', 'CP-heavy Admin RPCs remain out of scope.');
+  if row_count >= 5 then
+    insert into milestone_active_admin_non_cp_results values ('regression', 'cp_admin_rpcs_migrated_after_29e8d', 'PASS', row_count::text || ' CP-heavy RPC definitions now reference active-admin helper.');
   else
-    insert into milestone_active_admin_non_cp_results values ('regression', 'cp_admin_rpcs_not_migrated_in_29e8d', 'FAIL', row_count::text || ' CP-heavy RPCs referenced active-admin helper.');
+    insert into milestone_active_admin_non_cp_results values ('regression', 'cp_admin_rpcs_migrated_after_29e8d', 'FAIL', row_count::text || ' CP-heavy RPC definitions referenced active-admin helper.');
   end if;
 
   begin
@@ -10581,6 +10581,321 @@ begin
     insert into milestone_active_admin_non_cp_results values ('regression', 'active_owner_count_remains_one', 'PASS', 'Exactly one active approved Owner membership exists.');
   else
     insert into milestone_active_admin_non_cp_results values ('regression', 'active_owner_count_remains_one', 'FAIL', owner_count::text || ' active approved Owners found.');
+  end if;
+end;
+$$;
+
+create temp table if not exists milestone_active_admin_cp_analytics_audit_results (
+  section text not null,
+  test_name text not null,
+  status text not null check (status in ('PASS', 'FAIL', 'SKIP')),
+  details text
+) on commit drop;
+
+do $$
+declare
+  anteiku_id constant uuid := '00000000-0000-0000-0000-000000000101';
+  anteiku_re_id constant uuid := '00000000-0000-0000-0000-000000000102';
+  owner_id constant uuid := '10000000-0000-0000-0000-000000000001';
+  leader_id constant uuid := '10000000-0000-0000-0000-000000000002';
+  admin_no_cp_id constant uuid := '10000000-0000-0000-0000-000000000004';
+  admin_cp_id constant uuid := '10000000-0000-0000-0000-000000000005';
+  member_id constant uuid := '10000000-0000-0000-0000-000000000006';
+  active_admin_member_id constant uuid := '10000000-0000-0000-0000-000000000120';
+  admin_no_cp_membership_id uuid;
+  row_count integer;
+  direct_count integer;
+  updated_cp public.member_cp%rowtype;
+  snapshot_row record;
+  owner_count integer;
+begin
+  begin
+    select count(*)
+    into row_count
+    from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public'
+      and p.proname in (
+        'get_cp_update_window_for_guild',
+        'update_member_cp',
+        'get_current_cp_roster',
+        'get_admin_cp_rankings',
+        'open_cp_update_window',
+        'close_cp_update_window',
+        'get_admin_member_analytics',
+        'get_admin_cp_analytics',
+        'get_admin_gvg_analytics',
+        'start_new_cp_growth_period',
+        'get_admin_cp_snapshot_history',
+        'get_admin_cp_growth_report',
+        'get_admin_live_cp_growth',
+        'get_audit_logs'
+      )
+      and pg_get_functiondef(p.oid) ilike '%private.active_admin_profile_id%';
+
+    if row_count = 14 then
+      insert into milestone_active_admin_cp_analytics_audit_results values ('schema', 'cp_analytics_audit_rpcs_use_active_admin', 'PASS', 'All in-scope RPC definitions use active-admin identity.');
+    else
+      insert into milestone_active_admin_cp_analytics_audit_results values ('schema', 'cp_analytics_audit_rpcs_use_active_admin', 'FAIL', row_count::text || ' matching RPC definitions.');
+    end if;
+  exception when others then
+    insert into milestone_active_admin_cp_analytics_audit_results values ('schema', 'cp_analytics_audit_rpcs_use_active_admin', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    delete from public.user_active_profiles where auth_user_id = owner_id;
+
+    select count(*) into row_count
+    from public.get_admin_cp_rankings(null, 'global');
+
+    if row_count > 0 then
+      insert into milestone_active_admin_cp_analytics_audit_results values ('rpc', 'active_owner_global_cp_ranking_allowed', 'PASS', row_count::text || ' rows.');
+    else
+      insert into milestone_active_admin_cp_analytics_audit_results values ('rpc', 'active_owner_global_cp_ranking_allowed', 'FAIL', 'No global ranking rows returned.');
+    end if;
+  exception when others then
+    insert into milestone_active_admin_cp_analytics_audit_results values ('rpc', 'active_owner_global_cp_ranking_allowed', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    perform public.set_my_active_profile(active_admin_member_id);
+
+    perform public.get_current_cp_roster(anteiku_id);
+    insert into milestone_active_admin_cp_analytics_audit_results values ('security', 'linked_owner_active_member_cp_roster_denied', 'FAIL', 'Active Member inherited Owner CP roster.');
+  exception when others then
+    insert into milestone_active_admin_cp_analytics_audit_results values ('security', 'linked_owner_active_member_cp_roster_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    perform public.set_my_active_profile(active_admin_member_id);
+
+    perform public.get_admin_cp_analytics(anteiku_id);
+    insert into milestone_active_admin_cp_analytics_audit_results values ('security', 'linked_owner_active_member_cp_analytics_denied', 'FAIL', 'Active Member inherited Owner CP analytics.');
+  exception when others then
+    insert into milestone_active_admin_cp_analytics_audit_results values ('security', 'linked_owner_active_member_cp_analytics_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_cp_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    delete from public.user_active_profiles where auth_user_id = admin_cp_id;
+
+    select count(*) into row_count
+    from public.get_current_cp_roster(anteiku_id);
+
+    if row_count > 0 then
+      insert into milestone_active_admin_cp_analytics_audit_results values ('rpc', 'scoped_view_cp_staff_cp_roster_allowed', 'PASS', row_count::text || ' rows.');
+    else
+      insert into milestone_active_admin_cp_analytics_audit_results values ('rpc', 'scoped_view_cp_staff_cp_roster_allowed', 'FAIL', 'No own-guild CP rows returned.');
+    end if;
+  exception when others then
+    insert into milestone_active_admin_cp_analytics_audit_results values ('rpc', 'scoped_view_cp_staff_cp_roster_allowed', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_cp_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    delete from public.user_active_profiles where auth_user_id = admin_cp_id;
+
+    perform public.get_current_cp_roster(anteiku_re_id);
+    insert into milestone_active_admin_cp_analytics_audit_results values ('scope', 'scoped_view_cp_staff_wrong_guild_denied', 'FAIL', 'Scoped CP staff read wrong-guild roster.');
+  exception when others then
+    insert into milestone_active_admin_cp_analytics_audit_results values ('scope', 'scoped_view_cp_staff_wrong_guild_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_no_cp_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    delete from public.user_active_profiles where auth_user_id = admin_no_cp_id;
+
+    perform public.get_admin_cp_analytics(anteiku_id);
+    insert into milestone_active_admin_cp_analytics_audit_results values ('security', 'admin_without_view_cp_cp_analytics_denied', 'FAIL', 'No-view_cp Admin read CP analytics.');
+  exception when others then
+    insert into milestone_active_admin_cp_analytics_audit_results values ('security', 'admin_without_view_cp_cp_analytics_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_no_cp_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    delete from public.user_active_profiles where auth_user_id = admin_no_cp_id;
+
+    perform public.get_admin_cp_rankings(anteiku_id, 'guild');
+    insert into milestone_active_admin_cp_analytics_audit_results values ('security', 'admin_without_view_cp_cp_ranking_denied', 'FAIL', 'No-view_cp Admin read CP ranking.');
+  exception when others then
+    insert into milestone_active_admin_cp_analytics_audit_results values ('security', 'admin_without_view_cp_cp_ranking_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_cp_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    delete from public.user_active_profiles where auth_user_id = admin_cp_id;
+
+    updated_cp := public.update_member_cp(member_id, 765432, 'active-admin CP analytics audit validation');
+
+    if updated_cp.updated_by = admin_cp_id and updated_cp.cp_value = 765432 then
+      insert into milestone_active_admin_cp_analytics_audit_results values ('rpc', 'scoped_cp_update_uses_active_actor', 'PASS', row_to_json(updated_cp)::text);
+    else
+      insert into milestone_active_admin_cp_analytics_audit_results values ('rpc', 'scoped_cp_update_uses_active_actor', 'FAIL', coalesce(row_to_json(updated_cp)::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_admin_cp_analytics_audit_results values ('rpc', 'scoped_cp_update_uses_active_actor', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    delete from public.user_active_profiles where auth_user_id = owner_id;
+
+    select * into snapshot_row
+    from public.start_new_cp_growth_period(anteiku_id, 'active-admin CP analytics audit validation');
+
+    if snapshot_row.batch_id is not null and snapshot_row.guild_id = anteiku_id and snapshot_row.captured_count > 0 then
+      insert into milestone_active_admin_cp_analytics_audit_results values ('rpc', 'active_owner_starts_scoped_growth_period', 'PASS', row_to_json(snapshot_row)::text);
+    else
+      insert into milestone_active_admin_cp_analytics_audit_results values ('rpc', 'active_owner_starts_scoped_growth_period', 'FAIL', coalesce(row_to_json(snapshot_row)::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_admin_cp_analytics_audit_results values ('rpc', 'active_owner_starts_scoped_growth_period', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_no_cp_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    delete from public.user_active_profiles where auth_user_id = admin_no_cp_id;
+
+    perform public.start_new_cp_growth_period(anteiku_id, 'blocked no-view-cp validation');
+    insert into milestone_active_admin_cp_analytics_audit_results values ('security', 'admin_without_view_cp_start_growth_denied', 'FAIL', 'No-view_cp Admin started CP growth period.');
+  exception when others then
+    insert into milestone_active_admin_cp_analytics_audit_results values ('security', 'admin_without_view_cp_start_growth_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_cp_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    delete from public.user_active_profiles where auth_user_id = admin_cp_id;
+
+    select count(*) into row_count
+    from public.get_admin_live_cp_growth(anteiku_id);
+
+    if row_count > 0 then
+      insert into milestone_active_admin_cp_analytics_audit_results values ('rpc', 'scoped_view_cp_staff_live_growth_allowed', 'PASS', row_count::text || ' rows.');
+    else
+      insert into milestone_active_admin_cp_analytics_audit_results values ('rpc', 'scoped_view_cp_staff_live_growth_allowed', 'FAIL', 'No live growth rows returned.');
+    end if;
+  exception when others then
+    insert into milestone_active_admin_cp_analytics_audit_results values ('rpc', 'scoped_view_cp_staff_live_growth_allowed', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    perform public.set_my_active_profile(active_admin_member_id);
+
+    perform public.get_audit_logs(anteiku_id, null, null, null, null, null, 10, null);
+    insert into milestone_active_admin_cp_analytics_audit_results values ('security', 'linked_owner_active_member_audit_denied', 'FAIL', 'Active Member inherited Owner audit logs.');
+  exception when others then
+    insert into milestone_active_admin_cp_analytics_audit_results values ('security', 'linked_owner_active_member_audit_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    select gm.id into admin_no_cp_membership_id
+    from public.guild_memberships gm
+    where gm.profile_id = admin_no_cp_id
+      and gm.guild_id = anteiku_id
+      and gm.role = 'admin'
+    limit 1;
+
+    insert into public.admin_permissions (membership_id, permission_key, granted_by)
+    values (admin_no_cp_membership_id, 'view_audit_logs', owner_id)
+    on conflict (membership_id, permission_key) do nothing;
+
+    perform set_config('request.jwt.claim.sub', admin_no_cp_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    delete from public.user_active_profiles where auth_user_id = admin_no_cp_id;
+
+    select count(*) into row_count
+    from public.get_audit_logs(anteiku_id, 'member_cp_updated', null, null, null, null, 100, null) r
+    where r.metadata_redacted = true
+      and r.metadata ? 'cp_metadata_redacted'
+      and not (r.metadata ? 'cp_new')
+      and not (r.metadata ? 'cp_old');
+
+    if row_count > 0 then
+      insert into milestone_active_admin_cp_analytics_audit_results values ('security', 'audit_cp_metadata_redacted_without_active_view_cp', 'PASS', row_count::text || ' redacted CP audit rows.');
+    else
+      insert into milestone_active_admin_cp_analytics_audit_results values ('security', 'audit_cp_metadata_redacted_without_active_view_cp', 'FAIL', 'No redacted CP audit rows found.');
+    end if;
+  exception when others then
+    insert into milestone_active_admin_cp_analytics_audit_results values ('security', 'audit_cp_metadata_redacted_without_active_view_cp', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', leader_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    delete from public.user_active_profiles where auth_user_id = leader_id;
+
+    select count(*) into row_count
+    from public.get_audit_logs(anteiku_id, 'member_cp_updated', null, null, null, null, 100, null) r
+    where r.metadata_redacted = false
+      and r.metadata ? 'cp_new';
+
+    if row_count > 0 then
+      insert into milestone_active_admin_cp_analytics_audit_results values ('security', 'audit_cp_metadata_visible_with_active_view_cp', 'PASS', row_count::text || ' visible CP audit rows.');
+    else
+      insert into milestone_active_admin_cp_analytics_audit_results values ('security', 'audit_cp_metadata_visible_with_active_view_cp', 'FAIL', 'No unredacted CP audit rows found.');
+    end if;
+  exception when others then
+    insert into milestone_active_admin_cp_analytics_audit_results values ('security', 'audit_cp_metadata_visible_with_active_view_cp', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    delete from public.user_active_profiles where auth_user_id = member_id;
+
+    execute 'set local role authenticated';
+    select count(*) into direct_count from public.audit_logs;
+    execute 'reset role';
+
+    if direct_count = 0 then
+      insert into milestone_active_admin_cp_analytics_audit_results values ('rls', 'member_direct_audit_logs_still_blocked', 'PASS', 'Direct audit_logs read returned no rows.');
+    else
+      insert into milestone_active_admin_cp_analytics_audit_results values ('rls', 'member_direct_audit_logs_still_blocked', 'FAIL', direct_count::text || ' audit rows visible.');
+    end if;
+  exception when others then
+    execute 'reset role';
+    insert into milestone_active_admin_cp_analytics_audit_results values ('rls', 'member_direct_audit_logs_still_blocked', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    delete from public.user_active_profiles where auth_user_id = member_id;
+
+    perform public.get_current_cp_roster(anteiku_id);
+    insert into milestone_active_admin_cp_analytics_audit_results values ('security', 'normal_member_admin_cp_rpc_denied', 'FAIL', 'Normal member read Admin CP roster.');
+  exception when others then
+    insert into milestone_active_admin_cp_analytics_audit_results values ('security', 'normal_member_admin_cp_rpc_denied', 'PASS', sqlerrm);
+  end;
+
+  select count(*)
+  into owner_count
+  from public.guild_memberships gm
+  join public.profiles p on p.id = gm.profile_id
+  where gm.role = 'owner'
+    and gm.membership_status = 'active'
+    and p.approval_status = 'approved';
+
+  if owner_count = 1 then
+    insert into milestone_active_admin_cp_analytics_audit_results values ('regression', 'active_owner_count_remains_one', 'PASS', 'Exactly one active approved Owner membership exists.');
+  else
+    insert into milestone_active_admin_cp_analytics_audit_results values ('regression', 'active_owner_count_remains_one', 'FAIL', owner_count::text || ' active approved Owners found.');
   end if;
 end;
 $$;
@@ -10674,5 +10989,14 @@ select count(*) filter (where status = 'PASS') as milestone_active_admin_non_cp_
        count(*) filter (where status = 'FAIL') as milestone_active_admin_non_cp_total_fail,
        count(*) filter (where status = 'SKIP') as milestone_active_admin_non_cp_total_skip
 from milestone_active_admin_non_cp_results;
+
+select section, test_name, status, details
+from milestone_active_admin_cp_analytics_audit_results
+order by section, test_name;
+
+select count(*) filter (where status = 'PASS') as milestone_active_admin_cp_analytics_audit_total_pass,
+       count(*) filter (where status = 'FAIL') as milestone_active_admin_cp_analytics_audit_total_fail,
+       count(*) filter (where status = 'SKIP') as milestone_active_admin_cp_analytics_audit_total_skip
+from milestone_active_admin_cp_analytics_audit_results;
 
 rollback;
