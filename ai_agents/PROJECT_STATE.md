@@ -1,5 +1,37 @@
 # Project State
 
+## Milestone 29E.2 Guild Wall + Profile Reactions Active Profile Migration Live
+
+Guild Wall / Global Wall actions and Public Profile reactions are migrated to active-profile identity and live in production through commit `db2b9e5 feat: migrate wall reactions to active profile`.
+
+Implemented:
+- New migration `20260531000300_active_profile_wall_reactions.sql`.
+- Wall and Profile Reaction RPCs now resolve actor identity through `private.get_active_profile_id()` where actions/viewer state require the selected active profile.
+- Active-profile Wall surfaces include feed viewer flags, post/comment create, own delete, post/comment reactions, reaction details, and moderation flags/RPCs.
+- `GuildWall.jsx` now uses the active profile summary for My Org scope selection while preserving Global scope as null/global.
+- Public Profile reaction add/remove and viewer state now use active-profile identity.
+
+Behavior:
+- Creating Wall/Global Wall posts, comments, and reactions uses the selected active profile.
+- Own post/comment delete uses the selected active profile for ownership checks.
+- Profile reactions add/remove as the selected active profile.
+- My Org feed uses the selected active profile's guild context; Global remains global-only and does not mix guild posts.
+- CP get/submit, GvG, 3v3, Push preferences/subscriptions, Admin permissions/actions, Analytics, and audit actor behavior remain intentionally unmigrated in this milestone.
+
+Security/CP privacy:
+- Frontend still uses RPC-only Wall/Public Profile paths and does not direct-read or direct-write wall/profile reaction tables.
+- No normal CP, `member_cp`, `cp_snapshots`, CP RPCs, email/auth/admin/private metadata, service-role path, localStorage authority, uploads, or Storage behavior was added.
+- Production DB verification confirmed Wall/Profile Reaction RPCs use `private.get_active_profile_id()`, active Owner count remains `1`, and simulated normal-member direct reads of `member_cp` and `cp_snapshots` returned zero visible rows.
+
+Validation:
+- Local DB reset passed through `20260531000300_active_profile_wall_reactions.sql`.
+- Full local validation passed; the new active-profile Wall/Profile Reactions block reported `16 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production dry-run showed only `20260531000300_active_profile_wall_reactions.sql`; production migration apply passed and remote migration list shows it applied.
+- Commit `db2b9e5 feat: migrate wall reactions to active profile` is pushed to `main`.
+- Production smoke passed for Guild Wall load, Global/My Org scope load, active-profile Wall post create/reaction/delete, Public Profile safe render/reaction detail, and controlled RPC smoke for comment create/react/delete plus profile reaction add/remove.
+- No CP/private data or captured console errors were observed.
+
 ## Milestone 29E.1 Own Profile + Cosmetics Active Profile Migration Live
 
 Own Profile identity/edit and Cosmetics read/equip are migrated to active-profile identity and live in production through commit `401e67e feat: migrate profile cosmetics to active profile`.

@@ -1,5 +1,27 @@
 # Security Rules
 
+## Active Profile Wall/Profile Reaction Security Rules
+
+Milestone 29E.2 Guild Wall / Global Wall and Public Profile reactions active-profile migration is live in production through `20260531000300_active_profile_wall_reactions.sql` and commit `db2b9e5 feat: migrate wall reactions to active profile`.
+
+Rules:
+- Wall and Profile Reaction actor identity must resolve through `private.get_active_profile_id()` for migrated actions/viewer state.
+- Frontend must not provide arbitrary actor profile ids for Wall posts, comments, reactions, own deletes, profile reactions, or reaction details.
+- Guild Wall and Global Wall frontend access must continue through RPC service wrappers only.
+- Public Profile reaction writes/details must continue through RPC service wrappers only.
+- My Org scope may use the safe active profile summary for selected guild context; Global scope remains null/global and must not mix guild-scoped posts.
+- CP get/submit, GvG vote, 3v3 actions, Push preferences/subscriptions, Admin permissions/actions, Analytics, and audit actor behavior remain separate future migrations.
+
+Privacy:
+- Wall/Profile Reaction payloads may show safe public profile, guild, cosmetic, reaction, and timestamp fields only.
+- They must not return or display normal CP, `member_cp`, `cp_snapshots`, email, auth secrets, passwords, service-role data, admin private metadata, audit-private metadata, or arbitrary linked profile ids.
+
+Validation status:
+- Local validation passed with the active-profile Wall/Profile Reactions block at `16 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed only `20260531000300_active_profile_wall_reactions.sql`; production apply passed and migration list shows it applied.
+- Production DB verification confirmed migrated Wall/Profile Reaction RPCs use `private.get_active_profile_id()`, active Owner count remains `1`, and simulated normal-member direct reads of `member_cp` and `cp_snapshots` returned zero visible rows.
+- Production smoke passed for Guild Wall load, Global/My Org scope load, active-profile Wall post create/reaction/delete, Public Profile safe render/reaction detail, controlled RPC smoke for comment create/react/delete and profile reaction add/remove, and no captured console errors.
+
 ## Active Profile Profile/Cosmetics Security Rules
 
 Milestone 29E.1 Own Profile + Cosmetics active-profile migration is live in production through `20260531000200_active_profile_profile_cosmetics.sql` and commit `401e67e feat: migrate profile cosmetics to active profile`.

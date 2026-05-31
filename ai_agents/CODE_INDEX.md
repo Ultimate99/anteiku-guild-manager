@@ -1,5 +1,12 @@
 # Code Index
 
+## Milestone 29E.2 Guild Wall + Profile Reactions Active Profile Migration
+
+- `supabase/migrations/20260531000300_active_profile_wall_reactions.sql`: Migrates Guild Wall / Global Wall and Public Profile reaction actor/viewer state to `private.get_active_profile_id()`. Covers Wall feed viewer flags, post/comment create, own delete, post/comment reactions, reaction details, moderation flags/RPCs, and Public Profile reaction add/remove/viewer state.
+- `supabase/tests/local_validation_anteiku.sql`: Adds Milestone 29E.2 validation for active-profile Wall post/comment/reaction identity, own delete scope, profile reaction add/remove identity, reaction detail safety, self-reaction behavior, My Org/global scope behavior, denied restricted contexts, normal CP protection, and active Owner count.
+- `src/pages/GuildWall.jsx`: Uses `useActiveProfileSummary()` for safe active-profile My Org scope selection while preserving Global as null/global-only. Existing Wall service/RPC-only paths remain unchanged.
+- Production status: migration `20260531000300_active_profile_wall_reactions.sql` is applied, commit `db2b9e5 feat: migrate wall reactions to active profile` is deployed, local validation passed `16 PASS / 0 FAIL / 0 SKIP`, build/source validation passed, and production smoke passed for Wall/Profile Reaction active-profile behavior.
+
 ## Milestone 29E.1 Own Profile + Cosmetics Active Profile Migration
 
 - `supabase/migrations/20260531000200_active_profile_profile_cosmetics.sql`: Adds active-profile-aware own Profile and Cosmetics RPCs. All identity resolution uses `private.get_active_profile_id()`, not frontend-supplied profile ids. Adds `get_my_active_profile_details`, `update_my_active_profile`, `get_my_active_cosmetics`, `equip_my_active_avatar`, and `equip_my_active_frame`.

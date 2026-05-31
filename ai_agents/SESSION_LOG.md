@@ -1,5 +1,24 @@
 # Session Log
 
+## 2026-05-31 - Milestone 29E.2 Guild Wall + Profile Reactions Active Profile Migration
+
+- Implemented active-profile migration for Guild Wall / Global Wall actions and Public Profile reactions.
+- Added migration `supabase/migrations/20260531000300_active_profile_wall_reactions.sql`.
+- Updated Wall/Profile Reaction RPCs so migrated actor/viewer state resolves through `private.get_active_profile_id()`.
+- Covered Wall feed viewer flags, post/comment create, own delete, post/comment reactions, reaction details, moderation flags/RPCs, and Public Profile reaction add/remove/viewer state.
+- Updated `src/pages/GuildWall.jsx` so My Org scope uses active profile guild context while Global remains null/global-only.
+- Local DB reset passed through the new migration.
+- Full local validation passed; the active-profile Wall/Profile Reactions block reported `16 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no normal CP RPC/table usage, no direct Wall/Profile Reaction table calls from frontend, no service-role path, and no localStorage authority in the touched path except existing defensive deny-list strings.
+- Production dry-run showed only `20260531000300_active_profile_wall_reactions.sql`.
+- Production migration apply passed and remote migration list shows `20260531000300` applied.
+- Production DB verification confirmed migrated Wall/Profile Reaction RPCs use `private.get_active_profile_id()`, active Owner count remains `1`, and simulated normal-member direct CP table reads returned zero visible rows.
+- Commit `db2b9e5 feat: migrate wall reactions to active profile` was pushed to `main`.
+- Production smoke passed for Guild Wall load, Global/My Org scopes, active-profile Wall post create/reaction/delete, Public Profile safe render/reaction detail, and no captured console errors.
+- Controlled production RPC smoke passed for comment create/react/delete and profile reaction add/remove cleanup.
+- CP get/submit, GvG vote, 3v3 actions, Push preferences/subscriptions, Admin permissions/actions, Analytics, and audit actor behavior remain future subsystem migrations.
+
 ## 2026-05-31 - Milestone 29E.1 Own Profile + Cosmetics Active Profile Migration
 
 - Implemented active-profile migration for own Profile identity/edit and Cosmetics read/equip only.

@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-05-31 - Milestone 29E.2 Guild Wall + Profile Reactions Active Profile
+
+- Migrated Guild Wall / Global Wall actions and Public Profile reactions to active-profile identity.
+- New production migration:
+  - `20260531000300_active_profile_wall_reactions.sql`
+- Commit deployed:
+  - `db2b9e5 feat: migrate wall reactions to active profile`
+- Source files changed:
+  - `src/pages/GuildWall.jsx`
+- Updated Wall/Profile Reaction RPC behavior:
+  - post/comment create
+  - own post/comment delete
+  - post/comment reactions
+  - reaction details
+  - feed viewer state
+  - moderation flags/RPCs
+  - public profile reaction add/remove/viewer state
+- My Org Wall scope now uses the selected active profile's safe guild summary; Global remains global-only.
+- Local validation passed with `16 PASS / 0 FAIL / 0 SKIP`, build passed, production dry-run/apply passed, DB verification passed, and production smoke passed for Wall load, Global/My Org scopes, active-profile Wall post create/reaction/delete, Public Profile safe render/reaction detail, controlled comment/profile-reaction RPC smoke, and no captured console errors.
+- No CP get/submit, GvG, 3v3, Push, Admin, Analytics, permission, or audit actor behavior was migrated in this pass.
+- No normal CP, `member_cp`, `cp_snapshots`, CP RPCs, email/auth/admin/private metadata, uploads, Storage, service-role path, or direct table access was added.
+
 ## 2026-05-31 - Milestone 29E.1 Own Profile + Cosmetics Active Profile
 
 - Migrated own Profile identity/edit and Cosmetics read/equip to active-profile identity.

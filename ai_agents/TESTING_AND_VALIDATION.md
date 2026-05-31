@@ -1,5 +1,44 @@
 # Testing And Validation
 
+## Milestone 29E.2 Guild Wall + Profile Reactions Active Profile Validation
+
+Guild Wall / Global Wall actions and Public Profile reactions active-profile migration passed local backend validation, frontend build/source validation, production migration gates, DB verification, and production smoke.
+
+Commands/gates:
+- `npx.cmd supabase db reset`
+- `Get-Content -Raw -LiteralPath supabase\tests\local_validation_anteiku.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres -v ON_ERROR_STOP=1`
+- `npm.cmd run build`
+- Production `npx.cmd supabase db push --dry-run`
+- Production `npx.cmd supabase db push`
+- Production `npx.cmd supabase migration list`
+- `git push origin main`
+- Authenticated production browser smoke
+- Focused production RPC smoke through authenticated-role test queries
+
+Results:
+- Local reset applied through `20260531000300_active_profile_wall_reactions.sql`.
+- Full local validation passed.
+- Milestone 29E.2 active-profile Wall/Profile Reactions block passed `16 PASS / 0 FAIL / 0 SKIP`.
+- Build passed with the existing Vite chunk-size warning only.
+- Production dry-run showed exactly one pending migration: `20260531000300_active_profile_wall_reactions.sql`.
+- Production migration apply passed and remote migration list shows `20260531000300` applied.
+- Commit `db2b9e5 feat: migrate wall reactions to active profile` is pushed to `main`.
+
+Validated behavior:
+- Migrated Wall/Profile Reaction RPCs use `private.get_active_profile_id()`.
+- Global Wall loaded and stayed global-only.
+- My Org loaded through the selected active profile's guild context.
+- A production Global Wall post was created, reacted to, and deleted through the UI as the active profile.
+- Public Profile `/members/toji` rendered safe public identity, Ghoul Rep, 3v3 public CP, and profile reaction surfaces with no normal CP.
+- Reaction detail UI opened and showed safe empty/details state with no private fields.
+- Controlled production RPC smoke covered comment create/react/delete and profile reaction add/remove cleanup.
+- Active Owner count remained `1`.
+
+Security/source validation:
+- No CP get/submit, GvG, 3v3, Push, Admin, Analytics, or audit actor behavior was migrated.
+- No normal CP, `member_cp`, `cp_snapshots`, CP RPCs, email/auth/admin/private metadata, service-role paths, uploads, Storage, or frontend direct table paths were added.
+- Simulated normal-member direct reads of `member_cp` and `cp_snapshots` returned zero visible rows in production verification.
+
 ## Milestone 29E.1 Own Profile + Cosmetics Active Profile Validation
 
 Own Profile identity/edit and Cosmetics read/equip active-profile migration passed local backend validation, frontend build/source validation, production migration gates, and production smoke.

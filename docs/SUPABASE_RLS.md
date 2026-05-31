@@ -1,8 +1,44 @@
 # Supabase RLS
 
-The Supabase RLS/RPC implementation has been validated and production-applied through `20260531000200_active_profile_profile_cosmetics.sql`.
+The Supabase RLS/RPC implementation has been validated and production-applied through `20260531000300_active_profile_wall_reactions.sql`.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
+
+## Active Profile Wall/Profile Reactions RLS/RPC
+
+Milestone 29E.2 Guild Wall / Global Wall and Public Profile reactions active-profile migration is production-applied through `20260531000300_active_profile_wall_reactions.sql`.
+
+Functions:
+- `get_guild_wall_feed(...)`
+- `create_wall_post(...)`
+- `delete_wall_post(...)`
+- `create_wall_comment(...)`
+- `delete_wall_comment(...)`
+- `react_to_wall_post(...)`
+- `remove_wall_post_reaction(...)`
+- `react_to_wall_comment(...)`
+- `remove_wall_comment_reaction(...)`
+- `get_wall_reaction_details(...)`
+- `moderate_delete_wall_post(...)`
+- `pin_wall_post(...)`
+- `unpin_wall_post(...)`
+- `moderate_delete_wall_comment(...)`
+- `get_public_member_profile(...)`
+- `react_to_public_profile(...)`
+- `remove_public_profile_reaction(...)`
+- `get_public_profile_reaction_details(...)`
+
+Rules:
+- Migrated Wall/Profile Reaction functions resolve actor/viewer identity through `private.get_active_profile_id()`.
+- No migrated Wall/Profile Reaction RPC accepts an arbitrary frontend actor profile id.
+- Own delete checks are evaluated against the selected active profile.
+- My Org scope follows the selected active profile's guild context; Global Wall remains null/global-only.
+- Public Profile reactions add/remove as the selected active profile.
+
+Privacy:
+- Payloads expose only safe public profile, guild, cosmetic, reaction, and timestamp fields.
+- No normal CP, `member_cp`, `cp_snapshots`, email, auth IDs, admin/private metadata, service-role data, or audit-private metadata is returned.
+- Production verification confirmed active Owner count `1` and simulated normal-member direct CP table reads returned zero visible rows.
 
 ## Active Profile Profile/Cosmetics RLS/RPC
 

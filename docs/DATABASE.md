@@ -1,10 +1,25 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and production-applied through `20260531000200_active_profile_profile_cosmetics.sql`.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and production-applied through `20260531000300_active_profile_wall_reactions.sql`.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
-Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, own Profile Ghoul Rep display, Public Member Profiles, Ranking Public Profile links, Push Notifications, Account Switcher foundation, and active-profile Profile/Cosmetics RPCs are implemented, locally validated, production applied, and production-smoke or production-gate validated.
+Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, own Profile Ghoul Rep display, Public Member Profiles, Ranking Public Profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, and active-profile Wall/Profile Reaction RPCs are implemented, locally validated, production applied, and production-smoke or production-gate validated.
+
+## Active Profile Wall/Profile Reactions
+
+Migration `20260531000300_active_profile_wall_reactions.sql` is applied and verified in production.
+
+RPC behavior:
+- Guild Wall / Global Wall post create, comment create, own delete, post/comment reactions, reaction details, feed viewer state, and moderation flags/RPCs resolve actor/viewer identity through `private.get_active_profile_id()`.
+- Public Profile reaction add/remove and viewer state resolve actor identity through `private.get_active_profile_id()`.
+- My Org Wall scope uses the selected active profile's guild context; Global scope remains null/global-only.
+
+Security:
+- Migrated RPCs accept no arbitrary frontend actor profile id.
+- Frontend remains RPC-only for Wall and Public Profile reaction paths.
+- Payloads return no normal CP, `member_cp`, `cp_snapshots`, email, auth IDs, service-role data, admin/private metadata, or audit-private metadata.
+- CP get/submit, GvG, 3v3, Push preferences/subscriptions, Admin permissions/actions, Analytics, and audit actor behavior are not active-profile migrated by this migration.
 
 ## Active Profile Profile/Cosmetics
 
@@ -175,6 +190,9 @@ Security:
 31. `20260530000600_public_member_profiles.sql`
 32. `20260530000700_ranking_public_profile_links.sql`
 33. `20260530000800_push_notifications_foundation.sql`
+34. `20260531000100_account_switcher_foundation.sql`
+35. `20260531000200_active_profile_profile_cosmetics.sql`
+36. `20260531000300_active_profile_wall_reactions.sql`
 
 Migration `20260523000100_member_roster_status_system.sql` is locally validated, staging validated, and production applied/verified as of Milestone 15E.
 
@@ -206,7 +224,13 @@ Migration `20260530000600_public_member_profiles.sql` is locally implemented/val
 
 Migration `20260530000700_ranking_public_profile_links.sql` is locally implemented/validated and production applied/verified. It adds safe `profile_slug` to member-safe rankings for authenticated public-profile navigation.
 
-Migration `20260530000800_push_notifications_foundation.sql` is locally implemented/validated only. It has not been applied to staging or production.
+Migration `20260530000800_push_notifications_foundation.sql` is locally implemented/validated and production applied/verified.
+
+Migration `20260531000100_account_switcher_foundation.sql` is locally implemented/validated and production applied/verified. It adds Account Switcher link/active profile tables, `private.get_active_profile_id()`, switcher RPCs, and Owner-only link management RPCs.
+
+Migration `20260531000200_active_profile_profile_cosmetics.sql` is locally implemented/validated and production applied/verified. It migrates own Profile identity/edit and Cosmetics read/equip to active-profile identity.
+
+Migration `20260531000300_active_profile_wall_reactions.sql` is locally implemented/validated and production applied/verified. It migrates Guild Wall / Global Wall actions and Public Profile reactions to active-profile identity.
 
 ## Milestone 25B 3v3 Team Finder Backend
 

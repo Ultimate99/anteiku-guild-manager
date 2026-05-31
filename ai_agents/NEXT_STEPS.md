@@ -2,11 +2,11 @@
 
 ## Current Recommendation
 
-Milestone 29E.1 Own Profile + Cosmetics active-profile migration is live in production and build/source/production-smoke validated.
+Milestone 29E.2 Guild Wall / Global Wall and Public Profile reactions active-profile migration is live in production and locally/build/production-smoke validated.
 
 Recommended next step:
 - Plan the next Account Switcher subsystem migration only if the product wants selected-profile identity to affect a specific remaining action surface.
-- CP get/submit, GvG vote, 3v3 actions, Wall actions, Profile reactions, Push preferences/subscriptions, Admin permissions/actions, Analytics, and audit actor behavior still need separate approved backend/RPC/RLS milestones before they can use active-profile identity.
+- CP get/submit, GvG vote, 3v3 actions, Push preferences/subscriptions, Admin permissions/actions, Analytics, and audit actor behavior still need separate approved backend/RPC/RLS milestones before they can use active-profile identity.
 - Keep frontend selected profile ids as UX input only; backend/RPC remains the authority.
 
 Do not yet:
@@ -14,6 +14,20 @@ Do not yet:
 - Use localStorage-only profile switching.
 - Expose normal CP values or private auth/email/admin metadata in switcher payloads.
 - Change active-profile behavior for existing systems without a reviewed RPC/RLS migration.
+
+Recorded Account Switcher 29E.2 status:
+- Commit `db2b9e5 feat: migrate wall reactions to active profile` is pushed to `main` and deployed to production.
+- Production DB received `20260531000300_active_profile_wall_reactions.sql` after a clean dry-run showing only that migration.
+- Guild Wall / Global Wall post create, comment create, own delete, post/comment reactions, reaction details, feed viewer state, and moderation flags/RPCs now resolve actor/viewer identity through `private.get_active_profile_id()`.
+- Public Profile reactions add/remove and viewer state now use active-profile identity.
+- My Org Wall scope uses the selected active profile's guild summary; Global remains null/global-only.
+- Local validation passed with the active-profile Wall/Profile Reactions block at `16 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production smoke passed for Wall load, Global/My Org scopes, active-profile Wall post create/reaction/delete, Public Profile safe render/reaction detail, controlled RPC smoke for comment create/react/delete and profile reaction add/remove, no CP/private data visible, and no captured console errors.
+
+## Previous Recommendation
+
+Milestone 29E.1 Own Profile + Cosmetics active-profile migration is live in production and build/source/production-smoke validated.
 
 Recorded Account Switcher 29E.1 status:
 - Commit `401e67e feat: migrate profile cosmetics to active profile` is pushed to `main` and deployed to production.
