@@ -1,5 +1,36 @@
 # Testing
 
+## Milestone 29D Active Profile Viewer State
+
+Active Profile Viewer State / low-risk reads passed frontend build/source validation and production smoke.
+
+Commands:
+- `npm.cmd run build`
+- `git push origin main`
+
+Results:
+- Build passed with the existing Vite chunk-size warning only.
+- Commit deployed: `14c3837 feat: add active profile viewer state`.
+- Vercel production deployment is ready and aliases the production domain.
+
+Validated:
+- Production app loads while signed in.
+- Topbar shows the active-profile `Viewing as` display.
+- Dashboard/Home loads with safe active-profile identity display.
+- Profile Settings opens.
+- Account Switcher active-profile card renders with clearer active/reload copy.
+- Single-profile state still works.
+- Push Notification settings remain visible.
+- No captured console errors.
+
+Security/source checks:
+- No SQL/migration/Supabase/RLS/RPC changes.
+- No direct `user_profile_links` / `user_active_profiles` table reads/writes.
+- No localStorage authority.
+- No normal CP RPCs.
+- No `member_cp` / `cp_snapshots` usage except existing defensive deny-list strings.
+- CP get/submit, GvG vote, 3v3 actions, Wall actions, Profile reactions, cosmetics equip, push preferences/subscriptions, Admin permissions/actions, and audit actor behavior were not migrated.
+
 ## Milestone 29C Account Switcher UI
 
 Account Switcher UI passed frontend build/source validation and production smoke.

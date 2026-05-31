@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-05-31 - Milestone 29D Active Profile Viewer State
+
+- Added frontend-only Active Profile Viewer State / low-risk reads.
+- Commit deployed:
+  - `14c3837 feat: add active profile viewer state`
+- Source files changed:
+  - `src/hooks/useActiveProfileSummary.js`
+  - `src/layouts/AppShell.jsx`
+  - `src/pages/Dashboard.jsx`
+  - `src/pages/Profile.jsx`
+  - `src/styles/app.css`
+  - `src/i18n/en.js`
+  - `src/i18n/fr.js`
+  - `src/i18n/de.js`
+- Added read-only active-profile summary hook using `get_my_active_profile()`.
+- Topbar now shows compact `Viewing as` active-profile display.
+- Dashboard/Home identity can use safe active-profile summary fields for avatar/frame, IGN, profile slug, guild, role, and status display.
+- Profile Settings Account Switcher copy now clarifies active profile and reload behavior.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production smoke passed for app load, topbar viewer state, Dashboard/Home load, Profile Settings active-profile card, single-profile state, Push Settings still present, and no captured console errors.
+- No SQL migrations, Supabase/RLS/RPC changes, direct account-link table reads/writes, localStorage authority, normal CP RPCs, CP exposure, admin permission changes, audit actor changes, or high-risk action migration was included.
+
 ## 2026-05-31 - Milestone 29C Account Switcher UI
 
 - Added frontend Profile Settings Account Switcher UI.

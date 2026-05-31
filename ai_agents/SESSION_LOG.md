@@ -1,5 +1,21 @@
 # Session Log
 
+## 2026-05-31 - Milestone 29D Active Profile Viewer State
+
+- Implemented frontend-only Active Profile Viewer State / low-risk reads.
+- Added `src/hooks/useActiveProfileSummary.js`, a read-only hook that loads `get_my_active_profile()` and exposes active-profile display state.
+- Updated `src/layouts/AppShell.jsx` with a compact topbar `Viewing as` chip using safe active-profile summary fields.
+- Updated `src/pages/Dashboard.jsx` so Home identity can display active-profile avatar/frame/IGN/profile slug/guild/role/status where safe.
+- Added a subtle Dashboard note when active profile differs from the legacy auth profile.
+- Updated `src/pages/Profile.jsx` Account Switcher copy to clarify active profile and reload behavior.
+- Added EN/FR/DE viewer-state labels and dark/crimson CSS for the topbar chip and Dashboard note.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no SQL/migrations, Supabase/RLS/RPC, direct account-link table access, localStorage authority, normal CP RPC additions, or high-risk action RPC changes.
+- Commit `14c3837 feat: add active profile viewer state` was pushed to `main`.
+- Vercel production deployment is ready and aliases the production domain.
+- Production smoke passed for app load, topbar `Viewing as`, Dashboard/Home load, Profile Settings active-profile card, single-profile state, Push Settings still present, and no captured console errors.
+- CP get/submit, GvG vote, 3v3 actions, Wall actions, Profile reactions, cosmetics equip, push preferences/subscriptions, Admin actions/permissions, and audit actor behavior remain unmigrated by design.
+
 ## 2026-05-31 - Milestone 29C Account Switcher UI
 
 - Implemented frontend-only Profile Settings Account Switcher UI.

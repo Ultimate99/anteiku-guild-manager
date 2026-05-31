@@ -1,5 +1,37 @@
 # Project State
 
+## Milestone 29D Active Profile Viewer State Live
+
+Active Profile Viewer State / low-risk reads are implemented and live in production through commit `14c3837 feat: add active profile viewer state`.
+
+Implemented:
+- New read-only hook `src/hooks/useActiveProfileSummary.js`.
+- Topbar viewer chip showing the active profile summary.
+- Dashboard/Home identity display can use the active profile summary returned by `get_my_active_profile()`.
+- Profile Settings Account Switcher copy now makes the active profile and reload behavior clearer.
+- EN/FR/DE labels and compact dark/crimson viewer-state styling.
+
+Behavior:
+- The viewer state uses only `get_my_active_profile()` for passive display, plus the existing Profile Settings switcher RPCs from 29C.
+- Dashboard/Home displays safe active-profile identity fields when available: avatar/frame, IGN, profile slug, guild, role, and roster/status display.
+- If the active profile differs from the legacy auth profile, Dashboard shows a subtle display-only note.
+- Single-profile accounts continue to render the one-profile state.
+- Existing action systems are intentionally not migrated to active-profile identity.
+
+Security/CP privacy:
+- No SQL, migrations, Supabase/RLS/RPC, service-security, CP, GvG, Analytics, 3v3, Wall, Profile Reaction, Cosmetics, Push, Admin, auth, role, permission, or audit actor behavior changed.
+- No localStorage security authority was added.
+- No direct reads/writes of `user_profile_links` or `user_active_profiles` were added.
+- No `member_cp`, `cp_snapshots`, normal CP RPC, or private metadata display was added.
+- CP get/submit, GvG vote, 3v3 actions, Wall actions, Profile reactions, cosmetics equip, push preferences/subscriptions, Admin permissions/actions, and audit actor behavior remain future phased migrations.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation confirmed no SQL/migration/Supabase changes, no direct account-link table reads/writes, no localStorage authority, no normal CP RPC additions, and no high-risk action RPC changes.
+- Commit `14c3837 feat: add active profile viewer state` was pushed to `main`.
+- Vercel production deployment is ready and aliases `https://anteiku-guild-manager.vercel.app`.
+- Production smoke passed for app load, topbar `Viewing as` display, Dashboard/Home load, Profile Settings Account Switcher active-profile card, single-profile state, Push Settings still present, and no captured console errors.
+
 ## Milestone 29C Account Switcher UI Live
 
 Profile Settings Account Switcher UI is implemented and live in production through commit `b8f6162 feat: add account switcher UI`.

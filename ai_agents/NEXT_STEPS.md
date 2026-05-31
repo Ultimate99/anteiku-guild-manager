@@ -2,11 +2,12 @@
 
 ## Current Recommendation
 
-Milestone 29C Account Switcher UI is live in production and build/source/production-smoke validated.
+Milestone 29D Active Profile Viewer State / low-risk reads are live in production and build/source/production-smoke validated.
 
 Recommended next step:
-- Plan the next Account Switcher milestone only if the product wants selected-profile identity to affect specific systems.
-- Migrate existing CP/GvG/3v3/Wall/Profile Reaction/Cosmetics/Push/Admin behavior to active-profile identity only through separately approved subsystem-specific backend/RPC/RLS milestones.
+- Plan the next Account Switcher subsystem migration only if the product wants selected-profile identity to affect a specific action surface.
+- Recommended next subsystem migration: start with a low-risk non-CP surface, such as Dashboard/Profile display follow-up or a safe profile-social read path, before any CP/GvG/Admin action migration.
+- Migrate CP/GvG/3v3/Wall/Profile Reaction/Cosmetics/Push/Admin behavior to active-profile identity only through separately approved subsystem-specific backend/RPC/RLS milestones.
 - Keep frontend selected profile ids as UX input only; backend/RPC remains the authority.
 
 Do not yet:
@@ -14,6 +15,20 @@ Do not yet:
 - Use localStorage-only profile switching.
 - Expose normal CP values or private auth/email/admin metadata in switcher payloads.
 - Change active-profile behavior for existing systems without a reviewed RPC/RLS migration.
+
+Recorded Account Switcher 29D status:
+- Commit `14c3837 feat: add active profile viewer state` is pushed to `main` and deployed to production.
+- Added `src/hooks/useActiveProfileSummary.js` for read-only active-profile summary loading through `get_my_active_profile()`.
+- Topbar now shows a compact `Viewing as` active-profile chip.
+- Dashboard/Home identity can display the selected active profile summary where safe.
+- Profile Settings Account Switcher copy now clarifies active profile and reload behavior.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production smoke passed for app load, topbar viewer state, Dashboard/Home load, Profile Settings Account Switcher active-profile card, single-profile state, Push Settings still present, and no captured console errors.
+- CP get/submit, GvG vote, 3v3 actions, Wall actions, Profile reactions, cosmetics equip, push preferences/subscriptions, Admin permissions/actions, and audit actor behavior remain unmigrated by design.
+
+## Previous Recommendation
+
+Milestone 29C Account Switcher UI is live in production and build/source/production-smoke validated.
 
 Recorded Account Switcher 29C status:
 - Commit `b8f6162 feat: add account switcher UI` is pushed to `main` and deployed to production.

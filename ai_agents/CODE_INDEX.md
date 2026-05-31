@@ -1,5 +1,15 @@
 # Code Index
 
+## Milestone 29D Active Profile Viewer State
+
+- `src/hooks/useActiveProfileSummary.js`: Read-only active-profile display hook. Calls `get_my_active_profile()` through `accountSwitcherService`, stores active-profile summary/loading/error, and exposes `refreshActiveProfile()`. It does not replace AuthContext, use localStorage authority, direct-read account-link tables, or call CP/high-risk action RPCs.
+- `src/layouts/AppShell.jsx`: Adds compact topbar `Viewing as` active-profile chip for approved signed-in users.
+- `src/pages/Dashboard.jsx`: Uses active-profile summary for safe Dashboard/Home identity display where available. Shows a subtle display-only note only when the active profile differs from the legacy auth profile. Existing rank/GvG/action behavior is not migrated.
+- `src/pages/Profile.jsx`: Clarifies Account Switcher active profile and reload copy. Own Profile CP/IGN/cosmetics behavior remains unchanged.
+- `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`: Add `accountSwitcher.*` viewer-state labels.
+- `src/styles/app.css`: Adds topbar active-profile chip and Dashboard active-profile viewer note styling.
+- Production status: commit `14c3837 feat: add active profile viewer state` is deployed. Build/source validation and production smoke passed. High-risk action systems remain future migrations.
+
 ## Milestone 29C Account Switcher UI
 
 - `src/services/accountSwitcherService.js`: RPC-only frontend service for `get_my_switchable_profiles`, `get_my_active_profile`, and `set_my_active_profile`. Maps safe profile/guild/cosmetic/status fields and keeps a defensive private-field deny-list. It does not direct-read account-link tables, use localStorage as authority, or call normal CP RPCs.

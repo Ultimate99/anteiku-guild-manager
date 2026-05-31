@@ -1,5 +1,38 @@
 # Testing And Validation
 
+## Milestone 29D Active Profile Viewer State Validation
+
+Active Profile Viewer State / low-risk reads passed frontend build/source validation and production smoke.
+
+Commands/gates:
+- `npm.cmd run build`
+- `git push origin main`
+- Vercel production deployment inspection
+- Authenticated production browser smoke
+
+Results:
+- Build passed with the existing Vite chunk-size warning only.
+- Commit `14c3837 feat: add active profile viewer state` is pushed to `main`.
+- Vercel production deployment is ready and aliases `https://anteiku-guild-manager.vercel.app`.
+
+Validated behavior:
+- Production app loads for a signed-in approved user.
+- Topbar shows `Viewing as` active-profile display.
+- Dashboard/Home loads and keeps safe identity display.
+- Profile Settings opens.
+- Account Switcher active-profile card renders with clearer active/reload copy.
+- Single-profile state still works for the smoke account.
+- Push Notification settings remain visible in the same settings modal.
+- No captured console errors.
+
+Security/source validation:
+- No SQL/migration/Supabase/RLS/RPC changes.
+- No direct `user_profile_links` / `user_active_profiles` table reads/writes.
+- No localStorage security authority.
+- No `member_cp`, `cp_snapshots`, normal CP RPC additions, or private metadata display.
+- No CP/GvG/3v3/Wall/Profile Reaction/Cosmetics/Push/Admin action RPC behavior changed.
+- Existing high-risk action systems are not migrated to active-profile identity in 29D.
+
 ## Milestone 29C Account Switcher UI Validation
 
 Profile Settings Account Switcher UI passed build/source validation and production smoke.
