@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-05-31 - Milestone 29C Account Switcher UI
+
+- Added frontend Profile Settings Account Switcher UI.
+- Commit deployed:
+  - `b8f6162 feat: add account switcher UI`
+- Source files changed:
+  - `src/services/accountSwitcherService.js`
+  - `src/pages/Profile.jsx`
+  - `src/styles/app.css`
+  - `src/i18n/en.js`
+  - `src/i18n/fr.js`
+  - `src/i18n/de.js`
+- The switcher uses only the 29B backend RPCs:
+  - `get_my_switchable_profiles`
+  - `get_my_active_profile`
+  - `set_my_active_profile`
+- Profile Settings now shows Account Switcher above Push Notifications, with current active profile, linked profile cards, active/primary/status chips, and a confirmation before switching.
+- Successful switch reloads the app so active-profile selection is refreshed.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production smoke passed for app load, Profile Settings, Account Switcher render/current active profile/single-profile state, Push Settings still present, and no captured console errors.
+- No SQL migrations, Supabase/RLS/RPC changes, localStorage authority, direct account-link table reads/writes, normal CP RPCs, CP exposure, or existing CP/GvG/3v3/Wall/Profile Reaction/Cosmetics/Push/Admin/auth behavior migration was included.
+
 ## 2026-05-31 - Milestone 29B Account Switcher Backend Foundation
 
 - Added backend-only Account Switcher foundation.

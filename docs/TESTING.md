@@ -1,5 +1,36 @@
 # Testing
 
+## Milestone 29C Account Switcher UI
+
+Account Switcher UI passed frontend build/source validation and production smoke.
+
+Commands:
+- `npm.cmd run build`
+- `git push origin main`
+
+Results:
+- Build passed with the existing Vite chunk-size warning only.
+- Commit deployed: `b8f6162 feat: add account switcher UI`.
+- Vercel production deployment is ready and aliases the production domain.
+
+Validated:
+- Production app loads while signed in.
+- Profile Settings opens.
+- Account Switcher card renders above Push Notifications.
+- Current active profile is displayed.
+- Single-profile state displays cleanly for the smoke account.
+- Push Notification settings remain visible.
+- No captured console errors.
+
+Security/source checks:
+- No SQL/migration/Supabase/RLS/RPC changes.
+- Account Switcher frontend uses RPCs only.
+- No direct account-link table reads/writes.
+- No localStorage authority.
+- No normal CP RPCs.
+- No `member_cp` / `cp_snapshots` usage except defensive deny-list strings.
+- Existing CP/GvG/3v3/Wall/Profile Reaction/Cosmetics/Push/Admin/auth behavior was not switched to active-profile identity.
+
 ## Milestone 29B Account Switcher Backend Foundation
 
 Account Switcher backend foundation passed local validation, production dry-run, production migration apply, and read-only production DB verification.

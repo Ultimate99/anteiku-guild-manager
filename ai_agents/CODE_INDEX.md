@@ -1,5 +1,13 @@
 # Code Index
 
+## Milestone 29C Account Switcher UI
+
+- `src/services/accountSwitcherService.js`: RPC-only frontend service for `get_my_switchable_profiles`, `get_my_active_profile`, and `set_my_active_profile`. Maps safe profile/guild/cosmetic/status fields and keeps a defensive private-field deny-list. It does not direct-read account-link tables, use localStorage as authority, or call normal CP RPCs.
+- `src/pages/Profile.jsx`: Adds the Profile Settings Account Switcher card above Push Notifications. Loads switchable profiles/current active profile, renders linked profile cards with avatar/frame, safe identity/status metadata, and calls `set_my_active_profile(...)` after confirmation. Reloads after a successful switch so the selected active-profile state is refreshed.
+- `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`: Add Profile Settings body copy and `accountSwitcher.*` labels.
+- `src/styles/app.css`: Adds compact dark/crimson Account Switcher card/list/chip/action styling.
+- Production status: commit `b8f6162 feat: add account switcher UI` is deployed. Build/source validation and production smoke passed. Existing CP/GvG/3v3/Wall/Profile Reaction/Cosmetics/Push/Admin/auth systems are not migrated to active-profile identity yet.
+
 ## Milestone 29B Account Switcher Foundation
 
 - `supabase/migrations/20260531000100_account_switcher_foundation.sql`: Adds backend-only Account Switcher foundation. New tables are `user_profile_links` and `user_active_profiles`, with RLS enabled and direct anon/authenticated table grants revoked. Adds self-link/backfill trigger for current one-auth-user/one-profile behavior, `private.get_active_profile_id()`, switcher RPCs, and Owner-only link/unlink RPCs. Existing app systems are not switched to active-profile identity yet.

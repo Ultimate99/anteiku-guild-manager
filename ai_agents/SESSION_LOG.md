@@ -1,5 +1,23 @@
 # Session Log
 
+## 2026-05-31 - Milestone 29C Account Switcher UI
+
+- Implemented frontend-only Profile Settings Account Switcher UI.
+- Added `src/services/accountSwitcherService.js` with RPC-only wrappers for:
+  - `get_my_switchable_profiles`
+  - `get_my_active_profile`
+  - `set_my_active_profile`
+- Updated `src/pages/Profile.jsx` so Settings loads account switcher data alongside Push Notifications.
+- Added Account Switcher card with current active profile summary, linked profile cards, active/primary/status chips, switch confirmation, and success reload.
+- Added EN/FR/DE `accountSwitcher.*` labels and shared Profile Settings copy.
+- Added dark/crimson Account Switcher styling in `src/styles/app.css`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no SQL/migration/Supabase changes, no direct account-link table reads, no localStorage authority, no normal CP RPC usage, and no protected CP paths except defensive deny-list tokens in the switcher service.
+- Commit `b8f6162 feat: add account switcher UI` was pushed to `main`.
+- Vercel production deployment is ready and aliases the production domain.
+- Production smoke passed for app load, Profile Settings modal, Account Switcher render, current active profile display, single-profile state, Push Settings still present, and no captured console errors.
+- Full active-profile identity migration for CP/GvG/3v3/Wall/Profile Reaction/Cosmetics/Push/Admin/auth remains deferred.
+
 ## 2026-05-31 - Milestone 29B Account Switcher Backend Foundation
 
 - Implemented backend-only Account Switcher foundation.

@@ -1,5 +1,35 @@
 # Project State
 
+## Milestone 29C Account Switcher UI Live
+
+Profile Settings Account Switcher UI is implemented and live in production through commit `b8f6162 feat: add account switcher UI`.
+
+Implemented:
+- New frontend service `src/services/accountSwitcherService.js`.
+- Profile Settings Account Switcher card above Push Notifications.
+- Safe linked-profile list, current active profile summary, active/primary/status chips, and switch action.
+- EN/FR/DE labels and dark/crimson settings-card styling.
+
+Behavior:
+- The UI calls only `get_my_switchable_profiles()`, `get_my_active_profile()`, and `set_my_active_profile(p_profile_id)`.
+- Switching is backend-authorized and reloads the app after success so the active-profile selection is refreshed.
+- Single-profile accounts show a compact `Only one profile linked.` state.
+- Push Notification settings remain in the same Profile Settings modal.
+- Full app-wide active-profile identity migration remains deferred; existing CP, GvG, 3v3, Wall, Profile Reaction, Cosmetics, Push, Admin, and auth behavior was not refactored in 29C.
+
+Security/CP privacy:
+- No SQL, migrations, Supabase/RLS/RPC, service-security, CP, GvG, Analytics, 3v3, Wall, cosmetics, Push, member-status, auth, role, or permission behavior changed.
+- Frontend does not use localStorage as authority and does not direct-read account-link tables.
+- Source guard found no protected CP paths except the defensive `member_cp` / `cp_snapshots` deny-list in the switcher service.
+- Switcher payload remains safe profile/guild/cosmetic/status data only; no CP, email, auth IDs, admin/private metadata, or audit data is displayed.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation confirmed no SQL/migration/Supabase changes, no direct `.from(...)` in the new switcher service, no localStorage authority, and no normal CP RPC usage.
+- Commit `b8f6162 feat: add account switcher UI` was pushed to `main`.
+- Vercel production deployment is ready and aliases `https://anteiku-guild-manager.vercel.app`.
+- Production smoke passed for app load, Profile Settings modal, Account Switcher display, current active profile display, single-profile state, Push Settings still present, and no captured console errors.
+
 ## Milestone 29B Account Switcher Backend Foundation Complete
 
 Account Switcher / multi-profile backend foundation is implemented, locally validated, and production applied through `20260531000100_account_switcher_foundation.sql`.

@@ -2,18 +2,31 @@
 
 ## Current Recommendation
 
-Milestone 29B Account Switcher backend foundation is live in production and locally/production-gate validated.
+Milestone 29C Account Switcher UI is live in production and build/source/production-smoke validated.
 
 Recommended next step:
-- Start Milestone 29C planning/implementation for Profile Settings Account Switcher UI.
-- Keep 29C frontend-only if it only displays linked profiles and calls the 29B switcher RPCs.
-- Do not migrate existing CP/GvG/3v3/Wall/Profile Reaction/Cosmetics/Push/Admin behavior to active-profile identity until later approved subsystem-specific milestones.
+- Plan the next Account Switcher milestone only if the product wants selected-profile identity to affect specific systems.
+- Migrate existing CP/GvG/3v3/Wall/Profile Reaction/Cosmetics/Push/Admin behavior to active-profile identity only through separately approved subsystem-specific backend/RPC/RLS milestones.
+- Keep frontend selected profile ids as UX input only; backend/RPC remains the authority.
 
 Do not yet:
 - Treat frontend-selected profile ids as authority.
 - Use localStorage-only profile switching.
 - Expose normal CP values or private auth/email/admin metadata in switcher payloads.
 - Change active-profile behavior for existing systems without a reviewed RPC/RLS migration.
+
+Recorded Account Switcher 29C status:
+- Commit `b8f6162 feat: add account switcher UI` is pushed to `main` and deployed to production.
+- Profile Settings now has an Account Switcher card above Push Notifications.
+- The frontend uses only `get_my_switchable_profiles()`, `get_my_active_profile()`, and `set_my_active_profile(p_profile_id)`.
+- Single-profile accounts show the compact one-profile state; linked-profile switching is backend-authorized and reloads the app after success.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production smoke passed for app load, Profile Settings, Account Switcher render/current active profile, Push Settings still present, and no captured console errors.
+- Existing CP/GvG/3v3/Wall/Profile Reaction/Cosmetics/Push/Admin/auth behavior was not migrated to active-profile identity in 29C.
+
+## Previous Recommendation
+
+Milestone 29B Account Switcher backend foundation is live in production and locally/production-gate validated.
 
 Recorded Account Switcher 29B status:
 - Production DB received `20260531000100_account_switcher_foundation.sql` after a clean dry-run showing exactly that migration.

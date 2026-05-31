@@ -2,12 +2,13 @@
 
 ## Account Switcher Security Rules
 
-Account Switcher backend foundation is live in production through `20260531000100_account_switcher_foundation.sql`.
+Account Switcher backend foundation is live in production through `20260531000100_account_switcher_foundation.sql`. The Profile Settings Account Switcher UI is live through commit `b8f6162 feat: add account switcher UI`.
 
 Rules:
 - Frontend must not choose arbitrary `profile_id` for identity-sensitive actions.
 - Account switching must use `get_my_switchable_profiles()`, `get_my_active_profile()`, and `set_my_active_profile(p_profile_id uuid)`.
 - Backend must verify `auth.uid()` has an active, non-disabled link to the selected profile.
+- The Profile Settings switcher may display linked safe profiles and call `set_my_active_profile(...)`, but it must not use localStorage or frontend state as security authority.
 - Normal members cannot link or unlink profiles.
 - Owner-only profile linking must use `owner_link_profile_to_auth_user(...)` / `owner_unlink_profile_from_auth_user(...)`.
 - Do not update existing CP/GvG/3v3/Wall/Profile Reaction/Cosmetics/Push/Admin RPCs to use active profile without a separately approved, subsystem-specific milestone.
@@ -20,6 +21,8 @@ Privacy:
 Validation status:
 - Local validation passed with the Account Switcher block at `19 PASS / 0 FAIL / 0 SKIP`.
 - Production DB verification passed for RLS/no direct account-link grants, RPC grants, self-link backfill, active Owner count `1`, and normal CP direct-read protection.
+- 29C frontend build/source validation passed; production smoke passed for Profile Settings Account Switcher render/current active profile/single-profile state and no captured console errors.
+- 29C did not change SQL, Supabase/RLS/RPC, CP privacy, Admin permissions, audit actor behavior, or existing subsystem identity behavior.
 
 ## Push Notification Security Rules
 

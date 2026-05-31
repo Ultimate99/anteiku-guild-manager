@@ -1,5 +1,39 @@
 # Testing And Validation
 
+## Milestone 29C Account Switcher UI Validation
+
+Profile Settings Account Switcher UI passed build/source validation and production smoke.
+
+Commands/gates:
+- `npm.cmd run build`
+- `git push origin main`
+- Vercel production deployment inspection
+- Authenticated production browser smoke
+
+Results:
+- Build passed with the existing Vite chunk-size warning only.
+- Commit `b8f6162 feat: add account switcher UI` is pushed to `main`.
+- Vercel production deployment is ready and aliases `https://anteiku-guild-manager.vercel.app`.
+
+Validated behavior:
+- Production app loads for a signed-in approved user.
+- Profile page opens.
+- Profile Settings modal opens.
+- Account Switcher card renders above Push Notifications.
+- Current active profile is shown.
+- Single-profile state renders as `Only one profile linked.` for the smoke account.
+- Push Notification settings remain visible in the same settings modal.
+- No captured console errors.
+
+Security/source validation:
+- No SQL/migration/Supabase/RLS/RPC changes.
+- `src/services/accountSwitcherService.js` uses only the three Account Switcher RPCs.
+- No direct `.from(...)` account-link table reads/writes.
+- No localStorage authority.
+- No normal CP RPC usage.
+- Guard search found no protected CP paths except defensive `member_cp` / `cp_snapshots` deny-list strings in the switcher service.
+- Existing CP/GvG/3v3/Wall/Profile Reaction/Cosmetics/Push/Admin/auth behavior was not migrated to active-profile identity.
+
 ## Milestone 29B Account Switcher Backend Validation
 
 Account Switcher backend foundation passed local validation and production rollout gates.
