@@ -2757,6 +2757,15 @@ button.command-card:focus-visible {
   margin: 0;
 }
 
+.push-profile-context {
+  margin-top: 4px !important;
+  color: #ffb3bd;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
 .push-status-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2785,6 +2794,12 @@ button.command-card:focus-visible {
   color: #fff;
   font-size: 0.9rem;
   overflow-wrap: anywhere;
+}
+
+.push-status-grid small {
+  color: #8f8f98;
+  font-size: 0.7rem;
+  font-weight: 800;
 }
 
 .push-action-row {

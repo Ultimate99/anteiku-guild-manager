@@ -18,6 +18,10 @@ type PushSubscriptionRow = {
   auth_key: string;
 };
 
+type ProfileLinkRow = {
+  auth_user_id: string;
+};
+
 const MAX_BATCH_SIZE = 25;
 const MAX_ATTEMPTS = 5;
 const SAFE_NOTIFICATION_TYPES = new Set([
@@ -151,11 +155,36 @@ Deno.serve(async (request) => {
   const results = [];
 
   for (const row of (outboxRows ?? []) as PushOutboxRow[]) {
-    const { data: subscriptions, error: subscriptionError } = await supabase
-      .from('push_subscriptions')
-      .select('id, endpoint, p256dh_key, auth_key')
+    const { data: linkedAuthUsers, error: linkError } = await supabase
+      .from('user_profile_links')
+      .select('auth_user_id')
       .eq('profile_id', row.recipient_profile_id)
       .is('disabled_at', null);
+
+    if (linkError) {
+      await markOutboxRow(supabase, row, { sent: false, error: linkError.message });
+      results.push({ id: row.id, sent: false, error: linkError.message });
+      continue;
+    }
+
+    const authUserIds = Array.from(
+      new Set(((linkedAuthUsers ?? []) as ProfileLinkRow[]).map((link) => link.auth_user_id).filter(Boolean)),
+    );
+
+    let subscriptionQuery = supabase
+      .from('push_subscriptions')
+      .select('id, endpoint, p256dh_key, auth_key')
+      .is('disabled_at', null);
+
+    if (authUserIds.length > 0) {
+      subscriptionQuery = subscriptionQuery.or(
+        `profile_id.eq.${row.recipient_profile_id},auth_user_id.in.(${authUserIds.join(',')})`,
+      );
+    } else {
+      subscriptionQuery = subscriptionQuery.eq('profile_id', row.recipient_profile_id);
+    }
+
+    const { data: subscriptions, error: subscriptionError } = await subscriptionQuery;
 
     if (subscriptionError) {
       await markOutboxRow(supabase, row, { sent: false, error: subscriptionError.message });

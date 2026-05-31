@@ -8650,6 +8650,375 @@ begin
 end;
 $$;
 
+create temp table if not exists milestone_active_profile_push_results (
+  section text not null,
+  test_name text not null,
+  status text not null check (status in ('PASS', 'FAIL', 'SKIP')),
+  details text
+) on commit drop;
+
+do $$
+declare
+  anteiku_id constant uuid := '00000000-0000-0000-0000-000000000101';
+  anteiku_re_id constant uuid := '00000000-0000-0000-0000-000000000102';
+  owner_id constant uuid := '10000000-0000-0000-0000-000000000001';
+  member_id constant uuid := '10000000-0000-0000-0000-000000000006';
+  active_push_a_id constant uuid := '10000000-0000-0000-0000-000000000096';
+  active_push_b_id constant uuid := '10000000-0000-0000-0000-000000000097';
+  active_push_inactive_id constant uuid := '10000000-0000-0000-0000-000000000098';
+  shared_endpoint constant text := 'https://push.example.test/active-profile-browser-endpoint';
+  disabled_endpoint constant text := 'https://push.example.test/active-profile-disable-endpoint';
+  payload jsonb;
+  owner_count integer;
+  row_count integer;
+  preference_count integer;
+begin
+  begin
+    delete from public.push_notification_outbox
+    where recipient_profile_id in (active_push_a_id, active_push_b_id, active_push_inactive_id);
+
+    delete from public.push_notification_preferences
+    where profile_id in (active_push_a_id, active_push_b_id, active_push_inactive_id);
+
+    delete from public.push_subscriptions
+    where endpoint in (shared_endpoint, disabled_endpoint)
+       or profile_id in (active_push_a_id, active_push_b_id, active_push_inactive_id);
+
+    insert into auth.users (
+      instance_id,
+      id,
+      aud,
+      role,
+      email,
+      encrypted_password,
+      email_confirmed_at,
+      raw_app_meta_data,
+      raw_user_meta_data,
+      created_at,
+      updated_at
+    )
+    values
+      (
+        '00000000-0000-0000-0000-000000000000',
+        active_push_a_id,
+        'authenticated',
+        'authenticated',
+        'active-push-a.local@example.test',
+        'local-only',
+        now(),
+        '{"provider":"email","providers":["email"]}'::jsonb,
+        '{}'::jsonb,
+        now(),
+        now()
+      ),
+      (
+        '00000000-0000-0000-0000-000000000000',
+        active_push_b_id,
+        'authenticated',
+        'authenticated',
+        'active-push-b.local@example.test',
+        'local-only',
+        now(),
+        '{"provider":"email","providers":["email"]}'::jsonb,
+        '{}'::jsonb,
+        now(),
+        now()
+      ),
+      (
+        '00000000-0000-0000-0000-000000000000',
+        active_push_inactive_id,
+        'authenticated',
+        'authenticated',
+        'active-push-inactive.local@example.test',
+        'local-only',
+        now(),
+        '{"provider":"email","providers":["email"]}'::jsonb,
+        '{}'::jsonb,
+        now(),
+        now()
+      )
+    on conflict (id) do nothing;
+
+    insert into public.profiles (id, username, profile_slug, ign, approval_status, approved_at)
+    values
+      (active_push_a_id, 'active_push_a', 'active_push_a', 'Active Push A', 'approved', now()),
+      (active_push_b_id, 'active_push_b', 'active_push_b', 'Active Push B', 'approved', now()),
+      (active_push_inactive_id, 'active_push_inactive', 'active_push_inactive', 'Active Push Inactive', 'approved', now())
+    on conflict (id) do update
+    set username = excluded.username,
+        profile_slug = excluded.profile_slug,
+        ign = excluded.ign,
+        approval_status = excluded.approval_status,
+        approved_at = excluded.approved_at;
+
+    insert into public.guild_memberships (profile_id, guild_id, role, membership_status, roster_status, is_primary, assigned_by)
+    values
+      (active_push_a_id, anteiku_id, 'member', 'active', 'active', true, owner_id),
+      (active_push_b_id, anteiku_re_id, 'member', 'active', 'active', true, owner_id),
+      (active_push_inactive_id, anteiku_id, 'member', 'active', 'inactive', true, owner_id)
+    on conflict (profile_id, guild_id) do update
+    set role = excluded.role,
+        membership_status = excluded.membership_status,
+        roster_status = excluded.roster_status,
+        is_primary = excluded.is_primary,
+        assigned_by = excluded.assigned_by;
+
+    update public.user_profile_links upl
+    set disabled_at = now(),
+        is_primary = false
+    where upl.profile_id in (active_push_a_id, active_push_b_id, active_push_inactive_id)
+      and upl.disabled_at is null;
+
+    insert into public.user_profile_links (auth_user_id, profile_id, link_type, is_primary, created_by_profile_id)
+    values
+      (member_id, active_push_a_id, 'owner', false, owner_id),
+      (member_id, active_push_b_id, 'owner', false, owner_id),
+      (member_id, active_push_inactive_id, 'owner', false, owner_id);
+
+    insert into milestone_active_profile_push_results values ('setup', 'active_push_profiles_linked', 'PASS', 'Member auth linked to active push test profiles.');
+  exception when others then
+    insert into milestone_active_profile_push_results values ('setup', 'active_push_profiles_linked', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    if exists (
+         select 1
+         from information_schema.columns
+         where table_schema = 'public'
+           and table_name = 'push_subscriptions'
+           and column_name = 'auth_user_id'
+       )
+       and to_regprocedure('public.register_push_subscription(text,text,text,text)') is not null
+       and to_regprocedure('public.get_my_push_preferences()') is not null
+       and to_regprocedure('public.create_my_test_push_notification()') is not null then
+      insert into milestone_active_profile_push_results values ('schema', 'active_profile_push_rpcs_exist', 'PASS', 'Push subscriptions have auth owner and RPCs exist.');
+    else
+      insert into milestone_active_profile_push_results values ('schema', 'active_profile_push_rpcs_exist', 'FAIL', 'Expected active profile push schema/RPCs missing.');
+    end if;
+  exception when others then
+    insert into milestone_active_profile_push_results values ('schema', 'active_profile_push_rpcs_exist', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_push_a_id);
+    payload := public.register_push_subscription(
+      shared_endpoint,
+      repeat('e', 88),
+      repeat('f', 24),
+      'local validation agent'
+    );
+
+    select count(*)
+    into row_count
+    from public.push_subscriptions ps
+    where ps.endpoint = shared_endpoint
+      and ps.auth_user_id = member_id
+      and ps.profile_id = active_push_a_id
+      and ps.disabled_at is null;
+
+    if payload ->> 'enabled' = 'true'
+       and row_count = 1 then
+      insert into milestone_active_profile_push_results values ('subscription', 'browser_subscription_owned_by_auth_and_selected_profile', 'PASS', payload::text);
+    else
+      insert into milestone_active_profile_push_results values ('subscription', 'browser_subscription_owned_by_auth_and_selected_profile', 'FAIL', coalesce(payload::text, '<null>') || ' rows=' || row_count::text);
+    end if;
+  exception when others then
+    insert into milestone_active_profile_push_results values ('subscription', 'browser_subscription_owned_by_auth_and_selected_profile', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_push_a_id);
+    payload := public.update_my_push_preferences(false, true, false, true, true, false);
+
+    perform public.set_my_active_profile(active_push_b_id);
+    payload := public.get_my_push_preferences();
+
+    if payload ->> 'notify_gvg' = 'true'
+       and payload ->> 'notify_3v3' = 'true'
+       and payload ->> 'notify_wall_reactions' = 'false' then
+      insert into milestone_active_profile_push_results values ('preferences', 'switch_to_b_does_not_show_a_preferences', 'PASS', payload::text);
+    else
+      insert into milestone_active_profile_push_results values ('preferences', 'switch_to_b_does_not_show_a_preferences', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_profile_push_results values ('preferences', 'switch_to_b_does_not_show_a_preferences', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_push_b_id);
+    payload := public.update_my_push_preferences(true, false, true, false, false, true);
+
+    select count(*)
+    into preference_count
+    from public.push_notification_preferences pnp
+    where pnp.profile_id = active_push_a_id
+      and pnp.notify_gvg = false
+      and pnp.notify_cp_window = true
+      and pnp.notify_3v3 = false
+      and pnp.notify_wall_comments = true
+      and pnp.notify_wall_reactions = true
+      and pnp.notify_profile_reactions = false;
+
+    if payload ->> 'notify_cp_window' = 'false'
+       and payload ->> 'notify_wall_comments' = 'false'
+       and payload ->> 'notify_profile_reactions' = 'true'
+       and preference_count = 1 then
+      insert into milestone_active_profile_push_results values ('preferences', 'update_preferences_selected_profile_only', 'PASS', payload::text);
+    else
+      insert into milestone_active_profile_push_results values ('preferences', 'update_preferences_selected_profile_only', 'FAIL', coalesce(payload::text, '<null>') || ' a_rows=' || preference_count::text);
+    end if;
+  exception when others then
+    insert into milestone_active_profile_push_results values ('preferences', 'update_preferences_selected_profile_only', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_push_b_id);
+    payload := public.create_my_test_push_notification();
+
+    select count(*)
+    into row_count
+    from public.push_notification_outbox pno
+    where pno.recipient_profile_id = active_push_b_id
+      and pno.type = 'self_test'
+      and pno.title = 'Anteiku Guild Manager'
+      and pno.body = 'Test notification from Anteiku.'
+      and coalesce(pno.route, '') = '/';
+
+    if payload ->> 'queued' = 'true'
+       and row_count = 1 then
+      insert into milestone_active_profile_push_results values ('outbox', 'self_test_queues_for_selected_active_profile', 'PASS', payload::text);
+    else
+      insert into milestone_active_profile_push_results values ('outbox', 'self_test_queues_for_selected_active_profile', 'FAIL', coalesce(payload::text, '<null>') || ' rows=' || row_count::text);
+    end if;
+  exception when others then
+    insert into milestone_active_profile_push_results values ('outbox', 'self_test_queues_for_selected_active_profile', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_push_a_id);
+    perform public.register_push_subscription(
+      disabled_endpoint,
+      repeat('g', 88),
+      repeat('h', 24),
+      'local validation agent'
+    );
+
+    perform public.set_my_active_profile(active_push_b_id);
+    payload := public.disable_push_subscription(disabled_endpoint);
+
+    select count(*)
+    into row_count
+    from public.push_subscriptions ps
+    where ps.endpoint = disabled_endpoint
+      and ps.auth_user_id = member_id
+      and ps.disabled_at is null;
+
+    if payload ->> 'disabled' = 'true'
+       and row_count = 0 then
+      insert into milestone_active_profile_push_results values ('subscription', 'disable_uses_browser_auth_owner_not_selected_profile', 'PASS', payload::text);
+    else
+      insert into milestone_active_profile_push_results values ('subscription', 'disable_uses_browser_auth_owner_not_selected_profile', 'FAIL', coalesce(payload::text, '<null>') || ' rows=' || row_count::text);
+    end if;
+  exception when others then
+    insert into milestone_active_profile_push_results values ('subscription', 'disable_uses_browser_auth_owner_not_selected_profile', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_push_inactive_id);
+    perform public.register_push_subscription(
+      'https://push.example.test/active-profile-inactive-endpoint',
+      repeat('i', 88),
+      repeat('j', 24),
+      'local validation agent'
+    );
+    insert into milestone_active_profile_push_results values ('eligibility', 'inactive_active_profile_denied_subscription', 'FAIL', 'Inactive active profile registered a subscription.');
+  exception when others then
+    insert into milestone_active_profile_push_results values ('eligibility', 'inactive_active_profile_denied_subscription', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_push_b_id);
+    perform public.update_my_push_preferences(true, false, true, true, false, false);
+
+    if private.enqueue_push_notification(active_push_b_id, 'cp_window_opened', '/', 'active-push-pref-deny:' || active_push_b_id::text) is null then
+      insert into milestone_active_profile_push_results values ('preferences', 'disabled_type_not_enqueued', 'PASS', 'CP window notification disabled for selected profile.');
+    else
+      insert into milestone_active_profile_push_results values ('preferences', 'disabled_type_not_enqueued', 'FAIL', 'Disabled notification type was queued.');
+    end if;
+  exception when others then
+    insert into milestone_active_profile_push_results values ('preferences', 'disabled_type_not_enqueued', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    update public.user_profile_links upl
+    set disabled_at = now(),
+        is_primary = false
+    where upl.auth_user_id = member_id
+      and upl.profile_id = active_push_b_id
+      and upl.disabled_at is null;
+
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_push_b_id);
+    insert into milestone_active_profile_push_results values ('security', 'unlinked_active_profile_switch_denied', 'FAIL', 'Unlinked push profile was selected.');
+  exception when others then
+    insert into milestone_active_profile_push_results values ('security', 'unlinked_active_profile_switch_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    select count(*)
+    into row_count
+    from public.push_notification_outbox pno
+    where pno.recipient_profile_id in (active_push_a_id, active_push_b_id, active_push_inactive_id)
+      and (
+        pno.title ilike '%member_cp%'
+        or pno.title ilike '%cp_snapshots%'
+        or pno.title ilike '%cp_value%'
+        or pno.title ilike '%current_cp%'
+        or pno.title ilike '%email%'
+        or pno.title ilike '%admin%'
+        or pno.title ilike '%audit%'
+        or pno.body ilike '%member_cp%'
+        or pno.body ilike '%cp_snapshots%'
+        or pno.body ilike '%cp_value%'
+        or pno.body ilike '%current_cp%'
+        or pno.body ilike '%email%'
+        or pno.body ilike '%admin%'
+        or pno.body ilike '%audit%'
+      );
+
+    if row_count = 0 then
+      insert into milestone_active_profile_push_results values ('privacy', 'active_profile_push_payload_has_no_private_tokens', 'PASS', 'No private field tokens found in active-profile notification payloads.');
+    else
+      insert into milestone_active_profile_push_results values ('privacy', 'active_profile_push_payload_has_no_private_tokens', 'FAIL', row_count::text || ' unsafe rows found.');
+    end if;
+  exception when others then
+    insert into milestone_active_profile_push_results values ('privacy', 'active_profile_push_payload_has_no_private_tokens', 'FAIL', sqlerrm);
+  end;
+
+  select count(*)
+  into owner_count
+  from public.guild_memberships gm
+  join public.profiles p on p.id = gm.profile_id
+  where gm.role = 'owner'
+    and gm.membership_status = 'active'
+    and p.approval_status = 'approved';
+
+  if owner_count = 1 then
+    insert into milestone_active_profile_push_results values ('regression', 'active_owner_count_remains_one', 'PASS', 'Exactly one active approved Owner membership exists.');
+  else
+    insert into milestone_active_profile_push_results values ('regression', 'active_owner_count_remains_one', 'FAIL', owner_count::text || ' active approved Owner memberships found.');
+  end if;
+end;
+$$;
+
 select section, test_name, status, details
 from milestone_push_notification_results
 order by section, test_name;
@@ -8694,5 +9063,14 @@ select count(*) filter (where status = 'PASS') as milestone_active_profile_three
        count(*) filter (where status = 'FAIL') as milestone_active_profile_three_v_three_total_fail,
        count(*) filter (where status = 'SKIP') as milestone_active_profile_three_v_three_total_skip
 from milestone_active_profile_three_v_three_results;
+
+select section, test_name, status, details
+from milestone_active_profile_push_results
+order by section, test_name;
+
+select count(*) filter (where status = 'PASS') as milestone_active_profile_push_total_pass,
+       count(*) filter (where status = 'FAIL') as milestone_active_profile_push_total_fail,
+       count(*) filter (where status = 'SKIP') as milestone_active_profile_push_total_skip
+from milestone_active_profile_push_results;
 
 rollback;

@@ -382,6 +382,20 @@ export function Profile() {
     };
   }, [settingsOpen]);
 
+  useEffect(() => {
+    if (!settingsOpen) {
+      return undefined;
+    }
+
+    setPushPreferences(null);
+    setPushEndpoint('');
+    setPushMessage('');
+    setPushError('');
+    refreshPushSettings();
+
+    return undefined;
+  }, [settingsOpen, activeProfileId]);
+
   function startEditing() {
     setIgnDraft(displayIgn);
     setProfileMessage('');
@@ -406,7 +420,6 @@ export function Profile() {
 
   function openSettingsPanel() {
     setSettingsOpen(true);
-    refreshPushSettings();
     refreshAccountSwitcher();
   }
 
@@ -1145,6 +1158,7 @@ export function Profile() {
                 <div>
                   <h4>{t('pushNotifications.title')}</h4>
                   <p>{t('pushNotifications.body')}</p>
+                  <p className="push-profile-context">{t('pushNotifications.forProfile', { name: displayIgn })}</p>
                 </div>
               </div>
 
@@ -1160,6 +1174,7 @@ export function Profile() {
                 <div>
                   <span>{t('pushNotifications.status')}</span>
                   <strong>{pushEnabled ? t('pushNotifications.enabledStatus') : t('pushNotifications.disabledStatus')}</strong>
+                  <small>{t('pushNotifications.browserSubscription')}</small>
                 </div>
               </div>
 
@@ -1184,7 +1199,7 @@ export function Profile() {
                   onClick={disableCurrentPushSubscription}
                   disabled={pushSaving || pushLoading || !pushEnabled}
                 >
-                  {t('pushNotifications.disable')}
+                  {t('pushNotifications.disableThisBrowser')}
                 </button>
                 <button
                   type="button"
