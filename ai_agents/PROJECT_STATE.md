@@ -1,5 +1,37 @@
 # Project State
 
+## Milestone 29E.8C Active Admin Shell Context Live
+
+AdminPanel shell visibility now uses the backend-resolved active admin context and is live in production through commit `4689b64 feat: use active admin context for admin shell`.
+
+Implemented:
+- Added `src/services/adminContextService.js` with RPC-only `loadMyActiveAdminContext()` around `get_my_active_admin_context()`.
+- Added `src/hooks/useActiveAdminContext.js` to load safe active admin context for approved active profiles.
+- Updated AppShell/Admin navigation visibility to use `can_access_admin_panel` from the live active admin context.
+- Updated the AdminPanel shell guard to show active-context loading/denied states.
+- Added EN/FR/DE copy for active admin context loading, denial, and active-profile admin access.
+
+Boundaries:
+- This is a frontend shell/access visibility milestone only.
+- Existing AdminPanel section internals and admin action services remain on their legacy behavior until separately migrated.
+- Admin CP, Analytics, Audit Logs, Permissions, Member Management, GvG admin, Owner Tools, and Admin RPC/action identity were not migrated.
+- No SQL, migration, Supabase/RLS/RPC, service-worker/PWA, package, or environment changes were made.
+
+Security/CP privacy:
+- Frontend Admin visibility no longer derives from another linked profile's legacy `AuthContext` role when the active profile lacks admin access.
+- The frontend treats `get_my_active_admin_context()` as display/access-shell context only; backend/RPC remains authority for sensitive Admin actions.
+- The new service has no direct table reads/writes, no service-role path, no localStorage authority, and no `member_cp` or `cp_snapshots` path.
+- Raw active-admin RPC errors are not rendered in the denied UI.
+- No CP values or CP-derived stats were exposed.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found only frontend/i18n files changed for the source commit and no SQL/migration/Supabase/RLS/RPC changes.
+- Production bundle verification confirmed the deployed app contains `get_my_active_admin_context` and the new active-context copy.
+- Authenticated production smoke passed for the available active Owner account: app loaded, Admin nav appeared, AdminPanel opened, and the shell displayed `Active profile admin access: owner`.
+- Profile Settings Account Switcher showed only one linked profile in the smoke session, so the active normal-member switch/hide-Admin branch could not be production-browser tested from that account.
+- Browser console captured an existing Supabase stale refresh-token error in this session while the app still rendered signed in; no functional Admin shell blocker was found.
+
 ## Milestone 29E.8B Active Admin Context Foundation Live
 
 Active Admin Context foundation is live in production through migration `20260531000900_active_admin_context_foundation.sql`.

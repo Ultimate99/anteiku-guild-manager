@@ -1,5 +1,14 @@
 # Code Index
 
+## Milestone 29E.8C Active Admin Shell Context
+
+- `src/services/adminContextService.js`: Adds RPC-only `loadMyActiveAdminContext()` for `get_my_active_admin_context`, maps safe active admin context fields, and defensively rejects unexpected CP value keys.
+- `src/hooks/useActiveAdminContext.js`: Loads active admin context for approved active profiles and exposes loading/error state plus `canAccessAdminPanel`.
+- `src/App.jsx`: Uses active admin context to decide Admin nav visibility and passes active-context state into AdminPanel. This replaces legacy role-only shell visibility for the Admin nav.
+- `src/pages/AdminPanel.jsx`: Uses active-context shell access for the outer AdminPanel guard, adds active-context loading/denied states, and displays the active profile's admin access role line. Existing Admin section internals and action services remain legacy.
+- `src/i18n/en.js`, `src/i18n/fr.js`, `src/i18n/de.js`: Add active admin context shell labels.
+- Production status: commit `4689b64 feat: use active admin context for admin shell` is pushed to `main`, build/source validation passed, production bundle verification passed, and active Owner production smoke passed. Active normal-member switch smoke was unavailable because the logged-in production account had only one linked profile.
+
 ## Milestone 29E.8B Active Admin Context Foundation
 
 - `supabase/migrations/20260531000900_active_admin_context_foundation.sql`: Adds backend-only `private.get_active_admin_context()` and `public.get_my_active_admin_context()` for safe selected-active-profile admin context. Existing AdminPanel frontend behavior and legacy Admin RPCs remain unchanged.

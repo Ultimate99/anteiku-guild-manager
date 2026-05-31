@@ -1,5 +1,28 @@
 # Testing
 
+## Milestone 29E.8C Active Admin Shell Context
+
+Active Admin Shell Context passed build/source validation and limited authenticated production smoke.
+
+Results:
+- Commit `4689b64 feat: use active admin context for admin shell` is pushed to `main`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production serves a bundle containing `get_my_active_admin_context` and the new active-context copy.
+- No SQL, migrations, Supabase/RLS/RPC, package, service-worker/PWA, or environment files changed.
+
+Production smoke:
+- Signed-in production app loaded.
+- Active Owner account showed Admin navigation.
+- AdminPanel opened and displayed `Active profile admin access: owner`.
+- Profile Settings Account Switcher showed only one linked profile, so active normal-member switch/hide-Admin behavior could not be tested from this account.
+- Browser console captured one existing Supabase stale refresh-token error while the app still rendered signed in; no functional Admin shell blocker was found.
+
+Security/source validation:
+- New active-admin frontend service uses only `get_my_active_admin_context`.
+- No direct `.from(...)` table reads/writes, no `member_cp`, no `cp_snapshots`, no CP RPCs, no service-role path, and no localStorage authority were added.
+- Existing Admin action services and AdminPanel section internals remain legacy/backend-enforced.
+- Admin CP, Analytics, Audit Logs, Permissions, Member Management, GvG admin, Owner Tools, and CP visibility behavior were unchanged.
+
 ## Milestone 29E.8B Active Admin Context Foundation
 
 Active Admin Context foundation passed local validation and production DB verification.

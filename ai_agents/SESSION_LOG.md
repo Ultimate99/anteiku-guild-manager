@@ -1,5 +1,22 @@
 # Session Log
 
+## 2026-05-31 - Milestone 29E.8C Active Admin Shell Context
+
+- Implemented frontend-only AdminPanel shell visibility using the live active admin context RPC.
+- Added `src/services/adminContextService.js` with RPC-only `loadMyActiveAdminContext()` for `get_my_active_admin_context`.
+- Added `src/hooks/useActiveAdminContext.js` for active-context loading, error state, and `canAccessAdminPanel`.
+- Updated AppShell/Admin navigation to use `can_access_admin_panel` from the backend-resolved active profile context.
+- Updated AdminPanel shell guard to show active-context loading/denied states and active-profile admin access copy.
+- Added EN/FR/DE copy for active admin context loading, denial, description, and active access role line.
+- Preserved all Admin action/service internals, Admin CP, Analytics, Audit Logs, Permissions, Member Management, GvG admin, Owner Tools, CP visibility, and CP privacy.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no SQL/migration/Supabase/RLS/RPC changes, no direct table path in the new service, no service-role/localStorage authority, and no `member_cp`/`cp_snapshots` path.
+- Commit `4689b64 feat: use active admin context for admin shell` was pushed to `main`.
+- Production bundle verification confirmed the deployed app contains `get_my_active_admin_context` and the new active-context copy.
+- Authenticated production smoke passed for the available active Owner account: app loaded, Admin nav appeared, AdminPanel opened, and the shell displayed `Active profile admin access: owner`.
+- Account Switcher showed only one linked profile, so active normal-member switch/hide-Admin production smoke was not available from this session.
+- Browser console captured one existing Supabase stale refresh-token error while the app still rendered signed in; no functional Admin shell blocker was found.
+
 ## 2026-05-31 - Milestone 29E.8B Active Admin Context Foundation
 
 - Implemented backend-only Active Admin Context foundation.

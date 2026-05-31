@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-05-31 - Milestone 29E.8C Active Admin Shell Context
+
+- Wired AdminPanel shell visibility to the backend-resolved active admin context.
+- Commit deployed:
+  - `4689b64 feat: use active admin context for admin shell`
+- Source files changed:
+  - `src/App.jsx`
+  - `src/pages/AdminPanel.jsx`
+  - `src/hooks/useActiveAdminContext.js`
+  - `src/services/adminContextService.js`
+  - `src/i18n/en.js`
+  - `src/i18n/fr.js`
+  - `src/i18n/de.js`
+- Added RPC-only `loadMyActiveAdminContext()` around `get_my_active_admin_context`.
+- AppShell/Admin nav now uses `can_access_admin_panel` from the active profile's safe admin context.
+- AdminPanel shell guard now has active-context loading/denied states and displays active profile admin access when allowed.
+- Existing Admin section internals, Admin RPC/action behavior, Admin CP, Analytics, Audit Logs, Permissions, Member Management, GvG admin, Owner Tools, and CP visibility remain unchanged.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no SQL/migration/Supabase/RLS/RPC changes, no direct table path in the new service, no `member_cp`/`cp_snapshots`, no service-role path, and no localStorage authority.
+- Production bundle verification passed and active Owner production smoke passed. Active normal-member switch smoke was unavailable because the logged-in account had only one linked profile.
+- One existing Supabase stale refresh-token console error was captured in the browser session while the app still rendered signed in; no functional Admin shell blocker was found.
+
 ## 2026-05-31 - Milestone 29E.8B Active Admin Context Foundation
 
 - Added backend-only Active Admin Context foundation.

@@ -2,22 +2,36 @@
 
 ## Current Recommendation
 
-Milestone 29E.8B Active Admin Context foundation is live in production and locally/production-gate validated.
+Milestone 29E.8C Active Admin Shell Context is live in production and build/source/production-smoke validated.
 
 Recommended next step:
-- Implement the next Admin migration only after explicit approval: AdminPanel shell visibility should load `get_my_active_admin_context()` and use it for display/gating while keeping backend RPCs as authority.
+- Plan a separately approved Admin active-profile migration for AdminPanel section reads/actions, starting with the safest bounded surface.
 - Migrate direct admin table reads to active-profile-safe RPC reads before wiring sensitive Admin sections broadly.
 - Admin actions, Admin CP, Analytics/Weekly Growth, Audit Logs, Permissions, Member Management, GvG admin, and Owner Tools still need separate approved backend/RPC/RLS milestones before they use active-profile identity.
 - Keep frontend selected profile ids as UX input only; backend/RPC remains the authority.
 
 Do not yet:
-- Treat the new active-admin context as a full AdminPanel migration.
-- Change AdminPanel visibility until the frontend shell milestone is approved.
+- Treat the active-admin shell gate as a full AdminPanel migration.
 - Change existing Admin RPC/action behavior.
 - Treat frontend-selected profile ids as authority.
 - Use localStorage-only profile switching.
 - Expose normal CP values or private auth/email/admin metadata in switcher payloads.
 - Change active-profile behavior for existing systems without a reviewed RPC/RLS migration.
+
+Recorded Account Switcher 29E.8C status:
+- Commit `4689b64 feat: use active admin context for admin shell` is pushed to `main` and production serves the updated bundle.
+- AppShell/Admin navigation now loads `get_my_active_admin_context()` through `src/services/adminContextService.js` and `src/hooks/useActiveAdminContext.js`.
+- AdminPanel shell guard shows active-context loading/denied states and displays the active profile admin role when access is allowed.
+- Existing Admin section internals and admin action services remain legacy; this milestone changed shell visibility only.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no SQL/migration/Supabase/RLS/RPC changes, no direct admin table reads in the new service, no service-role/localStorage authority, and no `member_cp`/`cp_snapshots` path.
+- Production smoke passed for the available active Owner account: app loaded, Admin nav appeared, AdminPanel opened, and the shell displayed active Owner admin access.
+- Account Switcher showed only one linked profile in the smoke session, so active normal-member Admin hiding could not be browser-tested in production from that account.
+- One existing Supabase stale refresh-token console error was captured in the browser session while the app still rendered signed in; no functional Admin shell blocker was found.
+
+## Previous Recommendation
+
+Milestone 29E.8B Active Admin Context foundation is live in production and locally/production-gate validated.
 
 Recorded Account Switcher 29E.8B status:
 - Production DB has `20260531000900_active_admin_context_foundation.sql` applied after a clean dry-run showing only that migration.

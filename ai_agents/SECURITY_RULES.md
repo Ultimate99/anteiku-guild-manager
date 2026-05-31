@@ -1,5 +1,26 @@
 # Security Rules
 
+## Active Admin Shell Context Security Rules
+
+Milestone 29E.8C Active Admin Shell Context is live in production through commit `4689b64 feat: use active admin context for admin shell`.
+
+Rules:
+- AppShell/Admin navigation visibility must use backend-resolved `get_my_active_admin_context()` for the selected active profile.
+- AdminPanel shell access must depend on `can_access_admin_panel` from the active admin context, not another linked profile's legacy role.
+- Active normal Member profiles must not inherit AdminPanel shell visibility from a linked Owner/Admin profile.
+- The active admin context is shell/display context only; sensitive Admin actions must remain enforced by backend/RPC permissions.
+- Existing Admin CP, Analytics, Audit Logs, Permissions, Member Management, GvG admin, Owner Tools, and Admin action identity remain legacy until separately migrated.
+
+Privacy:
+- The frontend active-admin context service must remain RPC-only and must not direct-read admin tables.
+- The active-admin shell path must not use service-role keys, localStorage as security authority, frontend-supplied profile ids, normal CP values, `member_cp`, `cp_snapshots`, CP history/growth, email/auth data, audit contents, private metadata, or admin target data.
+- Raw backend/RPC errors should not be displayed in the Admin denied UI.
+
+Validation status:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no SQL/migration/Supabase/RLS/RPC changes and no forbidden CP/admin table paths in the new shell path.
+- Production smoke verified active Owner Admin nav visibility and AdminPanel shell access. Active normal-member hide-Admin production smoke was not available because the logged-in account had only one linked profile.
+
 ## Active Admin Context Foundation Security Rules
 
 Milestone 29E.8B Active Admin Context foundation is live in production through `20260531000900_active_admin_context_foundation.sql`.

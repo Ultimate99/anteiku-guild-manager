@@ -1,5 +1,33 @@
 # Testing And Validation
 
+## Milestone 29E.8C Active Admin Shell Context Validation
+
+Active Admin Shell Context passed build/source validation and limited authenticated production smoke.
+
+Commands/gates:
+- `npm.cmd run build`
+- `git push origin main`
+- Production bundle/content verification
+- Authenticated production browser smoke
+
+Results:
+- Commit `4689b64 feat: use active admin context for admin shell` is pushed to `main`.
+- Production serves a bundle containing `get_my_active_admin_context` and the new active-context copy.
+- Build passed with the existing Vite chunk-size warning only.
+- No SQL, migrations, Supabase/RLS/RPC, service-worker/PWA, package, or environment files changed.
+
+Validated behavior:
+- AppShell/Admin nav now uses active admin context from `get_my_active_admin_context()`.
+- AdminPanel shell guard shows active-context loading/denied states.
+- Active Owner production smoke passed: app loaded, Admin nav appeared, AdminPanel opened, and the shell displayed `Active profile admin access: owner`.
+- Profile Settings Account Switcher showed only one linked profile in the smoke session, so active normal-member switch/hide-Admin behavior could not be production-browser tested from that account.
+
+Security/source validation:
+- `src/services/adminContextService.js` uses only the `get_my_active_admin_context` RPC and has no direct `.from(...)` table access.
+- Source checks found no `member_cp`, `cp_snapshots`, service-role path, localStorage authority, Admin CP roster/ranking RPCs, or direct admin permission/guild-membership table paths in the new shell path.
+- Existing Admin section internals and admin action services remain legacy and backend-enforced; no Admin CP, Analytics, Audit Logs, Permissions, Member Management, GvG admin, Owner Tools, or CP visibility behavior changed.
+- Browser console captured one existing Supabase stale refresh-token error in the session while the app still rendered signed in; no functional Admin shell blocker was found.
+
 ## Milestone 29E.8B Active Admin Context Foundation Validation
 
 Active Admin Context foundation passed local backend validation, production migration gates, and production DB verification.
