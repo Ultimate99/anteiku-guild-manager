@@ -1,8 +1,30 @@
 # Supabase RLS
 
-The Supabase RLS/RPC implementation has been validated and production-applied through `20260531001000_active_profile_non_cp_admin.sql`.
+The Supabase RLS/RPC implementation has been validated and production-applied through `20260531001100_active_profile_cp_analytics_audit_admin.sql`.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
+
+## CP Admin + Analytics + Audit Logs Active Profile RLS/RPC
+
+Milestone 29E.8E CP Admin + Analytics + Audit Logs active-profile migration is production-applied through `20260531001100_active_profile_cp_analytics_audit_admin.sql`.
+
+Functions:
+- Admin CP roster/window/update RPCs.
+- `get_admin_cp_rankings`.
+- Admin Analytics / Weekly Growth RPCs.
+- `get_audit_logs`.
+
+Rules:
+- Migrated CP-heavy Admin RPCs resolve authority from the backend-selected active profile.
+- Owner active profiles retain global CP/Admin/Analytics/Audit authority.
+- Scoped staff are limited by active profile guild/permission scope.
+- CP values, CP growth, snapshot history/report data, and CP audit metadata require scoped active-profile `view_cp` or Owner authority.
+- Active Member/restricted profiles are denied CP/Admin/Analytics/Audit authority.
+
+Privacy:
+- No migrated frontend path direct-reads `member_cp`, `cp_snapshots`, `cp_snapshot_batches`, `cp_snapshot_entries`, or `audit_logs`.
+- Production verification confirmed active Owner count `1` and simulated authenticated direct `member_cp`/`cp_snapshots`/`audit_logs` reads returned zero rows.
+- Member-facing own CP, GvG, 3v3, Wall, Profile Reactions, Cosmetics, Push, auth, role, and member-status behavior are unchanged.
 
 ## Non-CP Admin Active Profile RLS/RPC
 

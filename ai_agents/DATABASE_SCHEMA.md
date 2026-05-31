@@ -2,6 +2,8 @@
 
 ## Current Backend Status
 
+Milestone 29E.8E CP Admin + Analytics + Audit Logs active-profile migration is applied and verified in production through `20260531001100_active_profile_cp_analytics_audit_admin.sql`. It switches Admin CP roster/window/update, Admin CP Ranking, Analytics/Weekly Growth, and Audit Logs/CP metadata redaction to selected active admin authority while preserving member-facing own CP, GvG, 3v3, Wall, Cosmetics, Push, non-CP Admin, auth, role, and member-status behavior.
+
 Milestone 29E.8D Non-CP Admin active-profile migration is applied and verified in production through `20260531001000_active_profile_non_cp_admin.sql`. It switches Approvals, Members management, Permissions, GvG Admin, Owner Tools, and focused non-CP Admin read RPCs to active-admin identity while leaving Admin CP, CP Ranking, Analytics/Weekly Growth, Audit Logs, and CP metadata redaction intentionally unchanged.
 
 Milestone 29E.8B Active Admin Context foundation is applied and verified in production through `20260531000900_active_admin_context_foundation.sql`. It adds `get_my_active_admin_context()` as a backend-only safe context RPC for the selected active profile while preserving existing AdminPanel frontend behavior and all legacy Admin RPC/action behavior.
@@ -42,7 +44,7 @@ Staging and production both have this migration applied and verified. Future new
 
 ## Production Deployment Status
 
-Production Supabase is live and migrated through the non-CP Admin active-profile migration. Member Status, CP Update Window / Member CP Self-Submit, CP Leaderboard, Rank Badge / Profile Border, Cosmetics, Premium Cosmetics, Owner Cosmetics, Admin Analytics, Live CP Growth, 3v3 Team Finder, Guild Wall, Global Wall, Ghoul Rep backend support, Public Member Profiles, Ranking public profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, active-profile 3v3 RPCs, active-profile Push RPCs, active-profile Own CP RPCs, active-profile GvG member voting RPCs, active-profile GvG vote audit actor alignment, active-admin context foundation, and non-CP Admin active-profile RPCs are applied and verified in production.
+Production Supabase is live and migrated through the CP Admin + Analytics + Audit Logs active-profile migration. Member Status, CP Update Window / Member CP Self-Submit, CP Leaderboard, Rank Badge / Profile Border, Cosmetics, Premium Cosmetics, Owner Cosmetics, Admin Analytics, Live CP Growth, 3v3 Team Finder, Guild Wall, Global Wall, Ghoul Rep backend support, Public Member Profiles, Ranking public profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, active-profile 3v3 RPCs, active-profile Push RPCs, active-profile Own CP RPCs, active-profile GvG member voting RPCs, active-profile GvG vote audit actor alignment, active-admin context foundation, non-CP Admin active-profile RPCs, and CP-heavy Admin active-profile RPCs are applied and verified in production.
 
 Current local migration order:
 
@@ -89,6 +91,23 @@ Current local migration order:
 41. `20260531000800_active_profile_audit_actor_alignment.sql`
 42. `20260531000900_active_admin_context_foundation.sql`
 43. `20260531001000_active_profile_non_cp_admin.sql`
+44. `20260531001100_active_profile_cp_analytics_audit_admin.sql`
+
+## CP Admin + Analytics + Audit Logs Active Profile
+
+Migration `20260531001100_active_profile_cp_analytics_audit_admin.sql` is applied and verified in production.
+
+RPC behavior:
+- Redefines Admin CP/window RPCs: `get_cp_update_window_for_guild`, `get_current_cp_roster`, `update_member_cp`, `open_cp_update_window`, and `close_cp_update_window`.
+- Redefines `get_admin_cp_rankings`.
+- Redefines Analytics/Weekly Growth RPCs: `get_admin_member_analytics`, `get_admin_cp_analytics`, `get_admin_gvg_analytics`, `start_new_cp_growth_period`, `capture_weekly_cp_snapshot`, `get_admin_cp_snapshot_history`, `get_admin_cp_growth_report`, and `get_admin_live_cp_growth`.
+- Redefines `get_audit_logs`.
+
+Security:
+- All migrated RPCs resolve authority through the selected active admin profile, not a different linked profile on the same auth account.
+- CP values/growth/snapshots require active-profile scoped `view_cp` or Owner/global authority.
+- Audit CP metadata redaction checks the selected active profile's scoped `view_cp`.
+- No direct frontend table authority, service-role path, localStorage authority, or arbitrary profile id is introduced.
 
 ## Non-CP Admin Active Profile
 

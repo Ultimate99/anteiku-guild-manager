@@ -1,5 +1,29 @@
 # Security Rules
 
+## CP Admin + Analytics + Audit Logs Active-Profile Security Rules
+
+Milestone 29E.8E CP Admin + Analytics + Audit Logs active-profile migration is live in production through `20260531001100_active_profile_cp_analytics_audit_admin.sql` and commit `9dbf374 feat: migrate cp analytics audit admin to active profile`.
+
+Rules:
+- Admin CP roster/window/update, Admin CP Ranking, Analytics/Weekly Growth, and Audit Logs must resolve authority from the backend-selected active profile through `private.active_admin_profile_id()`.
+- Active Owner profiles retain global Admin CP/Analytics/Audit authority.
+- Scoped staff can access only their selected active profile's allowed guild scope.
+- CP roster, Admin CP Ranking, CP Analytics, Weekly Growth, live growth, snapshot history, and start/capture CP period flows require scoped `view_cp` or stronger active-profile authority as implemented by the backend.
+- Active profiles without `view_cp` must be denied CP values, growth values, CP metadata, and CP snapshot/report payloads.
+- Linked Owner-auth accounts switched to an active Member must not inherit Owner CP/Admin/Analytics/Audit authority.
+- Audit CP metadata redaction must check the selected active profile's scoped `view_cp`.
+
+Privacy:
+- Frontend must keep Admin CP/Analytics/Audit paths RPC-only and must not direct-read `member_cp`, `cp_snapshots`, `cp_snapshot_batches`, `cp_snapshot_entries`, or `audit_logs`.
+- Frontend must not use service-role keys, localStorage security authority, or arbitrary actor/profile ids for migrated Admin authority.
+- Member-facing own CP, GvG member voting, 3v3, Wall, Profile Reactions, Cosmetics, Push, non-CP Admin actions, auth, role, and member-status behavior are separate systems and were not changed by this milestone.
+
+Validation status:
+- Local validation passed with the CP/Analytics/Audit active-admin block at `18 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed only `20260531001100_active_profile_cp_analytics_audit_admin.sql`; production apply/list verification passed.
+- Production DB verification confirmed in-scope RPC body guards, no `auth.uid()` references in migrated RPC bodies, active Owner count `1`, and simulated authenticated direct `member_cp`/`cp_snapshots`/`audit_logs` reads returning zero rows.
+- Production Owner smoke loaded Admin CP, CP Ranking, Analytics, and Audit Logs without production mutation.
+
 ## Non-CP Admin Active-Profile Security Rules
 
 Milestone 29E.8D Non-CP Admin active-profile migration is live in production through `20260531001000_active_profile_non_cp_admin.sql` and commit `6db48ea feat: migrate non-cp admin actions to active profile`.

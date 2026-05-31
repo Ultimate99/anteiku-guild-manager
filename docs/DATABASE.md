@@ -1,10 +1,27 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and production-applied through `20260531001000_active_profile_non_cp_admin.sql`.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and production-applied through `20260531001100_active_profile_cp_analytics_audit_admin.sql`.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
-Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, own Profile Ghoul Rep display, Public Member Profiles, Ranking Public Profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, active-profile 3v3 RPCs, active-profile Push RPCs, active-profile Own CP RPCs, active-profile member GvG voting RPCs, active-profile GvG vote audit actor alignment, active-admin context foundation, and non-CP Admin active-profile RPCs are implemented, locally validated, production applied, and production-smoke or production-gate validated.
+Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, own Profile Ghoul Rep display, Public Member Profiles, Ranking Public Profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, active-profile 3v3 RPCs, active-profile Push RPCs, active-profile Own CP RPCs, active-profile member GvG voting RPCs, active-profile GvG vote audit actor alignment, active-admin context foundation, non-CP Admin active-profile RPCs, and CP-heavy Admin active-profile RPCs are implemented, locally validated, production applied, and production-smoke or production-gate validated.
+
+## CP Admin + Analytics + Audit Logs Active Profile
+
+Migration `20260531001100_active_profile_cp_analytics_audit_admin.sql` is applied and verified in production.
+
+Schema/RPC behavior:
+- Migrates Admin CP roster/window/update RPCs to selected active admin authority.
+- Migrates Admin CP Ranking to selected active admin authority.
+- Migrates Analytics/Weekly Growth RPCs to selected active admin authority.
+- Migrates Audit Logs scope and CP metadata redaction to selected active admin authority.
+
+Security:
+- Active Owner retains global CP/Admin/Analytics/Audit authority.
+- Scoped staff with `view_cp` can access only scoped CP values/growth for the selected active profile's allowed guild.
+- Active profiles without `view_cp` are denied CP values, growth reports, and CP metadata.
+- Direct normal-member reads of `member_cp`, `cp_snapshots`, and `audit_logs` remained blocked in production RLS probes.
+- No member-facing own CP, GvG, 3v3, Wall, Profile Reactions, Cosmetics, Push, auth, role, or member-status behavior changed.
 
 ## Non-CP Admin Active Profile
 

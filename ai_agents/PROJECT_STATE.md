@@ -1,5 +1,34 @@
 # Project State
 
+## Milestone 29E.8E CP Admin + Analytics + Audit Logs Active-Profile Migration Live
+
+CP-heavy AdminPanel authority now follows the selected active admin profile and is live in production through migration `20260531001100_active_profile_cp_analytics_audit_admin.sql` and commit `9dbf374 feat: migrate cp analytics audit admin to active profile`.
+
+Implemented:
+- Migrated Admin CP roster/window/update RPCs to active admin identity: `get_cp_update_window_for_guild`, `get_current_cp_roster`, `update_member_cp`, `open_cp_update_window`, and `close_cp_update_window`.
+- Migrated Admin CP Ranking through `get_admin_cp_rankings`.
+- Migrated Analytics/Weekly Growth RPCs, including member/CP/GvG analytics, snapshot history, growth reports, live growth, and start/capture weekly CP period flows.
+- Migrated `get_audit_logs` so Audit Logs visibility and CP metadata redaction use the selected active profile's admin scope and `view_cp`.
+- Updated AdminPanel to clear stale CP/Admin/Analytics/Audit data when the active admin profile or active admin guild context changes.
+
+Security/CP privacy:
+- Active Owner can access global Admin CP, CP Ranking, Analytics/Weekly Growth, and Audit Logs.
+- Scoped staff with `view_cp` can access scoped CP/Admin Analytics surfaces only for their allowed guild.
+- Active profiles without `view_cp` are denied CP roster/ranking/analytics/growth/start-period data.
+- An Owner-auth account switched to an active Member does not inherit Owner CP/Admin/Analytics/Audit authority.
+- CP audit metadata remains redacted unless the selected active profile has scoped `view_cp`.
+- No `member_cp`/`cp_snapshots` direct frontend reads, service-role path, localStorage authority, arbitrary frontend actor `profile_id`, or unrelated subsystem behavior was added.
+
+Validation:
+- Local `npx.cmd supabase db reset` passed through `20260531001100_active_profile_cp_analytics_audit_admin.sql`.
+- Full local validation passed; the new CP/Analytics/Audit active-admin block reported `18 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production dry-run showed exactly `20260531001100_active_profile_cp_analytics_audit_admin.sql`; production apply/list verification passed.
+- Production DB verification confirmed the migration applied, in-scope RPC bodies use active admin authority with no `auth.uid()` references, active Owner count remains `1`, and simulated authenticated direct `member_cp`/`cp_snapshots`/`audit_logs` reads returned zero rows.
+- Authenticated Owner production smoke loaded Admin CP, CP Ranking, Analytics, and Audit Logs from the deployed bundle without data-changing clicks. The browser log still contains an old stale Supabase refresh-token entry from an older bundle URL, but no functional Admin blocker was found.
+
+Account Switcher active-profile migration is now functionally complete for the previously planned member/admin surfaces. Remaining work should be a final cross-surface regression checklist, not another broad migration by default.
+
 ## Milestone 29E.8D Non-CP Admin Active-Profile Migration Live
 
 Non-CP AdminPanel read/actions now use the backend-resolved active admin profile and are live in production through migration `20260531001000_active_profile_non_cp_admin.sql` and commit `6db48ea feat: migrate non-cp admin actions to active profile`.

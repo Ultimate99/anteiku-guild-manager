@@ -1,5 +1,41 @@
 # Supabase RLS
 
+## Milestone 29E.8E CP Admin + Analytics + Audit Logs Active Profile RLS/RPC
+
+Milestone 29E.8E CP Admin + Analytics + Audit Logs active-profile migration is implemented, locally validated, and production applied through `20260531001100_active_profile_cp_analytics_audit_admin.sql`.
+
+RPC/helper:
+- `private.active_admin_profile_id()`
+- `get_cp_update_window_for_guild(...)`
+- `get_current_cp_roster(...)`
+- `update_member_cp(...)`
+- `get_admin_cp_rankings(...)`
+- `open_cp_update_window(...)`
+- `close_cp_update_window(...)`
+- `get_admin_member_analytics(...)`
+- `get_admin_cp_analytics(...)`
+- `get_admin_gvg_analytics(...)`
+- `start_new_cp_growth_period(...)`
+- `capture_weekly_cp_snapshot(...)`
+- `get_admin_cp_snapshot_history(...)`
+- `get_admin_cp_growth_report(...)`
+- `get_admin_live_cp_growth(...)`
+- `get_audit_logs(...)`
+
+Rules:
+- Migrated CP/Admin/Analytics/Audit RPCs resolve selected active-profile admin authority through `private.active_admin_profile_id()`.
+- Owner active profiles retain global access.
+- Scoped staff are limited to their selected active profile's allowed guild scope.
+- CP roster, Admin CP Ranking, CP Analytics, Weekly Growth, live growth, snapshot history, and start/capture period flows require scoped `view_cp` or stronger active-profile authority.
+- Active Member/restricted profiles and active staff without `view_cp` are denied CP-heavy surfaces.
+- Audit CP metadata redaction checks active-profile scoped `view_cp`.
+
+Validation:
+- Local reset applied the migration cleanly.
+- Full local validation passed; the CP/Analytics/Audit active-admin block reported `18 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed only `20260531001100_active_profile_cp_analytics_audit_admin.sql`; production migration is applied and remote migration list shows it applied.
+- Production verification confirmed in-scope RPC body guards, no migrated `auth.uid()` references, active Owner count `1`, and simulated authenticated direct reads of `member_cp`, `cp_snapshots`, and `audit_logs` returned zero visible rows.
+
 ## Milestone 29E.8D Non-CP Admin Active Profile RLS/RPC
 
 Milestone 29E.8D Non-CP Admin active-profile migration is implemented, locally validated, and production applied through `20260531001000_active_profile_non_cp_admin.sql`.

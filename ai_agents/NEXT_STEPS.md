@@ -2,21 +2,33 @@
 
 ## Current Recommendation
 
-Milestone 29E.8D Non-CP Admin active-profile migration is live in production and locally/build/production-gate validated.
+Milestone 29E.8E CP Admin + Analytics + Audit Logs active-profile migration is live in production and locally/build/production-gate validated.
 
 Recommended next step:
-- Plan the remaining CP-sensitive Admin active-profile migration separately.
-- Remaining Admin areas to review/migrate later: Admin CP roster/update/window, CP Ranking, Analytics/Weekly Growth, Audit Logs, and CP audit metadata redaction.
-- Keep CP surfaces backend-gated by existing CP permissions until their own active-profile-safe RPC/RLS milestone is approved.
+- Run a final Account Switcher active-profile regression checklist across already migrated systems.
+- Focus that checklist on profile switching, stale-data clearing, CP privacy, admin permission boundaries, and single-profile behavior.
 - Keep frontend selected profile ids as UX input only; backend/RPC remains the authority.
 
 Do not yet:
-- Treat 29E.8D as a CP/Admin Analytics/Audit migration.
-- Change Admin CP/Analytics/Audit Log behavior without a new approved milestone.
+- Broaden into unrelated feature work under the active-profile milestone.
 - Treat frontend-selected profile ids as authority.
 - Use localStorage-only profile switching.
 - Expose normal CP values or private auth/email/admin metadata in switcher payloads.
 - Change active-profile behavior for existing systems without a reviewed RPC/RLS migration.
+
+Recorded Account Switcher 29E.8E status:
+- Commit `9dbf374 feat: migrate cp analytics audit admin to active profile` is pushed to `main` and production serves the updated bundle.
+- Production DB has `20260531001100_active_profile_cp_analytics_audit_admin.sql` applied after a clean dry-run showing only that migration.
+- Admin CP roster/window/update, Admin CP Ranking, Analytics/Weekly Growth, and Audit Logs now resolve admin authority through the selected active profile.
+- Audit CP metadata redaction uses the selected active profile's scoped `view_cp`, not another linked profile's permissions.
+- AdminPanel clears stale CP/Admin/Analytics/Audit state when active admin profile/guild context changes.
+- Local validation passed with the new block at `18 PASS / 0 FAIL / 0 SKIP`; build passed.
+- Production DB verification passed for migration presence, active-helper RPC body coverage, no in-scope `auth.uid()` references, active Owner count `1`, and direct CP/audit table protection.
+- Production smoke passed read-only for Owner Admin CP, CP Ranking, Analytics, and Audit Logs. No production Admin mutation was performed.
+
+## Previous Recommendation
+
+Milestone 29E.8D Non-CP Admin active-profile migration is live in production and locally/build/production-gate validated.
 
 Recorded Account Switcher 29E.8D status:
 - Commit `6db48ea feat: migrate non-cp admin actions to active profile` is pushed to `main` and production serves the updated bundle.

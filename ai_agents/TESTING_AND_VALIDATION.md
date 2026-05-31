@@ -1,5 +1,44 @@
 # Testing And Validation
 
+## Milestone 29E.8E CP Admin + Analytics + Audit Logs Active-Profile Migration Validation
+
+CP-heavy Admin active-profile migration passed local backend validation, frontend build/source validation, production migration gates, production DB verification, and authenticated production smoke.
+
+Commands/gates:
+- `npx.cmd supabase db reset --local`
+- `Get-Content supabase\tests\local_validation_anteiku.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres`
+- `npm.cmd run build`
+- Production `npx.cmd supabase db push --dry-run`
+- Production `npx.cmd supabase db push`
+- Production `npx.cmd supabase migration list`
+- Production read-only/RLS-probe DB verification
+- `git push origin main`
+- Authenticated production AdminPanel smoke
+
+Results:
+- Local reset applied through `20260531001100_active_profile_cp_analytics_audit_admin.sql`.
+- Full local validation passed.
+- Milestone 29E.8E CP/Analytics/Audit active-admin block passed `18 PASS / 0 FAIL / 0 SKIP`.
+- Build passed with the existing Vite chunk-size warning only.
+- Production dry-run showed exactly one pending migration: `20260531001100_active_profile_cp_analytics_audit_admin.sql`.
+- Production migration is applied and remote migration list shows `20260531001100` applied.
+- Commit `9dbf374 feat: migrate cp analytics audit admin to active profile` is pushed to `main`.
+
+Validated behavior:
+- Active Owner can fetch global Admin CP roster/rankings/analytics/audit.
+- Active scoped `view_cp` staff can fetch scoped CP roster/live growth and wrong-guild access is denied in local validation.
+- Active staff without `view_cp` is denied CP Analytics, Admin CP Ranking, and start-growth behavior.
+- Linked Owner-auth switched to active Member is denied CP roster, CP Analytics, and Audit Logs in local validation.
+- CP update uses the active admin actor in local validation.
+- Audit CP metadata is redacted without active `view_cp` and visible with active `view_cp`.
+- Production Owner smoke loaded Admin CP, CP Ranking, Analytics, and Audit Logs without data-changing clicks.
+
+Security/source validation:
+- In-scope Admin CP/Analytics/Audit RPC bodies use active admin authority and have no migrated `auth.uid()` references.
+- AdminPanel clears stale CP/Admin/Analytics/Audit state when active admin profile/guild context changes.
+- Source checks found no direct `member_cp`, `cp_snapshots`, `audit_logs`, service-role path, localStorage authority, or arbitrary frontend actor profile id in touched paths.
+- Production verification confirmed active Owner count is `1` and simulated authenticated direct reads of `member_cp`, `cp_snapshots`, and `audit_logs` returned zero rows.
+
 ## Milestone 29E.8D Non-CP Admin Active-Profile Migration Validation
 
 Non-CP Admin active-profile migration passed local backend validation, frontend build/source validation, production migration gates, production DB verification, and authenticated production smoke.

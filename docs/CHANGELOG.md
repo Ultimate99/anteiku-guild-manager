@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-05-31 - Milestone 29E.8E CP Admin + Analytics + Audit Logs Active Profile
+
+- Migrated CP-heavy AdminPanel reads/actions to backend-resolved active admin identity.
+- New production migration:
+  - `20260531001100_active_profile_cp_analytics_audit_admin.sql`
+- Commit deployed:
+  - `9dbf374 feat: migrate cp analytics audit admin to active profile`
+- Source files changed:
+  - `supabase/migrations/20260531001100_active_profile_cp_analytics_audit_admin.sql`
+  - `supabase/tests/local_validation_anteiku.sql`
+  - `src/pages/AdminPanel.jsx`
+- Migrated Admin CP roster/window/update, Admin CP Ranking, Analytics/Weekly Growth, and Audit Logs to selected-active-profile authority.
+- Audit Logs CP metadata redaction now checks the selected active profile's scoped `view_cp`.
+- AdminPanel now clears stale CP/Admin/Analytics/Audit state when active admin profile/guild context changes.
+- Local validation passed with the new CP/Analytics/Audit active-admin block at `18 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production dry-run/apply/list verification passed and production DB verification confirmed active-helper coverage, no migrated `auth.uid()` references, active Owner count `1`, and direct CP/audit table protection.
+- Production smoke loaded Admin CP, CP Ranking, Analytics, and Audit Logs without data-changing clicks.
+- No CP exposure to unauthorized active profiles, `member_cp`/`cp_snapshots` direct frontend reads, service-role path, localStorage authority, arbitrary frontend actor profile id, or unrelated subsystem behavior change was added.
+
 ## 2026-05-31 - Milestone 29E.8D Non-CP Admin Active Profile
 
 - Migrated non-CP AdminPanel reads/actions to backend-resolved active admin identity.

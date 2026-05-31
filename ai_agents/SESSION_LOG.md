@@ -1,5 +1,25 @@
 # Session Log
 
+## 2026-05-31 - Milestone 29E.8E CP Admin + Analytics + Audit Logs Active-Profile Migration
+
+- Implemented a focused CP-heavy Admin active-profile migration.
+- Added migration `supabase/migrations/20260531001100_active_profile_cp_analytics_audit_admin.sql`.
+- Redefined Admin CP roster/window/update RPCs to use selected active admin authority.
+- Redefined `get_admin_cp_rankings` to use selected active admin authority and preserve CP `view_cp` gates.
+- Redefined Analytics/Weekly Growth RPCs, including snapshot history, growth report, live growth, and start/capture CP period behavior, to use selected active admin authority.
+- Redefined `get_audit_logs` so Audit Logs scope and CP metadata redaction use the selected active profile's scoped `view_cp`.
+- Updated `src/pages/AdminPanel.jsx` to clear stale Admin CP/Analytics/Audit state when active admin profile/guild context changes.
+- Local DB reset passed through the new migration.
+- Full local validation passed; the CP/Analytics/Audit active-admin block reported `18 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found touched Admin CP/Analytics/Audit services remain RPC-only, with no direct `member_cp`, `cp_snapshots`, or `audit_logs` frontend table access.
+- Production dry-run showed only `20260531001100_active_profile_cp_analytics_audit_admin.sql`.
+- Production migration apply passed and remote migration list shows `20260531001100` applied.
+- Production DB verification confirmed in-scope RPC body guards, no migrated `auth.uid()` references, active Owner count `1`, and direct CP/audit table protection through RLS probes.
+- Commit `9dbf374 feat: migrate cp analytics audit admin to active profile` was pushed to `main`.
+- Authenticated Owner production smoke loaded Admin CP, CP Ranking, Analytics, and Audit Logs from the deployed bundle without data-changing clicks.
+- Browser console still contained one old stale Supabase refresh-token entry from an older bundle URL; no functional Admin blocker was found.
+
 ## 2026-05-31 - Milestone 29E.8D Non-CP Admin Active-Profile Migration
 
 - Implemented a focused non-CP Admin active-profile migration.

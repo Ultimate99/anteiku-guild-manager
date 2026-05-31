@@ -1,5 +1,33 @@
 # Testing
 
+## Milestone 29E.8E CP Admin + Analytics + Audit Logs Active Profile
+
+CP-heavy Admin active-profile migration passed local validation, build/source validation, production rollout gates, DB verification, and authenticated production AdminPanel smoke.
+
+Results:
+- Local DB reset applied through `20260531001100_active_profile_cp_analytics_audit_admin.sql`.
+- Full local validation passed; the new CP/Analytics/Audit active-admin block reported `18 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production dry-run showed only `20260531001100_active_profile_cp_analytics_audit_admin.sql`.
+- Production migration is applied and remote migration list shows `20260531001100` applied.
+- Commit `9dbf374 feat: migrate cp analytics audit admin to active profile` is pushed to `main`.
+
+Production verification:
+- In-scope CP/Admin/Analytics/Audit RPCs use selected active admin authority.
+- Migrated RPC bodies have no `auth.uid()` references.
+- Active Owner count remains `1`.
+- Simulated authenticated direct reads of `member_cp`, `cp_snapshots`, and `audit_logs` returned zero visible rows.
+
+Production smoke:
+- Signed-in Owner AdminPanel opened from the deployed bundle.
+- Admin CP, CP Ranking, Analytics, and Audit Logs loaded without production mutation.
+- Browser logs still contained one old stale Supabase refresh-token entry from an older bundle URL, but no functional Admin blocker was found.
+
+Security/source validation:
+- AdminPanel clears stale CP/Admin/Analytics/Audit data when active admin profile/guild context changes.
+- No direct `member_cp`/`cp_snapshots`/`audit_logs`, service-role path, localStorage authority, arbitrary frontend actor profile id, or unrelated subsystem behavior change was added.
+- CP metadata redaction now uses selected active profile `view_cp`.
+
 ## Milestone 29E.8D Non-CP Admin Active Profile
 
 Non-CP Admin active-profile migration passed local validation, build/source validation, production rollout gates, DB verification, and authenticated production AdminPanel smoke.

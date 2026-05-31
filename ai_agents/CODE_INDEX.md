@@ -1,5 +1,12 @@
 # Code Index
 
+## Milestone 29E.8E CP Admin + Analytics + Audit Logs Active Profile
+
+- `supabase/migrations/20260531001100_active_profile_cp_analytics_audit_admin.sql`: Redefines Admin CP roster/window/update, Admin CP Ranking, Analytics/Weekly Growth, and Audit Logs RPCs to use selected active admin authority through `private.active_admin_profile_id()`.
+- `supabase/tests/local_validation_anteiku.sql`: Adds Milestone 29E.8E validation for active Owner global CP/Admin/Audit access, scoped `view_cp` staff access, wrong-guild denial, no-`view_cp` denial, active Member denial, active actor CP updates, audit CP metadata redaction, direct CP/audit table protection, and active Owner count.
+- `src/pages/AdminPanel.jsx`: Clears stale Admin CP/Analytics/Audit state when the active admin profile or active admin guild context changes.
+- Production status: migration `20260531001100_active_profile_cp_analytics_audit_admin.sql` is applied, commit `9dbf374 feat: migrate cp analytics audit admin to active profile` is deployed, local validation passed `18 PASS / 0 FAIL / 0 SKIP`, build/source validation passed, production dry-run/apply/DB verification passed, and production Owner smoke loaded Admin CP/CP Ranking/Analytics/Audit Logs without mutation.
+
 ## Milestone 29E.8D Non-CP Admin Active Profile
 
 - `supabase/migrations/20260531001000_active_profile_non_cp_admin.sql`: Adds `private.active_admin_profile_id()`, active-admin read RPCs for approval queue/member roster/permission management/GvG events, and active-admin rewrites for non-CP Admin action RPCs.
