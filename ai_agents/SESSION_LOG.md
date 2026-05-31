@@ -1,5 +1,25 @@
 # Session Log
 
+## 2026-05-31 - Milestone 29E.6 GvG Voting Active Profile Migration
+
+- Implemented active-profile migration for member-facing GvG event visibility, own-vote lookup, and vote submit/update only.
+- Added migration `supabase/migrations/20260531000700_active_profile_gvg_voting.sql`.
+- Added member-safe RPCs `get_my_active_gvg_events()` and `get_my_gvg_vote(p_event_id uuid)`.
+- Updated `submit_gvg_vote` so acting identity resolves through `private.get_active_profile_id()`.
+- Updated `src/services/gvgService.js` so member-facing active events and own vote use RPCs only; Admin GvG service paths remain unchanged.
+- Updated `src/pages/Gvg.jsx` to refetch and clear stale vote/message state when the selected active profile changes.
+- Preserved Admin GvG event management/results, Analytics, Admin permissions/actions, rank badge, own Ghoul Rep, unrelated audit behavior, and CP privacy.
+- Local DB reset passed through the new migration.
+- Full local validation passed; the active-profile GvG block reported `14 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no arbitrary frontend `profile_id`, no direct `gvg_votes` own-vote read, no `member_cp`/`cp_snapshots` usage, no CP RPCs, no service-role path, and no localStorage authority in the touched GvG path.
+- Production dry-run showed only `20260531000700_active_profile_gvg_voting.sql`.
+- Production migration apply passed and remote migration list shows `20260531000700` applied.
+- Production DB verification confirmed active-profile GvG RPC grants/policies, active Owner count remains `1`, and simulated normal-member direct reads of `gvg_votes`, `member_cp`, and `cp_snapshots` returned zero rows.
+- Commit `a9e5c2c feat: migrate gvg voting to active profile` was pushed to `main`.
+- Production GvG smoke passed for the logged-in single-profile account: GvG opened, active event/current vote state loaded, and no vote mutation was performed.
+- Multi-profile production switch smoke was not available in the logged-in session.
+
 ## 2026-05-31 - Milestone 29E.5 Own CP Active Profile Migration
 
 - Implemented active-profile migration for member-own CP read, CP update-window lookup, and CP self-submit only.

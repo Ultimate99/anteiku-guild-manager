@@ -1,5 +1,32 @@
 # Testing
 
+## Milestone 29E.6 GvG Voting Active Profile
+
+GvG member-facing vote/current-user behavior passed local validation, build/source validation, production rollout gates, DB verification, and authenticated production GvG smoke.
+
+Results:
+- Local DB reset applied through `20260531000700_active_profile_gvg_voting.sql`.
+- Full local validation passed; the active-profile GvG block reported `14 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production dry-run showed only `20260531000700_active_profile_gvg_voting.sql`.
+- Production migration is applied and remote migration list shows `20260531000700` applied.
+- Commit `a9e5c2c feat: migrate gvg voting to active profile` is pushed to `main`.
+
+Production smoke:
+- Signed-in production GvG page loaded.
+- Active event `GvG Week II` displayed.
+- Current vote state loaded as `Present`.
+- No production vote mutation was performed.
+- Multi-profile switch smoke was not available in the logged-in session.
+
+Security/source validation:
+- Member GvG RPCs use `private.get_active_profile_id()` and accept no arbitrary frontend profile id.
+- Frontend GvG no longer direct-reads `gvg_votes` for own-vote state.
+- No direct `member_cp` or `cp_snapshots` frontend reads were added.
+- No normal CP fields or CP RPCs were added.
+- Simulated normal-member direct reads of `gvg_votes`, `member_cp`, and `cp_snapshots` returned zero visible rows.
+- Admin GvG management/results, Analytics, Admin permissions/actions, rank badge, own Ghoul Rep, and unrelated audit actor behavior were unchanged.
+
 ## Milestone 29E.5 Own CP Active Profile
 
 Own CP active-profile migration passed local validation, build/source validation, production rollout gates, DB verification, and authenticated production Profile smoke.

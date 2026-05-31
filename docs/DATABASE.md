@@ -1,10 +1,26 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and production-applied through `20260531000600_active_profile_own_cp.sql`.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and production-applied through `20260531000700_active_profile_gvg_voting.sql`.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
-Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, own Profile Ghoul Rep display, Public Member Profiles, Ranking Public Profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, active-profile 3v3 RPCs, active-profile Push RPCs, and active-profile Own CP RPCs are implemented, locally validated, production applied, and production-smoke or production-gate validated.
+Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, own Profile Ghoul Rep display, Public Member Profiles, Ranking Public Profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, active-profile 3v3 RPCs, active-profile Push RPCs, active-profile Own CP RPCs, and active-profile member GvG voting RPCs are implemented, locally validated, production applied, and production-smoke or production-gate validated.
+
+## Active Profile GvG Voting
+
+Migration `20260531000700_active_profile_gvg_voting.sql` is applied and verified in production.
+
+Schema/RPC behavior:
+- `get_my_active_gvg_events()` resolves visible active events for the selected active profile.
+- `get_my_gvg_vote(p_event_id uuid)` returns only the selected active profile's own vote for an eligible active event.
+- `submit_gvg_vote(p_event_id uuid, p_vote_status text, p_absence_reason text default null)` resolves identity through `private.get_active_profile_id()` and upserts one selected-profile vote row per event.
+- Member active-event and own-vote RLS policies now use selected active-profile identity.
+
+Security:
+- Member GvG RPCs accept no arbitrary frontend actor profile id.
+- Member GvG frontend does not direct-read `gvg_votes` for own-vote state.
+- Direct `gvg_votes`, `member_cp`, and `cp_snapshots` reads remain blocked for simulated normal-member direct access.
+- Admin GvG management/results, Analytics, Admin permissions/actions, rank badge, own Ghoul Rep, and unrelated audit actor behavior are unchanged.
 
 ## Active Profile Own CP
 
@@ -244,6 +260,7 @@ Security:
 37. `20260531000400_active_profile_three_v_three.sql`
 38. `20260531000500_active_profile_push_notifications.sql`
 39. `20260531000600_active_profile_own_cp.sql`
+40. `20260531000700_active_profile_gvg_voting.sql`
 
 Migration `20260523000100_member_roster_status_system.sql` is locally validated, staging validated, and production applied/verified as of Milestone 15E.
 
@@ -288,6 +305,8 @@ Migration `20260531000400_active_profile_three_v_three.sql` is locally implement
 Migration `20260531000500_active_profile_push_notifications.sql` is locally implemented/validated and production applied/verified. It migrates Push preferences/test notification recipient behavior to active-profile identity while keeping browser subscriptions auth-owned.
 
 Migration `20260531000600_active_profile_own_cp.sql` is locally implemented/validated and production applied/verified. It migrates member-own CP read, CP update-window lookup, and CP self-submit to active-profile identity.
+
+Migration `20260531000700_active_profile_gvg_voting.sql` is locally implemented/validated and production applied/verified. It migrates member-facing GvG active-event visibility, own-vote lookup, and vote submit/update to active-profile identity while leaving Admin GvG management/results unchanged.
 
 ## Milestone 25B 3v3 Team Finder Backend
 

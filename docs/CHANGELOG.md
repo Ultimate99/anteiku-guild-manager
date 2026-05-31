@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-05-31 - Milestone 29E.6 GvG Voting Active Profile
+
+- Migrated member-facing GvG active-event visibility, own-vote lookup, and vote submit/update to active-profile identity.
+- New production migration:
+  - `20260531000700_active_profile_gvg_voting.sql`
+- Commit deployed:
+  - `a9e5c2c feat: migrate gvg voting to active profile`
+- Source files changed:
+  - `src/pages/Gvg.jsx`
+  - `src/services/gvgService.js`
+  - `supabase/tests/local_validation_anteiku.sql`
+- Updated GvG RPC behavior:
+  - `get_my_active_gvg_events()`
+  - `get_my_gvg_vote(p_event_id uuid)`
+  - `submit_gvg_vote(p_event_id uuid, p_vote_status text, p_absence_reason text default null)`
+- GvG now refetches and clears stale member vote state when the selected active profile changes.
+- Local validation passed with `14 PASS / 0 FAIL / 0 SKIP`, build passed, production dry-run/apply verification passed, DB verification passed, and authenticated production GvG smoke passed for the logged-in single-profile account.
+- No production GvG vote mutation was performed during smoke.
+- No Admin GvG management/results, Analytics, Admin permissions/actions, rank badge, own Ghoul Rep, unrelated audit actor behavior, CP privacy behavior, or CP surface was changed.
+- No normal CP exposure, arbitrary frontend profile id, direct `gvg_votes` own-vote read, direct `member_cp`/`cp_snapshots` frontend read, service-role path, or localStorage authority was added.
+
 ## 2026-05-31 - Milestone 29E.5 Own CP Active Profile
 
 - Migrated Profile own CP read, CP update-window lookup, and CP self-submit to active-profile identity.

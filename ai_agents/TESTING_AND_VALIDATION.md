@@ -1,5 +1,47 @@
 # Testing And Validation
 
+## Milestone 29E.6 GvG Voting Active Profile Validation
+
+GvG member-facing vote/current-user behavior passed local backend validation, frontend build/source validation, production migration gates, DB verification, and authenticated production GvG smoke.
+
+Commands/gates:
+- `npx.cmd supabase db reset`
+- `Get-Content -Raw -LiteralPath supabase\tests\local_validation_anteiku.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres -v ON_ERROR_STOP=1`
+- `npm.cmd run build`
+- Production `npx.cmd supabase db push --dry-run`
+- Production `npx.cmd supabase db push`
+- Production `npx.cmd supabase migration list`
+- `git push origin main`
+- Authenticated production GvG smoke
+
+Results:
+- Local reset applied through `20260531000700_active_profile_gvg_voting.sql`.
+- Full local validation passed.
+- Milestone 29E.6 active-profile GvG block passed `14 PASS / 0 FAIL / 0 SKIP`.
+- Build passed with the existing Vite chunk-size warning only.
+- Production dry-run showed exactly one pending migration: `20260531000700_active_profile_gvg_voting.sql`.
+- Production migration is applied and remote migration list shows `20260531000700` applied.
+- Commit `a9e5c2c feat: migrate gvg voting to active profile` is pushed to `main`.
+
+Validated behavior:
+- `get_my_active_gvg_events`, `get_my_gvg_vote`, and `submit_gvg_vote` resolve selected-profile identity through `private.get_active_profile_id()`.
+- Single-profile fallback GvG behavior is unchanged.
+- Linked active profile A/B local tests confirmed active-profile-specific event visibility and own vote state.
+- Active profile A voted Present; active profile B did not inherit A's vote state.
+- Active profile B voted Absent with a reason; A remained Present.
+- Switching B Absent to Present updated B's existing row and cleared the absence reason without creating a duplicate.
+- Pending, restricted, disabled, and unlinked active profiles were denied.
+- `get_gvg_results` remains member-denied and permission-gated.
+- Production GvG smoke confirmed the signed-in single-profile account loaded `GvG Week II`, displayed current vote state as `Present`, and did not perform a vote mutation.
+
+Security/source validation:
+- Member GvG frontend does not send arbitrary `profile_id` and no longer direct-reads `gvg_votes` for own vote state.
+- No direct frontend `member_cp` or `cp_snapshots` table reads were added.
+- No CP RPCs, normal CP fields, service-role frontend path, or localStorage authority were added.
+- Simulated normal-member direct reads of `gvg_votes`, `member_cp`, and `cp_snapshots` returned zero visible rows in production verification.
+- Admin GvG management/results, Analytics, Admin permissions/actions, rank badge, own Ghoul Rep, and unrelated audit actor behavior were not migrated or changed.
+- No production GvG vote mutation was performed during browser smoke.
+
 ## Milestone 29E.5 Own CP Active Profile Validation
 
 Own CP active-profile migration passed local backend validation, frontend build/source validation, production migration gates, DB verification, and authenticated production Profile smoke.

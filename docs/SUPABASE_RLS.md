@@ -1,8 +1,28 @@
 # Supabase RLS
 
-The Supabase RLS/RPC implementation has been validated and production-applied through `20260531000600_active_profile_own_cp.sql`.
+The Supabase RLS/RPC implementation has been validated and production-applied through `20260531000700_active_profile_gvg_voting.sql`.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
+
+## Active Profile GvG Voting RLS/RPC
+
+Milestone 29E.6 GvG voting active-profile migration is production-applied through `20260531000700_active_profile_gvg_voting.sql`.
+
+Functions:
+- `get_my_active_gvg_events()`
+- `get_my_gvg_vote(p_event_id uuid)`
+- `submit_gvg_vote(p_event_id uuid, p_vote_status text, p_absence_reason text default null)`
+
+Rules:
+- Member-facing GvG functions resolve actor/viewer identity through `private.get_active_profile_id()`.
+- No member GvG RPC accepts arbitrary frontend actor/target profile ids.
+- Active-event and own-vote RLS policies use the selected active profile.
+- Vote submit/update preserves one vote per selected profile/event.
+
+Privacy:
+- Frontend GvG no longer direct-reads `gvg_votes` for own-vote state.
+- GvG payloads do not include normal CP, `member_cp`, `cp_snapshots`, email/auth IDs, admin/private metadata, or arbitrary linked profile ids.
+- Production verification confirmed active Owner count `1` and simulated normal-member direct reads of `gvg_votes`, `member_cp`, and `cp_snapshots` returned zero visible rows.
 
 ## Active Profile Own CP RLS/RPC
 

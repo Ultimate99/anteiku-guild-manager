@@ -1,5 +1,27 @@
 # Security Rules
 
+## Active Profile GvG Voting Security Rules
+
+Milestone 29E.6 GvG voting active-profile migration is live in production through `20260531000700_active_profile_gvg_voting.sql` and commit `a9e5c2c feat: migrate gvg voting to active profile`.
+
+Rules:
+- Member-facing GvG active-event reads, own-vote reads, and vote submit/update must resolve actor/viewer identity through `private.get_active_profile_id()`.
+- Frontend must not provide arbitrary actor/target profile ids to GvG member voting RPCs.
+- `get_my_active_gvg_events()` may return only eligible active events for the selected active profile.
+- `get_my_gvg_vote(...)` may return only the selected active profile's own vote.
+- `submit_gvg_vote(...)` may update only the selected active profile's vote row and must preserve one vote per profile/event.
+- Admin GvG event management/results, Analytics, Admin permissions/actions, rank badge, own Ghoul Rep, and unrelated audit actor behavior remain separate migrations or unchanged systems.
+
+Privacy:
+- GvG member payloads must not return normal CP, `member_cp`, `cp_snapshots`, CP history/growth, email, auth IDs, linked profile ids, service-role data, admin/private metadata, or audit-private metadata.
+- Frontend GvG must not direct-read `gvg_votes`, `member_cp`, or `cp_snapshots`.
+- Members must never see other members' normal CP through GvG.
+
+Validation status:
+- Local validation passed with the active-profile GvG block at `14 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed only `20260531000700_active_profile_gvg_voting.sql`; production apply/list verification passed.
+- Production DB verification confirmed active-profile GvG RPC grants/policies, active Owner count remains `1`, and simulated normal-member direct reads of `gvg_votes`, `member_cp`, and `cp_snapshots` returned zero visible rows.
+
 ## Active Profile Own CP Security Rules
 
 Milestone 29E.5 Own CP active-profile migration is live in production through `20260531000600_active_profile_own_cp.sql` and commit `9e13864 feat: migrate own cp to active profile`.

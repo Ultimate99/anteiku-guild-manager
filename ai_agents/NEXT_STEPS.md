@@ -2,11 +2,11 @@
 
 ## Current Recommendation
 
-Milestone 29E.5 Own CP active-profile migration is live in production and locally/build/production-gate validated.
+Milestone 29E.6 GvG voting active-profile migration is live in production and locally/build/production-gate validated.
 
 Recommended next step:
 - Plan the next Account Switcher subsystem migration only if the product wants selected-profile identity to affect a specific remaining action surface.
-- GvG vote, Admin permissions/actions, Analytics/Weekly Growth, Ranking/rank badge, and audit actor behavior outside migrated surfaces still need separate approved backend/RPC/RLS milestones before they can use active-profile identity.
+- Admin permissions/actions, Analytics/Weekly Growth, Ranking/rank badge, own Ghoul Rep, and audit actor behavior outside migrated surfaces still need separate approved backend/RPC/RLS milestones before they can use active-profile identity.
 - Keep frontend selected profile ids as UX input only; backend/RPC remains the authority.
 
 Do not yet:
@@ -14,6 +14,20 @@ Do not yet:
 - Use localStorage-only profile switching.
 - Expose normal CP values or private auth/email/admin metadata in switcher payloads.
 - Change active-profile behavior for existing systems without a reviewed RPC/RLS migration.
+
+Recorded Account Switcher 29E.6 status:
+- Commit `a9e5c2c feat: migrate gvg voting to active profile` is pushed to `main` and production serves the updated GvG bundle.
+- Production DB has `20260531000700_active_profile_gvg_voting.sql` applied after a clean dry-run showing only that migration.
+- `get_my_active_gvg_events`, `get_my_gvg_vote`, and `submit_gvg_vote` now resolve member-facing GvG identity through `private.get_active_profile_id()` and accept no frontend actor `profile_id`.
+- `src/pages/Gvg.jsx` refetches active events/current vote when the selected active profile changes and clears stale vote/message state.
+- Local validation passed with the active-profile GvG block at `14 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production DB verification passed for active-profile GvG RPC grants/policies, active Owner count `1`, direct `gvg_votes` read protection, and normal CP table protection.
+- Production single-profile GvG smoke passed. Multi-profile switch smoke was not available in the logged-in session, and no production GvG vote mutation was performed.
+
+## Previous Recommendation
+
+Milestone 29E.5 Own CP active-profile migration is live in production and locally/build/production-gate validated.
 
 Recorded Account Switcher 29E.5 status:
 - Commit `9e13864 feat: migrate own cp to active profile` is pushed to `main` and production serves the updated Profile bundle.

@@ -1,5 +1,33 @@
 # Supabase RLS
 
+## Milestone 29E.6 Active Profile GvG Voting RLS/RPC
+
+Milestone 29E.6 GvG voting active-profile migration is implemented, locally validated, and production applied through `20260531000700_active_profile_gvg_voting.sql`.
+
+RPCs:
+- `get_my_active_gvg_events()`
+- `get_my_gvg_vote(p_event_id uuid)`
+- `submit_gvg_vote(p_event_id uuid, p_vote_status text, p_absence_reason text default null)`
+
+RPC/RLS security:
+- All migrated member-facing GvG paths use `private.get_active_profile_id()` for actor/viewer identity.
+- No migrated member GvG RPC accepts an arbitrary frontend actor profile id.
+- `get_my_active_gvg_events()` returns only active events visible to the selected active profile's eligible guild/global scope.
+- `get_my_gvg_vote(...)` returns only the selected active profile's own vote for an eligible active event.
+- `submit_gvg_vote(...)` writes only the selected active profile's vote row and preserves one vote per profile/event.
+- Admin GvG management/results, Analytics, Admin permissions/actions, rank badge, own Ghoul Rep, and unrelated audit actor behavior were not migrated in this pass.
+
+Privacy:
+- GvG payloads return no normal CP, `member_cp`, `cp_snapshots`, CP history/growth, email/auth IDs, admin/private metadata, or arbitrary linked profile ids.
+- Frontend GvG no longer direct-reads `gvg_votes` for own-vote state.
+- Public/member pages still do not expose CP values.
+
+Validation:
+- Local reset applied the migration cleanly.
+- Full local validation passed; Milestone 29E.6 block reported `14 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed only `20260531000700_active_profile_gvg_voting.sql`; production migration is applied and remote migration list shows it applied.
+- Production verification confirmed active-profile GvG RPC grants/policies, active Owner count `1`, and simulated normal-member direct reads of `gvg_votes`, `member_cp`, and `cp_snapshots` returned zero visible rows.
+
 ## Milestone 29E.5 Active Profile Own CP RLS/RPC
 
 Milestone 29E.5 Own CP active-profile migration is implemented, locally validated, and production applied through `20260531000600_active_profile_own_cp.sql`.

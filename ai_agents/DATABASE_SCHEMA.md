@@ -2,6 +2,8 @@
 
 ## Current Backend Status
 
+Milestone 29E.6 GvG voting active-profile migration is applied and verified in production through `20260531000700_active_profile_gvg_voting.sql`. It switches member-facing GvG active-event visibility, own-vote lookup, and `submit_gvg_vote(...)` to `private.get_active_profile_id()` while preserving Admin GvG management/results, Analytics, permissions, unrelated audit actor behavior, and CP privacy.
+
 Milestone 29E.5 Own CP active-profile migration is applied and verified in production through `20260531000600_active_profile_own_cp.sql`. It switches member-own CP read, CP update-window lookup, and CP self-submit to `private.get_active_profile_id()` while preserving Admin CP, Analytics, Ranking CP-hidden behavior, GvG, permissions, and unrelated audit behavior.
 
 Milestone 29E.4 Push Notifications active-profile migration is applied and verified in production through `20260531000500_active_profile_push_notifications.sql`. It adds `push_subscriptions.auth_user_id` so browser subscriptions are auth-account owned while preference/test-notification recipient behavior follows the selected active profile.
@@ -34,7 +36,7 @@ Staging and production both have this migration applied and verified. Future new
 
 ## Production Deployment Status
 
-Production Supabase is live and migrated through the active-profile Own CP migration. Member Status, CP Update Window / Member CP Self-Submit, CP Leaderboard, Rank Badge / Profile Border, Cosmetics, Premium Cosmetics, Owner Cosmetics, Admin Analytics, Live CP Growth, 3v3 Team Finder, Guild Wall, Global Wall, Ghoul Rep backend support, Public Member Profiles, Ranking public profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, active-profile 3v3 RPCs, active-profile Push RPCs, and active-profile Own CP RPCs are applied and verified in production.
+Production Supabase is live and migrated through the active-profile GvG voting migration. Member Status, CP Update Window / Member CP Self-Submit, CP Leaderboard, Rank Badge / Profile Border, Cosmetics, Premium Cosmetics, Owner Cosmetics, Admin Analytics, Live CP Growth, 3v3 Team Finder, Guild Wall, Global Wall, Ghoul Rep backend support, Public Member Profiles, Ranking public profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, active-profile 3v3 RPCs, active-profile Push RPCs, active-profile Own CP RPCs, and active-profile GvG member voting RPCs are applied and verified in production.
 
 Current local migration order:
 
@@ -77,6 +79,23 @@ Current local migration order:
 37. `20260531000400_active_profile_three_v_three.sql`
 38. `20260531000500_active_profile_push_notifications.sql`
 39. `20260531000600_active_profile_own_cp.sql`
+40. `20260531000700_active_profile_gvg_voting.sql`
+
+## Active Profile GvG Voting
+
+Migration `20260531000700_active_profile_gvg_voting.sql` is applied and verified in production.
+
+Schema/RPC behavior:
+- `get_my_active_gvg_events()` returns member-safe active GvG events for the selected active profile.
+- `get_my_gvg_vote(p_event_id uuid)` returns only the selected active profile's own vote for an eligible active event.
+- `submit_gvg_vote(p_event_id uuid, p_vote_status text, p_absence_reason text default null)` resolves the acting profile through `private.get_active_profile_id()` and upserts one row per selected profile/event.
+- Member active-event and own-vote RLS policies now use selected active-profile identity.
+
+Security:
+- GvG member RPCs accept no arbitrary frontend actor profile id.
+- Member GvG frontend does not direct-read `gvg_votes` for own-vote state.
+- Direct `gvg_votes`, `member_cp`, and `cp_snapshots` reads remain blocked for simulated normal-member direct access.
+- Admin GvG management/results, Analytics, Admin permissions/actions, rank badge, own Ghoul Rep, and unrelated audit actor behavior are unchanged.
 
 ## Active Profile Own CP
 

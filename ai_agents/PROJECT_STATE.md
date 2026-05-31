@@ -1,5 +1,36 @@
 # Project State
 
+## Milestone 29E.6 GvG Voting Active Profile Migration Live
+
+Member-facing GvG event visibility, own-vote lookup, and vote submit/update now use active-profile identity and are live in production through commit `a9e5c2c feat: migrate gvg voting to active profile`.
+
+Implemented:
+- New migration `20260531000700_active_profile_gvg_voting.sql`.
+- New member-safe RPCs `get_my_active_gvg_events()` and `get_my_gvg_vote(p_event_id uuid)`.
+- `submit_gvg_vote(p_event_id uuid, p_vote_status text, p_absence_reason text default null)` now resolves the acting profile through `private.get_active_profile_id()`.
+- GvG member page now refetches active events and own vote state when the selected active profile changes, and clears stale vote/message state during the switch.
+
+Behavior:
+- Single-profile users behave unchanged.
+- Linked multi-profile accounts get separate active-profile vote state per event.
+- Present/Absent switching updates the selected active profile's existing vote row, preserving one vote per profile/event.
+- Absence reasons belong to the selected active profile.
+- Admin GvG event management/results, Analytics, Admin permissions/actions, rank badge, own Ghoul Rep, and unrelated audit actor behavior remain unchanged.
+
+Security/CP privacy:
+- Member GvG frontend no longer direct-reads `gvg_votes`; own-vote state comes from `get_my_gvg_vote(...)`.
+- No GvG member RPC accepts arbitrary frontend `profile_id`.
+- No normal CP, `member_cp`, `cp_snapshots`, CP RPC, service-role path, localStorage authority, or CP field exposure was added.
+- Production DB verification confirmed the active-profile GvG RPC grants, active GvG RLS policies, active Owner count `1`, and simulated normal-member direct reads of `gvg_votes`, `member_cp`, and `cp_snapshots` returned zero visible rows.
+
+Validation:
+- Local `npx.cmd supabase db reset` passed through `20260531000700_active_profile_gvg_voting.sql`.
+- Full local validation passed; the new active-profile GvG block reported `14 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production dry-run showed only `20260531000700_active_profile_gvg_voting.sql`; production migration is applied and remote migration list shows it applied.
+- Production GvG smoke passed for the logged-in single-profile account: GvG opened, active event loaded, current vote state displayed as `Present`, and no vote mutation was performed.
+- Multi-profile production switch smoke was not available in the logged-in session.
+
 ## Milestone 29E.5 Own CP Active Profile Migration Live
 
 Member-own CP read, CP update-window lookup, and CP self-submit now use active-profile identity and are live in production through commit `9e13864 feat: migrate own cp to active profile`.

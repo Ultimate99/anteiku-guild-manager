@@ -1,5 +1,13 @@
 # Code Index
 
+## Milestone 29E.6 GvG Voting Active Profile Migration
+
+- `supabase/migrations/20260531000700_active_profile_gvg_voting.sql`: Migrates member-facing GvG active-event visibility, own-vote lookup, and `submit_gvg_vote(...)` to `private.get_active_profile_id()`. Adds `get_my_active_gvg_events()` and `get_my_gvg_vote(p_event_id uuid)`, and updates member active-event/own-vote RLS policies.
+- `supabase/tests/local_validation_anteiku.sql`: Adds Milestone 29E.6 validation for active-profile GvG event scope, separate A/B vote state, Present/Absent switching on one row, pending/restricted/unlinked denial, `get_gvg_results` permission preservation, direct vote/CP table protection, and active Owner count.
+- `src/services/gvgService.js`: Member-facing active event and own-vote loaders now call the active-profile GvG RPCs. Admin GvG event/results methods remain on their existing paths.
+- `src/pages/Gvg.jsx`: Uses active profile readiness for member GvG gating, refetches events/current vote when the selected active profile changes, and clears stale vote/reason/message state.
+- Production status: migration `20260531000700_active_profile_gvg_voting.sql` is applied, commit `a9e5c2c feat: migrate gvg voting to active profile` is pushed to `main`, local validation passed `14 PASS / 0 FAIL / 0 SKIP`, build/source validation passed, production dry-run/apply/DB verification passed, and production GvG smoke passed for the logged-in single-profile account without vote mutation.
+
 ## Milestone 29E.5 Own CP Active Profile Migration
 
 - `supabase/migrations/20260531000600_active_profile_own_cp.sql`: Migrates member-own CP read, CP update-window lookup, and CP self-submit to `private.get_active_profile_id()`. Replaces only `get_my_cp()`, `get_active_cp_update_window_for_me()`, and `submit_my_cp_update(p_cp_value integer)`.
