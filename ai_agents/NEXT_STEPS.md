@@ -2,11 +2,11 @@
 
 ## Current Recommendation
 
-Milestone 29E.2 Guild Wall / Global Wall and Public Profile reactions active-profile migration is live in production and locally/build/production-smoke validated.
+Milestone 29E.3 3v3 Team Finder active-profile migration is live in production and locally/build/production-smoke validated.
 
 Recommended next step:
 - Plan the next Account Switcher subsystem migration only if the product wants selected-profile identity to affect a specific remaining action surface.
-- CP get/submit, GvG vote, 3v3 actions, Push preferences/subscriptions, Admin permissions/actions, Analytics, and audit actor behavior still need separate approved backend/RPC/RLS milestones before they can use active-profile identity.
+- CP get/submit, GvG vote, Push preferences/subscriptions, Admin permissions/actions, Analytics, and audit actor behavior still need separate approved backend/RPC/RLS milestones before they can use active-profile identity.
 - Keep frontend selected profile ids as UX input only; backend/RPC remains the authority.
 
 Do not yet:
@@ -14,6 +14,20 @@ Do not yet:
 - Use localStorage-only profile switching.
 - Expose normal CP values or private auth/email/admin metadata in switcher payloads.
 - Change active-profile behavior for existing systems without a reviewed RPC/RLS migration.
+
+Recorded Account Switcher 29E.3 status:
+- Commit `a5eb9e6 feat: migrate 3v3 to active profile` is pushed to `main` and Vercel reports deployment success.
+- Production DB has `20260531000400_active_profile_three_v_three.sql` applied after a clean dry-run showing only that migration.
+- Public 3v3 RPCs for setup, team/status reads, create, join request, cancel, approve/decline, remove, close/reopen, and disband now resolve actor/viewer identity through `private.get_active_profile_id()`.
+- `ThreeVThree.jsx` refetches state when the selected active profile changes and clears stale request/setup/message state.
+- Local validation passed with the active-profile 3v3 block at `17 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production DB verification passed for active-profile RPC bodies, 3v3 RLS/no broad direct grants, active Owner count `1`, normal CP table protection, and safe 3v3 payloads.
+- Authenticated production smoke passed for 3v3 Find Team/Create Team/My Requests render, active-profile setup display, no normal CP/private data, and no new captured console errors. No production 3v3 mutation was performed.
+
+## Previous Recommendation
+
+Milestone 29E.2 Guild Wall / Global Wall and Public Profile reactions active-profile migration is live in production and locally/build/production-smoke validated.
 
 Recorded Account Switcher 29E.2 status:
 - Commit `db2b9e5 feat: migrate wall reactions to active profile` is pushed to `main` and deployed to production.

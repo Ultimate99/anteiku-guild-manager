@@ -1,10 +1,26 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and production-applied through `20260531000300_active_profile_wall_reactions.sql`.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and production-applied through `20260531000400_active_profile_three_v_three.sql`.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
-Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, own Profile Ghoul Rep display, Public Member Profiles, Ranking Public Profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, and active-profile Wall/Profile Reaction RPCs are implemented, locally validated, production applied, and production-smoke or production-gate validated.
+Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, own Profile Ghoul Rep display, Public Member Profiles, Ranking Public Profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, and active-profile 3v3 RPCs are implemented, locally validated, production applied, and production-smoke or production-gate validated.
+
+## Active Profile 3v3 Team Finder
+
+Migration `20260531000400_active_profile_three_v_three.sql` is applied and verified in production.
+
+RPC behavior:
+- 3v3 setup/team/request/owner RPCs resolve actor/viewer identity through `private.get_active_profile_id()`.
+- Covered RPCs include Discord username update, public 3v3 Combined CP update, create team, team/status reads, join request, cancel request, approve/decline, remove member, close/reopen, and disband.
+- Existing 3v3 constraints remain enforced by backend RPCs.
+- Public 3v3 Combined CP remains self-entered 3v3 data and is separate from protected normal CP.
+
+Security:
+- Migrated RPCs accept no arbitrary frontend actor profile id.
+- Frontend remains RPC-only for 3v3 paths.
+- Payloads return no normal CP, `member_cp`, `cp_snapshots`, email, auth IDs, service-role data, admin/private metadata, or audit-private metadata.
+- CP get/submit, GvG, Push preferences/subscriptions, Admin permissions/actions, Analytics, and audit actor behavior are not active-profile migrated by this migration.
 
 ## Active Profile Wall/Profile Reactions
 
@@ -19,7 +35,7 @@ Security:
 - Migrated RPCs accept no arbitrary frontend actor profile id.
 - Frontend remains RPC-only for Wall and Public Profile reaction paths.
 - Payloads return no normal CP, `member_cp`, `cp_snapshots`, email, auth IDs, service-role data, admin/private metadata, or audit-private metadata.
-- CP get/submit, GvG, 3v3, Push preferences/subscriptions, Admin permissions/actions, Analytics, and audit actor behavior are not active-profile migrated by this migration.
+- CP get/submit, GvG, Push preferences/subscriptions, Admin permissions/actions, Analytics, and audit actor behavior are not active-profile migrated by this migration.
 
 ## Active Profile Profile/Cosmetics
 
@@ -56,7 +72,7 @@ Security:
 - RLS is enabled on both account-link tables.
 - Direct anon/authenticated table grants are revoked.
 - Existing profiles are self-linked to preserve the current `auth.uid() === profiles.id` behavior.
-- Existing CP/GvG/3v3/Wall/Profile Reaction/Push/Admin systems have not been switched to active-profile identity yet; own Profile identity/edit and Cosmetics read/equip are now handled by the 29E.1 active-profile RPCs.
+- CP/GvG/Push/Admin/Analytics/audit systems have not been switched to active-profile identity yet; own Profile identity/edit and Cosmetics read/equip are handled by 29E.1, Wall/Profile Reactions by 29E.2, and 3v3 by 29E.3.
 - Switcher payloads return no normal CP, `member_cp`, `cp_snapshots`, email, auth secrets, service-role data, or private admin/audit metadata.
 
 ## Push Notifications Foundation

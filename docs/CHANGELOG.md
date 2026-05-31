@@ -1,5 +1,30 @@
 # Changelog
 
+## 2026-05-31 - Milestone 29E.3 3v3 Team Finder Active Profile
+
+- Migrated 3v3 Team Finder actions to active-profile identity.
+- New production migration:
+  - `20260531000400_active_profile_three_v_three.sql`
+- Commit deployed:
+  - `a5eb9e6 feat: migrate 3v3 to active profile`
+- Source files changed:
+  - `src/pages/ThreeVThree.jsx`
+- Updated public 3v3 RPC behavior:
+  - Discord username update
+  - public 3v3 Combined CP update
+  - team create
+  - team/status reads
+  - join request
+  - cancel request
+  - approve/decline as owner
+  - remove member
+  - close/reopen
+  - disband
+- `ThreeVThree.jsx` now refetches 3v3 state when the selected active profile changes and clears stale request/setup/message state.
+- Local validation passed with `17 PASS / 0 FAIL / 0 SKIP`, build passed, production dry-run/apply verification passed, DB verification passed, Vercel deployment succeeded, and authenticated production smoke passed for 3v3 read-only page/sub-tab rendering.
+- No CP get/submit, GvG, Push, Admin, Analytics, permission, or audit actor behavior was migrated in this pass.
+- No normal CP, `member_cp`, `cp_snapshots`, CP RPCs, email/auth/admin/private metadata, uploads, Storage, service-role path, localStorage authority, or direct table access was added.
+
 ## 2026-05-31 - Milestone 29E.2 Guild Wall + Profile Reactions Active Profile
 
 - Migrated Guild Wall / Global Wall actions and Public Profile reactions to active-profile identity.

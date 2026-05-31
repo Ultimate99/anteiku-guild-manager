@@ -1,5 +1,32 @@
 # Testing
 
+## Milestone 29E.3 3v3 Team Finder Active Profile
+
+3v3 Team Finder active-profile migration passed local validation, build/source validation, production rollout gates, DB verification, and authenticated production smoke.
+
+Results:
+- Local DB reset applied through `20260531000400_active_profile_three_v_three.sql`.
+- Full local validation passed; the active-profile 3v3 block reported `17 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production dry-run showed only `20260531000400_active_profile_three_v_three.sql`.
+- Production migration is applied and remote migration list shows `20260531000400` applied.
+- Commit `a5eb9e6 feat: migrate 3v3 to active profile` is pushed to `main` and Vercel reported deployment success.
+
+Production smoke:
+- Signed-in approved user opened 3v3.
+- Find Team rendered existing teams and slots.
+- Create Team rendered setup/form state for the active profile.
+- My Requests rendered active-profile queues.
+- Active-profile setup displayed Discord username and public 3v3 Combined CP.
+- No create/request/approve production mutation was performed.
+- No new captured console errors.
+
+Security/source validation:
+- Migrated 3v3 RPCs use `private.get_active_profile_id()` and accept no arbitrary frontend actor profile id.
+- Frontend remains RPC-only for 3v3 paths.
+- No normal CP, `member_cp`, `cp_snapshots`, CP RPCs, email/auth/admin/private metadata, uploads, Storage, service-role paths, localStorage authority, or direct table paths were added.
+- Simulated normal-member direct reads of `member_cp` and `cp_snapshots` returned zero visible rows.
+
 ## Milestone 29E.2 Guild Wall + Profile Reactions Active Profile
 
 Guild Wall / Global Wall actions and Public Profile reactions active-profile migration passed local validation, build/source validation, production rollout gates, DB verification, and production smoke.

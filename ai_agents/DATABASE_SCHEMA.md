@@ -2,6 +2,8 @@
 
 ## Current Backend Status
 
+Milestone 29E.3 3v3 Team Finder active-profile migration is applied and verified in production through `20260531000400_active_profile_three_v_three.sql`. It switches public 3v3 RPC actor/viewer identity to `private.get_active_profile_id()` while preserving existing 3v3 rules and leaving CP/GvG/Push/Admin/Analytics/audit actor behavior unmigrated by design.
+
 Milestone 29E.1 Own Profile + Cosmetics active-profile migration is applied and verified in production through `20260531000200_active_profile_profile_cosmetics.sql`. It adds active-profile-aware Profile detail/update and Cosmetics read/equip RPCs while leaving CP get/submit and other action systems unmigrated by design.
 
 Milestone 29B Account Switcher backend foundation is applied and verified in production through `20260531000100_account_switcher_foundation.sql`. It adds `user_profile_links`, `user_active_profiles`, safe active-profile helper/RPCs, Owner-only link management RPCs, and self-link/backfill support while intentionally leaving existing runtime behavior unchanged.
@@ -28,7 +30,7 @@ Staging and production both have this migration applied and verified. Future new
 
 ## Production Deployment Status
 
-Production Supabase is live and migrated through the active-profile Profile/Cosmetics migration. Member Status, CP Update Window / Member CP Self-Submit, CP Leaderboard, Rank Badge / Profile Border, Cosmetics, Premium Cosmetics, Owner Cosmetics, Admin Analytics, Live CP Growth, 3v3 Team Finder, Guild Wall, Global Wall, Ghoul Rep backend support, Public Member Profiles, Ranking public profile links, Push Notifications, Account Switcher foundation, and active-profile Profile/Cosmetics RPCs are applied and verified in production.
+Production Supabase is live and migrated through the active-profile 3v3 migration. Member Status, CP Update Window / Member CP Self-Submit, CP Leaderboard, Rank Badge / Profile Border, Cosmetics, Premium Cosmetics, Owner Cosmetics, Admin Analytics, Live CP Growth, 3v3 Team Finder, Guild Wall, Global Wall, Ghoul Rep backend support, Public Member Profiles, Ranking public profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, and active-profile 3v3 RPCs are applied and verified in production.
 
 Current local migration order:
 
@@ -67,6 +69,38 @@ Current local migration order:
 33. `20260530000800_push_notifications_foundation.sql`
 34. `20260531000100_account_switcher_foundation.sql`
 35. `20260531000200_active_profile_profile_cosmetics.sql`
+36. `20260531000300_active_profile_wall_reactions.sql`
+37. `20260531000400_active_profile_three_v_three.sql`
+
+## Active Profile 3v3 Team Finder
+
+Migration `20260531000400_active_profile_three_v_three.sql` is applied and verified in production.
+
+RPCs:
+- `update_my_discord_username(p_discord_username text)`
+- `update_my_3v3_combined_cp(p_combined_cp bigint)`
+- `create_3v3_team(p_team_name text, p_combined_cp bigint)`
+- `get_3v3_teams()`
+- `get_my_3v3_status()`
+- `request_join_3v3_team(p_team_id uuid, p_combined_cp bigint)`
+- `cancel_3v3_request(p_request_id uuid)`
+- `approve_3v3_request(p_request_id uuid)`
+- `decline_3v3_request(p_request_id uuid)`
+- `remove_3v3_member(p_team_id uuid, p_profile_id uuid)`
+- `disband_3v3_team(p_team_id uuid)`
+- `close_3v3_team(p_team_id uuid)`
+- `reopen_3v3_team(p_team_id uuid)`
+
+Behavior:
+- RPCs resolve the selected profile through `private.get_active_profile_id()`.
+- 3v3 setup/team/request/owner actions apply to the selected active profile.
+- Existing 3v3 constraints remain enforced by backend RPCs: one active team membership, one active owned team, owner slot 1, max 3 members, request cooldown/attempt limits, owner-only approve/decline/remove/close/reopen/disband, and inactive/on_break view-only eligibility.
+- Public 3v3 Combined CP remains self-entered public 3v3 data and is not normal protected CP.
+
+Important rollout note:
+- This migration covers 3v3 Team Finder only.
+- CP get/submit, GvG, Push preferences/subscriptions, Admin permissions/actions, Analytics, and audit actor behavior remain separate future subsystem migrations.
+- Frontend must continue to use 3v3 RPCs only and must not pass arbitrary actor profile ids.
 
 ## Active Profile Profile/Cosmetics
 
@@ -87,7 +121,7 @@ Behavior:
 
 Important rollout note:
 - This migration covers own Profile identity/edit and Cosmetics read/equip only.
-- CP get/submit, GvG, 3v3, Wall/Global Wall actions, Profile reactions, Push preferences/subscriptions, Admin permissions/actions, Analytics, and audit actor behavior remain separate future subsystem migrations.
+- CP get/submit, GvG, Push preferences/subscriptions, Admin permissions/actions, Analytics, and audit actor behavior remain separate future subsystem migrations.
 - Profile must not render legacy own CP for a selected linked profile that differs from the legacy auth profile.
 
 ## Account Switcher Foundation
@@ -114,7 +148,7 @@ RPCs/helpers:
 - `owner_unlink_profile_from_auth_user(p_auth_email text, p_profile_slug text)`
 
 Important rollout note:
-- Own Profile identity/edit and Cosmetics read/equip have been switched to active-profile identity by Milestone 29E.1. CP, GvG, 3v3, Wall, Profile Reaction, Push, Admin, and auth flows remain on their existing behavior until later approved milestones.
+- Own Profile identity/edit and Cosmetics read/equip have been switched to active-profile identity by Milestone 29E.1. Wall/Profile Reactions were switched by Milestone 29E.2. 3v3 Team Finder was switched by Milestone 29E.3. CP, GvG, Push, Admin, Analytics, audit actor, and auth flows remain on their existing behavior until later approved milestones.
 
 Migration `20260523000100_member_roster_status_system.sql` is implemented, locally validated, staging validated, and production applied/verified.
 

@@ -1,5 +1,24 @@
 # Session Log
 
+## 2026-05-31 - Milestone 29E.3 3v3 Team Finder Active Profile Migration
+
+- Implemented active-profile migration for 3v3 Team Finder actions only.
+- Added migration `supabase/migrations/20260531000400_active_profile_three_v_three.sql`.
+- Updated all public 3v3 RPCs so actor/viewer identity resolves through `private.get_active_profile_id()`.
+- Covered Discord username update, public 3v3 Combined CP update, team create, team/status reads, join request, cancel request, approve/decline, remove member, close/reopen, and disband.
+- Updated `src/pages/ThreeVThree.jsx` to refetch 3v3 state when the selected active profile changes and clear stale request/setup/message state.
+- Local DB reset passed through the new migration.
+- Full local validation passed; the active-profile 3v3 block reported `17 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no normal CP RPC/table usage, no direct 3v3 table calls from frontend, no service-role path, and no localStorage authority in the touched path.
+- Production dry-run showed only `20260531000400_active_profile_three_v_three.sql`.
+- Production migration is applied and remote migration list shows `20260531000400` applied.
+- Production DB verification confirmed all 13 public 3v3 RPCs use `private.get_active_profile_id()`, 3v3 tables retain RLS and no broad direct grants, active Owner count remains `1`, and simulated normal-member direct CP table reads returned zero visible rows.
+- Commit `a5eb9e6 feat: migrate 3v3 to active profile` was pushed to `main`; Vercel reported deployment success.
+- Authenticated production smoke passed for 3v3 Find Team, Create Team, My Requests, active-profile setup display, team cards, no normal CP/private data, and no new captured console errors.
+- No production 3v3 mutation was performed during smoke.
+- CP get/submit, GvG vote, Push preferences/subscriptions, Admin permissions/actions, Analytics, and audit actor behavior remain future subsystem migrations.
+
 ## 2026-05-31 - Milestone 29E.2 Guild Wall + Profile Reactions Active Profile Migration
 
 - Implemented active-profile migration for Guild Wall / Global Wall actions and Public Profile reactions.

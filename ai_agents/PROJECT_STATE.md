@@ -1,5 +1,35 @@
 # Project State
 
+## Milestone 29E.3 3v3 Team Finder Active Profile Migration Live
+
+3v3 Team Finder actions are migrated to active-profile identity and live in production through commit `a5eb9e6 feat: migrate 3v3 to active profile`.
+
+Implemented:
+- New migration `20260531000400_active_profile_three_v_three.sql`.
+- All public 3v3 RPCs now resolve actor/viewer identity through `private.get_active_profile_id()`.
+- Migrated 3v3 actions include Discord username update, public 3v3 Combined CP update, create team, team/status reads, join request, cancel request, approve/decline as owner, remove member, close/reopen, and disband.
+- `ThreeVThree.jsx` now refetches 3v3 state when the selected active profile changes and clears stale request/setup/message state.
+
+Behavior:
+- 3v3 setup/team/request/owner actions use the selected active profile.
+- Existing 3v3 product rules are preserved: one active team membership, one owned active team, owner slot 1, max 3 members, spam/cooldown rules, owner-only moderation, and inactive/on_break view-only behavior.
+- 3v3 Combined CP remains public/self-entered and separate from protected normal CP.
+- CP get/submit, GvG, Push preferences/subscriptions, Admin permissions/actions, Analytics, and audit actor behavior remain intentionally unmigrated in this milestone.
+
+Security/CP privacy:
+- Migrated RPCs accept no arbitrary frontend actor profile id.
+- Frontend remains RPC-only for 3v3 and does not direct-read or direct-write 3v3 tables.
+- No normal CP, `member_cp`, `cp_snapshots`, CP RPCs, email/auth/admin/private metadata, service-role path, localStorage authority, uploads, or Storage behavior was added.
+- Production DB verification confirmed all 13 public 3v3 RPCs use `private.get_active_profile_id()` and no longer use `auth.uid()` for actor identity, 3v3 tables still have RLS enabled, direct 3v3 table grants remain absent, active Owner count remains `1`, and simulated normal-member direct reads of `member_cp` and `cp_snapshots` returned zero visible rows.
+
+Validation:
+- Local DB reset passed through `20260531000400_active_profile_three_v_three.sql`.
+- Full local validation passed; the new active-profile 3v3 block reported `17 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production dry-run showed only `20260531000400_active_profile_three_v_three.sql`; production migration is applied and remote migration list shows it applied.
+- Commit `a5eb9e6 feat: migrate 3v3 to active profile` is pushed to `main`; Vercel reported deployment success.
+- Authenticated production 3v3 smoke passed for Find Team, Create Team, My Requests, active-profile setup display, team cards, no 3v3 mutation, no normal CP/private data, and no new captured console errors.
+
 ## Milestone 29E.2 Guild Wall + Profile Reactions Active Profile Migration Live
 
 Guild Wall / Global Wall actions and Public Profile reactions are migrated to active-profile identity and live in production through commit `db2b9e5 feat: migrate wall reactions to active profile`.

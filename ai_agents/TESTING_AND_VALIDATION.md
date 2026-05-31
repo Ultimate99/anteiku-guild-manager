@@ -1,5 +1,44 @@
 # Testing And Validation
 
+## Milestone 29E.3 3v3 Team Finder Active Profile Validation
+
+3v3 Team Finder active-profile migration passed local backend validation, frontend build/source validation, production migration gates, DB verification, and authenticated production smoke.
+
+Commands/gates:
+- `npx.cmd supabase db reset`
+- `Get-Content -Raw -LiteralPath supabase\tests\local_validation_anteiku.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres -v ON_ERROR_STOP=1`
+- `npm.cmd run build`
+- Production `npx.cmd supabase db push --dry-run`
+- Production migration list/apply verification
+- `git push origin main`
+- Authenticated production browser smoke
+- Focused production RPC smoke through authenticated-role test queries
+
+Results:
+- Local reset applied through `20260531000400_active_profile_three_v_three.sql`.
+- Full local validation passed.
+- Milestone 29E.3 active-profile 3v3 block passed `17 PASS / 0 FAIL / 0 SKIP`.
+- Build passed with the existing Vite chunk-size warning only.
+- Production dry-run showed exactly one pending migration: `20260531000400_active_profile_three_v_three.sql`.
+- Production migration is applied and remote migration list shows `20260531000400` applied.
+- Commit `a5eb9e6 feat: migrate 3v3 to active profile` is pushed to `main`; Vercel reported deployment success.
+
+Validated behavior:
+- All 13 public 3v3 RPCs use `private.get_active_profile_id()` and no longer use `auth.uid()` for actor identity.
+- Migrated actions include Discord username update, public 3v3 Combined CP update, team create, team/status reads, join request, cancel, approve/decline, remove, close/reopen, and disband.
+- Production signed-in 3v3 page loaded for the active profile.
+- Find Team, Create Team, and My Requests rendered.
+- Active-profile setup displayed Discord username and public 3v3 Combined CP.
+- Team cards rendered existing slots and request actions.
+- No production 3v3 create/request/approve mutation was performed during smoke.
+- Active Owner count remained `1`.
+
+Security/source validation:
+- No CP get/submit, GvG, Push, Admin, Analytics, or audit actor behavior was migrated.
+- No normal CP, `member_cp`, `cp_snapshots`, CP RPCs, email/auth/admin/private metadata, service-role paths, uploads, Storage, localStorage authority, or frontend direct table paths were added.
+- Simulated normal-member direct reads of `member_cp` and `cp_snapshots` returned zero visible rows in production verification.
+- Focused production RPC smoke loaded `get_my_3v3_status()` and `get_3v3_teams()` and confirmed the payload guard had no normal CP/private tokens.
+
 ## Milestone 29E.2 Guild Wall + Profile Reactions Active Profile Validation
 
 Guild Wall / Global Wall actions and Public Profile reactions active-profile migration passed local backend validation, frontend build/source validation, production migration gates, DB verification, and production smoke.

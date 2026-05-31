@@ -1,5 +1,12 @@
 # Code Index
 
+## Milestone 29E.3 3v3 Team Finder Active Profile Migration
+
+- `supabase/migrations/20260531000400_active_profile_three_v_three.sql`: Migrates public 3v3 RPC actor/viewer identity to `private.get_active_profile_id()`. Covers Discord username update, public 3v3 Combined CP update, team create, team/status reads, join requests, cancel, approve/decline, remove member, close/reopen, and disband.
+- `supabase/tests/local_validation_anteiku.sql`: Adds Milestone 29E.3 validation for active-profile 3v3 setup/team/request identity, owner-only actions, active-profile switching, inactive view-only behavior, unlinked profile denial, payload privacy, disband cleanup, and active Owner count.
+- `src/pages/ThreeVThree.jsx`: Uses `useActiveProfileSummary()` and refetches 3v3 state when the selected active profile changes, clearing stale request/setup/message state. Existing 3v3 service/RPC-only paths remain unchanged.
+- Production status: migration `20260531000400_active_profile_three_v_three.sql` is applied, commit `a5eb9e6 feat: migrate 3v3 to active profile` is deployed, local validation passed `17 PASS / 0 FAIL / 0 SKIP`, build/source validation passed, and authenticated production smoke passed without 3v3 mutation.
+
 ## Milestone 29E.2 Guild Wall + Profile Reactions Active Profile Migration
 
 - `supabase/migrations/20260531000300_active_profile_wall_reactions.sql`: Migrates Guild Wall / Global Wall and Public Profile reaction actor/viewer state to `private.get_active_profile_id()`. Covers Wall feed viewer flags, post/comment create, own delete, post/comment reactions, reaction details, moderation flags/RPCs, and Public Profile reaction add/remove/viewer state.

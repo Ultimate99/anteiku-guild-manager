@@ -1,8 +1,38 @@
 # Supabase RLS
 
-The Supabase RLS/RPC implementation has been validated and production-applied through `20260531000300_active_profile_wall_reactions.sql`.
+The Supabase RLS/RPC implementation has been validated and production-applied through `20260531000400_active_profile_three_v_three.sql`.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
+
+## Active Profile 3v3 Team Finder RLS/RPC
+
+Milestone 29E.3 3v3 Team Finder active-profile migration is production-applied through `20260531000400_active_profile_three_v_three.sql`.
+
+Functions:
+- `update_my_discord_username(p_discord_username text)`
+- `update_my_3v3_combined_cp(p_combined_cp bigint)`
+- `create_3v3_team(p_team_name text, p_combined_cp bigint)`
+- `get_3v3_teams()`
+- `get_my_3v3_status()`
+- `request_join_3v3_team(p_team_id uuid, p_combined_cp bigint)`
+- `cancel_3v3_request(p_request_id uuid)`
+- `approve_3v3_request(p_request_id uuid)`
+- `decline_3v3_request(p_request_id uuid)`
+- `remove_3v3_member(p_team_id uuid, p_profile_id uuid)`
+- `disband_3v3_team(p_team_id uuid)`
+- `close_3v3_team(p_team_id uuid)`
+- `reopen_3v3_team(p_team_id uuid)`
+
+Rules:
+- Migrated 3v3 functions resolve actor/viewer identity through `private.get_active_profile_id()`.
+- No migrated 3v3 RPC accepts an arbitrary frontend actor profile id.
+- Existing 3v3 membership/team/request/owner constraints remain backend-enforced.
+- Public 3v3 Combined CP remains self-entered public 3v3 data and is separate from protected normal CP.
+
+Privacy:
+- Payloads expose only safe public 3v3 team/profile/Discord/public 3v3 CP/cosmetic fields.
+- No normal CP, `member_cp`, `cp_snapshots`, email, auth IDs, admin/private metadata, service-role data, or audit-private metadata is returned.
+- Production verification confirmed active Owner count `1` and simulated normal-member direct CP table reads returned zero visible rows.
 
 ## Active Profile Wall/Profile Reactions RLS/RPC
 

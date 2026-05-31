@@ -1,5 +1,27 @@
 # Security Rules
 
+## Active Profile 3v3 Team Finder Security Rules
+
+Milestone 29E.3 3v3 Team Finder active-profile migration is live in production through `20260531000400_active_profile_three_v_three.sql` and commit `a5eb9e6 feat: migrate 3v3 to active profile`.
+
+Rules:
+- 3v3 actor/viewer identity must resolve through `private.get_active_profile_id()` for migrated 3v3 setup/team/request/owner actions.
+- Frontend must not provide arbitrary actor profile ids for Discord username updates, public 3v3 Combined CP updates, team creation, team/status reads, join requests, cancel, approve/decline, remove, close/reopen, or disband.
+- Frontend 3v3 access must continue through RPC service wrappers only.
+- Existing 3v3 constraints remain backend-enforced: one active team membership, one owned active team, owner slot 1, max 3 members, owner-only request decisions/team management, and request spam/cooldown limits.
+- CP get/submit, GvG vote, Push preferences/subscriptions, Admin permissions/actions, Analytics, and audit actor behavior remain separate future migrations.
+
+Privacy:
+- 3v3 payloads may show safe public 3v3 profile/team fields only, including Discord username and public self-entered 3v3 Combined CP.
+- 3v3 Combined CP is not protected normal CP and must not be populated from `member_cp`.
+- 3v3 payloads must not return or display normal CP, `member_cp`, `cp_snapshots`, email, auth secrets, passwords, service-role data, admin private metadata, audit-private metadata, or arbitrary linked profile ids.
+
+Validation status:
+- Local validation passed with the active-profile 3v3 block at `17 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed only `20260531000400_active_profile_three_v_three.sql`; production apply/list verification passed.
+- Production DB verification confirmed all 13 public 3v3 RPCs use `private.get_active_profile_id()`, 3v3 tables keep RLS/no broad direct grants, active Owner count remains `1`, and simulated normal-member direct reads of `member_cp` and `cp_snapshots` returned zero visible rows.
+- Authenticated production smoke passed for 3v3 page/sub-tab rendering and no normal CP/private data; no production 3v3 mutation was performed.
+
 ## Active Profile Wall/Profile Reaction Security Rules
 
 Milestone 29E.2 Guild Wall / Global Wall and Public Profile reactions active-profile migration is live in production through `20260531000300_active_profile_wall_reactions.sql` and commit `db2b9e5 feat: migrate wall reactions to active profile`.
@@ -58,8 +80,8 @@ Rules:
 - Topbar/Dashboard active-profile display must not imply high-risk action systems have migrated.
 - Normal members cannot link or unlink profiles.
 - Owner-only profile linking must use `owner_link_profile_to_auth_user(...)` / `owner_unlink_profile_from_auth_user(...)`.
-- Do not update existing CP/GvG/3v3/Wall/Profile Reaction/Push/Admin RPCs to use active profile without a separately approved, subsystem-specific milestone.
-- CP get/submit, GvG vote, 3v3 create/request/approve, Wall posting/commenting/reactions, Profile reactions, push preferences/subscriptions, Admin permissions/actions, and audit actor behavior remain legacy-profile based until explicitly migrated.
+- Do not update existing CP/GvG/Push/Admin/Analytics/audit RPCs to use active profile without a separately approved, subsystem-specific milestone.
+- CP get/submit, GvG vote, push preferences/subscriptions, Admin permissions/actions, Analytics, and audit actor behavior remain legacy-profile based until explicitly migrated.
 
 Privacy:
 - Switcher payloads may show safe profile identity/status/guild/cosmetic fields only.

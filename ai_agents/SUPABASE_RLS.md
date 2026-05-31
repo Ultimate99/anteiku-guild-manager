@@ -1,5 +1,40 @@
 # Supabase RLS
 
+## Milestone 29E.3 Active Profile 3v3 Team Finder RLS/RPC
+
+Milestone 29E.3 3v3 Team Finder active-profile migration is implemented, locally validated, and production applied through `20260531000400_active_profile_three_v_three.sql`.
+
+RPCs:
+- `update_my_discord_username(p_discord_username text)`
+- `update_my_3v3_combined_cp(p_combined_cp bigint)`
+- `create_3v3_team(p_team_name text, p_combined_cp bigint)`
+- `get_3v3_teams()`
+- `get_my_3v3_status()`
+- `request_join_3v3_team(p_team_id uuid, p_combined_cp bigint)`
+- `cancel_3v3_request(p_request_id uuid)`
+- `approve_3v3_request(p_request_id uuid)`
+- `decline_3v3_request(p_request_id uuid)`
+- `remove_3v3_member(p_team_id uuid, p_profile_id uuid)`
+- `disband_3v3_team(p_team_id uuid)`
+- `close_3v3_team(p_team_id uuid)`
+- `reopen_3v3_team(p_team_id uuid)`
+
+RPC security:
+- All 13 public 3v3 RPCs use `private.get_active_profile_id()` for actor/viewer identity.
+- No migrated 3v3 RPC accepts an arbitrary frontend actor profile id.
+- Existing 3v3 eligibility, ownership, slot, membership, cooldown, and owner-only rules remain backend-enforced.
+- Public 3v3 Combined CP remains self-entered 3v3 data and is separate from protected normal CP.
+
+Privacy:
+- 3v3 payloads return safe public team/profile/Discord/public 3v3 CP/cosmetic fields only.
+- No normal CP, `member_cp`, `cp_snapshots`, email, auth IDs, service-role data, admin/private metadata, or audit-private metadata is returned.
+
+Validation:
+- Local reset applied the migration cleanly.
+- Full local validation passed; Milestone 29E.3 block reported `17 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed only `20260531000400_active_profile_three_v_three.sql`; production migration is applied and remote migration list shows it applied.
+- Production verification confirmed active-profile RPC bodies, RLS enabled on all 3v3 tables, no broad direct 3v3 table grants, active Owner count `1`, safe 3v3 payloads, and normal CP direct-read protection.
+
 ## Milestone 29E.1 Active Profile Profile/Cosmetics RLS/RPC
 
 Milestone 29E.1 Own Profile + Cosmetics active-profile migration is implemented, locally validated, and production applied through `20260531000200_active_profile_profile_cosmetics.sql`.
