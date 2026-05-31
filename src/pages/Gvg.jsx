@@ -7,6 +7,7 @@ import {
   loadOwnGvgVote,
   submitGvgVote,
 } from '../services/gvgService.js';
+import { useActiveProfileSummary } from '../hooks/useActiveProfileSummary.js';
 import {
   isGvgLimitedRosterStatus,
   isHardBlockedRosterStatus,
@@ -38,12 +39,18 @@ function formatVoteStatus(status, t) {
 
 export function Gvg() {
   const { language, t } = useLanguage();
-  const { membership, user } = useAuth();
-  const rosterStatus = membership?.roster_status ?? 'active';
+  const { membership } = useAuth();
+  const { activeProfile, activeProfileLoading, activeProfileError } = useActiveProfileSummary();
+  const activeProfileId = activeProfile?.profileId ?? '';
+  const activeProfileReady = !activeProfileLoading && Boolean(activeProfileId);
+  const activeProfilePending = Boolean(membership?.id) && !activeProfileReady && !activeProfileError;
+  const rosterStatus = activeProfile?.rosterStatus ?? membership?.roster_status ?? 'active';
+  const membershipStatus = activeProfile?.membershipStatus ?? membership?.membership_status ?? '';
+  const isMembershipBlocked = membershipStatus ? membershipStatus !== 'active' : false;
   const isRosterBlocked =
-    isHardBlockedRosterStatus(rosterStatus) || ['suspended', 'left'].includes(membership?.membership_status);
+    isMembershipBlocked || isHardBlockedRosterStatus(rosterStatus);
   const isGvgLimited = isGvgLimitedRosterStatus(rosterStatus);
-  const canUseGvg = !isRosterBlocked && !isGvgLimited;
+  const canUseGvg = activeProfileReady && !isRosterBlocked && !isGvgLimited;
   const [events, setEvents] = useState([]);
   const [selectedEventId, setSelectedEventId] = useState('');
   const [currentVote, setCurrentVote] = useState(null);
@@ -68,6 +75,27 @@ export function Gvg() {
         setMessage('');
       }
 
+      if (activeProfileLoading || activeProfilePending) {
+        setEvents([]);
+        setSelectedEventId('');
+        setCurrentVote(null);
+        setVoteStatus('present');
+        setAbsenceReason('');
+        setLoading(false);
+        return;
+      }
+
+      if (activeProfileError || !activeProfileReady) {
+        setEvents([]);
+        setSelectedEventId('');
+        setCurrentVote(null);
+        setVoteStatus('present');
+        setAbsenceReason('');
+        setError(t('accountSwitcher.activeProfileLoadError'));
+        setLoading(false);
+        return;
+      }
+
       if (!canUseGvg) {
         setEvents([]);
         setSelectedEventId('');
@@ -79,14 +107,14 @@ export function Gvg() {
       }
 
       try {
-        const nextEvents = await loadMemberActiveGvgEvents({ guildId: membership?.guild_id });
+        const nextEvents = await loadMemberActiveGvgEvents();
         const nextSelectedEventId =
           nextEvents.find((event) => event.id === selectedEventId)?.id ?? nextEvents[0]?.id ?? '';
         setEvents(nextEvents);
         setSelectedEventId(nextSelectedEventId);
 
         if (nextSelectedEventId) {
-          const nextVote = await loadOwnGvgVote({ eventId: nextSelectedEventId, profileId: user?.id });
+          const nextVote = await loadOwnGvgVote({ eventId: nextSelectedEventId });
           setCurrentVote(nextVote);
           setVoteStatus(nextVote?.vote_status ?? 'present');
           setAbsenceReason(nextVote?.vote_status === 'absent' ? nextVote.absence_reason ?? '' : '');
@@ -104,8 +132,18 @@ export function Gvg() {
         setLoading(false);
       }
     },
-    [canUseGvg, membership?.guild_id, selectedEventId, user?.id],
+    [activeProfileError, activeProfileLoading, activeProfilePending, activeProfileReady, canUseGvg, selectedEventId, t],
   );
+
+  useEffect(() => {
+    setEvents([]);
+    setSelectedEventId('');
+    setCurrentVote(null);
+    setVoteStatus('present');
+    setAbsenceReason('');
+    setError('');
+    setMessage('');
+  }, [activeProfileId]);
 
   useEffect(() => {
     loadGvgData();
@@ -126,7 +164,7 @@ export function Gvg() {
     setLoading(true);
 
     try {
-      const nextVote = await loadOwnGvgVote({ eventId, profileId: user?.id });
+      const nextVote = await loadOwnGvgVote({ eventId });
       setCurrentVote(nextVote);
       setVoteStatus(nextVote?.vote_status ?? 'present');
       setAbsenceReason(nextVote?.vote_status === 'absent' ? nextVote.absence_reason ?? '' : '');
@@ -201,7 +239,7 @@ export function Gvg() {
       {error ? <p className="error-line">{error}</p> : null}
       {message ? <p className="notice-line">{message}</p> : null}
 
-      {!canUseGvg ? (
+      {activeProfileReady && !canUseGvg ? (
         <section className="panel restricted-panel gate-panel member-compact-panel">
           <StatusBadge tone={rosterStatusTone(rosterStatus)}>{t(`roster.status.${rosterStatus}.label`)}</StatusBadge>
           <h3>{isRosterBlocked ? t('gvg.accessUnavailable') : t('gvg.notExpected')}</h3>
@@ -209,7 +247,7 @@ export function Gvg() {
         </section>
       ) : null}
 
-      {canUseGvg && loading ? <p className="muted-line">{t('gvg.loadingActive')}</p> : null}
+      {(activeProfileLoading || activeProfilePending || (canUseGvg && loading)) ? <p className="muted-line">{t('gvg.loadingActive')}</p> : null}
 
       {canUseGvg && !loading && events.length === 0 ? (
         <section className="panel hero-panel gvg-empty-panel member-compact-panel">

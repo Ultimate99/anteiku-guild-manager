@@ -9422,6 +9422,386 @@ begin
 end;
 $$;
 
+create temp table if not exists milestone_active_profile_gvg_results (
+  section text not null,
+  test_name text not null,
+  status text not null check (status in ('PASS', 'FAIL', 'SKIP')),
+  details text
+) on commit drop;
+
+do $$
+declare
+  anteiku_id constant uuid := '00000000-0000-0000-0000-000000000101';
+  anteiku_re_id constant uuid := '00000000-0000-0000-0000-000000000102';
+  owner_id constant uuid := '10000000-0000-0000-0000-000000000001';
+  member_id constant uuid := '10000000-0000-0000-0000-000000000006';
+  active_gvg_a_id constant uuid := '10000000-0000-0000-0000-000000000103';
+  active_gvg_b_id constant uuid := '10000000-0000-0000-0000-000000000104';
+  active_gvg_pending_id constant uuid := '10000000-0000-0000-0000-000000000105';
+  active_gvg_restricted_id constant uuid := '10000000-0000-0000-0000-000000000106';
+  global_event_id uuid;
+  guild_a_event_id uuid;
+  guild_b_event_id uuid;
+  row_count integer;
+  row_count_b integer;
+  owner_count integer;
+  payload jsonb;
+  status_a text;
+  status_b text;
+  reason_b text;
+begin
+  begin
+    insert into auth.users (
+      instance_id,
+      id,
+      aud,
+      role,
+      email,
+      encrypted_password,
+      email_confirmed_at,
+      raw_app_meta_data,
+      raw_user_meta_data,
+      created_at,
+      updated_at
+    )
+    values
+      (
+        '00000000-0000-0000-0000-000000000000',
+        active_gvg_a_id,
+        'authenticated',
+        'authenticated',
+        'active-gvg-a.local@example.test',
+        'local-only',
+        now(),
+        '{"provider":"email","providers":["email"]}'::jsonb,
+        '{}'::jsonb,
+        now(),
+        now()
+      ),
+      (
+        '00000000-0000-0000-0000-000000000000',
+        active_gvg_b_id,
+        'authenticated',
+        'authenticated',
+        'active-gvg-b.local@example.test',
+        'local-only',
+        now(),
+        '{"provider":"email","providers":["email"]}'::jsonb,
+        '{}'::jsonb,
+        now(),
+        now()
+      ),
+      (
+        '00000000-0000-0000-0000-000000000000',
+        active_gvg_pending_id,
+        'authenticated',
+        'authenticated',
+        'active-gvg-pending.local@example.test',
+        'local-only',
+        now(),
+        '{"provider":"email","providers":["email"]}'::jsonb,
+        '{}'::jsonb,
+        now(),
+        now()
+      ),
+      (
+        '00000000-0000-0000-0000-000000000000',
+        active_gvg_restricted_id,
+        'authenticated',
+        'authenticated',
+        'active-gvg-restricted.local@example.test',
+        'local-only',
+        now(),
+        '{"provider":"email","providers":["email"]}'::jsonb,
+        '{}'::jsonb,
+        now(),
+        now()
+      )
+    on conflict (id) do nothing;
+
+    insert into public.profiles (id, username, profile_slug, ign, approval_status, approved_at)
+    values
+      (active_gvg_a_id, 'active_gvg_a', 'active_gvg_a', 'Active GvG A', 'approved', now()),
+      (active_gvg_b_id, 'active_gvg_b', 'active_gvg_b', 'Active GvG B', 'approved', now()),
+      (active_gvg_pending_id, 'active_gvg_pending', 'active_gvg_pending', 'Active GvG Pending', 'pending', null),
+      (active_gvg_restricted_id, 'active_gvg_restricted', 'active_gvg_restricted', 'Active GvG Restricted', 'approved', now())
+    on conflict (id) do update
+    set username = excluded.username,
+        profile_slug = excluded.profile_slug,
+        ign = excluded.ign,
+        approval_status = excluded.approval_status,
+        approved_at = excluded.approved_at;
+
+    insert into public.guild_memberships (profile_id, guild_id, role, membership_status, roster_status, is_primary, assigned_by)
+    values
+      (active_gvg_a_id, anteiku_id, 'member', 'active', 'active', true, owner_id),
+      (active_gvg_b_id, anteiku_re_id, 'member', 'active', 'active', true, owner_id),
+      (active_gvg_pending_id, anteiku_id, 'member', 'pending', 'active', true, owner_id),
+      (active_gvg_restricted_id, anteiku_id, 'member', 'active', 'on_break', true, owner_id)
+    on conflict (profile_id, guild_id) do update
+    set role = excluded.role,
+        membership_status = excluded.membership_status,
+        roster_status = excluded.roster_status,
+        is_primary = excluded.is_primary,
+        assigned_by = excluded.assigned_by;
+
+    update public.user_profile_links upl
+    set disabled_at = now(),
+        is_primary = false
+    where upl.profile_id in (active_gvg_a_id, active_gvg_b_id, active_gvg_pending_id, active_gvg_restricted_id)
+      and upl.disabled_at is null;
+
+    delete from public.user_active_profiles where auth_user_id = member_id;
+
+    insert into public.user_profile_links (auth_user_id, profile_id, link_type, is_primary, created_by_profile_id)
+    values
+      (member_id, active_gvg_a_id, 'owner', false, owner_id),
+      (member_id, active_gvg_b_id, 'owner', false, owner_id),
+      (member_id, active_gvg_pending_id, 'owner', false, owner_id),
+      (member_id, active_gvg_restricted_id, 'owner', false, owner_id);
+
+    insert into public.gvg_events (guild_id, scope, title, status, starts_at, ends_at, created_by)
+    values (null, 'global', 'Active Profile GvG Global', 'active', now(), now() + interval '2 hours', owner_id)
+    returning id into global_event_id;
+
+    insert into public.gvg_events (guild_id, scope, title, status, starts_at, ends_at, created_by)
+    values (anteiku_id, 'guild', 'Active Profile GvG Anteiku', 'active', now(), now() + interval '2 hours', owner_id)
+    returning id into guild_a_event_id;
+
+    insert into public.gvg_events (guild_id, scope, title, status, starts_at, ends_at, created_by)
+    values (anteiku_re_id, 'guild', 'Active Profile GvG Anteiku Re', 'active', now(), now() + interval '2 hours', owner_id)
+    returning id into guild_b_event_id;
+
+    insert into milestone_active_profile_gvg_results values ('setup', 'active_gvg_profiles_linked', 'PASS', 'Member auth linked to active GvG test profiles.');
+  exception when others then
+    insert into milestone_active_profile_gvg_results values ('setup', 'active_gvg_profiles_linked', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    select count(*)
+    into row_count
+    from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public'
+      and p.proname in ('get_my_active_gvg_events', 'get_my_gvg_vote', 'submit_gvg_vote')
+      and pg_get_functiondef(p.oid) ilike '%private.get_active_profile_id%';
+
+    if row_count = 3 then
+      insert into milestone_active_profile_gvg_results values ('schema', 'gvg_member_rpcs_use_active_profile_helper', 'PASS', 'Member-facing GvG RPCs resolve active profile identity.');
+    else
+      insert into milestone_active_profile_gvg_results values ('schema', 'gvg_member_rpcs_use_active_profile_helper', 'FAIL', row_count::text || ' RPCs reference active profile helper.');
+    end if;
+  exception when others then
+    insert into milestone_active_profile_gvg_results values ('schema', 'gvg_member_rpcs_use_active_profile_helper', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    delete from public.user_active_profiles where auth_user_id = member_id;
+
+    perform public.submit_gvg_vote(global_event_id, 'present', null);
+
+    if exists (
+      select 1
+      from public.gvg_votes gv
+      where gv.gvg_event_id = global_event_id
+        and gv.profile_id = member_id
+        and gv.vote_status = 'present'
+    ) then
+      insert into milestone_active_profile_gvg_results values ('rpc', 'single_profile_fallback_vote_unchanged', 'PASS', 'Legacy single-profile fallback vote used auth profile.');
+    else
+      insert into milestone_active_profile_gvg_results values ('rpc', 'single_profile_fallback_vote_unchanged', 'FAIL', 'Expected legacy member vote row missing.');
+    end if;
+  exception when others then
+    insert into milestone_active_profile_gvg_results values ('rpc', 'single_profile_fallback_vote_unchanged', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_gvg_a_id);
+
+    select coalesce(jsonb_agg(row_to_json(e)), '[]'::jsonb)
+    into payload
+    from public.get_my_active_gvg_events() e;
+
+    if payload::text like '%' || global_event_id::text || '%'
+       and payload::text like '%' || guild_a_event_id::text || '%'
+       and payload::text not like '%' || guild_b_event_id::text || '%'
+       and payload::text not ilike '%member_cp%'
+       and payload::text not ilike '%cp_snapshots%'
+       and payload::text not ilike '%cp_value%' then
+      insert into milestone_active_profile_gvg_results values ('events', 'active_profile_a_sees_own_scope_events', 'PASS', payload::text);
+    else
+      insert into milestone_active_profile_gvg_results values ('events', 'active_profile_a_sees_own_scope_events', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_profile_gvg_results values ('events', 'active_profile_a_sees_own_scope_events', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_gvg_a_id);
+    perform public.submit_gvg_vote(global_event_id, 'present', null);
+
+    select count(*) into row_count
+    from public.gvg_votes gv
+    where gv.gvg_event_id = global_event_id
+      and gv.profile_id = active_gvg_a_id
+      and gv.vote_status = 'present';
+
+    perform public.set_my_active_profile(active_gvg_b_id);
+
+    select count(*) into row_count_b
+    from public.get_my_gvg_vote(global_event_id);
+
+    if row_count = 1 and row_count_b = 0 then
+      insert into milestone_active_profile_gvg_results values ('vote', 'active_profile_b_does_not_see_a_vote_state', 'PASS', 'A vote exists; B own vote state is empty.');
+    else
+      insert into milestone_active_profile_gvg_results values ('vote', 'active_profile_b_does_not_see_a_vote_state', 'FAIL', 'A rows=' || row_count::text || ' B own state rows=' || row_count_b::text);
+    end if;
+  exception when others then
+    insert into milestone_active_profile_gvg_results values ('vote', 'active_profile_b_does_not_see_a_vote_state', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_gvg_b_id);
+    perform public.submit_gvg_vote(global_event_id, 'absent', 'Active profile B absence');
+
+    select max(vote_status) filter (where profile_id = active_gvg_a_id),
+           max(vote_status) filter (where profile_id = active_gvg_b_id),
+           max(absence_reason) filter (where profile_id = active_gvg_b_id)
+    into status_a, status_b, reason_b
+    from public.gvg_votes gv
+    where gv.gvg_event_id = global_event_id
+      and gv.profile_id in (active_gvg_a_id, active_gvg_b_id);
+
+    if status_a = 'present'
+       and status_b = 'absent'
+       and reason_b = 'Active profile B absence' then
+      insert into milestone_active_profile_gvg_results values ('vote', 'active_profile_b_vote_separate_from_a', 'PASS', 'A and B have separate vote rows on same event.');
+    else
+      insert into milestone_active_profile_gvg_results values ('vote', 'active_profile_b_vote_separate_from_a', 'FAIL', 'A=' || coalesce(status_a, '<null>') || ' B=' || coalesce(status_b, '<null>') || ' reason=' || coalesce(reason_b, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_profile_gvg_results values ('vote', 'active_profile_b_vote_separate_from_a', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_gvg_b_id);
+    perform public.submit_gvg_vote(global_event_id, 'present', 'Should clear');
+
+    select count(*),
+           max(vote_status),
+           max(absence_reason)
+    into row_count, status_b, reason_b
+    from public.gvg_votes gv
+    where gv.gvg_event_id = global_event_id
+      and gv.profile_id = active_gvg_b_id;
+
+    if row_count = 1
+       and status_b = 'present'
+       and reason_b is null then
+      insert into milestone_active_profile_gvg_results values ('vote', 'active_profile_vote_update_one_row', 'PASS', 'Switching B absent to present updated one row and cleared reason.');
+    else
+      insert into milestone_active_profile_gvg_results values ('vote', 'active_profile_vote_update_one_row', 'FAIL', 'rows=' || row_count::text || ' status=' || coalesce(status_b, '<null>') || ' reason=' || coalesce(reason_b, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_profile_gvg_results values ('vote', 'active_profile_vote_update_one_row', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_gvg_b_id);
+
+    select coalesce(jsonb_agg(row_to_json(e)), '[]'::jsonb)
+    into payload
+    from public.get_my_active_gvg_events() e;
+
+    if payload::text like '%' || global_event_id::text || '%'
+       and payload::text like '%' || guild_b_event_id::text || '%'
+       and payload::text not like '%' || guild_a_event_id::text || '%' then
+      insert into milestone_active_profile_gvg_results values ('events', 'active_profile_b_sees_own_scope_events', 'PASS', payload::text);
+    else
+      insert into milestone_active_profile_gvg_results values ('events', 'active_profile_b_sees_own_scope_events', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_profile_gvg_results values ('events', 'active_profile_b_sees_own_scope_events', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_gvg_pending_id);
+    perform public.submit_gvg_vote(global_event_id, 'present', null);
+    insert into milestone_active_profile_gvg_results values ('eligibility', 'pending_active_profile_vote_denied', 'FAIL', 'Pending active profile submitted GvG vote.');
+  exception when others then
+    insert into milestone_active_profile_gvg_results values ('eligibility', 'pending_active_profile_vote_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_gvg_restricted_id);
+    perform public.submit_gvg_vote(global_event_id, 'present', null);
+    insert into milestone_active_profile_gvg_results values ('eligibility', 'restricted_active_profile_vote_denied', 'FAIL', 'Restricted active profile submitted GvG vote.');
+  exception when others then
+    insert into milestone_active_profile_gvg_results values ('eligibility', 'restricted_active_profile_vote_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.set_my_active_profile(active_gvg_b_id);
+
+    update public.user_profile_links upl
+    set disabled_at = now(),
+        is_primary = false
+    where upl.auth_user_id = member_id
+      and upl.profile_id = active_gvg_b_id
+      and upl.disabled_at is null;
+
+    perform public.submit_gvg_vote(global_event_id, 'present', null);
+    insert into milestone_active_profile_gvg_results values ('security', 'disabled_link_active_profile_vote_denied', 'FAIL', 'Disabled active profile link submitted GvG vote.');
+  exception when others then
+    insert into milestone_active_profile_gvg_results values ('security', 'disabled_link_active_profile_vote_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    perform public.get_gvg_results(global_event_id);
+    insert into milestone_active_profile_gvg_results values ('security', 'member_results_still_permission_gated', 'FAIL', 'Member fetched GvG results.');
+  exception when others then
+    insert into milestone_active_profile_gvg_results values ('security', 'member_results_still_permission_gated', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    execute 'set local role authenticated';
+    execute 'insert into public.gvg_votes (gvg_event_id, profile_id, vote_status) values ($1, $2, ''present'')'
+      using global_event_id, active_gvg_a_id;
+    execute 'reset role';
+    insert into milestone_active_profile_gvg_results values ('rls', 'direct_gvg_vote_insert_still_blocked', 'FAIL', 'Direct gvg_votes insert unexpectedly succeeded.');
+  exception when others then
+    execute 'reset role';
+    insert into milestone_active_profile_gvg_results values ('rls', 'direct_gvg_vote_insert_still_blocked', 'PASS', sqlerrm);
+  end;
+
+  select count(*)
+  into owner_count
+  from public.guild_memberships gm
+  join public.profiles p on p.id = gm.profile_id
+  where gm.role = 'owner'
+    and gm.membership_status = 'active'
+    and p.approval_status = 'approved';
+
+  if owner_count = 1 then
+    insert into milestone_active_profile_gvg_results values ('regression', 'active_owner_count_remains_one', 'PASS', 'Exactly one active approved Owner membership exists.');
+  else
+    insert into milestone_active_profile_gvg_results values ('regression', 'active_owner_count_remains_one', 'FAIL', owner_count::text || ' active approved Owner memberships found.');
+  end if;
+end;
+$$;
+
 select section, test_name, status, details
 from milestone_push_notification_results
 order by section, test_name;
@@ -9484,5 +9864,14 @@ select count(*) filter (where status = 'PASS') as milestone_active_profile_own_c
        count(*) filter (where status = 'FAIL') as milestone_active_profile_own_cp_total_fail,
        count(*) filter (where status = 'SKIP') as milestone_active_profile_own_cp_total_skip
 from milestone_active_profile_own_cp_results;
+
+select section, test_name, status, details
+from milestone_active_profile_gvg_results
+order by section, test_name;
+
+select count(*) filter (where status = 'PASS') as milestone_active_profile_gvg_total_pass,
+       count(*) filter (where status = 'FAIL') as milestone_active_profile_gvg_total_fail,
+       count(*) filter (where status = 'SKIP') as milestone_active_profile_gvg_total_skip
+from milestone_active_profile_gvg_results;
 
 rollback;

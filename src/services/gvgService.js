@@ -74,27 +74,32 @@ export async function loadGvgGuildOptions() {
   return data ?? [];
 }
 
-export async function loadMemberActiveGvgEvents({ guildId }) {
+export async function loadMemberActiveGvgEvents() {
   const client = requireSupabase();
-  let query = client
-    .from('gvg_events')
-    .select(SAFE_GVG_EVENT_SELECT)
-    .eq('status', 'active')
-    .order('created_at', { ascending: false });
-
-  if (guildId) {
-    query = query.or(`scope.eq.global,guild_id.eq.${guildId}`);
-  } else {
-    query = query.eq('scope', 'global');
-  }
-
-  const { data, error } = await query;
+  const { data, error } = await client.rpc('get_my_active_gvg_events');
 
   if (error) {
     throw error;
   }
 
-  return data ?? [];
+  return (data ?? []).map((event) => ({
+    id: event.id,
+    guild_id: event.guild_id,
+    scope: event.scope,
+    title: event.title,
+    status: event.status,
+    starts_at: event.starts_at,
+    ends_at: event.ends_at,
+    created_at: event.created_at,
+    updated_at: event.updated_at,
+    guild: event.guild_id
+      ? {
+          id: event.guild_id,
+          name: event.guild_name,
+          slug: event.guild_slug,
+        }
+      : null,
+  }));
 }
 
 export async function loadManageableGvgEvents() {
@@ -112,24 +117,21 @@ export async function loadManageableGvgEvents() {
   return data ?? [];
 }
 
-export async function loadOwnGvgVote({ eventId, profileId }) {
-  if (!eventId || !profileId) {
+export async function loadOwnGvgVote({ eventId }) {
+  if (!eventId) {
     return null;
   }
 
   const client = requireSupabase();
-  const { data, error } = await client
-    .from('gvg_votes')
-    .select('id, gvg_event_id, vote_status, absence_reason, updated_at')
-    .eq('gvg_event_id', eventId)
-    .eq('profile_id', profileId)
-    .maybeSingle();
+  const { data, error } = await client.rpc('get_my_gvg_vote', {
+    p_event_id: eventId,
+  });
 
   if (error) {
     throw error;
   }
 
-  return data ?? null;
+  return Array.isArray(data) ? data[0] ?? null : data ?? null;
 }
 
 export async function submitGvgVote({ eventId, voteStatus, absenceReason }) {
