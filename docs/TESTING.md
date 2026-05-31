@@ -1,5 +1,28 @@
 # Testing
 
+## Milestone 29E.8B Active Admin Context Foundation
+
+Active Admin Context foundation passed local validation and production DB verification.
+
+Results:
+- Local DB reset applied through `20260531000900_active_admin_context_foundation.sql`.
+- Full local validation passed; the Active Admin Context block reported `13 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` was skipped because no frontend/runtime source changed.
+- Production dry-run showed only `20260531000900_active_admin_context_foundation.sql`.
+- Production migration is applied and remote migration list shows `20260531000900` applied.
+
+Production verification:
+- `get_my_active_admin_context()` exists and authenticated execute is granted.
+- `private.get_active_admin_context()` exists and is not directly executable by authenticated users.
+- Owner active context returns global admin access.
+- Active Owner count remains `1`.
+- Simulated normal-member direct reads of `member_cp` and `cp_snapshots` returned zero visible rows.
+
+Security/source validation:
+- The new migration has no `member_cp`, `cp_snapshots`, normal CP value reads, service-role, frontend, or localStorage path.
+- Payload excludes email/auth data, CP table fields, audit contents, private metadata, and admin target data.
+- AdminPanel frontend, existing Admin RPCs/actions, Admin CP, Analytics, Audit Logs, Permissions, Member Management, GvG admin, and Owner Tools remain unchanged.
+
 ## Milestone 29E.7 Audit Actor Active-Profile Alignment
 
 Audit actor alignment for active-profile member GvG vote submit/update passed local validation, production rollout gates, and production DB verification.

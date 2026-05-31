@@ -1,5 +1,34 @@
 # Project State
 
+## Milestone 29E.8B Active Admin Context Foundation Live
+
+Active Admin Context foundation is live in production through migration `20260531000900_active_admin_context_foundation.sql`.
+
+Implemented:
+- Added private helper `private.get_active_admin_context()`.
+- Added public RPC `get_my_active_admin_context()`.
+- The RPC resolves the selected active profile through `private.get_active_profile_id()`.
+- The RPC returns safe admin context fields only: active profile id, username/profile slug, IGN, guild id/name/slug, role flags, staff/admin booleans, actual permission keys, scoped guild ids, membership/profile status, roster status, and `can_access_admin_panel`.
+
+Boundaries:
+- AdminPanel frontend behavior is not migrated yet.
+- Existing AdminPanel visibility still follows legacy `AuthContext` identity.
+- Existing Admin RPCs/actions remain legacy `auth.uid()` based until future migrations.
+- Admin CP, Analytics, Audit Logs, Permissions, Member Management, GvG admin, and Owner Tools were not migrated.
+- No CP visibility behavior changed.
+
+Security/CP privacy:
+- The new RPC returns no CP values, `member_cp`, `cp_snapshots`, email/auth data, audit contents, private metadata, or admin target data.
+- Linked Owner-auth switched to a Member active profile returns `can_access_admin_panel = false` in local validation, proving admin authority is not inherited from another linked profile in the new context RPC.
+- Production verification confirmed the public RPC exists, authenticated execute is granted, the private helper is not directly executable by authenticated users, Owner active context returns global admin access, active Owner count remains `1`, and simulated normal-member direct reads of `member_cp` and `cp_snapshots` returned zero rows.
+
+Validation:
+- Local `npx.cmd supabase db reset` passed through `20260531000900_active_admin_context_foundation.sql`.
+- Full local validation passed; the new Active Admin Context block reported `13 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` was skipped because no frontend/runtime source changed.
+- Production dry-run showed only `20260531000900_active_admin_context_foundation.sql`; production migration is applied and remote migration list shows it applied.
+- No frontend deploy was needed.
+
 ## Milestone 29E.7 Audit Actor Active-Profile Alignment Live
 
 Audit actor attribution for active-profile member GvG vote submits is live in production through migration `20260531000800_active_profile_audit_actor_alignment.sql` and commit `c48a3e9 feat: align active profile audit actor`.

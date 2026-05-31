@@ -2,6 +2,8 @@
 
 ## Current Backend Status
 
+Milestone 29E.8B Active Admin Context foundation is applied and verified in production through `20260531000900_active_admin_context_foundation.sql`. It adds `get_my_active_admin_context()` as a backend-only safe context RPC for the selected active profile while preserving existing AdminPanel frontend behavior and all legacy Admin RPC/action behavior.
+
 Milestone 29E.7 Audit Actor active-profile alignment is applied and verified in production through `20260531000800_active_profile_audit_actor_alignment.sql`. It adds sanitized `gvg_vote_submitted` audit logging to active-profile member GvG vote submit/update, with actor/target set to the selected active profile, while preserving legacy Admin GvG/Admin/Analytics audit attribution and CP privacy.
 
 Milestone 29E.6 GvG voting active-profile migration is applied and verified in production through `20260531000700_active_profile_gvg_voting.sql`. It switches member-facing GvG active-event visibility, own-vote lookup, and `submit_gvg_vote(...)` to `private.get_active_profile_id()` while preserving Admin GvG management/results, Analytics, permissions, unrelated audit actor behavior, and CP privacy.
@@ -38,7 +40,7 @@ Staging and production both have this migration applied and verified. Future new
 
 ## Production Deployment Status
 
-Production Supabase is live and migrated through the active-profile audit actor alignment migration. Member Status, CP Update Window / Member CP Self-Submit, CP Leaderboard, Rank Badge / Profile Border, Cosmetics, Premium Cosmetics, Owner Cosmetics, Admin Analytics, Live CP Growth, 3v3 Team Finder, Guild Wall, Global Wall, Ghoul Rep backend support, Public Member Profiles, Ranking public profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, active-profile 3v3 RPCs, active-profile Push RPCs, active-profile Own CP RPCs, active-profile GvG member voting RPCs, and active-profile GvG vote audit actor alignment are applied and verified in production.
+Production Supabase is live and migrated through the active-admin context foundation migration. Member Status, CP Update Window / Member CP Self-Submit, CP Leaderboard, Rank Badge / Profile Border, Cosmetics, Premium Cosmetics, Owner Cosmetics, Admin Analytics, Live CP Growth, 3v3 Team Finder, Guild Wall, Global Wall, Ghoul Rep backend support, Public Member Profiles, Ranking public profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, active-profile 3v3 RPCs, active-profile Push RPCs, active-profile Own CP RPCs, active-profile GvG member voting RPCs, active-profile GvG vote audit actor alignment, and active-admin context foundation are applied and verified in production.
 
 Current local migration order:
 
@@ -83,6 +85,24 @@ Current local migration order:
 39. `20260531000600_active_profile_own_cp.sql`
 40. `20260531000700_active_profile_gvg_voting.sql`
 41. `20260531000800_active_profile_audit_actor_alignment.sql`
+42. `20260531000900_active_admin_context_foundation.sql`
+
+## Active Admin Context Foundation
+
+Migration `20260531000900_active_admin_context_foundation.sql` is applied and verified in production.
+
+RPCs/helpers:
+- `private.get_active_admin_context()`
+- `get_my_active_admin_context()`
+
+Scope:
+- Reports the selected active profile's safe admin context through `private.get_active_profile_id()`.
+- Returns active profile id, username/profile slug, IGN, guild id/name/slug, role flags, staff/admin booleans, permission keys, scoped guild ids, profile/membership/roster status, and `can_access_admin_panel`.
+- Does not migrate AdminPanel frontend visibility or existing Admin RPC/action behavior.
+
+Boundaries:
+- Admin CP, Analytics, Audit Logs, Permissions, Member Management, GvG admin, Owner Tools, and CP visibility remain unchanged.
+- Payload includes no CP values, `member_cp`, `cp_snapshots`, email/auth data, audit contents, private metadata, or admin target data.
 
 ## Active Profile Audit Actor Alignment
 

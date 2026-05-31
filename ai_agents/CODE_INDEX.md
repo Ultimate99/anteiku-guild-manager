@@ -1,5 +1,11 @@
 # Code Index
 
+## Milestone 29E.8B Active Admin Context Foundation
+
+- `supabase/migrations/20260531000900_active_admin_context_foundation.sql`: Adds backend-only `private.get_active_admin_context()` and `public.get_my_active_admin_context()` for safe selected-active-profile admin context. Existing AdminPanel frontend behavior and legacy Admin RPCs remain unchanged.
+- `supabase/tests/local_validation_anteiku.sql`: Adds Milestone 29E.8B validation for Owner/global context, linked Owner-auth switched to Member active profile no-admin inheritance, scoped Leader/Admin context, admin-without-permissions context, restricted/disabled denial, payload privacy, existing Admin CP legacy behavior, and active Owner count.
+- Production status: migration `20260531000900_active_admin_context_foundation.sql` is applied, local validation passed with the Active Admin Context block at `13 PASS / 0 FAIL / 0 SKIP`, production dry-run/apply/DB verification passed, and no frontend deploy was needed.
+
 ## Milestone 29E.7 Audit Actor Active-Profile Alignment
 
 - `supabase/migrations/20260531000800_active_profile_audit_actor_alignment.sql`: Redefines only `submit_gvg_vote(...)` to keep active-profile GvG vote behavior and add sanitized `gvg_vote_submitted` audit rows with selected active profile as actor/target.

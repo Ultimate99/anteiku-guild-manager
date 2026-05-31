@@ -1,5 +1,23 @@
 # Session Log
 
+## 2026-05-31 - Milestone 29E.8B Active Admin Context Foundation
+
+- Implemented backend-only Active Admin Context foundation.
+- Added migration `supabase/migrations/20260531000900_active_admin_context_foundation.sql`.
+- Added private helper `private.get_active_admin_context()`.
+- Added public RPC `get_my_active_admin_context()`.
+- The new RPC resolves selected active profile identity through `private.get_active_profile_id()`.
+- The returned payload is safe admin context only: active profile id, profile slug/username, IGN, guild id/name/slug, role flags, staff/admin booleans, permission keys, scoped guild ids, status fields, and `can_access_admin_panel`.
+- Preserved existing AdminPanel frontend behavior and all existing Admin RPC/action behavior.
+- Preserved Admin CP, Analytics, Audit Logs, Permissions, Member Management, GvG admin, Owner Tools, and CP visibility behavior.
+- Local DB reset passed through the new migration.
+- Full local validation passed; the Active Admin Context block reported `13 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` was skipped because no frontend/runtime source changed.
+- Production dry-run showed only `20260531000900_active_admin_context_foundation.sql`.
+- Production migration apply passed and remote migration list shows `20260531000900` applied.
+- Production DB verification confirmed RPC/helper presence, authenticated public RPC execute, private helper non-execute, Owner global context, active Owner count `1`, and simulated normal-member direct `member_cp`/`cp_snapshots` reads returned zero rows.
+- No frontend deploy was needed.
+
 ## 2026-05-31 - Milestone 29E.7 Audit Actor Active-Profile Alignment
 
 - Implemented a focused audit actor alignment migration for active-profile member GvG vote submit/update only.

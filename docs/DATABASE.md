@@ -1,10 +1,26 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and production-applied through `20260531000800_active_profile_audit_actor_alignment.sql`.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and production-applied through `20260531000900_active_admin_context_foundation.sql`.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
-Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, own Profile Ghoul Rep display, Public Member Profiles, Ranking Public Profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, active-profile 3v3 RPCs, active-profile Push RPCs, active-profile Own CP RPCs, active-profile member GvG voting RPCs, and active-profile GvG vote audit actor alignment are implemented, locally validated, production applied, and production-smoke or production-gate validated.
+Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, own Profile Ghoul Rep display, Public Member Profiles, Ranking Public Profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, active-profile 3v3 RPCs, active-profile Push RPCs, active-profile Own CP RPCs, active-profile member GvG voting RPCs, active-profile GvG vote audit actor alignment, and active-admin context foundation are implemented, locally validated, production applied, and production-smoke or production-gate validated.
+
+## Active Admin Context Foundation
+
+Migration `20260531000900_active_admin_context_foundation.sql` is applied and verified in production.
+
+Schema/RPC behavior:
+- Adds `private.get_active_admin_context()`.
+- Adds `get_my_active_admin_context()`.
+- Resolves the selected active profile through `private.get_active_profile_id()`.
+- Returns safe admin context: active profile id, username/profile slug, IGN, guild id/name/slug, role flags, staff/admin booleans, permission keys, scoped guild ids, status fields, and `can_access_admin_panel`.
+
+Boundaries:
+- AdminPanel frontend visibility is not migrated yet.
+- Existing Admin RPCs/actions remain legacy `auth.uid()` based.
+- Admin CP, Analytics, Audit Logs, Permissions, Member Management, GvG admin, Owner Tools, and CP visibility are unchanged.
+- Payload contains no CP values, `member_cp`, `cp_snapshots`, email/auth data, audit contents, private metadata, or admin target data.
 
 ## Active Profile Audit Actor Alignment
 

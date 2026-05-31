@@ -1,5 +1,26 @@
 # Security Rules
 
+## Active Admin Context Foundation Security Rules
+
+Milestone 29E.8B Active Admin Context foundation is live in production through `20260531000900_active_admin_context_foundation.sql`.
+
+Rules:
+- `get_my_active_admin_context()` may report only safe admin context for the backend-resolved selected active profile.
+- The RPC must resolve identity through `private.get_active_profile_id()`.
+- Member/non-staff active profiles must not inherit Owner/Admin authority from another linked profile.
+- Owner/global authority is indicated only when the selected active profile is an active approved Owner.
+- Scoped staff context must stay scoped to the selected active profile's guild and actual permission keys.
+- Existing AdminPanel frontend visibility and legacy Admin RPC/action behavior remain unchanged until separately approved.
+
+Privacy:
+- The active-admin context payload must not include normal CP values, `member_cp`, `cp_snapshots`, CP history/growth, email/auth data, audit contents, admin target data, private metadata, service-role data, or frontend-supplied authority.
+- Admin CP, Analytics, Audit Logs, Permissions, Member Management, GvG admin, Owner Tools, and CP visibility remain legacy/unmigrated until future approved milestones.
+
+Validation status:
+- Local validation passed with the Active Admin Context block at `13 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed only `20260531000900_active_admin_context_foundation.sql`; production apply/list verification passed.
+- Production DB verification confirmed public/private RPC grants, Owner global context, active Owner count `1`, and simulated normal-member direct CP table protection.
+
 ## Active Profile Audit Actor Security Rules
 
 Milestone 29E.7 audit actor active-profile alignment is live in production through `20260531000800_active_profile_audit_actor_alignment.sql` and commit `c48a3e9 feat: align active profile audit actor`.

@@ -9886,6 +9886,316 @@ begin
 end;
 $$;
 
+create temp table if not exists milestone_active_admin_context_results (
+  section text not null,
+  test_name text not null,
+  status text not null check (status in ('PASS', 'FAIL', 'SKIP')),
+  details text
+) on commit drop;
+
+do $$
+declare
+  anteiku_id constant uuid := '00000000-0000-0000-0000-000000000101';
+  owner_id constant uuid := '10000000-0000-0000-0000-000000000001';
+  leader_id constant uuid := '10000000-0000-0000-0000-000000000002';
+  admin_cp_id constant uuid := '10000000-0000-0000-0000-000000000005';
+  active_admin_member_id constant uuid := '10000000-0000-0000-0000-000000000120';
+  active_admin_plain_id constant uuid := '10000000-0000-0000-0000-000000000121';
+  active_admin_disabled_id constant uuid := '10000000-0000-0000-0000-000000000122';
+  active_admin_restricted_id constant uuid := '10000000-0000-0000-0000-000000000123';
+  payload jsonb;
+  row_count integer;
+  owner_count integer;
+begin
+  begin
+    insert into auth.users (
+      instance_id,
+      id,
+      aud,
+      role,
+      email,
+      encrypted_password,
+      email_confirmed_at,
+      raw_app_meta_data,
+      raw_user_meta_data,
+      created_at,
+      updated_at
+    )
+    values
+      ('00000000-0000-0000-0000-000000000000', active_admin_member_id, 'authenticated', 'authenticated', 'active-admin-member.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', active_admin_plain_id, 'authenticated', 'authenticated', 'active-admin-plain.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', active_admin_disabled_id, 'authenticated', 'authenticated', 'active-admin-disabled.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', active_admin_restricted_id, 'authenticated', 'authenticated', 'active-admin-restricted.local@example.test', 'local-only', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now())
+    on conflict (id) do nothing;
+
+    insert into public.profiles (id, username, profile_slug, ign, approval_status, approved_at)
+    values
+      (active_admin_member_id, 'active_admin_member', 'active_admin_member', 'Active Admin Member', 'approved', now()),
+      (active_admin_plain_id, 'active_admin_plain', 'active_admin_plain', 'Active Admin Plain', 'approved', now()),
+      (active_admin_disabled_id, 'active_admin_disabled', 'active_admin_disabled', 'Active Admin Disabled', 'approved', now()),
+      (active_admin_restricted_id, 'active_admin_restricted', 'active_admin_restricted', 'Active Admin Restricted', 'approved', now())
+    on conflict (id) do update
+    set username = excluded.username,
+        profile_slug = excluded.profile_slug,
+        ign = excluded.ign,
+        approval_status = excluded.approval_status,
+        approved_at = excluded.approved_at;
+
+    insert into public.guild_memberships (profile_id, guild_id, role, membership_status, roster_status, is_primary, assigned_by)
+    values
+      (active_admin_member_id, anteiku_id, 'member', 'active', 'active', true, owner_id),
+      (active_admin_plain_id, anteiku_id, 'admin', 'active', 'active', true, owner_id),
+      (active_admin_disabled_id, anteiku_id, 'admin', 'active', 'active', true, owner_id),
+      (active_admin_restricted_id, anteiku_id, 'admin', 'active', 'suspended', true, owner_id)
+    on conflict (profile_id, guild_id) do update
+    set role = excluded.role,
+        membership_status = excluded.membership_status,
+        roster_status = excluded.roster_status,
+        is_primary = excluded.is_primary,
+        assigned_by = excluded.assigned_by;
+
+    update public.user_profile_links upl
+    set disabled_at = now(),
+        is_primary = false
+    where upl.profile_id in (active_admin_member_id, active_admin_disabled_id)
+      and upl.disabled_at is null;
+
+    delete from public.user_active_profiles where auth_user_id = owner_id;
+
+    insert into public.user_profile_links (auth_user_id, profile_id, link_type, is_primary, created_by_profile_id)
+    values
+      (owner_id, active_admin_member_id, 'owner', false, owner_id),
+      (owner_id, active_admin_disabled_id, 'owner', false, owner_id);
+
+    insert into milestone_active_admin_context_results values ('setup', 'active_admin_test_profiles_seeded', 'PASS', 'Active-admin context test profiles and links were seeded.');
+  exception when others then
+    insert into milestone_active_admin_context_results values ('setup', 'active_admin_test_profiles_seeded', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    select count(*)
+    into row_count
+    from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public'
+      and p.proname = 'get_my_active_admin_context';
+
+    if row_count = 1 then
+      insert into milestone_active_admin_context_results values ('schema', 'active_admin_context_rpc_exists', 'PASS', 'get_my_active_admin_context exists.');
+    else
+      insert into milestone_active_admin_context_results values ('schema', 'active_admin_context_rpc_exists', 'FAIL', row_count::text || ' matching RPCs found.');
+    end if;
+  exception when others then
+    insert into milestone_active_admin_context_results values ('schema', 'active_admin_context_rpc_exists', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    select count(*)
+    into row_count
+    from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'private'
+      and p.proname = 'get_active_admin_context'
+      and pg_get_functiondef(p.oid) ilike '%private.get_active_profile_id%'
+      and pg_get_functiondef(p.oid) not ilike '%member_cp%'
+      and pg_get_functiondef(p.oid) not ilike '%cp_snapshots%';
+
+    if row_count = 1 then
+      insert into milestone_active_admin_context_results values ('schema', 'active_admin_context_uses_active_profile_without_cp', 'PASS', 'Private helper resolves active profile and has no CP table references.');
+    else
+      insert into milestone_active_admin_context_results values ('schema', 'active_admin_context_uses_active_profile_without_cp', 'FAIL', row_count::text || ' matching helper definitions.');
+    end if;
+  exception when others then
+    insert into milestone_active_admin_context_results values ('schema', 'active_admin_context_uses_active_profile_without_cp', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    delete from public.user_active_profiles where auth_user_id = owner_id;
+
+    payload := public.get_my_active_admin_context();
+
+    if payload->>'can_access_admin_panel' = 'true'
+       and payload->>'is_owner' = 'true'
+       and payload->>'scope' = 'global'
+       and jsonb_array_length(coalesce(payload->'scoped_guild_ids', '[]'::jsonb)) >= 1 then
+      insert into milestone_active_admin_context_results values ('rpc', 'owner_active_context_global_allowed', 'PASS', payload::text);
+    else
+      insert into milestone_active_admin_context_results values ('rpc', 'owner_active_context_global_allowed', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_admin_context_results values ('rpc', 'owner_active_context_global_allowed', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    perform public.set_my_active_profile(active_admin_member_id);
+
+    payload := public.get_my_active_admin_context();
+
+    if payload->>'active_profile_id' = active_admin_member_id::text
+       and payload->>'can_access_admin_panel' = 'false'
+       and payload->>'is_owner' = 'false'
+       and jsonb_array_length(coalesce(payload->'permission_keys', '[]'::jsonb)) = 0 then
+      insert into milestone_active_admin_context_results values ('rpc', 'linked_owner_switched_to_member_no_admin_inheritance', 'PASS', payload::text);
+    else
+      insert into milestone_active_admin_context_results values ('rpc', 'linked_owner_switched_to_member_no_admin_inheritance', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_admin_context_results values ('rpc', 'linked_owner_switched_to_member_no_admin_inheritance', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', leader_id::text, true);
+    delete from public.user_active_profiles where auth_user_id = leader_id;
+
+    payload := public.get_my_active_admin_context();
+
+    if payload->>'can_access_admin_panel' = 'true'
+       and payload->>'is_leader' = 'true'
+       and payload->>'scope' = 'guild'
+       and payload->'scoped_guild_ids' ? anteiku_id::text then
+      insert into milestone_active_admin_context_results values ('rpc', 'leader_context_scoped_to_own_guild', 'PASS', payload::text);
+    else
+      insert into milestone_active_admin_context_results values ('rpc', 'leader_context_scoped_to_own_guild', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_admin_context_results values ('rpc', 'leader_context_scoped_to_own_guild', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', admin_cp_id::text, true);
+    delete from public.user_active_profiles where auth_user_id = admin_cp_id;
+
+    payload := public.get_my_active_admin_context();
+
+    if payload->>'can_access_admin_panel' = 'true'
+       and payload->>'is_admin' = 'true'
+       and payload->'permission_keys' ? 'view_cp'
+       and payload->'permission_keys' ? 'update_cp'
+       and payload->'permission_keys' ? 'approve_members'
+       and payload->'permission_keys' ? 'manage_gvg' then
+      insert into milestone_active_admin_context_results values ('rpc', 'admin_context_returns_actual_permissions', 'PASS', payload::text);
+    else
+      insert into milestone_active_admin_context_results values ('rpc', 'admin_context_returns_actual_permissions', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_admin_context_results values ('rpc', 'admin_context_returns_actual_permissions', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', active_admin_plain_id::text, true);
+    delete from public.user_active_profiles where auth_user_id = active_admin_plain_id;
+
+    payload := public.get_my_active_admin_context();
+
+    if payload->>'can_access_admin_panel' = 'true'
+       and payload->>'is_admin' = 'true'
+       and jsonb_array_length(coalesce(payload->'permission_keys', '[]'::jsonb)) = 0 then
+      insert into milestone_active_admin_context_results values ('rpc', 'admin_without_permissions_returns_empty_keys', 'PASS', payload::text);
+    else
+      insert into milestone_active_admin_context_results values ('rpc', 'admin_without_permissions_returns_empty_keys', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_admin_context_results values ('rpc', 'admin_without_permissions_returns_empty_keys', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', active_admin_restricted_id::text, true);
+    delete from public.user_active_profiles where auth_user_id = active_admin_restricted_id;
+
+    payload := public.get_my_active_admin_context();
+
+    if payload->>'can_access_admin_panel' = 'false'
+       and payload->>'is_staff' = 'false'
+       and payload->>'roster_status' = 'suspended' then
+      insert into milestone_active_admin_context_results values ('eligibility', 'restricted_active_profile_returns_no_admin_access', 'PASS', payload::text);
+    else
+      insert into milestone_active_admin_context_results values ('eligibility', 'restricted_active_profile_returns_no_admin_access', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_admin_context_results values ('eligibility', 'restricted_active_profile_returns_no_admin_access', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    delete from public.user_active_profiles where auth_user_id = owner_id;
+    perform public.set_my_active_profile(active_admin_disabled_id);
+
+    update public.user_profile_links
+    set disabled_at = now()
+    where auth_user_id = owner_id
+      and profile_id = active_admin_disabled_id
+      and disabled_at is null;
+
+    perform public.get_my_active_admin_context();
+    insert into milestone_active_admin_context_results values ('security', 'disabled_link_active_admin_context_denied', 'FAIL', 'Disabled active profile link still returned admin context.');
+  exception when others then
+    insert into milestone_active_admin_context_results values ('security', 'disabled_link_active_admin_context_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    delete from public.user_active_profiles where auth_user_id = owner_id;
+
+    select count(*)
+    into row_count
+    from public.get_current_cp_roster(anteiku_id);
+
+    if row_count > 0 then
+      insert into milestone_active_admin_context_results values ('regression', 'existing_admin_cp_rpc_stays_legacy', 'PASS', 'Existing Admin CP RPC still works for legacy Owner auth identity.');
+    else
+      insert into milestone_active_admin_context_results values ('regression', 'existing_admin_cp_rpc_stays_legacy', 'FAIL', 'Existing Admin CP RPC returned no rows.');
+    end if;
+  exception when others then
+    insert into milestone_active_admin_context_results values ('regression', 'existing_admin_cp_rpc_stays_legacy', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    delete from public.user_active_profiles where auth_user_id = owner_id;
+
+    payload := public.get_my_active_admin_context();
+
+    select count(*)
+    into row_count
+    from jsonb_object_keys(payload) as payload_keys(key)
+    where key in (
+      'email',
+      'auth_user_id',
+      'auth_id',
+      'member_cp',
+      'cp_snapshots',
+      'audit_logs',
+      'admin_private_metadata'
+    );
+
+    if row_count = 0 then
+      insert into milestone_active_admin_context_results values ('security', 'active_admin_context_payload_has_no_private_fields', 'PASS', payload::text);
+    else
+      insert into milestone_active_admin_context_results values ('security', 'active_admin_context_payload_has_no_private_fields', 'FAIL', payload::text);
+    end if;
+  exception when others then
+    insert into milestone_active_admin_context_results values ('security', 'active_admin_context_payload_has_no_private_fields', 'FAIL', sqlerrm);
+  end;
+
+  select count(*)
+  into owner_count
+  from public.guild_memberships gm
+  join public.profiles p on p.id = gm.profile_id
+  where gm.role = 'owner'
+    and gm.membership_status = 'active'
+    and p.approval_status = 'approved';
+
+  if owner_count = 1 then
+    insert into milestone_active_admin_context_results values ('regression', 'active_owner_count_remains_one', 'PASS', 'Exactly one active approved Owner membership exists.');
+  else
+    insert into milestone_active_admin_context_results values ('regression', 'active_owner_count_remains_one', 'FAIL', owner_count::text || ' active approved Owner memberships found.');
+  end if;
+end;
+$$;
+
 select section, test_name, status, details
 from milestone_push_notification_results
 order by section, test_name;
@@ -9957,5 +10267,14 @@ select count(*) filter (where status = 'PASS') as milestone_active_profile_gvg_t
        count(*) filter (where status = 'FAIL') as milestone_active_profile_gvg_total_fail,
        count(*) filter (where status = 'SKIP') as milestone_active_profile_gvg_total_skip
 from milestone_active_profile_gvg_results;
+
+select section, test_name, status, details
+from milestone_active_admin_context_results
+order by section, test_name;
+
+select count(*) filter (where status = 'PASS') as milestone_active_admin_context_total_pass,
+       count(*) filter (where status = 'FAIL') as milestone_active_admin_context_total_fail,
+       count(*) filter (where status = 'SKIP') as milestone_active_admin_context_total_skip
+from milestone_active_admin_context_results;
 
 rollback;

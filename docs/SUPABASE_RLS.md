@@ -1,8 +1,28 @@
 # Supabase RLS
 
-The Supabase RLS/RPC implementation has been validated and production-applied through `20260531000800_active_profile_audit_actor_alignment.sql`.
+The Supabase RLS/RPC implementation has been validated and production-applied through `20260531000900_active_admin_context_foundation.sql`.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
+
+## Active Admin Context Foundation
+
+Milestone 29E.8B Active Admin Context foundation is production-applied through `20260531000900_active_admin_context_foundation.sql`.
+
+Functions:
+- `private.get_active_admin_context()`
+- `get_my_active_admin_context()`
+
+Rules:
+- The public RPC resolves selected-profile identity through `private.get_active_profile_id()`.
+- The private helper is not directly executable by authenticated users.
+- Owner active profiles receive safe global context.
+- Scoped Leader/Vice/Admin active profiles receive scoped context and actual permission keys.
+- Member/non-staff and restricted active profiles receive no admin access.
+- Existing AdminPanel frontend and Admin RPC/action behavior remain unchanged until later migrations.
+
+Privacy:
+- Payloads include no normal CP values, `member_cp`, `cp_snapshots`, email/auth data, audit contents, private metadata, or admin target data.
+- Production verification confirmed active Owner count `1` and simulated normal-member direct reads of `member_cp` and `cp_snapshots` returned zero visible rows.
 
 ## Active Profile Audit Actor Alignment
 

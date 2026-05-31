@@ -1,5 +1,33 @@
 # Supabase RLS
 
+## Milestone 29E.8B Active Admin Context Foundation
+
+Milestone 29E.8B Active Admin Context foundation is implemented, locally validated, and production applied through `20260531000900_active_admin_context_foundation.sql`.
+
+RPC/helper:
+- `private.get_active_admin_context()`
+- `get_my_active_admin_context()`
+
+Rules:
+- The public RPC resolves selected-profile identity through `private.get_active_profile_id()`.
+- Authenticated users may execute only `get_my_active_admin_context()`.
+- Authenticated users cannot execute the private helper directly.
+- Member/non-staff active profiles return `can_access_admin_panel = false` and empty permission/scoped-guild arrays.
+- Owner active profiles return safe global admin context.
+- Scoped Leader/Vice/Admin active profiles return scoped guild context and actual permission keys.
+- Restricted active profiles return no admin access.
+
+Privacy/boundaries:
+- The context payload contains no normal CP values, `member_cp`, `cp_snapshots`, email/auth data, audit contents, private metadata, or admin target data.
+- Existing AdminPanel frontend visibility and all existing Admin RPCs/actions remain legacy until future migrations.
+- Admin CP, Analytics, Audit Logs, Permissions, Member Management, GvG admin, Owner Tools, and CP visibility are unchanged.
+
+Validation:
+- Local reset applied the migration cleanly.
+- Full local validation passed; the Active Admin Context block reported `13 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed only `20260531000900_active_admin_context_foundation.sql`; production migration is applied and remote migration list shows it applied.
+- Production verification confirmed RPC/helper presence, public/private grants, Owner global context, active Owner count `1`, and simulated normal-member direct reads of `member_cp` and `cp_snapshots` returned zero visible rows.
+
 ## Milestone 29E.7 Active Profile Audit Actor Alignment
 
 Milestone 29E.7 audit actor alignment is implemented, locally validated, and production applied through `20260531000800_active_profile_audit_actor_alignment.sql`.

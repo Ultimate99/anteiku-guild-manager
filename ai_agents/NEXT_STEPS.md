@@ -2,18 +2,35 @@
 
 ## Current Recommendation
 
-Milestone 29E.7 audit actor active-profile alignment is live in production and locally/production-gate validated.
+Milestone 29E.8B Active Admin Context foundation is live in production and locally/production-gate validated.
 
 Recommended next step:
-- Plan the next Account Switcher subsystem migration only if the product wants selected-profile identity to affect a specific remaining action surface.
-- Admin permissions/actions, Analytics/Weekly Growth, Ranking/rank badge, own Ghoul Rep, and legacy Admin audit actor behavior still need separate approved backend/RPC/RLS milestones before they can use active-profile identity.
+- Implement the next Admin migration only after explicit approval: AdminPanel shell visibility should load `get_my_active_admin_context()` and use it for display/gating while keeping backend RPCs as authority.
+- Migrate direct admin table reads to active-profile-safe RPC reads before wiring sensitive Admin sections broadly.
+- Admin actions, Admin CP, Analytics/Weekly Growth, Audit Logs, Permissions, Member Management, GvG admin, and Owner Tools still need separate approved backend/RPC/RLS milestones before they use active-profile identity.
 - Keep frontend selected profile ids as UX input only; backend/RPC remains the authority.
 
 Do not yet:
+- Treat the new active-admin context as a full AdminPanel migration.
+- Change AdminPanel visibility until the frontend shell milestone is approved.
+- Change existing Admin RPC/action behavior.
 - Treat frontend-selected profile ids as authority.
 - Use localStorage-only profile switching.
 - Expose normal CP values or private auth/email/admin metadata in switcher payloads.
 - Change active-profile behavior for existing systems without a reviewed RPC/RLS migration.
+
+Recorded Account Switcher 29E.8B status:
+- Production DB has `20260531000900_active_admin_context_foundation.sql` applied after a clean dry-run showing only that migration.
+- Added `get_my_active_admin_context()` as a backend-only foundation RPC for the selected active profile's safe admin context.
+- Added `private.get_active_admin_context()`; authenticated users cannot execute the private helper directly.
+- The RPC returns safe role/scope/permission context and no CP values, `member_cp`, `cp_snapshots`, email/auth data, audit contents, private metadata, or admin target data.
+- Local reset and full validation passed; the new Active Admin Context block reported `13 PASS / 0 FAIL / 0 SKIP`.
+- Production DB verification passed for RPC/helper existence, authenticated public RPC grant, private helper non-execute, Owner global context, active Owner count `1`, and simulated member direct CP table protection.
+- No frontend deploy was needed and AdminPanel remains legacy until the next approved milestone.
+
+## Previous Recommendation
+
+Milestone 29E.7 audit actor active-profile alignment is live in production and locally/production-gate validated.
 
 Recorded Account Switcher 29E.7 status:
 - Commit `c48a3e9 feat: align active profile audit actor` is pushed to `main`; production DB has `20260531000800_active_profile_audit_actor_alignment.sql` applied after a clean dry-run showing only that migration.

@@ -1,5 +1,40 @@
 # Testing And Validation
 
+## Milestone 29E.8B Active Admin Context Foundation Validation
+
+Active Admin Context foundation passed local backend validation, production migration gates, and production DB verification.
+
+Commands/gates:
+- `npx.cmd supabase db reset`
+- `Get-Content -Raw -LiteralPath supabase\tests\local_validation_anteiku.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres -v ON_ERROR_STOP=1`
+- Production `npx.cmd supabase db push --dry-run`
+- Production `npx.cmd supabase db push`
+- Production `npx.cmd supabase migration list`
+- Production read-only/RLS-probe DB verification
+
+Results:
+- Local reset applied through `20260531000900_active_admin_context_foundation.sql`.
+- Full local validation passed.
+- Active Admin Context validation block passed `13 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` was skipped because no frontend/runtime source changed.
+- Production dry-run showed exactly one pending migration: `20260531000900_active_admin_context_foundation.sql`.
+- Production migration is applied and remote migration list shows `20260531000900` applied.
+
+Validated behavior:
+- `get_my_active_admin_context()` exists and is executable by authenticated users.
+- `private.get_active_admin_context()` exists, resolves identity through `private.get_active_profile_id()`, and is not directly executable by authenticated users.
+- Owner active context reports global admin access.
+- Linked Owner-auth switched to Member active profile reports no admin access and no inherited Owner permissions in local validation.
+- Scoped Leader/Admin contexts return scoped/actual permission information.
+- Restricted active profile returns no admin access.
+- Existing Admin CP RPC behavior remains legacy and unchanged.
+
+Security/source validation:
+- New migration has no `member_cp`, `cp_snapshots`, normal CP value reads, service-role, frontend, or localStorage path.
+- RPC payload excludes email/auth data, CP table fields, audit contents, private metadata, and admin target data.
+- Production verification confirmed active Owner count `1` and simulated normal-member direct reads of `member_cp` and `cp_snapshots` returned zero visible rows.
+- AdminPanel frontend, Admin actions, Admin CP, Analytics, Audit Logs, Permissions, Member Management, GvG admin, and Owner Tools were not migrated.
+
 ## Milestone 29E.7 Audit Actor Active-Profile Alignment Validation
 
 Audit actor alignment for active-profile member GvG vote submit/update passed local backend validation, production migration gates, and DB verification.

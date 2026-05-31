@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-05-31 - Milestone 29E.8B Active Admin Context Foundation
+
+- Added backend-only Active Admin Context foundation.
+- New production migration:
+  - `20260531000900_active_admin_context_foundation.sql`
+- Source files changed:
+  - `supabase/migrations/20260531000900_active_admin_context_foundation.sql`
+  - `supabase/tests/local_validation_anteiku.sql`
+- Added `private.get_active_admin_context()`.
+- Added `get_my_active_admin_context()`.
+- The new RPC resolves selected active profile identity through `private.get_active_profile_id()` and returns safe admin context only.
+- Local validation passed with the Active Admin Context block at `13 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run/apply/list verification passed and production DB verification confirmed RPC/helper presence, grants, Owner global context, active Owner count `1`, and direct normal-member CP table protection.
+- `npm.cmd run build` was skipped because no frontend/runtime source changed.
+- No frontend deploy was needed.
+- No AdminPanel frontend visibility, existing Admin RPC/action behavior, Admin CP, Analytics, Audit Logs, Permissions, Member Management, GvG admin, Owner Tools, CP visibility, normal CP table path, or CP privacy behavior was changed.
+
 ## 2026-05-31 - Milestone 29E.7 Audit Actor Active-Profile Alignment
 
 - Aligned audit actor attribution for active-profile member GvG vote submit/update.
