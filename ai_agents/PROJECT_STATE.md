@@ -1,5 +1,37 @@
 # Project State
 
+## Milestone 29E.8D Non-CP Admin Active-Profile Migration Live
+
+Non-CP AdminPanel read/actions now use the backend-resolved active admin profile and are live in production through migration `20260531001000_active_profile_non_cp_admin.sql` and commit `6db48ea feat: migrate non-cp admin actions to active profile`.
+
+Implemented:
+- Added private helper `private.active_admin_profile_id()` around `private.get_active_profile_id()` and `private.get_active_admin_context()`.
+- Added focused active-admin read RPCs: `get_admin_approval_queue()`, `get_admin_member_roster()`, `get_admin_permission_management()`, and `get_admin_gvg_events()`.
+- Migrated non-CP Admin actions for Approvals, Members management, Permissions, GvG Admin, and Owner Cosmetics/Tools to active admin actor identity.
+- Replaced unsafe frontend direct admin table reads for approval queue, member roster, permission management, and manageable GvG events with RPC-only service calls.
+- Updated AdminPanel permission keys and non-CP section gating to use the active admin context already provided by the shell milestone.
+
+Boundaries:
+- Admin CP roster/update/window, CP Ranking, Analytics/Weekly Growth, Audit Logs, CP metadata redaction, and CP-related surfaces were intentionally not migrated in this milestone.
+- Existing CP-heavy Admin RPCs remain out of scope and do not reference `private.active_admin_profile_id()`.
+- No 3v3, Guild Wall, Public Profile, Push, GvG member vote, cosmetics equip, member-status, auth, service-worker/PWA, package, or environment behavior changed.
+
+Security/CP privacy:
+- In-scope non-CP Admin RPCs resolve authority from the selected active profile, not another linked profile's legacy auth role.
+- Linked Owner-auth switched to an active Member is denied non-CP Admin reads/actions in local validation.
+- Scoped staff are guild-scoped by backend RPC checks; Owner retains global authority.
+- Frontend no longer direct-reads `admin_permissions`, `guild_memberships`, `profiles`, or `gvg_events` for the migrated non-CP Admin data paths.
+- No normal CP values, `member_cp`, `cp_snapshots`, CP RPCs, service-role path, localStorage authority, arbitrary frontend actor `profile_id`, email/auth data, or private admin metadata were added.
+
+Validation:
+- Local `npx.cmd supabase db reset` passed through `20260531001000_active_profile_non_cp_admin.sql`.
+- Full local validation passed; the new non-CP active-admin block reported `20 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production dry-run showed exactly `20260531001000_active_profile_non_cp_admin.sql`; production apply/list verification passed.
+- Production DB verification confirmed migration applied, expected RPCs exist, 14/14 action RPCs use active-admin helper with no CP refs, CP-heavy Admin RPCs have 0 active-admin helper refs, private helper is not directly executable, active Owner count is `1`, and simulated authenticated direct `member_cp`/`cp_snapshots` reads returned zero rows.
+- Production bundle verification found the new Admin RPC strings, and authenticated Owner smoke loaded Approvals, Members, Permissions, GvG Admin, and Owner Tools without production mutation.
+- Browser log still contains an old stale Supabase refresh-token entry from an older bundle URL, but no functional Admin blocker was found.
+
 ## Milestone 29E.8C Active Admin Shell Context Live
 
 AdminPanel shell visibility now uses the backend-resolved active admin context and is live in production through commit `4689b64 feat: use active admin context for admin shell`.

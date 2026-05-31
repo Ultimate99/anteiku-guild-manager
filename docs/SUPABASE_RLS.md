@@ -1,8 +1,38 @@
 # Supabase RLS
 
-The Supabase RLS/RPC implementation has been validated and production-applied through `20260531000900_active_admin_context_foundation.sql`.
+The Supabase RLS/RPC implementation has been validated and production-applied through `20260531001000_active_profile_non_cp_admin.sql`.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
+
+## Non-CP Admin Active Profile RLS/RPC
+
+Milestone 29E.8D Non-CP Admin active-profile migration is production-applied through `20260531001000_active_profile_non_cp_admin.sql`.
+
+Functions:
+- `private.active_admin_profile_id()`
+- `get_admin_approval_queue()`
+- `get_admin_member_roster()`
+- `get_admin_permission_management()`
+- `get_admin_gvg_events()`
+
+Rules:
+- Migrated non-CP Admin reads/actions resolve authority from the backend-selected active profile.
+- The private helper wraps `private.get_active_profile_id()` plus active admin context and is not directly executable by authenticated users.
+- Owner active profiles retain global non-CP Admin authority.
+- Scoped staff are limited by active profile guild/permission scope.
+- Active Member/restricted profiles are denied non-CP Admin authority.
+
+Migrated surfaces:
+- Approvals.
+- Members management.
+- Permissions.
+- GvG Admin.
+- Owner Tools / Owner Cosmetics.
+
+Privacy:
+- Admin CP roster/update/window, CP Ranking, Analytics/Weekly Growth, Audit Logs, and CP metadata redaction are intentionally not migrated here.
+- No migrated non-CP Admin RPC references `member_cp` or `cp_snapshots`.
+- Production verification confirmed active Owner count `1`, CP-heavy Admin RPCs remain unmigrated, and simulated authenticated direct `member_cp`/`cp_snapshots` reads returned zero rows.
 
 ## Active Admin Context Foundation
 

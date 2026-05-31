@@ -1,5 +1,35 @@
 # Testing
 
+## Milestone 29E.8D Non-CP Admin Active Profile
+
+Non-CP Admin active-profile migration passed local validation, build/source validation, production rollout gates, DB verification, and authenticated production AdminPanel smoke.
+
+Results:
+- Local DB reset applied through `20260531001000_active_profile_non_cp_admin.sql`.
+- Full local validation passed; the new non-CP active-admin block reported `20 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production dry-run showed only `20260531001000_active_profile_non_cp_admin.sql`.
+- Production migration is applied and remote migration list shows `20260531001000` applied.
+- Commit `6db48ea feat: migrate non-cp admin actions to active profile` is pushed to `main`.
+
+Production verification:
+- Expected non-CP Admin read/action RPCs exist.
+- 14/14 in-scope action RPCs use `private.active_admin_profile_id()` and have no CP table references.
+- Private active-admin helper is not directly executable by authenticated users.
+- CP-heavy Admin RPCs remain unmigrated for this milestone.
+- Active Owner count remains `1`.
+- Simulated authenticated direct reads of `member_cp` and `cp_snapshots` returned zero visible rows.
+
+Production smoke:
+- Signed-in Owner AdminPanel opened from the deployed bundle.
+- Approvals, Members, Permissions, GvG Admin, and Owner Tools loaded without production mutation.
+- Browser log still contained one old stale Supabase refresh-token entry from an older bundle URL, but no functional Admin blocker was found.
+
+Security/source validation:
+- Migrated frontend non-CP Admin reads use RPC-only services.
+- No direct `member_cp`/`cp_snapshots`, CP RPC, service-role path, localStorage authority, or arbitrary frontend actor profile id was added.
+- Admin CP, CP Ranking, Analytics/Weekly Growth, Audit Logs, and CP metadata redaction were intentionally not migrated.
+
 ## Milestone 29E.8C Active Admin Shell Context
 
 Active Admin Shell Context passed build/source validation and limited authenticated production smoke.

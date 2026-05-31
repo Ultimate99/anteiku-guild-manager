@@ -2,21 +2,35 @@
 
 ## Current Recommendation
 
-Milestone 29E.8C Active Admin Shell Context is live in production and build/source/production-smoke validated.
+Milestone 29E.8D Non-CP Admin active-profile migration is live in production and locally/build/production-gate validated.
 
 Recommended next step:
-- Plan a separately approved Admin active-profile migration for AdminPanel section reads/actions, starting with the safest bounded surface.
-- Migrate direct admin table reads to active-profile-safe RPC reads before wiring sensitive Admin sections broadly.
-- Admin actions, Admin CP, Analytics/Weekly Growth, Audit Logs, Permissions, Member Management, GvG admin, and Owner Tools still need separate approved backend/RPC/RLS milestones before they use active-profile identity.
+- Plan the remaining CP-sensitive Admin active-profile migration separately.
+- Remaining Admin areas to review/migrate later: Admin CP roster/update/window, CP Ranking, Analytics/Weekly Growth, Audit Logs, and CP audit metadata redaction.
+- Keep CP surfaces backend-gated by existing CP permissions until their own active-profile-safe RPC/RLS milestone is approved.
 - Keep frontend selected profile ids as UX input only; backend/RPC remains the authority.
 
 Do not yet:
-- Treat the active-admin shell gate as a full AdminPanel migration.
-- Change existing Admin RPC/action behavior.
+- Treat 29E.8D as a CP/Admin Analytics/Audit migration.
+- Change Admin CP/Analytics/Audit Log behavior without a new approved milestone.
 - Treat frontend-selected profile ids as authority.
 - Use localStorage-only profile switching.
 - Expose normal CP values or private auth/email/admin metadata in switcher payloads.
 - Change active-profile behavior for existing systems without a reviewed RPC/RLS migration.
+
+Recorded Account Switcher 29E.8D status:
+- Commit `6db48ea feat: migrate non-cp admin actions to active profile` is pushed to `main` and production serves the updated bundle.
+- Production DB has `20260531001000_active_profile_non_cp_admin.sql` applied after a clean dry-run showing only that migration.
+- New focused read RPCs cover approval queue, member roster, permission management, and manageable GvG events.
+- Non-CP Admin action RPCs for Approvals, Members, Permissions, GvG Admin, and Owner Tools now resolve actor/authority through `private.active_admin_profile_id()`.
+- Frontend service paths for those non-CP sections are RPC-only and no longer direct-read the relevant admin tables.
+- Local validation passed with the new block at `20 PASS / 0 FAIL / 0 SKIP`; build passed.
+- Production DB verification passed for RPC presence/body guards, active Owner count `1`, private helper non-execute, CP-heavy Admin RPCs remaining unmigrated, and direct CP table protection.
+- Production smoke passed read-only for Owner AdminPanel non-CP sections: Approvals, Members, Permissions, GvG Admin, and Owner Tools. No production Admin mutation was performed.
+
+## Previous Recommendation
+
+Milestone 29E.8C Active Admin Shell Context is live in production and build/source/production-smoke validated.
 
 Recorded Account Switcher 29E.8C status:
 - Commit `4689b64 feat: use active admin context for admin shell` is pushed to `main` and production serves the updated bundle.

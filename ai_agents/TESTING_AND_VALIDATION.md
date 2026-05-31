@@ -1,5 +1,43 @@
 # Testing And Validation
 
+## Milestone 29E.8D Non-CP Admin Active-Profile Migration Validation
+
+Non-CP Admin active-profile migration passed local backend validation, frontend build/source validation, production migration gates, production DB verification, and authenticated production smoke.
+
+Commands/gates:
+- `npx.cmd supabase db reset`
+- `Get-Content -Raw -LiteralPath supabase\tests\local_validation_anteiku.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres -v ON_ERROR_STOP=1`
+- `npm.cmd run build`
+- Production `npx.cmd supabase db push --dry-run`
+- Production `npx.cmd supabase db push`
+- Production `npx.cmd supabase migration list`
+- Production read-only/RLS-probe DB verification
+- `git push origin main`
+- Authenticated production AdminPanel smoke
+
+Results:
+- Local reset applied through `20260531001000_active_profile_non_cp_admin.sql`.
+- Full local validation passed.
+- Milestone 29E.8D non-CP active-admin block passed `20 PASS / 0 FAIL / 0 SKIP`.
+- Build passed with the existing Vite chunk-size warning only.
+- Production dry-run showed exactly one pending migration: `20260531001000_active_profile_non_cp_admin.sql`.
+- Production migration is applied and remote migration list shows `20260531001000` applied.
+- Commit `6db48ea feat: migrate non-cp admin actions to active profile` is pushed to `main`.
+
+Validated behavior:
+- `get_admin_approval_queue`, `get_admin_member_roster`, `get_admin_permission_management`, and `get_admin_gvg_events` exist and are active-admin scoped.
+- 14/14 in-scope non-CP Admin action RPCs use `private.active_admin_profile_id()` and have no `member_cp`/`cp_snapshots` references.
+- Linked Owner-auth switched to an active Member is denied non-CP Admin reads/actions in local validation.
+- Scoped Leader/Admin tests are guild-scoped for roster, permissions, and GvG Admin.
+- Owner Cosmetics grant helper remains Owner-only and active-admin scoped.
+- Production smoke loaded Approvals, Members, Permissions, GvG Admin, and Owner Tools without data-changing clicks.
+
+Security/source validation:
+- Touched frontend services use RPCs for migrated non-CP Admin reads and no longer direct-read `admin_permissions`, `guild_memberships`, `profiles`, or `gvg_events`.
+- Source checks found no `member_cp`, `cp_snapshots`, service-role path, localStorage authority, or CP RPC usage in the touched non-CP Admin paths.
+- Admin CP roster/update/window, CP Ranking, Analytics/Weekly Growth, Audit Logs, and CP audit metadata redaction were intentionally not migrated.
+- Production verification confirmed CP-heavy Admin RPCs have `0` active-admin helper refs, active Owner count is `1`, and simulated authenticated direct reads of `member_cp` and `cp_snapshots` returned zero rows.
+
 ## Milestone 29E.8C Active Admin Shell Context Validation
 
 Active Admin Shell Context passed build/source validation and limited authenticated production smoke.

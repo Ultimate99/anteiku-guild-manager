@@ -1,10 +1,25 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and production-applied through `20260531000900_active_admin_context_foundation.sql`.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and production-applied through `20260531001000_active_profile_non_cp_admin.sql`.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
-Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, own Profile Ghoul Rep display, Public Member Profiles, Ranking Public Profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, active-profile 3v3 RPCs, active-profile Push RPCs, active-profile Own CP RPCs, active-profile member GvG voting RPCs, active-profile GvG vote audit actor alignment, and active-admin context foundation are implemented, locally validated, production applied, and production-smoke or production-gate validated.
+Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, own Profile Ghoul Rep display, Public Member Profiles, Ranking Public Profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, active-profile 3v3 RPCs, active-profile Push RPCs, active-profile Own CP RPCs, active-profile member GvG voting RPCs, active-profile GvG vote audit actor alignment, active-admin context foundation, and non-CP Admin active-profile RPCs are implemented, locally validated, production applied, and production-smoke or production-gate validated.
+
+## Non-CP Admin Active Profile
+
+Migration `20260531001000_active_profile_non_cp_admin.sql` is applied and verified in production.
+
+Schema/RPC behavior:
+- Adds private helper `private.active_admin_profile_id()`.
+- Adds read RPCs `get_admin_approval_queue()`, `get_admin_member_roster()`, `get_admin_permission_management()`, and `get_admin_gvg_events()`.
+- Migrates non-CP Admin actions for Approvals, Members, Permissions, GvG Admin, and Owner Tools to active admin identity.
+
+Security:
+- Migrated RPCs resolve role/guild/permission authority through the selected active profile.
+- Scoped staff remain backend-scoped; active Members/restricted profiles are denied.
+- Admin CP roster/update/window, CP Ranking, Analytics/Weekly Growth, Audit Logs, and CP metadata redaction are intentionally out of scope.
+- No normal CP, `member_cp`, `cp_snapshots`, CP RPC data, service-role path, localStorage authority, or arbitrary frontend actor profile id was added.
 
 ## Active Admin Context Foundation
 

@@ -1,5 +1,29 @@
 # Security Rules
 
+## Non-CP Admin Active-Profile Security Rules
+
+Milestone 29E.8D Non-CP Admin active-profile migration is live in production through `20260531001000_active_profile_non_cp_admin.sql` and commit `6db48ea feat: migrate non-cp admin actions to active profile`.
+
+Rules:
+- In-scope non-CP Admin reads/actions must resolve admin authority from the backend-selected active profile through `private.active_admin_profile_id()`.
+- `private.active_admin_profile_id()` must remain private and unavailable for direct authenticated execution.
+- Migrated read RPCs are `get_admin_approval_queue()`, `get_admin_member_roster()`, `get_admin_permission_management()`, and `get_admin_gvg_events()`.
+- Migrated action surfaces are Approvals, Members management, Permissions, GvG Admin, and Owner Tools / Owner Cosmetics.
+- Active normal Member profiles must not inherit non-CP Admin reads/actions from a linked Owner/Admin auth account.
+- Scoped staff must remain backend-scoped to their selected active profile's guild and permission keys.
+- Owner global behavior remains available only when the selected active profile is an active approved Owner.
+
+Privacy:
+- Frontend must use RPC-only paths for migrated non-CP Admin data and must not direct-read `admin_permissions`, `guild_memberships`, `profiles`, or `gvg_events` for those paths.
+- This milestone must not touch Admin CP roster/update/window, CP Ranking, Analytics/Weekly Growth, Audit Logs, CP metadata redaction, or CP-related surfaces.
+- Migrated non-CP Admin paths must not reference or expose normal CP, `member_cp`, `cp_snapshots`, CP history/growth, CP RPC payloads, email/auth data, service-role keys, localStorage authority, arbitrary frontend actor profile ids, or private admin metadata.
+
+Validation status:
+- Local validation passed with the non-CP active-admin block at `20 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed only `20260531001000_active_profile_non_cp_admin.sql`; production apply/list verification passed.
+- Production DB verification confirmed expected RPCs, 14/14 action RPC active-helper coverage with no CP refs, private helper non-execute, CP-heavy Admin RPCs unmigrated, active Owner count `1`, and simulated authenticated direct `member_cp`/`cp_snapshots` reads returning zero rows.
+- Production Owner smoke loaded Approvals, Members, Permissions, GvG Admin, and Owner Tools without production mutation.
+
 ## Active Admin Shell Context Security Rules
 
 Milestone 29E.8C Active Admin Shell Context is live in production through commit `4689b64 feat: use active admin context for admin shell`.

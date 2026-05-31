@@ -1,5 +1,30 @@
 # Changelog
 
+## 2026-05-31 - Milestone 29E.8D Non-CP Admin Active Profile
+
+- Migrated non-CP AdminPanel reads/actions to backend-resolved active admin identity.
+- New production migration:
+  - `20260531001000_active_profile_non_cp_admin.sql`
+- Commit deployed:
+  - `6db48ea feat: migrate non-cp admin actions to active profile`
+- Source files changed:
+  - `supabase/migrations/20260531001000_active_profile_non_cp_admin.sql`
+  - `supabase/tests/local_validation_anteiku.sql`
+  - `src/pages/AdminPanel.jsx`
+  - `src/services/adminApprovalService.js`
+  - `src/services/adminMemberService.js`
+  - `src/services/adminPermissionService.js`
+  - `src/services/gvgService.js`
+- Added active-admin read RPCs for approval queue, member roster, permission management, and manageable GvG events.
+- Migrated non-CP action RPCs for Approvals, Members, Permissions, GvG Admin, and Owner Tools to `private.active_admin_profile_id()`.
+- Replaced unsafe frontend direct admin table reads with RPC-only service calls for migrated non-CP sections.
+- Local validation passed with the new non-CP active-admin block at `20 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Production dry-run/apply/list verification passed and production DB verification confirmed RPC presence/body guards, private helper non-execute, active Owner count `1`, CP-heavy Admin RPCs unmigrated, and direct CP table protection.
+- Production smoke loaded Approvals, Members, Permissions, GvG Admin, and Owner Tools without data-changing clicks.
+- Admin CP roster/update/window, CP Ranking, Analytics/Weekly Growth, Audit Logs, CP metadata redaction, and all CP surfaces remain intentionally out of scope for a future approved milestone.
+- No CP exposure, `member_cp`, `cp_snapshots`, service-role path, localStorage authority, arbitrary frontend actor profile id, or unrelated subsystem behavior change was added.
+
 ## 2026-05-31 - Milestone 29E.8C Active Admin Shell Context
 
 - Wired AdminPanel shell visibility to the backend-resolved active admin context.

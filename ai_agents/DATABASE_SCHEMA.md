@@ -2,6 +2,8 @@
 
 ## Current Backend Status
 
+Milestone 29E.8D Non-CP Admin active-profile migration is applied and verified in production through `20260531001000_active_profile_non_cp_admin.sql`. It switches Approvals, Members management, Permissions, GvG Admin, Owner Tools, and focused non-CP Admin read RPCs to active-admin identity while leaving Admin CP, CP Ranking, Analytics/Weekly Growth, Audit Logs, and CP metadata redaction intentionally unchanged.
+
 Milestone 29E.8B Active Admin Context foundation is applied and verified in production through `20260531000900_active_admin_context_foundation.sql`. It adds `get_my_active_admin_context()` as a backend-only safe context RPC for the selected active profile while preserving existing AdminPanel frontend behavior and all legacy Admin RPC/action behavior.
 
 Milestone 29E.7 Audit Actor active-profile alignment is applied and verified in production through `20260531000800_active_profile_audit_actor_alignment.sql`. It adds sanitized `gvg_vote_submitted` audit logging to active-profile member GvG vote submit/update, with actor/target set to the selected active profile, while preserving legacy Admin GvG/Admin/Analytics audit attribution and CP privacy.
@@ -40,7 +42,7 @@ Staging and production both have this migration applied and verified. Future new
 
 ## Production Deployment Status
 
-Production Supabase is live and migrated through the active-admin context foundation migration. Member Status, CP Update Window / Member CP Self-Submit, CP Leaderboard, Rank Badge / Profile Border, Cosmetics, Premium Cosmetics, Owner Cosmetics, Admin Analytics, Live CP Growth, 3v3 Team Finder, Guild Wall, Global Wall, Ghoul Rep backend support, Public Member Profiles, Ranking public profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, active-profile 3v3 RPCs, active-profile Push RPCs, active-profile Own CP RPCs, active-profile GvG member voting RPCs, active-profile GvG vote audit actor alignment, and active-admin context foundation are applied and verified in production.
+Production Supabase is live and migrated through the non-CP Admin active-profile migration. Member Status, CP Update Window / Member CP Self-Submit, CP Leaderboard, Rank Badge / Profile Border, Cosmetics, Premium Cosmetics, Owner Cosmetics, Admin Analytics, Live CP Growth, 3v3 Team Finder, Guild Wall, Global Wall, Ghoul Rep backend support, Public Member Profiles, Ranking public profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, active-profile 3v3 RPCs, active-profile Push RPCs, active-profile Own CP RPCs, active-profile GvG member voting RPCs, active-profile GvG vote audit actor alignment, active-admin context foundation, and non-CP Admin active-profile RPCs are applied and verified in production.
 
 Current local migration order:
 
@@ -86,6 +88,22 @@ Current local migration order:
 40. `20260531000700_active_profile_gvg_voting.sql`
 41. `20260531000800_active_profile_audit_actor_alignment.sql`
 42. `20260531000900_active_admin_context_foundation.sql`
+43. `20260531001000_active_profile_non_cp_admin.sql`
+
+## Non-CP Admin Active Profile
+
+Migration `20260531001000_active_profile_non_cp_admin.sql` is applied and verified in production.
+
+RPC/helper behavior:
+- Adds private `private.active_admin_profile_id()`.
+- Adds active-admin read RPCs `get_admin_approval_queue()`, `get_admin_member_roster()`, `get_admin_permission_management()`, and `get_admin_gvg_events()`.
+- Redefines non-CP Admin action RPCs for Approvals, Members management, Permissions, GvG Admin, and Owner Tools to resolve actor/authority through the active admin profile.
+- Uses active role/guild/permission context and backend guild scoping for all migrated non-CP Admin behavior.
+
+Boundaries:
+- Admin CP roster/update/window, CP Ranking, Analytics/Weekly Growth, Audit Logs, and CP metadata redaction are intentionally not migrated by this schema change.
+- Existing CP-heavy Admin RPCs remain out of scope and have no `private.active_admin_profile_id()` references.
+- No `member_cp`, `cp_snapshots`, CP value, service-role, localStorage, or frontend-supplied actor profile authority is introduced.
 
 ## Active Admin Context Foundation
 

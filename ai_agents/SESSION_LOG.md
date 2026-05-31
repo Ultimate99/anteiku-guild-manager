@@ -1,5 +1,27 @@
 # Session Log
 
+## 2026-05-31 - Milestone 29E.8D Non-CP Admin Active-Profile Migration
+
+- Implemented a focused non-CP Admin active-profile migration.
+- Added migration `supabase/migrations/20260531001000_active_profile_non_cp_admin.sql`.
+- Added private helper `private.active_admin_profile_id()`.
+- Added active-admin read RPCs for approval queue, member roster, permission management, and manageable GvG events.
+- Redefined non-CP Admin action RPCs for Approvals, Members management, Permissions, GvG Admin, and Owner Tools / Owner Cosmetics to use active admin actor identity.
+- Updated `src/services/adminApprovalService.js`, `src/services/adminMemberService.js`, `src/services/adminPermissionService.js`, and `src/services/gvgService.js` so migrated Admin reads use RPC-only paths instead of direct admin table reads.
+- Updated `src/pages/AdminPanel.jsx` so permission keys/non-CP section context come from the active admin context.
+- Preserved Admin CP roster/update/window, CP Ranking, Analytics/Weekly Growth, Audit Logs, CP metadata redaction, and CP privacy behavior.
+- Local DB reset passed through the new migration.
+- Full local validation passed; the non-CP active-admin block reported `20 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no `member_cp`, `cp_snapshots`, CP RPC, service-role, localStorage authority, or direct migrated admin table reads in the touched paths.
+- Production dry-run showed only `20260531001000_active_profile_non_cp_admin.sql`.
+- Production migration apply passed and remote migration list shows `20260531001000` applied.
+- Production DB verification confirmed expected RPCs, 14/14 active-helper action RPCs with no CP refs, private helper non-execute, CP-heavy Admin RPCs unmigrated, active Owner count `1`, and direct CP table protection.
+- Commit `6db48ea feat: migrate non-cp admin actions to active profile` was pushed to `main`.
+- Production bundle verification confirmed the deployed app contains the new Admin RPC wrappers.
+- Authenticated Owner production smoke loaded Approvals, Members, Permissions, GvG Admin, and Owner Tools without data-changing clicks.
+- Browser console still contained one old stale Supabase refresh-token entry from an older bundle URL; no functional Admin blocker was found.
+
 ## 2026-05-31 - Milestone 29E.8C Active Admin Shell Context
 
 - Implemented frontend-only AdminPanel shell visibility using the live active admin context RPC.

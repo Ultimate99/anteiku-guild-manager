@@ -1,5 +1,43 @@
 # Supabase RLS
 
+## Milestone 29E.8D Non-CP Admin Active Profile RLS/RPC
+
+Milestone 29E.8D Non-CP Admin active-profile migration is implemented, locally validated, and production applied through `20260531001000_active_profile_non_cp_admin.sql`.
+
+RPC/helper:
+- `private.active_admin_profile_id()`
+- `get_admin_approval_queue()`
+- `get_admin_member_roster()`
+- `get_admin_permission_management()`
+- `get_admin_gvg_events()`
+
+Rules:
+- The private helper resolves the selected active profile through `private.get_active_profile_id()` and `private.get_active_admin_context()`.
+- The private helper requires `can_access_admin_panel = true` and is not directly executable by authenticated users.
+- Migrated non-CP Admin reads/actions use active-profile role, guild scope, and permission keys.
+- Owner active profiles retain global non-CP Admin authority.
+- Scoped Leader/Vice/Admin active profiles are limited to their assigned guild and allowed permissions.
+- Active Member/restricted profiles are denied non-CP Admin reads/actions.
+
+Migrated actions:
+- Registration approve/reject.
+- Member IGN update, username/profile slug reset, role assignment, guild transfer, and roster status update.
+- Admin permission grant/revoke.
+- GvG event create/status/results Admin paths.
+- Owner Cosmetics grant by key or slug.
+
+Privacy/boundaries:
+- Admin CP roster/update/window, CP Ranking, Analytics/Weekly Growth, Audit Logs, and CP metadata redaction remain intentionally out of scope.
+- Migrated RPCs have no `member_cp` or `cp_snapshots` references.
+- CP-heavy Admin RPCs do not reference `private.active_admin_profile_id()` in this milestone.
+- Frontend migrated reads are RPC-only and do not direct-read admin tables for approval/member/permission/GvG event data.
+
+Validation:
+- Local reset applied the migration cleanly.
+- Full local validation passed; the non-CP active-admin block reported `20 PASS / 0 FAIL / 0 SKIP`.
+- Production dry-run showed only `20260531001000_active_profile_non_cp_admin.sql`; production migration is applied and remote migration list shows it applied.
+- Production verification confirmed expected RPCs, helper/grant posture, action body guards, active Owner count `1`, and simulated authenticated direct reads of `member_cp` and `cp_snapshots` returned zero visible rows.
+
 ## Milestone 29E.8B Active Admin Context Foundation
 
 Milestone 29E.8B Active Admin Context foundation is implemented, locally validated, and production applied through `20260531000900_active_admin_context_foundation.sql`.

@@ -1,5 +1,16 @@
 # Code Index
 
+## Milestone 29E.8D Non-CP Admin Active Profile
+
+- `supabase/migrations/20260531001000_active_profile_non_cp_admin.sql`: Adds `private.active_admin_profile_id()`, active-admin read RPCs for approval queue/member roster/permission management/GvG events, and active-admin rewrites for non-CP Admin action RPCs.
+- `supabase/tests/local_validation_anteiku.sql`: Adds Milestone 29E.8D validation for active-admin read RPCs, active-helper action coverage, linked Owner-auth active Member denial, scoped staff guild boundaries, Owner Cosmetics active-owner enforcement, CP-heavy Admin RPC non-migration, direct CP table protection, and active Owner count.
+- `src/services/adminApprovalService.js`: Replaces direct approval queue table reads with `get_admin_approval_queue()`.
+- `src/services/adminMemberService.js`: Replaces direct member roster reads with `get_admin_member_roster()` while keeping active guild option lookup display-only.
+- `src/services/adminPermissionService.js`: Replaces permission catalog/target/permission-row table reads with `get_admin_permission_management()`.
+- `src/services/gvgService.js`: Replaces manageable GvG event direct reads with `get_admin_gvg_events()` while keeping guild option lookup display-only.
+- `src/pages/AdminPanel.jsx`: Uses active admin context permission keys and active-role/guild context for the migrated AdminPanel sections.
+- Production status: migration `20260531001000_active_profile_non_cp_admin.sql` is applied, commit `6db48ea feat: migrate non-cp admin actions to active profile` is deployed, local validation passed `20 PASS / 0 FAIL / 0 SKIP`, build/source validation passed, production dry-run/apply/DB verification passed, and production Owner smoke loaded Approvals/Members/Permissions/GvG Admin/Owner Tools without mutation.
+
 ## Milestone 29E.8C Active Admin Shell Context
 
 - `src/services/adminContextService.js`: Adds RPC-only `loadMyActiveAdminContext()` for `get_my_active_admin_context`, maps safe active admin context fields, and defensively rejects unexpected CP value keys.
