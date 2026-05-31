@@ -5,10 +5,10 @@ import { StatusBadge } from '../components/StatusBadge.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import {
-  equipMyAvatar,
-  equipMyFrame,
+  equipMyActiveAvatar,
+  equipMyActiveFrame,
   formatCosmeticLabel,
-  loadMyCosmetics,
+  loadMyActiveCosmetics,
 } from '../services/cosmeticsService.js';
 import { rosterStatusTone } from '../services/adminMemberService.js';
 import { loadMyCpRankSummary } from '../services/cpRankBadgeService.js';
@@ -19,7 +19,7 @@ import {
   loadMyCpUpdateWindow,
   submitMyCpUpdate,
 } from '../services/cpWindowService.js';
-import { loadMyGhoulRep, updateMyProfile } from '../services/profileService.js';
+import { loadMyActiveProfileDetails, loadMyGhoulRep, updateMyActiveProfile } from '../services/profileService.js';
 import {
   createMyTestPushNotification,
   disablePushSubscription,
@@ -71,6 +71,10 @@ export function Profile() {
   const [saving, setSaving] = useState(false);
   const [profileMessage, setProfileMessage] = useState('');
   const [profileError, setProfileError] = useState('');
+  const [activeProfileDetails, setActiveProfileDetails] = useState(null);
+  const [activeProfileChecked, setActiveProfileChecked] = useState(false);
+  const [activeProfileLoading, setActiveProfileLoading] = useState(false);
+  const [activeProfileError, setActiveProfileError] = useState('');
   const [cpState, setCpState] = useState(null);
   const [cpWindowState, setCpWindowState] = useState(null);
   const [cpDraft, setCpDraft] = useState('');
@@ -105,7 +109,29 @@ export function Profile() {
   const [accountSwitchingProfileId, setAccountSwitchingProfileId] = useState('');
   const [accountMessage, setAccountMessage] = useState('');
   const [accountError, setAccountError] = useState('');
-  const rosterStatus = membership?.roster_status ?? 'active';
+  const legacyProfileId = profile?.id ?? null;
+  const activeProfileId = activeProfileDetails?.profileId ?? null;
+  const activeProfileReady = activeProfileChecked && Boolean(activeProfileId);
+  const activeProfileMatchesLegacy = activeProfileReady && activeProfileId === legacyProfileId;
+  const activeProfileDiffersFromLegacy = activeProfileReady && Boolean(legacyProfileId) && activeProfileId !== legacyProfileId;
+  const canUseLegacyOwnProfileStats = activeProfileReady && activeProfileMatchesLegacy;
+  const displayProfile = activeProfileDetails ?? {
+    profileId: profile?.id ?? null,
+    username: profile?.username ?? '',
+    profileSlug: profile?.profile_slug ?? '',
+    ign: profile?.ign ?? '',
+    approvalStatus: profile?.approval_status ?? '',
+    guildName: guild?.name ?? '',
+    role: membership?.role ?? '',
+    rosterStatus: membership?.roster_status ?? '',
+  };
+  const displayRosterStatus = displayProfile?.rosterStatus || membership?.roster_status || 'active';
+  const displayRole = displayProfile?.role || membership?.role || 'member';
+  const displayApprovalStatus = displayProfile?.approvalStatus || profile?.approval_status || 'approved';
+  const displayGuildName = displayProfile?.guildName || guild?.name || '';
+  const displayProfileSlug = displayProfile?.profileSlug || displayProfile?.username || '';
+  const displayIgn = displayProfile?.ign || '';
+  const rosterStatus = displayRosterStatus;
   const rankVisualKey = rankSummary?.visualKey ?? 'unranked';
   const canSubmitCp = Boolean(cpWindowState?.can_submit);
   const pushConfigured = Boolean(VAPID_PUBLIC_KEY);
@@ -114,16 +140,63 @@ export function Profile() {
     cpWindowState?.reason === 'not_eligible_roster_status' ? t('profile.cpNotEligible') : t('profile.cpWindowClosed');
 
   useEffect(() => {
-    if (!isEditing) {
-      setIgnDraft(profile?.ign ?? '');
+    let cancelled = false;
+
+    async function loadProfileDetails() {
+      if (!profile?.id) {
+        setActiveProfileDetails(null);
+        setActiveProfileError('');
+        setActiveProfileChecked(false);
+        return;
+      }
+
+      setActiveProfileLoading(true);
+      setActiveProfileError('');
+
+      try {
+        const nextProfileDetails = await loadMyActiveProfileDetails();
+
+        if (!cancelled) {
+          setActiveProfileDetails(nextProfileDetails);
+          setActiveProfileChecked(true);
+        }
+      } catch (loadError) {
+        if (!cancelled) {
+          setActiveProfileDetails(null);
+          setActiveProfileChecked(true);
+          setActiveProfileError(loadError.message || t('accountSwitcher.activeProfileLoadError'));
+        }
+      } finally {
+        if (!cancelled) {
+          setActiveProfileLoading(false);
+        }
+      }
     }
-  }, [isEditing, profile?.ign]);
+
+    loadProfileDetails();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [profile?.id, t]);
+
+  useEffect(() => {
+    if (!isEditing) {
+      setIgnDraft(displayIgn);
+    }
+  }, [displayIgn, isEditing]);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadCpPanel() {
-      if (!profile?.id || !membership?.id) {
+      if (!canUseLegacyOwnProfileStats || !membership?.id) {
+        setCpState(null);
+        setCpWindowState(null);
+        setCpDraft('');
+        setCpError('');
+        setCpMessage('');
+        setCpLoading(false);
         return;
       }
 
@@ -157,13 +230,16 @@ export function Profile() {
     return () => {
       cancelled = true;
     };
-  }, [membership?.id, profile?.id, t]);
+  }, [canUseLegacyOwnProfileStats, membership?.id, t]);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadRankBadge() {
-      if (!profile?.id || !membership?.id) {
+      if (!canUseLegacyOwnProfileStats || !membership?.id) {
+        setRankSummary(null);
+        setRankError('');
+        setRankLoading(false);
         return;
       }
 
@@ -193,13 +269,15 @@ export function Profile() {
     return () => {
       cancelled = true;
     };
-  }, [membership?.id, profile?.id]);
+  }, [canUseLegacyOwnProfileStats, membership?.id]);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadGhoulRepStat() {
-      if (!profile?.id || !membership?.id) {
+      if (!canUseLegacyOwnProfileStats || !membership?.id) {
+        setGhoulRep(null);
+        setGhoulRepLoading(false);
         return;
       }
 
@@ -227,13 +305,16 @@ export function Profile() {
     return () => {
       cancelled = true;
     };
-  }, [membership?.id, profile?.id]);
+  }, [canUseLegacyOwnProfileStats, membership?.id]);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadCosmeticsPanel() {
-      if (!profile?.id || !membership?.id) {
+      if (!activeProfileReady || !membership?.id) {
+        setCosmeticsState(null);
+        setCosmeticsError('');
+        setCosmeticsLoading(false);
         return;
       }
 
@@ -241,7 +322,7 @@ export function Profile() {
       setCosmeticsError('');
 
       try {
-        const nextCosmeticsState = await loadMyCosmetics();
+        const nextCosmeticsState = await loadMyActiveCosmetics();
 
         if (!cancelled) {
           setCosmeticsState(nextCosmeticsState);
@@ -263,7 +344,7 @@ export function Profile() {
     return () => {
       cancelled = true;
     };
-  }, [membership?.id, profile?.id, t]);
+  }, [activeProfileReady, membership?.id, t]);
 
   useEffect(() => {
     if (!cosmeticsPickerOpen) {
@@ -302,14 +383,14 @@ export function Profile() {
   }, [settingsOpen]);
 
   function startEditing() {
-    setIgnDraft(profile?.ign ?? '');
+    setIgnDraft(displayIgn);
     setProfileMessage('');
     setProfileError('');
     setIsEditing(true);
   }
 
   function cancelEditing() {
-    setIgnDraft(profile?.ign ?? '');
+    setIgnDraft(displayIgn);
     setProfileError('');
     setIsEditing(false);
   }
@@ -329,6 +410,29 @@ export function Profile() {
     refreshAccountSwitcher();
   }
 
+  async function refreshActiveProfileDetails({ showError = true } = {}) {
+    setActiveProfileLoading(true);
+    if (showError) {
+      setActiveProfileError('');
+    }
+
+    try {
+      const nextProfileDetails = await loadMyActiveProfileDetails();
+      setActiveProfileDetails(nextProfileDetails);
+      setActiveProfileChecked(true);
+      return nextProfileDetails;
+    } catch (loadError) {
+      setActiveProfileDetails(null);
+      setActiveProfileChecked(true);
+      if (showError) {
+        setActiveProfileError(loadError.message || t('accountSwitcher.activeProfileLoadError'));
+      }
+      return null;
+    } finally {
+      setActiveProfileLoading(false);
+    }
+  }
+
   async function saveProfile(event) {
     event.preventDefault();
     const nextIgn = ignDraft.trim();
@@ -338,16 +442,23 @@ export function Profile() {
       return;
     }
 
+    if (!activeProfileReady) {
+      setProfileError(t('accountSwitcher.activeProfileLoadError'));
+      return;
+    }
+
     setSaving(true);
     setProfileError('');
     setProfileMessage('');
 
     try {
-      await updateMyProfile({
+      const updatedProfile = await updateMyActiveProfile({
         ign: nextIgn,
-        avatarKey: profile?.avatar_key ?? null,
       });
-      await refreshProfile();
+      setActiveProfileDetails(updatedProfile);
+      if (activeProfileMatchesLegacy) {
+        await refreshProfile();
+      }
       setProfileMessage(t('profile.ignUpdated'));
       setIsEditing(false);
     } catch (saveError) {
@@ -358,6 +469,16 @@ export function Profile() {
   }
 
   async function refreshCpPanel({ showMessage = false } = {}) {
+    if (!canUseLegacyOwnProfileStats) {
+      setCpState(null);
+      setCpWindowState(null);
+      setCpDraft('');
+      setCpMessage('');
+      setCpError('');
+      setCpLoading(false);
+      return;
+    }
+
     setCpLoading(true);
     setCpError('');
     if (!showMessage) {
@@ -380,6 +501,10 @@ export function Profile() {
   }
 
   async function refreshCosmeticsPanel({ showMessage = false } = {}) {
+    if (!activeProfileReady) {
+      return;
+    }
+
     setCosmeticsLoading(true);
     setCosmeticsError('');
     if (!showMessage) {
@@ -387,7 +512,7 @@ export function Profile() {
     }
 
     try {
-      const nextCosmeticsState = await loadMyCosmetics();
+      const nextCosmeticsState = await loadMyActiveCosmetics();
       setCosmeticsState(nextCosmeticsState);
       if (showMessage) {
         setCosmeticsMessage(t('profile.cosmeticsUpdated'));
@@ -610,8 +735,12 @@ export function Profile() {
     setCosmeticsMessage('');
 
     try {
-      await equipMyAvatar(avatarKey);
-      await Promise.all([refreshCosmeticsPanel({ showMessage: true }), refreshProfile()]);
+      await equipMyActiveAvatar(avatarKey);
+      await Promise.all([
+        refreshCosmeticsPanel({ showMessage: true }),
+        refreshActiveProfileDetails({ showError: false }),
+        activeProfileMatchesLegacy ? refreshProfile() : Promise.resolve(null),
+      ]);
     } catch (equipError) {
       setCosmeticsError(equipError.message || t('profile.cosmeticsSaveError'));
     } finally {
@@ -633,8 +762,11 @@ export function Profile() {
     setCosmeticsMessage('');
 
     try {
-      await equipMyFrame(frameKey);
-      await refreshCosmeticsPanel({ showMessage: true });
+      await equipMyActiveFrame(frameKey);
+      await Promise.all([
+        refreshCosmeticsPanel({ showMessage: true }),
+        refreshActiveProfileDetails({ showError: false }),
+      ]);
     } catch (equipError) {
       setCosmeticsError(equipError.message || t('profile.cosmeticsSaveError'));
     } finally {
@@ -644,6 +776,12 @@ export function Profile() {
 
   async function saveCp(event) {
     event.preventDefault();
+
+    if (!canUseLegacyOwnProfileStats) {
+      setCpError(t('profile.cpSwitchingPending'));
+      return;
+    }
+
     const nextCpValue = cpDraft.trim();
 
     if (!nextCpValue) {
@@ -670,8 +808,10 @@ export function Profile() {
     }
   }
 
-  const equippedAvatar = findCosmeticByKey(cosmeticsState?.avatars, cosmeticsState?.equipped?.avatarKey);
-  const equippedFrame = findCosmeticByKey(cosmeticsState?.frames, cosmeticsState?.equipped?.frameKey);
+  const activeAvatarFallback = activeProfileDetails?.avatar?.assetPath ? activeProfileDetails.avatar : null;
+  const activeFrameFallback = activeProfileDetails?.frame?.assetPath ? activeProfileDetails.frame : null;
+  const equippedAvatar = findCosmeticByKey(cosmeticsState?.avatars, cosmeticsState?.equipped?.avatarKey) ?? activeAvatarFallback;
+  const equippedFrame = findCosmeticByKey(cosmeticsState?.frames, cosmeticsState?.equipped?.frameKey) ?? activeFrameFallback;
   const cosmeticActionBusy = Boolean(cosmeticsSavingKey) || cosmeticsLoading;
 
   return (
@@ -688,17 +828,20 @@ export function Profile() {
         <div className="profile-summary-main">
           <div className="profile-identity-stack">
             <div className="profile-title-block">
-              <h3>{profile?.ign ?? t('dashboard.memberFallback')}</h3>
-              <p>@{profile?.username ?? t('common.unknown')}</p>
+              <h3>{displayIgn || t('dashboard.memberFallback')}</h3>
+              <p>@{displayProfileSlug || t('common.unknown')}</p>
             </div>
             <div className="status-badge-row">
-              <StatusBadge tone="success">{t(`approvalStatus.${profile?.approval_status ?? 'approved'}`)}</StatusBadge>
+              <StatusBadge tone="success">{t(`approvalStatus.${displayApprovalStatus}`)}</StatusBadge>
               <StatusBadge tone={rosterStatusTone(rosterStatus)}>{t(`roster.status.${rosterStatus}.label`)}</StatusBadge>
+              {activeProfileDiffersFromLegacy ? <StatusBadge tone="warning">{t('profile.activeProfile')}</StatusBadge> : null}
             </div>
           </div>
           <div className="profile-identity-actions">
-            <RankBadge className="profile-rank-badge" compact summary={rankSummary} loading={rankLoading} error={rankError} />
-            {ghoulRep !== null || ghoulRepLoading ? (
+            {canUseLegacyOwnProfileStats ? (
+              <RankBadge className="profile-rank-badge" compact summary={rankSummary} loading={rankLoading} error={rankError} />
+            ) : null}
+            {canUseLegacyOwnProfileStats && (ghoulRep !== null || ghoulRepLoading) ? (
               <span className="profile-ghoul-rep-chip" title={t('profile.ghoulRep')}>
                 <strong>{ghoulRepLoading ? '...' : formatProfileNumber(ghoulRep, language)}</strong>
                 <span>{t('profile.ghoulRep')}</span>
@@ -708,9 +851,9 @@ export function Profile() {
               type="button"
               className="secondary-action compact-action profile-customize-action"
               onClick={() => openCosmeticsPicker('avatars')}
-              disabled={cosmeticsLoading && !cosmeticsState}
+              disabled={!activeProfileReady || (cosmeticsLoading && !cosmeticsState)}
             >
-              {cosmeticsLoading && !cosmeticsState ? t('common.loading') : t('cosmetics.customize')}
+              {!activeProfileReady || (cosmeticsLoading && !cosmeticsState) ? t('common.loading') : t('cosmetics.customize')}
             </button>
             <button type="button" className="secondary-action compact-action profile-settings-action" onClick={openSettingsPanel}>
               {t('profile.settings')}
@@ -736,7 +879,7 @@ export function Profile() {
                   {cosmeticsState ? t('profile.cosmeticsReady') : t('common.loading')}
                 </StatusBadge>
                 <h3>{t('cosmetics.customize')}</h3>
-                <p>{t('profile.cosmeticsBody')}</p>
+                <p>{t('profile.cosmeticsForActiveProfile')}</p>
               </div>
               <div className="cosmetic-modal-actions">
                 <button
@@ -1093,6 +1236,7 @@ export function Profile() {
 
         {profileMessage ? <p className="notice-line">{profileMessage}</p> : null}
         {profileError ? <p className="error-line">{profileError}</p> : null}
+        {activeProfileError ? <p className="error-line">{activeProfileError}</p> : null}
         {cpMessage ? <p className="notice-line">{cpMessage}</p> : null}
         {cpError ? <p className="error-line">{cpError}</p> : null}
 
@@ -1100,50 +1244,62 @@ export function Profile() {
           <div className="member-profile-block member-profile-cp-block">
             <div className="member-profile-block-heading">
               <div>
-                <StatusBadge tone={canSubmitCp ? 'success' : 'warning'}>
-                  {canSubmitCp ? t('admin.cp.windowOpen') : t('admin.cp.windowClosed')}
+                <StatusBadge tone={canUseLegacyOwnProfileStats && canSubmitCp ? 'success' : 'warning'}>
+                  {canUseLegacyOwnProfileStats
+                    ? canSubmitCp
+                      ? t('admin.cp.windowOpen')
+                      : t('admin.cp.windowClosed')
+                    : t('profile.profileLocked')}
                 </StatusBadge>
                 <h4>{t('profile.yourCp')}</h4>
               </div>
-              <button type="button" className="secondary-action compact-action profile-refresh-action" onClick={() => refreshCpPanel()} disabled={cpLoading || cpSubmitting}>
-                {cpLoading ? t('common.loading') : t('common.refresh')}
-              </button>
-            </div>
-
-            <div className="profile-mini-stat-grid">
-              <div>
-                <span>{t('profile.currentCp')}</span>
-                <strong>{formatCpDisplayValue(cpState?.cp_value, t('profile.cpNotEntered'))}</strong>
-              </div>
-              <div>
-                <span>{t('profile.updateWindow')}</span>
-                <strong>{canSubmitCp ? t('admin.cp.windowOpen') : t('admin.cp.windowClosed')}</strong>
-              </div>
-            </div>
-
-            <p className="profile-private-cp-note">{t('profile.privateSelfCpShort')}</p>
-
-            {canSubmitCp ? (
-              <form className="profile-cp-form" onSubmit={saveCp}>
-                <label>
-                  {t('profile.updateCp')}
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    value={cpDraft}
-                    placeholder={t('profile.currentCp')}
-                    onChange={(event) => setCpDraft(event.target.value)}
-                    disabled={cpLoading || cpSubmitting}
-                    required
-                  />
-                </label>
-                <button type="submit" className="primary-action compact-profile-submit" disabled={cpLoading || cpSubmitting}>
-                  {cpSubmitting ? t('common.working') : t('profile.submitCp')}
+              {canUseLegacyOwnProfileStats ? (
+                <button type="button" className="secondary-action compact-action profile-refresh-action" onClick={() => refreshCpPanel()} disabled={cpLoading || cpSubmitting}>
+                  {cpLoading ? t('common.loading') : t('common.refresh')}
                 </button>
-              </form>
+              ) : null}
+            </div>
+
+            {canUseLegacyOwnProfileStats ? (
+              <>
+                <div className="profile-mini-stat-grid">
+                  <div>
+                    <span>{t('profile.currentCp')}</span>
+                    <strong>{formatCpDisplayValue(cpState?.cp_value, t('profile.cpNotEntered'))}</strong>
+                  </div>
+                  <div>
+                    <span>{t('profile.updateWindow')}</span>
+                    <strong>{canSubmitCp ? t('admin.cp.windowOpen') : t('admin.cp.windowClosed')}</strong>
+                  </div>
+                </div>
+
+                <p className="profile-private-cp-note">{t('profile.privateSelfCpShort')}</p>
+
+                {canSubmitCp ? (
+                  <form className="profile-cp-form" onSubmit={saveCp}>
+                    <label>
+                      {t('profile.updateCp')}
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={cpDraft}
+                        placeholder={t('profile.currentCp')}
+                        onChange={(event) => setCpDraft(event.target.value)}
+                        disabled={cpLoading || cpSubmitting}
+                        required
+                      />
+                    </label>
+                    <button type="submit" className="primary-action compact-profile-submit" disabled={cpLoading || cpSubmitting}>
+                      {cpSubmitting ? t('common.working') : t('profile.submitCp')}
+                    </button>
+                  </form>
+                ) : (
+                  <p className="muted-line compact-state-line">{cpWindowMessage}</p>
+                )}
+              </>
             ) : (
-              <p className="muted-line compact-state-line">{cpWindowMessage}</p>
+              <p className="muted-line compact-state-line profile-cp-locked-note">{t('profile.cpSwitchingPending')}</p>
             )}
           </div>
 
@@ -1160,7 +1316,7 @@ export function Profile() {
             <div className="profile-detail-grid">
               <div>
                 <span>{t('profile.username')}</span>
-                <strong>{profile?.profile_slug ?? profile?.username ?? t('common.unknown')}</strong>
+                <strong>{displayProfileSlug || t('common.unknown')}</strong>
                 <small>{t('profile.lockedUsername')}</small>
               </div>
               {isEditing ? (
@@ -1189,21 +1345,21 @@ export function Profile() {
                 <div className="profile-detail-editable-row">
                   <div className="profile-detail-row-title">
                     <span>{t('profile.ign')}</span>
-                    <button type="button" className="secondary-action compact-action profile-row-edit-button" onClick={startEditing}>
+                    <button type="button" className="secondary-action compact-action profile-row-edit-button" onClick={startEditing} disabled={!activeProfileReady || activeProfileLoading}>
                       {t('profile.edit')}
                     </button>
                   </div>
-                  <strong>{profile?.ign ?? t('common.notSet')}</strong>
+                  <strong>{displayIgn || t('common.notSet')}</strong>
                   <small>{t('profile.editableIgn')}</small>
                 </div>
               )}
               <div>
                 <span>{t('profile.guild')}</span>
-                <strong>{guild?.name ?? t('guild.unknown')}</strong>
+                <strong>{displayGuildName || t('guild.unknown')}</strong>
               </div>
               <div>
                 <span>{t('profile.role')}</span>
-                <strong>{t(`roles.${membership?.role ?? 'member'}`)}</strong>
+                <strong>{t(`roles.${displayRole}`)}</strong>
               </div>
               <div>
                 <span>{t('profile.rosterStatus')}</span>
@@ -1212,7 +1368,7 @@ export function Profile() {
               </div>
               <div>
                 <span>{t('profile.profileStatus')}</span>
-                <strong>{t(`approvalStatus.${profile?.approval_status ?? 'approved'}`)}</strong>
+                <strong>{t(`approvalStatus.${displayApprovalStatus}`)}</strong>
               </div>
             </div>
 

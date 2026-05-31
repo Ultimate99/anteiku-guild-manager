@@ -7697,6 +7697,191 @@ begin
 end;
 $$;
 
+create temp table if not exists milestone_active_profile_profile_results (
+  section text not null,
+  test_name text not null,
+  status text not null check (status in ('PASS', 'FAIL', 'SKIP')),
+  details text
+) on commit drop;
+
+do $$
+declare
+  anteiku_id constant uuid := '00000000-0000-0000-0000-000000000101';
+  owner_id constant uuid := '10000000-0000-0000-0000-000000000001';
+  member_id constant uuid := '10000000-0000-0000-0000-000000000006';
+  controller_auth_id constant uuid := '10000000-0000-0000-0000-000000000011';
+  switch_profile_id constant uuid := '10000000-0000-0000-0000-000000000012';
+  pending_id constant uuid := '10000000-0000-0000-0000-000000000007';
+  owner_count integer;
+  switch_ign text;
+  controller_ign text;
+  equipped_avatar text;
+  equipped_frame text;
+  payload jsonb;
+begin
+  begin
+    if to_regprocedure('public.get_my_active_profile_details()') is not null
+       and to_regprocedure('public.update_my_active_profile(text)') is not null
+       and to_regprocedure('public.get_my_active_cosmetics()') is not null
+       and to_regprocedure('public.equip_my_active_avatar(text)') is not null
+       and to_regprocedure('public.equip_my_active_frame(text)') is not null then
+      insert into milestone_active_profile_profile_results values ('schema', 'active_profile_profile_cosmetic_rpcs_exist', 'PASS', 'Active-profile Profile/Cosmetics RPCs exist.');
+    else
+      insert into milestone_active_profile_profile_results values ('schema', 'active_profile_profile_cosmetic_rpcs_exist', 'FAIL', 'One or more active-profile RPCs are missing.');
+    end if;
+  exception when others then
+    insert into milestone_active_profile_profile_results values ('schema', 'active_profile_profile_cosmetic_rpcs_exist', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', member_id::text, true);
+    delete from public.user_active_profiles where auth_user_id = member_id;
+
+    payload := public.get_my_active_profile_details();
+
+    if payload #>> '{profile,profile_id}' = member_id::text
+       and payload::text not ilike '%member_cp%'
+       and payload::text not ilike '%cp_snapshots%'
+       and payload::text not ilike '%cp_value%'
+       and payload::text not ilike '%current_cp%'
+       and payload::text not ilike '%email%'
+       and payload::text not ilike '%admin_permissions%'
+       and payload::text not ilike '%audit%' then
+      insert into milestone_active_profile_profile_results values ('profile', 'single_profile_active_details_safe', 'PASS', payload::text);
+    else
+      insert into milestone_active_profile_profile_results values ('profile', 'single_profile_active_details_safe', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_profile_profile_results values ('profile', 'single_profile_active_details_safe', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    perform public.owner_link_profile_to_auth_user('switch-controller.local@example.test', 'switch_local', 'owner');
+    perform set_config('request.jwt.claim.sub', controller_auth_id::text, true);
+    perform public.set_my_active_profile(switch_profile_id);
+
+    payload := public.get_my_active_profile_details();
+
+    if payload #>> '{profile,profile_id}' = switch_profile_id::text
+       and payload #>> '{profile,is_active_profile}' = 'true' then
+      insert into milestone_active_profile_profile_results values ('profile', 'linked_active_profile_details_selected', 'PASS', payload::text);
+    else
+      insert into milestone_active_profile_profile_results values ('profile', 'linked_active_profile_details_selected', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_profile_profile_results values ('profile', 'linked_active_profile_details_selected', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', controller_auth_id::text, true);
+    payload := public.update_my_active_profile('Switch Active Edited');
+
+    select ign into switch_ign
+    from public.profiles
+    where id = switch_profile_id;
+
+    select ign into controller_ign
+    from public.profiles
+    where id = controller_auth_id;
+
+    if payload #>> '{profile,profile_id}' = switch_profile_id::text
+       and switch_ign = 'Switch Active Edited'
+       and controller_ign is null then
+      insert into milestone_active_profile_profile_results values ('profile', 'update_active_profile_ign_selected_only', 'PASS', payload::text);
+    else
+      insert into milestone_active_profile_profile_results values ('profile', 'update_active_profile_ign_selected_only', 'FAIL', 'switch=' || coalesce(switch_ign, '<null>') || ' controller=' || coalesce(controller_ign, '<null>') || ' payload=' || coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_profile_profile_results values ('profile', 'update_active_profile_ign_selected_only', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', controller_auth_id::text, true);
+    payload := public.get_my_active_cosmetics();
+
+    if payload #>> '{equipped,avatar_key}' is not null
+       and jsonb_typeof(payload -> 'avatars') = 'array'
+       and payload::text not ilike '%member_cp%'
+       and payload::text not ilike '%cp_snapshots%'
+       and payload::text not ilike '%cp_value%'
+       and payload::text not ilike '%email%' then
+      insert into milestone_active_profile_profile_results values ('cosmetics', 'active_cosmetics_selected_profile_safe', 'PASS', payload::text);
+    else
+      insert into milestone_active_profile_profile_results values ('cosmetics', 'active_cosmetics_selected_profile_safe', 'FAIL', coalesce(payload::text, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_profile_profile_results values ('cosmetics', 'active_cosmetics_selected_profile_safe', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', controller_auth_id::text, true);
+    perform public.equip_my_active_avatar('1001_head');
+    perform public.equip_my_active_frame('TXK_frame_reOpen_EN_FREE');
+
+    select avatar_key, frame_key
+    into equipped_avatar, equipped_frame
+    from public.profile_equipped_cosmetics
+    where profile_id = switch_profile_id;
+
+    if equipped_avatar = '1001_head'
+       and equipped_frame = 'TXK_frame_reOpen_EN_FREE'
+       and exists (
+         select 1
+         from public.profiles p
+         where p.id = switch_profile_id
+           and p.avatar_key = '1001_head'
+       ) then
+      insert into milestone_active_profile_profile_results values ('cosmetics', 'equip_active_avatar_frame_selected_only', 'PASS', 'Active profile avatar/frame equipped.');
+    else
+      insert into milestone_active_profile_profile_results values ('cosmetics', 'equip_active_avatar_frame_selected_only', 'FAIL', 'avatar=' || coalesce(equipped_avatar, '<null>') || ' frame=' || coalesce(equipped_frame, '<null>'));
+    end if;
+  exception when others then
+    insert into milestone_active_profile_profile_results values ('cosmetics', 'equip_active_avatar_frame_selected_only', 'FAIL', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', controller_auth_id::text, true);
+    perform public.equip_my_active_frame('TXK_Arena1');
+    insert into milestone_active_profile_profile_results values ('cosmetics', 'locked_manual_frame_denied_without_unlock', 'FAIL', 'Locked frame equipped without active profile unlock.');
+  exception when others then
+    insert into milestone_active_profile_profile_results values ('cosmetics', 'locked_manual_frame_denied_without_unlock', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', pending_id::text, true);
+    perform public.get_my_active_cosmetics();
+    insert into milestone_active_profile_profile_results values ('eligibility', 'pending_active_cosmetics_denied', 'FAIL', 'Pending profile loaded active cosmetics.');
+  exception when others then
+    insert into milestone_active_profile_profile_results values ('eligibility', 'pending_active_cosmetics_denied', 'PASS', sqlerrm);
+  end;
+
+  begin
+    perform set_config('request.jwt.claim.sub', owner_id::text, true);
+    perform public.owner_unlink_profile_from_auth_user('switch-controller.local@example.test', 'switch_local');
+    perform set_config('request.jwt.claim.sub', controller_auth_id::text, true);
+    perform public.get_my_active_profile_details();
+    insert into milestone_active_profile_profile_results values ('security', 'disabled_link_active_profile_denied', 'FAIL', 'Disabled active profile details loaded.');
+  exception when others then
+    insert into milestone_active_profile_profile_results values ('security', 'disabled_link_active_profile_denied', 'PASS', sqlerrm);
+  end;
+
+  select count(*)
+  into owner_count
+  from public.guild_memberships gm
+  join public.profiles p on p.id = gm.profile_id
+  where gm.role = 'owner'
+    and gm.membership_status = 'active'
+    and p.approval_status = 'approved';
+
+  if owner_count = 1 then
+    insert into milestone_active_profile_profile_results values ('regression', 'active_owner_count_remains_one', 'PASS', 'Exactly one active approved Owner membership exists.');
+  else
+    insert into milestone_active_profile_profile_results values ('regression', 'active_owner_count_remains_one', 'FAIL', owner_count::text || ' active approved Owner memberships found.');
+  end if;
+end;
+$$;
+
 select section, test_name, status, details
 from milestone_push_notification_results
 order by section, test_name;
@@ -7714,5 +7899,14 @@ select count(*) filter (where status = 'PASS') as milestone_account_switcher_tot
        count(*) filter (where status = 'FAIL') as milestone_account_switcher_total_fail,
        count(*) filter (where status = 'SKIP') as milestone_account_switcher_total_skip
 from milestone_account_switcher_results;
+
+select section, test_name, status, details
+from milestone_active_profile_profile_results
+order by section, test_name;
+
+select count(*) filter (where status = 'PASS') as milestone_active_profile_profile_total_pass,
+       count(*) filter (where status = 'FAIL') as milestone_active_profile_profile_total_fail,
+       count(*) filter (where status = 'SKIP') as milestone_active_profile_profile_total_skip
+from milestone_active_profile_profile_results;
 
 rollback;

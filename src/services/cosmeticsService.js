@@ -82,9 +82,9 @@ export function formatCosmeticLabel(item, fallbackType = 'Cosmetic') {
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-export async function loadMyCosmetics() {
+async function loadCosmeticsFromRpc(rpcName) {
   const client = requireSupabase();
-  const { data, error } = await client.rpc('get_my_cosmetics');
+  const { data, error } = await client.rpc(rpcName);
 
   if (error) {
     throw error;
@@ -109,6 +109,14 @@ export async function loadMyCosmetics() {
       isEquipped: frame.key === equippedFrameKey || frame.isEquipped,
     })),
   };
+}
+
+export async function loadMyCosmetics() {
+  return loadCosmeticsFromRpc('get_my_cosmetics');
+}
+
+export async function loadMyActiveCosmetics() {
+  return loadCosmeticsFromRpc('get_my_active_cosmetics');
 }
 
 export async function loadGrantableCosmetics() {
@@ -164,6 +172,32 @@ export async function equipMyAvatar(avatarKey) {
 export async function equipMyFrame(frameKey) {
   const client = requireSupabase();
   const { data, error } = await client.rpc('equip_my_frame', {
+    p_frame_key: frameKey,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function equipMyActiveAvatar(avatarKey) {
+  const client = requireSupabase();
+  const { data, error } = await client.rpc('equip_my_active_avatar', {
+    p_avatar_key: avatarKey,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function equipMyActiveFrame(frameKey) {
+  const client = requireSupabase();
+  const { data, error } = await client.rpc('equip_my_active_frame', {
     p_frame_key: frameKey,
   });
 

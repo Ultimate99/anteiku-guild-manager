@@ -2452,6 +2452,12 @@ button.command-card:focus-visible {
   margin: 0;
 }
 
+.profile-cp-locked-note {
+  padding: 10px;
+  border: 1px solid rgba(197, 22, 39, 0.24);
+  background: rgba(197, 22, 39, 0.08);
+}
+
 .profile-detail-row-title {
   display: flex;
   align-items: center;
