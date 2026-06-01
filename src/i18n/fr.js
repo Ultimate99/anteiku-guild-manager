@@ -85,6 +85,13 @@ export const fr = {
     faction: 'Faction',
     noCards: 'Aucune carte',
     noCardsBody: 'Essayez un autre filtre ou actualisez la collection.',
+    smokeGrantTitle: 'Outils smoke Owner',
+    smokeGrantBody: 'Accorde le lot fixe de cartes smoke visuel a votre profil Owner actif.',
+    smokeGrantButton: 'Accorder cartes smoke',
+    smokeGrantReady: 'Cartes smoke pretes',
+    smokeGrantConfirm: 'Accorder les cartes de test smoke a votre profil Owner actif ?',
+    smokeGrantSuccess: 'Cartes smoke accordees. Collection actualisee.',
+    smokeGrantError: 'Echec du grant des cartes smoke.',
     filters: {
       all: 'Tout',
       owned: 'Possedees',

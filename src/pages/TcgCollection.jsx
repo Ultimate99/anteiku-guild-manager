@@ -3,6 +3,7 @@ import { StatusBadge } from '../components/StatusBadge.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import {
   mergeCatalogWithCollection,
+  tcgAdminGrantCard,
   tcgGetCatalog,
   tcgGetMyCollection,
   tcgSetCardFavorite,
@@ -10,6 +11,14 @@ import {
 
 const FILTERS = ['all', 'owned', 'missing', 'favorites'];
 const ALL_RARITIES = 'all';
+const SMOKE_GRANT_REASON = '30C-A owner visual smoke';
+const SMOKE_GRANT_CARDS = [
+  { cardKey: 's0_001_20th_ward_civilian', quantity: 3 },
+  { cardKey: 's0_019_anteiku_server', quantity: 2 },
+  { cardKey: 's0_033_young_one_eyed_ghoul', quantity: 1 },
+  { cardKey: 's0_042_half_mask_awakening', quantity: 1 },
+  { cardKey: 's0_050_anteiku_origin', quantity: 1 },
+];
 
 function formatNumber(value, language) {
   const numericValue = Number(value);
@@ -185,8 +194,11 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
   const [rarityFilter, setRarityFilter] = useState(ALL_RARITIES);
   const [selectedCard, setSelectedCard] = useState(null);
   const [favoriteBusyKey, setFavoriteBusyKey] = useState('');
+  const [smokeGrantLoading, setSmokeGrantLoading] = useState(false);
+  const [smokeGrantMessage, setSmokeGrantMessage] = useState('');
 
   const isOwner = Boolean(activeAdminContext?.isOwner);
+  const activeOwnerProfileId = isOwner ? activeAdminContext?.activeProfileId : null;
 
   const loadCards = useCallback(async () => {
     if (!isOwner) {
@@ -243,6 +255,15 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
     };
   }, [cards]);
 
+  const smokeGrantSatisfied = useMemo(
+    () =>
+      SMOKE_GRANT_CARDS.every((grant) => {
+        const card = cards.find((currentCard) => currentCard.cardKey === grant.cardKey);
+        return card?.quantity >= grant.quantity;
+      }),
+    [cards],
+  );
+
   const visibleCards = useMemo(
     () =>
       cards.filter((card) => {
@@ -294,6 +315,42 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
     }
   }, [t]);
 
+  const handleSmokeGrant = useCallback(async () => {
+    if (!isOwner || !activeOwnerProfileId) {
+      return;
+    }
+
+    const confirmed = window.confirm(t('tcg.smokeGrantConfirm'));
+
+    if (!confirmed) {
+      return;
+    }
+
+    setSmokeGrantLoading(true);
+    setSmokeGrantMessage('');
+    setError('');
+
+    try {
+      for (const grant of SMOKE_GRANT_CARDS) {
+        await tcgAdminGrantCard({
+          targetProfileId: activeOwnerProfileId,
+          cardKey: grant.cardKey,
+          quantity: grant.quantity,
+          reason: SMOKE_GRANT_REASON,
+        });
+      }
+
+      setSmokeGrantMessage(t('tcg.smokeGrantSuccess'));
+      await loadCards();
+      setFilter('owned');
+      setRarityFilter(ALL_RARITIES);
+    } catch (grantError) {
+      setError(getDisplayError(grantError, t('tcg.smokeGrantError')));
+    } finally {
+      setSmokeGrantLoading(false);
+    }
+  }, [activeOwnerProfileId, isOwner, loadCards, t]);
+
   if (activeAdminContextLoading) {
     return (
       <div className="stack">
@@ -331,6 +388,27 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
             {loading ? t('common.refreshing') : t('common.refresh')}
           </button>
         </div>
+      </section>
+
+      <section className="panel tcg-smoke-panel" aria-label={t('tcg.smokeGrantTitle')}>
+        <div>
+          <StatusBadge tone="warning">{t('tcg.ownerPreview')}</StatusBadge>
+          <h3>{t('tcg.smokeGrantTitle')}</h3>
+          <p>{t('tcg.smokeGrantBody')}</p>
+        </div>
+        <button
+          type="button"
+          className="danger-action compact-action"
+          onClick={handleSmokeGrant}
+          disabled={smokeGrantLoading || !activeOwnerProfileId || smokeGrantSatisfied}
+        >
+          {smokeGrantLoading
+            ? t('common.working')
+            : smokeGrantSatisfied
+              ? t('tcg.smokeGrantReady')
+              : t('tcg.smokeGrantButton')}
+        </button>
+        {smokeGrantMessage ? <p className="success-copy">{smokeGrantMessage}</p> : null}
       </section>
 
       <section className="tcg-progress-grid" aria-label={t('tcg.collectionProgress')}>

@@ -6229,6 +6229,30 @@ button.command-card:focus-visible {
   padding: 10px;
 }
 
+.tcg-smoke-panel {
+  display: grid;
+  gap: 10px;
+  padding: 11px;
+  border-color: rgba(196, 30, 58, 0.36);
+  background:
+    linear-gradient(135deg, rgba(196, 30, 58, 0.12), transparent 34%),
+    rgba(12, 12, 14, 0.94);
+}
+
+.tcg-smoke-panel h3 {
+  margin: 7px 0 3px;
+}
+
+.tcg-smoke-panel p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.tcg-smoke-panel .success-copy {
+  color: #8ee4a3;
+  font-weight: 800;
+}
+
 .tcg-filter-row {
   display: flex;
   gap: 7px;

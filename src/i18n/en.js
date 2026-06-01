@@ -85,6 +85,13 @@ export const en = {
     faction: 'Faction',
     noCards: 'No cards found',
     noCardsBody: 'Try another filter or refresh the collection.',
+    smokeGrantTitle: 'Owner smoke tools',
+    smokeGrantBody: 'Grant the fixed visual-smoke card set to your current active Owner profile.',
+    smokeGrantButton: 'Grant smoke cards',
+    smokeGrantReady: 'Smoke cards ready',
+    smokeGrantConfirm: 'Grant smoke-test cards to your current active Owner profile?',
+    smokeGrantSuccess: 'Smoke cards granted. Collection refreshed.',
+    smokeGrantError: 'Smoke card grant failed.',
     filters: {
       all: 'All',
       owned: 'Owned',

@@ -154,3 +154,43 @@ export async function tcgSetCardFavorite(cardKey, isFavorite) {
     updatedAt: row?.updated_at || null,
   };
 }
+
+export async function tcgAdminGrantCard({ targetProfileId, cardKey, quantity, reason }) {
+  const normalizedTargetProfileId = safeString(targetProfileId);
+  const normalizedCardKey = safeString(cardKey);
+  const numericQuantity = Number(quantity);
+
+  if (!normalizedTargetProfileId) {
+    throw new Error('Target profile is required.');
+  }
+
+  if (!normalizedCardKey) {
+    throw new Error('Card key is required.');
+  }
+
+  if (!Number.isInteger(numericQuantity) || numericQuantity <= 0) {
+    throw new Error('Quantity must be positive.');
+  }
+
+  const client = requireSupabase();
+  const { data, error } = await client.rpc('tcg_admin_grant_card', {
+    p_target_profile_id: normalizedTargetProfileId,
+    p_card_key: normalizedCardKey,
+    p_quantity: numericQuantity,
+    p_reason: safeString(reason) || null,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return Array.isArray(data)
+    ? data.map((row) => ({
+      profileId: row?.profile_id || normalizedTargetProfileId,
+      cardKey: safeString(row?.card_key) || normalizedCardKey,
+      quantityAdded: safeNumber(row?.quantity_added),
+      newQuantity: safeNumber(row?.new_quantity),
+      eventId: row?.event_id || null,
+    }))
+    : [];
+}

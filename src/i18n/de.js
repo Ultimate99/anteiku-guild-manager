@@ -85,6 +85,13 @@ export const de = {
     faction: 'Fraktion',
     noCards: 'Keine Karten gefunden',
     noCardsBody: 'Versuche einen anderen Filter oder aktualisiere die Sammlung.',
+    smokeGrantTitle: 'Owner-Smoke-Tools',
+    smokeGrantBody: 'Gewaehrt das feste Visual-Smoke-Kartenset an dein aktuelles aktives Owner-Profil.',
+    smokeGrantButton: 'Smoke-Karten gewaehren',
+    smokeGrantReady: 'Smoke-Karten bereit',
+    smokeGrantConfirm: 'Smoke-Testkarten an dein aktuelles aktives Owner-Profil gewaehren?',
+    smokeGrantSuccess: 'Smoke-Karten gewaehrt. Sammlung aktualisiert.',
+    smokeGrantError: 'Smoke-Kartengrant fehlgeschlagen.',
     filters: {
       all: 'Alle',
       owned: 'Besitz',
