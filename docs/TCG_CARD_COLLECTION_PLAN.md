@@ -1,6 +1,6 @@
 # TCG/Card Collection Plan
 
-Milestone 30A planning started this document. Milestone 30B is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`. Milestone 30C-A Owner-only Card Collection preview UI is deployed through commit `dbb67da feat: add owner tcg collection preview`; Milestone 30C-A2 Owner-only smoke grant control is deployed through commit `e96a489 feat: add owner tcg smoke grant`; Milestone 30C-B album visual polish and repo-served asset-pipeline notes are implemented; Milestone 30C-C adds temporary art for the five smoke-test cards; Milestone 30C-D adds temporary art for all 50 Season 0 cards; Milestone 30D-A adds Owner-only test pack backend/RPC support through `20260601000200_tcg_owner_pack_backend.sql`; Milestone 30D-B adds the Owner-only `/tcg` pack preview UI through commit `fa50b33 feat: add owner tcg pack preview`; Milestone 30E-A adds the Owner-only shop/economy backend through `20260601000300_tcg_owner_shop_economy.sql`; Milestone 30E-B adds the Owner-only `/tcg` shop/economy preview UI through commit `8e7eb73 feat: add owner tcg shop preview`; Milestone 30E-C polishes the Owner-only shop/wallet/pack UX through commit `053f27d style: polish owner tcg shop ux`; Milestone 30E-D adds the compact `/tcg` hub/window layout through commit `d1f4c4a style: add compact tcg hub layout`; Milestone 30F-A adds Owner-only TCG balance/economy/pack analytics backend support through `20260601000400_tcg_owner_balance_report.sql`; Milestone 30F-B adds Owner-only pack inventory backend support through `20260601000500_tcg_owner_pack_inventory.sql`; Milestone 30F-C adds the Owner-only `/tcg` pack inventory/opening UI through commit `ada2b74 feat: add tcg pack inventory opening ui`. Member-facing packs, shop, economy UI, Owner analytics UI, and final approved card artwork remain unimplemented.
+Milestone 30A planning started this document. Milestone 30B is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`. Milestone 30C-A Owner-only Card Collection preview UI is deployed through commit `dbb67da feat: add owner tcg collection preview`; Milestone 30C-A2 Owner-only smoke grant control is deployed through commit `e96a489 feat: add owner tcg smoke grant`; Milestone 30C-B album visual polish and repo-served asset-pipeline notes are implemented; Milestone 30C-C adds temporary art for the five smoke-test cards; Milestone 30C-D adds temporary art for all 50 Season 0 cards; Milestone 30D-A adds Owner-only test pack backend/RPC support through `20260601000200_tcg_owner_pack_backend.sql`; Milestone 30D-B adds the Owner-only `/tcg` pack preview UI through commit `fa50b33 feat: add owner tcg pack preview`; Milestone 30E-A adds the Owner-only shop/economy backend through `20260601000300_tcg_owner_shop_economy.sql`; Milestone 30E-B adds the Owner-only `/tcg` shop/economy preview UI through commit `8e7eb73 feat: add owner tcg shop preview`; Milestone 30E-C polishes the Owner-only shop/wallet/pack UX through commit `053f27d style: polish owner tcg shop ux`; Milestone 30E-D adds the compact `/tcg` hub/window layout through commit `d1f4c4a style: add compact tcg hub layout`; Milestone 30F-A adds Owner-only TCG balance/economy/pack analytics backend support through `20260601000400_tcg_owner_balance_report.sql`; Milestone 30F-B adds Owner-only pack inventory backend support through `20260601000500_tcg_owner_pack_inventory.sql`; Milestone 30F-C adds the Owner-only `/tcg` pack inventory/opening UI through commit `ada2b74 feat: add tcg pack inventory opening ui`; Milestone 30F-D adds temporary pack-front and card-back assets through commit `6bcebab feat: add tcg pack and card back assets`. Member-facing packs, shop, economy UI, Owner analytics UI, and final approved card artwork remain unimplemented.
 
 ## Product Goal
 
@@ -47,8 +47,9 @@ Delayed until later:
 - 30F-A: Owner-only balance/economy/pack analytics backend. Complete and production-applied.
 - 30F-B: Owner-only pack inventory backend. Complete and production-applied.
 - 30F-C: Owner-only frontend wire-up for shop buy-to-inventory and Packs open-owned-pack flow. Complete and deployed.
-- 30F-D: Owner-only TCG analytics UI in the existing `/tcg` Owner area.
-- 30F-E: Member-facing free shop/economy planning after Owner analytics and pack-inventory review.
+- 30F-D: Import temporary Season 0 pack front and card back assets. Complete and deployed.
+- 30F-E: Owner-only TCG analytics UI in the existing `/tcg` Owner area.
+- 30F-F: Member-facing free shop/economy planning after Owner analytics and pack-inventory review.
 - 30G: Admin TCG tools.
 - Later: premium/payment system only after the free economy is stable.
 
@@ -806,6 +807,43 @@ Production:
 - Commit `ada2b74` was pushed to `main` and Vercel served the updated production bundle.
 - Non-mutating production smoke passed: `/tcg?tcg-pack-inventory-smoke=1` returned HTTP 200 and the deployed bundle contained `tcg_get_my_packs`, `tcg_owner_buy_test_pack_to_inventory`, `tcg_owner_open_owned_pack`, `packInventory`, `swipeToRip`, and `packAnimations`.
 - Codex did not click production Buy, Open, Rip, Grant, or Favorite controls.
+- No production wallet, pack inventory, card inventory, or favorite mutation was performed by Codex during this smoke.
+
+## Phase 30F-D Temporary Pack Front + Card Back Assets
+
+Status: complete and deployed through commit `6bcebab feat: add tcg pack and card back assets`.
+
+Assets:
+
+- Pack front: `public/assets/tcg/packs/season0_test_pack_front.png`
+- Card back: `public/assets/tcg/cards/tcg_card_back_season0.png`
+- Added asset READMEs under `public/assets/tcg/packs/` and `public/assets/tcg/cards/`.
+
+Implemented:
+
+- Packs window uses the temporary Season 0 pack-front asset.
+- Pack opening overlay uses the same pack-front asset.
+- Unrevealed pack result cards use the temporary Season 0 card-back asset.
+- If either asset fails to load, the existing CSS/text placeholder fallback remains available.
+- Revealed cards still use backend-returned card art/details.
+- Swipe/rip, `Rip Open`, `Reveal all`, and pack animation setting behavior were preserved.
+
+Validation:
+
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Build output contains the pack-front and card-back files under `dist/assets/tcg/packs/` and `dist/assets/tcg/cards/`.
+- Source validation confirmed no SQL/migration, Supabase/RLS/RPC, service, package, service worker, CP, GvG, Wall, 3v3, Push, Analytics, Ranking, Auth, Approval, or Account Switcher changes.
+- Frontend checks confirmed no direct TCG table access, no `member_cp`, no `cp_snapshots`, no CP analytics RPCs, no client-side drops, and no client-side wallet authority.
+
+Production:
+
+- Commit `6bcebab` was pushed to `main`.
+- Non-mutating production smoke passed:
+  - `/tcg?tcg-assets-smoke=1` returned HTTP 200.
+  - `/assets/tcg/packs/season0_test_pack_front.png` returned HTTP 200 image/png.
+  - `/assets/tcg/cards/tcg_card_back_season0.png` returned HTTP 200 image/png.
+  - Deployed bundle `assets/index-DW84VTFX.js` references both new asset paths and still contains `tcg_get_my_packs` / `tcg_owner_open_owned_pack`.
+- Codex did not click production Buy, Open, Rip, Grant, Grant Coins, or Favorite controls.
 - No production wallet, pack inventory, card inventory, or favorite mutation was performed by Codex during this smoke.
 
 Canonical v0.1 rules:

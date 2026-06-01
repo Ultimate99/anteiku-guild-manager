@@ -1,5 +1,42 @@
 # Project State
 
+## Milestone 30F-D TCG Pack Front + Card Back Assets Live
+
+Owner-only `/tcg` pack visuals now use temporary repo-served Season 0 pack-front and card-back assets, deployed through commit `6bcebab feat: add tcg pack and card back assets`.
+
+Implemented:
+- Added temporary Season 0 pack front at `/assets/tcg/packs/season0_test_pack_front.png`.
+- Added temporary Season 0 card back at `/assets/tcg/cards/tcg_card_back_season0.png`.
+- Packs window and pack opening overlay now show the real pack-front asset with CSS fallback if the image fails.
+- Unrevealed pack result cards now show the temporary card-back asset with CSS fallback if the image fails.
+- Revealed cards still use backend-returned card art/details.
+- Existing swipe/rip gesture, `Rip Open` fallback button, `Reveal all`, and pack animation setting remain unchanged.
+- Added `public/assets/tcg/packs/README.md` and `public/assets/tcg/cards/README.md`.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Build output contains both asset files under `dist/assets/tcg/packs/` and `dist/assets/tcg/cards/`.
+- Source validation found no SQL/migration, Supabase/RLS/RPC, service, package, service worker, CP, GvG, Wall, 3v3, Push, Analytics, Ranking, Auth, Approval, or Account Switcher changes.
+- TCG checks found no direct TCG table access, no `member_cp`, no `cp_snapshots`, no CP analytics RPC usage, no client-side drops, and no client-side wallet authority.
+
+Production:
+- Commit `6bcebab` was pushed to `main`.
+- Non-mutating production smoke passed:
+  - `/tcg?tcg-assets-smoke=1` returned HTTP 200.
+  - `/assets/tcg/packs/season0_test_pack_front.png` returned HTTP 200 image/png with expected byte size.
+  - `/assets/tcg/cards/tcg_card_back_season0.png` returned HTTP 200 image/png with expected byte size.
+  - Deployed bundle `assets/index-DW84VTFX.js` references both new asset paths and still contains `tcg_get_my_packs` / `tcg_owner_open_owned_pack`.
+- Codex did not click production Buy, Open, Rip, Grant, Grant Coins, or Favorite controls, and did not mutate production wallet, pack, card inventory, or favorites.
+
+Security:
+- Existing Owner-only `/tcg` guard and nav visibility remain unchanged.
+- Backend/RPC remains authority for pack quantity, wallet deduction, pack consumption, and card rolls.
+- No member-facing TCG access, CP join, CP value exposure, service-role path, direct table access, upload, Storage, or unrelated subsystem behavior change was added.
+
+Next:
+- Owner can manually smoke improved pack/card-back visuals by buying/opening a pack when mutation testing is approved.
+- Keep member-facing TCG release blocked until Owner inventory-flow acceptance and release gates are separately planned.
+
 ## Milestone 30F-C Owner-Only TCG Pack Inventory UI Live
 
 Owner-only `/tcg` pack inventory frontend support is implemented and deployed through commit `ada2b74 feat: add tcg pack inventory opening ui`.
