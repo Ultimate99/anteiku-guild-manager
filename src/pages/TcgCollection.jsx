@@ -70,6 +70,7 @@ function TcgArt({ card, size = 'card' }) {
         <div className="tcg-art-placeholder" aria-hidden="true">
           <span>{card.cardNo || 'S0'}</span>
           <strong>{card.rarityName || card.rarityKey}</strong>
+          <em>{card.cardName}</em>
         </div>
       )}
     </div>
@@ -90,13 +91,15 @@ function TcgCard({ card, language, t, onSelect, onToggleFavorite, favoriteBusy }
     >
       <button type="button" className="tcg-card-open" onClick={() => onSelect(card)}>
         <TcgArt card={card} />
-        <span className="tcg-card-rarity">{card.rarityName || card.rarityKey}</span>
+        <span className="tcg-card-status-row">
+          <span className="tcg-card-rarity">{card.rarityName || card.rarityKey}</span>
+          <span className="tcg-owned-pill">{owned ? `x${quantityLabel}` : t('tcg.notOwnedYet')}</span>
+        </span>
         <strong>{card.cardName}</strong>
         <small>{card.cardNo}</small>
       </button>
 
       <div className="tcg-card-meta">
-        <span>{owned ? `${t('tcg.quantity')} ${quantityLabel}` : t('tcg.notOwnedYet')}</span>
         <span>{`${t('tcg.collectorValue')} ${valueLabel}`}</span>
       </div>
 
@@ -106,6 +109,7 @@ function TcgCard({ card, language, t, onSelect, onToggleFavorite, favoriteBusy }
           className="tcg-favorite-button"
           data-active={card.isFavorite}
           disabled={favoriteBusy}
+          aria-label={`${card.isFavorite ? t('tcg.favorite') : t('tcg.markFavorite')}: ${card.cardName}`}
           onClick={() => onToggleFavorite(card)}
         >
           {card.isFavorite ? t('tcg.favorite') : t('tcg.markFavorite')}
@@ -126,6 +130,8 @@ function TcgDetailSheet({ card, language, t, onClose, onToggleFavorite, favorite
     <div className="tcg-detail-backdrop" role="presentation" onClick={onClose}>
       <section
         className="tcg-detail-sheet"
+        data-rarity={card.rarityKey || 'common'}
+        data-owned={owned}
         role="dialog"
         aria-modal="true"
         aria-label={card.cardName}

@@ -1,6 +1,6 @@
 # TCG/Card Collection Plan
 
-Milestone 30A planning started this document. Milestone 30B is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`. Milestone 30C-A Owner-only Card Collection preview UI is deployed through commit `dbb67da feat: add owner tcg collection preview`; Milestone 30C-A2 Owner-only smoke grant control is deployed through commit `e96a489 feat: add owner tcg smoke grant`. Pack opening, shop, economy, and the asset pipeline remain unimplemented.
+Milestone 30A planning started this document. Milestone 30B is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`. Milestone 30C-A Owner-only Card Collection preview UI is deployed through commit `dbb67da feat: add owner tcg collection preview`; Milestone 30C-A2 Owner-only smoke grant control is deployed through commit `e96a489 feat: add owner tcg smoke grant`; Milestone 30C-B album visual polish and repo-served asset-pipeline notes are implemented. Pack opening, shop, economy, and generated/real card artwork remain unimplemented.
 
 ## Product Goal
 
@@ -32,7 +32,9 @@ Delayed until later:
 - 30B: Card catalog + inventory backend/RPC. Complete and production-applied.
 - 30C-A: Owner-only Card Collection preview UI. Complete and deployed.
 - 30C-A2: Owner-only smoke grant control. Complete and deployed.
-- 30C-B: Preview polish or member release planning after Owner acceptance.
+- 30C-B: Album visual polish + art asset pipeline notes. Complete.
+- 30C-C: Real art asset add/import after approved artwork exists.
+- 30C-D: Member release planning after Owner acceptance.
 - 30D: Pack opening backend/RPC.
 - 30E: Pack opening animation/UI.
 - 30F: Free shop/economy.
@@ -236,7 +238,18 @@ Recommended structure:
 - `public/assets/tcg/frames/epic_frame.png`
 - `public/assets/tcg/frames/legendary_frame.png`
 - `public/assets/tcg/frames/mythic_frame.png`
-- `public/assets/tcg/art/s0_001_example.png`
+- `public/assets/tcg/art/s0_001_20th_ward_civilian.png`
+- `public/assets/tcg/art/s0_019_anteiku_server.png`
+- `public/assets/tcg/art/s0_033_young_one_eyed_ghoul.png`
+- `public/assets/tcg/art/s0_042_half_mask_awakening.png`
+- `public/assets/tcg/art/s0_050_anteiku_origin.png`
+
+Vite/Vercel asset rule:
+
+- Files placed in `public/assets/tcg/art/` are served at `/assets/tcg/art/...`.
+- Example repo path `public/assets/tcg/art/s0_001_20th_ward_civilian.png` maps to served path `/assets/tcg/art/s0_001_20th_ward_civilian.png`.
+- The database `tcg_cards.art_path` should store the served root path (`/assets/tcg/art/...`), which is already the current Season 0 convention.
+- Do not use Supabase Storage or upload flows for the current Owner preview.
 
 Art guidance:
 
@@ -312,6 +325,33 @@ Expected smoke result:
 - Missing filter: `45` cards
 
 Codex did not click the production button during implementation.
+
+## Phase 30C-B Album Visual Polish + Asset Pipeline
+
+Implemented:
+
+- Premium CSS-only card presentation for `/tcg`.
+- Distinct rarity accents for Common, Uncommon, Rare, Epic, Legendary, and Mythic.
+- Improved missing-art placeholder with card number, rarity, card name, crimson texture, and locked-state treatment.
+- Tighter owned quantity pill and favorite state styling.
+- More polished progress stat cards.
+- Detail sheet rarity styling and stronger metadata layout.
+- Smoke grant panel remains visually marked as testing-only.
+- Added:
+  - `public/assets/tcg/art/README.md`
+  - `public/assets/tcg/frames/README.md`
+
+Validation:
+
+- `npm.cmd run build` passed.
+- Source checks found no direct TCG table reads/writes, no normal CP paths, no service-role path, and no upload/Storage behavior in the TCG page/service path.
+
+Security:
+
+- Owner-only guard unchanged.
+- RPC-only frontend path unchanged.
+- No backend/RPC/SQL changes.
+- No packs, shop, economy, currency, wallet, drop rates, payments, uploads, Storage, or generated images.
 
 Canonical v0.1 rules:
 

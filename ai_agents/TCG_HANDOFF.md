@@ -6,6 +6,7 @@ Milestone 30A planning is complete. No backend, frontend, SQL, Supabase, or prod
 
 - Milestone 30C-A Owner-only Card Collection preview UI is implemented and deployed in production through commit `dbb67da feat: add owner tcg collection preview`.
 - Milestone 30C-A2 Owner-only smoke grant control is implemented and deployed in production through commit `e96a489 feat: add owner tcg smoke grant`.
+- Milestone 30C-B TCG album visual polish and repo-served asset-pipeline notes are implemented.
 - Milestone 30B backend/RPC foundation is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
 - No packs, shop, economy, currency, drop rates, routes beyond `/tcg`, uploads, Storage, or rendered card assets have been implemented.
 - The next step is authenticated Owner/non-Owner preview smoke and then 30C-B planning after Owner acceptance.
@@ -134,6 +135,35 @@ Production smoke status:
 - The button is ready for controlled Owner click.
 - Codex did not perform the production grant mutation during implementation.
 - Expected visual-smoke state after one successful click: Unique owned `5 / 50`, total owned quantity `8`, Owned filter `5`, Missing filter `45`.
+
+## 30C-B Album Visual Polish + Asset Pipeline
+
+Implemented frontend-only:
+
+- Premium collectible-card styling for `/tcg`.
+- Rarity visual accents for Common, Uncommon, Rare, Epic, Legendary, and Mythic through CSS borders/glow/accent lines.
+- Intentional dark missing-art placeholder with card number, rarity, card name, crimson texture, and diagonal locked-state overlay.
+- Owned cards receive stronger border/shadow and compact quantity pill.
+- Missing cards are dimmed but still readable.
+- Favorite action remains compact and accessible.
+- Detail sheet inherits rarity styling and has stronger metadata cards.
+- Progress cards are more game-stat-like.
+- Smoke grant panel remains dashed/testing-only.
+
+Asset location decision:
+
+- Vite/Vercel serves files from `public/` at the site root.
+- Real card inner art should be placed in `public/assets/tcg/art/`.
+- Example repo path: `public/assets/tcg/art/s0_001_20th_ward_civilian.png`.
+- Example served path / database `art_path`: `/assets/tcg/art/s0_001_20th_ward_civilian.png`.
+- Reserved future frame overlays can live in `public/assets/tcg/frames/`.
+- Added README notes in both folders.
+- Do not use Supabase Storage or uploads for the current TCG preview.
+
+Validation:
+
+- `npm.cmd run build` passed.
+- Source checks confirmed no direct TCG table reads/writes, no normal CP paths, no service-role path, and no upload/Storage behavior in the TCG page/service path.
 
 ## 30B RPC Candidates
 

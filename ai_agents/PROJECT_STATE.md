@@ -59,6 +59,35 @@ Smoke status:
 - Codex did not click the button or create a production card ownership mutation during implementation.
 - Expected first successful grant result: Unique owned `5 / 50`, total owned quantity `8`, Owned filter `5` cards, Missing filter `45` cards.
 
+## Milestone 30C-B TCG Album Visual Polish + Asset Pipeline
+
+TCG album visual polish is implemented as frontend-only UI/style plus static asset-pipeline documentation.
+
+Implemented:
+- Polished `/tcg` card grid, card framing, progress stats, rarity accents, owned/missing/favorite states, and detail sheet.
+- Missing-art placeholders now show an intentional dark card treatment with card number, rarity, card name, crimson texture/glow, and locked missing-state overlay.
+- Owned cards use stronger border/shadow treatment and compact quantity pill; missing cards are dimmed but readable.
+- Favorite action remains compact and accessible.
+- Smoke grant panel remains visibly Owner/testing-only.
+- Added repo-served asset folder notes:
+  - `public/assets/tcg/art/README.md`
+  - `public/assets/tcg/frames/README.md`
+
+Asset pipeline:
+- Vite serves files under `public/` from the site root.
+- A file at `public/assets/tcg/art/s0_001_20th_ward_civilian.png` is available at `/assets/tcg/art/s0_001_20th_ward_civilian.png`.
+- TCG `art_path` values should continue to use the root-served `/assets/tcg/art/...` path.
+- No Supabase Storage, upload flow, generated art, or image assets were added.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source checks found no direct TCG table reads/writes, no `member_cp`, no `cp_snapshots`, no normal CP RPCs, no service-role path, and no upload/Storage behavior in the TCG page/service path.
+
+Security:
+- Owner-only `/tcg` nav/page guard remains unchanged.
+- TCG frontend still calls only the approved RPCs: `tcg_get_catalog`, `tcg_get_my_collection`, `tcg_set_card_favorite`, and Owner-only `tcg_admin_grant_card` for the smoke button.
+- No packs, shop, economy, wallet/currency, drop rates, payments, CP/GvG/Wall/3v3/Push/Analytics/Ranking/Auth/Approval/Account Switcher behavior changed.
+
 ## Milestone 30B TCG Catalog + Inventory Backend Production Applied
 
 TCG/Card Collection backend foundation is implemented, locally validated, and applied to production through `20260601000100_tcg_30b_catalog_inventory.sql`.
