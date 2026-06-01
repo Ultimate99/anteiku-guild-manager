@@ -1,6 +1,6 @@
 # TCG/Card Collection Plan
 
-Milestone 30A planning started this document. Milestone 30B is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`. Milestone 30C-A Owner-only Card Collection preview UI is deployed through commit `dbb67da feat: add owner tcg collection preview`; Milestone 30C-A2 Owner-only smoke grant control is deployed through commit `e96a489 feat: add owner tcg smoke grant`; Milestone 30C-B album visual polish and repo-served asset-pipeline notes are implemented; Milestone 30C-C adds temporary art for the five smoke-test cards; Milestone 30C-D adds temporary art for all 50 Season 0 cards; Milestone 30D-A adds Owner-only test pack backend/RPC support through `20260601000200_tcg_owner_pack_backend.sql`; Milestone 30D-B adds the Owner-only `/tcg` pack preview UI through commit `fa50b33 feat: add owner tcg pack preview`; Milestone 30E-A adds the Owner-only shop/economy backend through `20260601000300_tcg_owner_shop_economy.sql`. Member-facing packs, shop, economy UI, and final approved card artwork remain unimplemented.
+Milestone 30A planning started this document. Milestone 30B is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`. Milestone 30C-A Owner-only Card Collection preview UI is deployed through commit `dbb67da feat: add owner tcg collection preview`; Milestone 30C-A2 Owner-only smoke grant control is deployed through commit `e96a489 feat: add owner tcg smoke grant`; Milestone 30C-B album visual polish and repo-served asset-pipeline notes are implemented; Milestone 30C-C adds temporary art for the five smoke-test cards; Milestone 30C-D adds temporary art for all 50 Season 0 cards; Milestone 30D-A adds Owner-only test pack backend/RPC support through `20260601000200_tcg_owner_pack_backend.sql`; Milestone 30D-B adds the Owner-only `/tcg` pack preview UI through commit `fa50b33 feat: add owner tcg pack preview`; Milestone 30E-A adds the Owner-only shop/economy backend through `20260601000300_tcg_owner_shop_economy.sql`; Milestone 30E-B adds the Owner-only `/tcg` shop/economy preview UI through commit `8e7eb73 feat: add owner tcg shop preview`. Member-facing packs, shop, economy UI, and final approved card artwork remain unimplemented.
 
 ## Product Goal
 
@@ -41,7 +41,7 @@ Delayed until later:
 - 30D-B: Owner-only pack opening UI/animation preview. Complete and deployed.
 - 30D-C: Owner pack smoke and balancing feedback.
 - 30E-A: Owner-only shop/economy backend/RPC foundation. Complete and production-applied.
-- 30E-B: Owner-only shop/economy UI preview.
+- 30E-B: Owner-only shop/economy UI preview. Complete and deployed.
 - 30F: Member-facing free shop/economy planning after Owner acceptance.
 - 30G: Admin TCG tools.
 - Later: premium/payment system only after the free economy is stable.
@@ -540,6 +540,37 @@ Production:
   - Simulated authenticated direct reads of `member_cp` and `cp_snapshots` returned zero visible rows.
   - Active Owner count remains `1`.
 - No production Owner coin grant, shop purchase, wallet mutation, or pack purchase smoke was performed without explicit approval.
+
+## Phase 30E-B Owner-Only Shop/Economy UI Preview
+
+Implemented frontend-only:
+
+- Owner-only `TCG Shop Test` panel on `/tcg`.
+- Frontend RPC wrappers:
+  - `tcgGetMyWallet()` -> `tcg_get_my_wallet`
+  - `tcgOwnerGetTestShop()` -> `tcg_owner_get_test_shop`
+  - `tcgOwnerGrantTestCoins(amount = 1000)` -> `tcg_owner_grant_test_coins`
+  - `tcgOwnerBuyTestPack(shopItemCode = 'season_0_test_pack_shop')` -> `tcg_owner_buy_test_pack`
+- Wallet balance display for `Anteiku Coins`.
+- Owner test/dev action `Grant 1000 test coins`.
+- Owner shop item display for `Season 0 Test Pack`, price `100 Anteiku Coins`, and backend-drop note.
+- `Buy Test Pack` action that displays backend-returned pack results and refetches wallet plus collection after success.
+- Reused the existing pack result card reveal UI for shop purchase results.
+- Added EN/FR/DE copy and dark/crimson mobile-first shop styling.
+
+Validation:
+
+- `npm.cmd run build` passed.
+- Source checks found no SQL/migration changes, no direct TCG table reads/writes, no client-side pack drop generation, no `member_cp`/`cp_snapshots` paths in the touched TCG page/service, no service-role path, no payments, and no uploads/Storage.
+- Owner-only guard remains the existing `/tcg` active Owner check; non-Owner direct `/tcg` remains blocked by the page guard.
+
+Production:
+
+- Commit `8e7eb73 feat: add owner tcg shop preview` was pushed to `main`.
+- Vercel deployed bundle `assets/index-Dh0VeSsd.js`.
+- Non-mutating production smoke confirmed `/tcg` returns HTTP `200` and the deployed bundle contains the shop UI plus all four 30E-A shop/economy RPC wrapper names.
+- Codex did not click `Grant 1000 test coins` or `Buy Test Pack` in production.
+- Owner can now perform controlled manual shop-loop smoke: grant test coins, buy the test pack, verify wallet decreases by `100`, verify five backend-returned cards display, and verify collection quantity increases by `+5`.
 
 Canonical v0.1 rules:
 

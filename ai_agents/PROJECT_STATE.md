@@ -1,5 +1,34 @@
 # Project State
 
+## Milestone 30E-B Owner-Only TCG Shop/Economy UI Preview Live
+
+Owner-only TCG shop/economy preview UI is implemented and deployed in production through commit `8e7eb73 feat: add owner tcg shop preview`.
+
+Implemented:
+- Added an Owner-only `TCG Shop Test` panel on `/tcg`.
+- Added frontend RPC wrappers for the 30E-A backend:
+  - `tcgGetMyWallet()` -> `tcg_get_my_wallet`
+  - `tcgOwnerGetTestShop()` -> `tcg_owner_get_test_shop`
+  - `tcgOwnerGrantTestCoins(amount = 1000)` -> `tcg_owner_grant_test_coins`
+  - `tcgOwnerBuyTestPack(shopItemCode = 'season_0_test_pack_shop')` -> `tcg_owner_buy_test_pack`
+- Shows `Anteiku Coins` wallet balance.
+- Shows Owner-test shop item `Season 0 Test Pack`, price `100 Anteiku Coins`.
+- Adds Owner-test actions `Grant 1000 test coins` and `Buy Test Pack`.
+- Displays backend-returned purchase/pack results with the existing pack reveal card UI.
+- Refetches wallet and collection after purchase and switches to Owned.
+- Added EN/FR/DE copy and mobile-first dark/crimson shop styling.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source checks found no SQL/migration/backend changes, no direct TCG table reads/writes, no client-side pack drop calculation, no `member_cp`/`cp_snapshots` paths in touched TCG page/service files, no service-role path, no payments, and no uploads/Storage.
+- Owner-only guard remains the existing `/tcg` active Owner guard; non-Owner direct `/tcg` remains blocked.
+
+Production:
+- Vercel deployed bundle `assets/index-Dh0VeSsd.js`.
+- Non-mutating production smoke confirmed `/tcg` returns HTTP `200` and the deployed bundle contains the shop UI plus RPC wrapper names for `tcg_get_my_wallet`, `tcg_owner_get_test_shop`, `tcg_owner_grant_test_coins`, and `tcg_owner_buy_test_pack`.
+- Codex did not click `Grant 1000 test coins` or `Buy Test Pack` in production.
+- Owner can now test the full shop loop manually: grant test coins, buy a test pack, verify wallet decreases by `100`, verify five backend-returned cards reveal, and verify total collection quantity increases by `+5`.
+
 ## Milestone 30E-A Owner-Only TCG Shop/Economy Backend Live
 
 Owner-only TCG shop/economy backend/RPC foundation is implemented, locally validated, and production-applied through `20260601000300_tcg_owner_shop_economy.sql`.

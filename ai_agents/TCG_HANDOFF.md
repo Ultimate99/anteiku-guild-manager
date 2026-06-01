@@ -12,9 +12,10 @@ Milestone 30A planning is complete. No backend, frontend, SQL, Supabase, or prod
 - Milestone 30D-A adds Owner-only test pack backend/RPC support and is production-applied through `20260601000200_tcg_owner_pack_backend.sql`.
 - Milestone 30D-B adds the Owner-only `/tcg` pack preview/opening UI and is deployed through commit `fa50b33 feat: add owner tcg pack preview`.
 - Milestone 30E-A adds the Owner-only shop/economy backend/RPC foundation and is production-applied through `20260601000300_tcg_owner_shop_economy.sql`.
+- Milestone 30E-B adds the Owner-only `/tcg` shop/economy preview UI and is deployed through commit `8e7eb73 feat: add owner tcg shop preview`.
 - Milestone 30B backend/RPC foundation is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
 - No member-facing packs, shop, economy UI, routes beyond `/tcg`, uploads, or Storage have been implemented.
-- No member-facing TCG release exists yet. The next step is controlled Owner economy/shop UI planning and Owner smoke testing; frontend must call backend RPCs and never calculate drops or mutate wallets/inventory client-side.
+- No member-facing TCG release exists yet. The next step is controlled Owner shop-loop smoke testing; frontend calls backend RPCs and never calculates drops or mutates wallets/inventory client-side.
 
 ## Product Direction
 
@@ -350,6 +351,33 @@ Production:
   - simulated authenticated direct reads of `member_cp` and `cp_snapshots` returned zero rows;
   - active Owner count remains `1`.
 - No production Owner coin grant, wallet mutation, shop purchase, or pack purchase smoke was performed. User approval is required before creating those production economy/inventory mutations.
+
+## 30E-B Owner-Only Shop/Economy UI Preview
+
+Implemented frontend-only:
+
+- Owner-only `TCG Shop Test` panel on `/tcg`.
+- Wallet card showing `Anteiku Coins` balance from `tcg_get_my_wallet`.
+- Owner test/dev button `Grant 1000 test coins` using `tcg_owner_grant_test_coins`.
+- Owner shop item card for `Season 0 Test Pack`, price `100 Anteiku Coins`, using `tcg_owner_get_test_shop`.
+- `Buy Test Pack` action using `tcg_owner_buy_test_pack`.
+- Purchase result display reuses the existing backend-returned pack result/reveal card UI.
+- After successful purchase, the UI refetches wallet and collection and switches to Owned.
+- Added EN/FR/DE copy and dark/crimson mobile-first shop styling.
+
+Validation:
+
+- `npm.cmd run build` passed.
+- Source checks found no SQL/migration/backend changes, no direct `.from('tcg_*')` table access in the TCG page/service, no client-side drop calculation, no `member_cp`/`cp_snapshots` paths in touched TCG page/service files, no service-role path, no payments, and no uploads/Storage.
+- Non-Owner direct `/tcg` remains blocked by the existing active Owner page guard.
+
+Production:
+
+- Commit `8e7eb73 feat: add owner tcg shop preview` was pushed to `main`.
+- Production serves the deployed bundle containing `TCG Shop Test`, wallet text, and RPC wrapper names for `tcg_get_my_wallet`, `tcg_owner_get_test_shop`, `tcg_owner_grant_test_coins`, and `tcg_owner_buy_test_pack`.
+- Non-mutating production smoke confirmed `/tcg` returns HTTP `200`.
+- Codex did not click production `Grant 1000 test coins` or `Buy Test Pack`.
+- Manual Owner mutation smoke is ready: grant test coins, buy the test pack, confirm wallet decreases by `100`, confirm five backend-returned cards reveal, and confirm collection quantity increases by `+5`.
 
 ## 30B RPC Candidates
 
