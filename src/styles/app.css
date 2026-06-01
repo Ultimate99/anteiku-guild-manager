@@ -6253,6 +6253,129 @@ button.command-card:focus-visible {
   font-weight: 800;
 }
 
+.tcg-shop-panel {
+  display: grid;
+  gap: 10px;
+  padding: 11px;
+  border-color: rgba(196, 30, 58, 0.42);
+  background:
+    radial-gradient(circle at 85% 10%, rgba(255, 216, 116, 0.11), transparent 28%),
+    linear-gradient(135deg, rgba(196, 30, 58, 0.16), transparent 36%),
+    rgba(8, 8, 10, 0.97);
+  overflow: hidden;
+}
+
+.tcg-shop-header,
+.tcg-shop-item,
+.tcg-shop-dev-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.tcg-shop-header h3,
+.tcg-shop-item h4 {
+  margin: 7px 0 3px;
+  overflow-wrap: anywhere;
+}
+
+.tcg-shop-header p,
+.tcg-shop-item p,
+.tcg-shop-dev-row span {
+  margin: 0;
+  color: var(--muted);
+}
+
+.tcg-wallet-card {
+  min-width: 132px;
+  display: grid;
+  gap: 2px;
+  justify-items: end;
+  padding: 9px 10px;
+  border: 1px solid rgba(196, 30, 58, 0.36);
+  background:
+    linear-gradient(135deg, rgba(196, 30, 58, 0.14), transparent 44%),
+    rgba(0, 0, 0, 0.28);
+}
+
+.tcg-wallet-card span,
+.tcg-wallet-card small,
+.tcg-shop-item-buy span {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.tcg-wallet-card strong {
+  color: #ffd8df;
+  font-size: clamp(1.25rem, 4.8vw, 1.72rem);
+  line-height: 1;
+}
+
+.tcg-shop-dev-row {
+  padding: 9px;
+  border: 1px dashed rgba(255, 216, 116, 0.24);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.tcg-shop-dev-row > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.tcg-shop-dev-row strong {
+  color: var(--text);
+}
+
+.tcg-shop-panel .success-copy {
+  margin: 0;
+  color: #8ee4a3;
+  font-weight: 800;
+}
+
+.tcg-shop-list {
+  display: grid;
+  gap: 8px;
+}
+
+.tcg-shop-item {
+  position: relative;
+  overflow: hidden;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(90deg, rgba(196, 30, 58, 0.13), transparent 42%),
+    rgba(13, 13, 16, 0.94);
+}
+
+.tcg-shop-item::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: linear-gradient(180deg, rgba(196, 30, 58, 0.92), rgba(255, 216, 116, 0.58));
+}
+
+.tcg-shop-item-main,
+.tcg-shop-item-buy {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.tcg-shop-item-buy {
+  justify-items: end;
+  text-align: right;
+}
+
+.tcg-shop-item-buy strong {
+  color: #ffd8df;
+  white-space: nowrap;
+}
+
 .tcg-pack-panel {
   display: grid;
   gap: 10px;
@@ -6995,6 +7118,12 @@ button.command-card:focus-visible {
   .tcg-pack-panel-header {
     grid-template-columns: minmax(0, 1fr) auto;
   }
+
+  .tcg-shop-header,
+  .tcg-shop-item,
+  .tcg-shop-dev-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
 }
 
 @media (min-width: 900px) {
@@ -7013,12 +7142,23 @@ button.command-card:focus-visible {
   }
 
   .tcg-pack-panel-header,
-  .tcg-pack-result-heading {
+  .tcg-pack-result-heading,
+  .tcg-shop-header,
+  .tcg-shop-item,
+  .tcg-shop-dev-row {
     grid-template-columns: 1fr;
   }
 
-  .tcg-open-pack-button {
+  .tcg-open-pack-button,
+  .tcg-shop-item-buy .primary-action,
+  .tcg-shop-dev-row .danger-action {
     width: 100%;
+  }
+
+  .tcg-wallet-card,
+  .tcg-shop-item-buy {
+    justify-items: start;
+    text-align: left;
   }
 
   .tcg-card-status-row {

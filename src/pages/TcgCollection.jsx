@@ -6,13 +6,19 @@ import {
   tcgAdminGrantCard,
   tcgGetCatalog,
   tcgGetMyCollection,
+  tcgGetMyWallet,
   tcgOwnerOpenTestPack,
+  tcgOwnerBuyTestPack,
+  tcgOwnerGetTestShop,
+  tcgOwnerGrantTestCoins,
   tcgSetCardFavorite,
 } from '../services/tcgService.js';
 
 const FILTERS = ['all', 'owned', 'missing', 'favorites'];
 const ALL_RARITIES = 'all';
 const TEST_PACK_CODE = 'season_0_test_pack';
+const TEST_SHOP_ITEM_CODE = 'season_0_test_pack_shop';
+const TEST_COIN_GRANT_AMOUNT = 1000;
 const SMOKE_GRANT_REASON = '30C-A owner visual smoke';
 const SMOKE_GRANT_CARDS = [
   { cardKey: 's0_001_20th_ward_civilian', quantity: 3 },
@@ -39,6 +45,10 @@ function getCardImage(card) {
 function getDisplayError(error, fallback) {
   const message = error?.message || '';
 
+  if (message.toLowerCase().includes('insufficient anteiku coins')) {
+    return fallback;
+  }
+
   if (
     message.includes('tcg_')
     || message.includes('function')
@@ -49,6 +59,10 @@ function getDisplayError(error, fallback) {
   }
 
   return message || fallback;
+}
+
+function getCurrencyLabel(currencyCode, t) {
+  return currencyCode === 'anteiku_coins' ? t('tcg.anteikuCoins') : currencyCode;
 }
 
 function getPackResultLabel(card, t) {
@@ -169,6 +183,124 @@ function TcgPackPreviewPanel({ opening, openingError, openingLoading, language, 
       ) : (
         <p className="tcg-pack-preview-note">{t('tcg.ownerTestOnlyBody')}</p>
       )}
+    </section>
+  );
+}
+
+function TcgShopPreviewPanel({
+  wallet,
+  shopItems,
+  purchase,
+  loading,
+  error,
+  grantLoading,
+  grantMessage,
+  purchaseLoadingCode,
+  language,
+  t,
+  onGrantCoins,
+  onBuyPack,
+}) {
+  const displayedWallet = wallet ?? { balance: 0, currencyCode: 'anteiku_coins' };
+  const currencyLabel = getCurrencyLabel(displayedWallet.currencyCode, t);
+  const pulledCards = purchase?.opening?.results ?? [];
+  const displayedCardsOpened = purchase?.opening?.cardsOpened || 5;
+
+  return (
+    <section className="panel tcg-shop-panel" aria-label={t('tcg.shopTestTitle')}>
+      <div className="tcg-shop-header">
+        <div>
+          <StatusBadge tone="warning">{t('tcg.ownerTestOnly')}</StatusBadge>
+          <h3>{t('tcg.shopTestTitle')}</h3>
+          <p>{t('tcg.shopTestBody')}</p>
+        </div>
+        <div className="tcg-wallet-card" aria-label={t('tcg.walletBalance')}>
+          <span>{t('tcg.walletBalance')}</span>
+          <strong>{formatNumber(displayedWallet.balance, language)}</strong>
+          <small>{currencyLabel}</small>
+        </div>
+      </div>
+
+      <div className="tcg-shop-dev-row">
+        <div>
+          <strong>{t('tcg.ownerShopPreview')}</strong>
+          <span>{t('tcg.backendHandlesPurchaseDrops')}</span>
+        </div>
+        <button
+          type="button"
+          className="danger-action compact-action"
+          onClick={onGrantCoins}
+          disabled={loading || grantLoading}
+        >
+          {grantLoading ? t('common.working') : t('tcg.grantTestCoins')}
+        </button>
+      </div>
+
+      {grantMessage ? <p className="success-copy">{grantMessage}</p> : null}
+      {error ? <p className="tcg-pack-error" role="alert">{error}</p> : null}
+
+      <div className="tcg-shop-list" aria-label={t('tcg.ownerShopPreview')}>
+        {shopItems.length > 0 ? (
+          shopItems.map((item) => (
+            <article className="tcg-shop-item" key={item.shopItemCode}>
+              <div className="tcg-shop-item-main">
+                <StatusBadge tone="warning">{t('tcg.ownerTestOnly')}</StatusBadge>
+                <h4>{item.shopItemName || t('tcg.seasonZeroTestPack')}</h4>
+                <p>{item.description || t('tcg.containsFiveBackendCards')}</p>
+              </div>
+
+              <div className="tcg-shop-item-buy">
+                <span>{t('tcg.price')}</span>
+                <strong>
+                  {formatNumber(item.price, language)} {getCurrencyLabel(item.currencyCode, t)}
+                </strong>
+                <button
+                  type="button"
+                  className="primary-action compact-action"
+                  onClick={() => onBuyPack(item.shopItemCode)}
+                  disabled={loading || Boolean(purchaseLoadingCode)}
+                >
+                  {purchaseLoadingCode === item.shopItemCode ? t('tcg.buyingPack') : t('tcg.buyTestPack')}
+                </button>
+              </div>
+            </article>
+          ))
+        ) : (
+          <p className="tcg-pack-preview-note">{loading ? t('common.loading') : t('tcg.shopComingSoon')}</p>
+        )}
+      </div>
+
+      {purchase ? (
+        <div className="tcg-pack-result-shell" data-revealed={pulledCards.length > 0}>
+          <div className="tcg-pack-result-heading">
+            <div>
+              <StatusBadge tone="success">{t('tcg.purchaseComplete')}</StatusBadge>
+              <h4>{purchase.shopItemName || purchase.opening?.packName || t('tcg.seasonZeroTestPack')}</h4>
+            </div>
+            <span>
+              {formatNumber(purchase.balanceBefore, language)} - {formatNumber(purchase.price, language)}
+              {' = '}
+              {formatNumber(purchase.balanceAfter, language)}
+            </span>
+          </div>
+
+          <div className="tcg-pack-results-grid" aria-label={t('tcg.cardsPulled')}>
+            {pulledCards.map((card, index) => (
+              <TcgPackResultCard
+                key={`${purchase.opening?.openingId || purchase.shopItemCode}-${card.cardKey}-${index}`}
+                card={card}
+                index={index}
+                language={language}
+                t={t}
+              />
+            ))}
+          </div>
+
+          <p className="tcg-pack-preview-note">
+            {`${t('tcg.cardsPulled')} ${formatNumber(displayedCardsOpened, language)}`}
+          </p>
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -301,6 +433,14 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
   const [packOpeningLoading, setPackOpeningLoading] = useState(false);
   const [packOpening, setPackOpening] = useState(null);
   const [packOpeningError, setPackOpeningError] = useState('');
+  const [wallet, setWallet] = useState(null);
+  const [shopItems, setShopItems] = useState([]);
+  const [economyLoading, setEconomyLoading] = useState(false);
+  const [economyError, setEconomyError] = useState('');
+  const [grantCoinsLoading, setGrantCoinsLoading] = useState(false);
+  const [grantCoinsMessage, setGrantCoinsMessage] = useState('');
+  const [purchaseLoadingCode, setPurchaseLoadingCode] = useState('');
+  const [shopPurchase, setShopPurchase] = useState(null);
 
   const isOwner = Boolean(activeAdminContext?.isOwner);
   const activeOwnerProfileId = isOwner ? activeAdminContext?.activeProfileId : null;
@@ -330,6 +470,34 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
   useEffect(() => {
     loadCards();
   }, [loadCards]);
+
+  const loadEconomy = useCallback(async () => {
+    if (!isOwner) {
+      return;
+    }
+
+    setEconomyLoading(true);
+    setEconomyError('');
+
+    try {
+      const [walletRow, shopRows] = await Promise.all([
+        tcgGetMyWallet(),
+        tcgOwnerGetTestShop(),
+      ]);
+      setWallet(walletRow);
+      setShopItems(shopRows);
+    } catch (loadError) {
+      setWallet(null);
+      setShopItems([]);
+      setEconomyError(getDisplayError(loadError, t('tcg.shopLoadFailed')));
+    } finally {
+      setEconomyLoading(false);
+    }
+  }, [isOwner, t]);
+
+  useEffect(() => {
+    loadEconomy();
+  }, [loadEconomy]);
 
   const rarityOptions = useMemo(() => {
     const seen = new Map();
@@ -478,6 +646,54 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
     }
   }, [isOwner, loadCards, t]);
 
+  const handleGrantTestCoins = useCallback(async () => {
+    if (!isOwner) {
+      return;
+    }
+
+    setGrantCoinsLoading(true);
+    setGrantCoinsMessage('');
+    setEconomyError('');
+
+    try {
+      const nextWallet = await tcgOwnerGrantTestCoins(TEST_COIN_GRANT_AMOUNT);
+      setWallet(nextWallet);
+      setGrantCoinsMessage(t('tcg.testCoinsGranted'));
+      await loadEconomy();
+    } catch (grantError) {
+      setEconomyError(getDisplayError(grantError, t('tcg.grantFailed')));
+    } finally {
+      setGrantCoinsLoading(false);
+    }
+  }, [isOwner, loadEconomy, t]);
+
+  const handleBuyTestPack = useCallback(async (shopItemCode = TEST_SHOP_ITEM_CODE) => {
+    if (!isOwner) {
+      return;
+    }
+
+    setPurchaseLoadingCode(shopItemCode);
+    setEconomyError('');
+    setGrantCoinsMessage('');
+
+    try {
+      const purchaseResult = await tcgOwnerBuyTestPack(shopItemCode);
+      setShopPurchase(purchaseResult);
+      await Promise.all([loadEconomy(), loadCards()]);
+      setFilter('owned');
+      setRarityFilter(ALL_RARITIES);
+    } catch (purchaseError) {
+      const message = purchaseError?.message?.toLowerCase() || '';
+      setEconomyError(
+        message.includes('insufficient anteiku coins')
+          ? t('tcg.insufficientBalance')
+          : getDisplayError(purchaseError, t('tcg.purchaseFailed')),
+      );
+    } finally {
+      setPurchaseLoadingCode('');
+    }
+  }, [isOwner, loadCards, loadEconomy, t]);
+
   if (activeAdminContextLoading) {
     return (
       <div className="stack">
@@ -545,6 +761,21 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
         language={language}
         t={t}
         onOpen={handleOpenTestPack}
+      />
+
+      <TcgShopPreviewPanel
+        wallet={wallet}
+        shopItems={shopItems}
+        purchase={shopPurchase}
+        loading={economyLoading}
+        error={economyError}
+        grantLoading={grantCoinsLoading}
+        grantMessage={grantCoinsMessage}
+        purchaseLoadingCode={purchaseLoadingCode}
+        language={language}
+        t={t}
+        onGrantCoins={handleGrantTestCoins}
+        onBuyPack={handleBuyTestPack}
       />
 
       <section className="tcg-progress-grid" aria-label={t('tcg.collectionProgress')}>
