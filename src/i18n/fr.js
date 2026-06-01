@@ -136,6 +136,7 @@ export const fr = {
     backendConsumesPack: 'Le backend consomme un pack et tire les drops',
     packAddedToInventory: "Pack ajoute a l'inventaire.",
     packAddedNoReveal: "Ajoute un pack a l'inventaire. L'ouverture se fait plus tard dans Packs.",
+    goToPacks: 'Aller aux packs',
     shopTestTitle: 'Test boutique TCG',
     ownerShopPreview: 'Apercu boutique Owner',
     shopTestBody: 'Depensez des pieces test sur des packs tires par le backend avant toute sortie membre.',

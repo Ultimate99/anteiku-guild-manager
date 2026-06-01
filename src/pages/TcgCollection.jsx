@@ -433,6 +433,15 @@ function TcgOwnedPacksPanel({
         <div className="tcg-owned-pack-visual">
           <TcgPackSprite pack={seasonPack} t={t} />
           <strong>{`x${formatNumber(quantity, language)}`}</strong>
+          <button
+            type="button"
+            className="primary-action compact-action tcg-open-pack-button tcg-owned-open-button"
+            onClick={() => onOpenPack(seasonPack)}
+            disabled={loading || openingBusy || quantity <= 0}
+            aria-busy={openingBusy}
+          >
+            {openingBusy ? t('tcg.openingPack') : t('tcg.openPack')}
+          </button>
         </div>
         <div className="tcg-owned-pack-copy">
           <StatusBadge tone={quantity > 0 ? 'success' : 'neutral'}>
@@ -445,15 +454,6 @@ function TcgOwnedPacksPanel({
             <span>{`${formatNumber(seasonPack.cardsPerPack || 5, language)} ${t('tcg.cardsPulled')}`}</span>
             <span>{t('tcg.backendConsumesPack')}</span>
           </div>
-          <button
-            type="button"
-            className="primary-action compact-action tcg-open-pack-button"
-            onClick={() => onOpenPack(seasonPack)}
-            disabled={loading || openingBusy || quantity <= 0}
-            aria-busy={openingBusy}
-          >
-            {openingBusy ? t('tcg.openingPack') : t('tcg.openPack')}
-          </button>
         </div>
       </article>
 
@@ -474,6 +474,7 @@ function TcgShopPreviewPanel({
   language,
   t,
   onBuyPack,
+  onGoToPacks,
 }) {
   const displayedWallet = wallet ?? { balance: 0, currencyCode: 'anteiku_coins' };
   const currencyLabel = getCurrencyLabel(displayedWallet.currencyCode, t);
@@ -545,6 +546,11 @@ function TcgShopPreviewPanel({
           <p className="tcg-pack-preview-note">
             {`${t('tcg.packAddedToInventory')} ${t('tcg.packQuantity')} ${formatNumber(purchase.ownedPackQuantity, language)}`}
           </p>
+          <div className="tcg-shop-success-actions">
+            <button type="button" className="secondary-action compact-action" onClick={onGoToPacks}>
+              {t('tcg.goToPacks')}
+            </button>
+          </div>
         </div>
       ) : null}
     </section>
@@ -1071,7 +1077,6 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
       const purchaseResult = await tcgOwnerBuyTestPackToInventory(shopItemCode);
       setShopPurchase(purchaseResult);
       await Promise.all([loadEconomy(), loadPackInventory()]);
-      setActiveWindow('packs');
     } catch (purchaseError) {
       const message = purchaseError?.message?.toLowerCase() || '';
       setEconomyError(
@@ -1411,6 +1416,7 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
             language={language}
             t={t}
             onBuyPack={handleBuyTestPack}
+            onGoToPacks={() => setActiveWindow('packs')}
           />
         ) : null}
 

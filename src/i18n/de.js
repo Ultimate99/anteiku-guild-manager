@@ -136,6 +136,7 @@ export const de = {
     backendConsumesPack: 'Backend verbraucht ein Pack und rollt Drops',
     packAddedToInventory: 'Pack zum Inventar hinzugefuegt.',
     packAddedNoReveal: 'Fuegt ein Pack zum Inventar hinzu. Oeffnen passiert spaeter im Packs-Fenster.',
+    goToPacks: 'Zu Packs',
     shopTestTitle: 'TCG-Shop-Test',
     ownerShopPreview: 'Owner-Shop-Vorschau',
     shopTestBody: 'Gib Testmuenzen fuer backend-gerollte Packs aus, bevor Mitglieder Zugriff bekommen.',

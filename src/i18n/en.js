@@ -136,6 +136,7 @@ export const en = {
     backendConsumesPack: 'Backend consumes one pack and rolls drops',
     packAddedToInventory: 'Pack added to inventory.',
     packAddedNoReveal: 'Adds one pack to inventory. Opening happens later from Packs.',
+    goToPacks: 'Go to Packs',
     shopTestTitle: 'TCG Shop Test',
     ownerShopPreview: 'Owner shop preview',
     shopTestBody: 'Spend test coins on backend-rolled packs before any member release.',
