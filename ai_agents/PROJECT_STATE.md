@@ -1,5 +1,43 @@
 # Project State
 
+## Milestone 30E-A Owner-Only TCG Shop/Economy Backend Live
+
+Owner-only TCG shop/economy backend/RPC foundation is implemented, locally validated, and production-applied through `20260601000300_tcg_owner_shop_economy.sql`.
+
+Implemented:
+- Added `tcg_wallets`, `tcg_wallet_ledger`, and `tcg_shop_items`.
+- Enabled RLS and revoked direct anon/authenticated table grants for the new economy tables.
+- Added Owner-test currency `anteiku_coins`.
+- Seeded Owner-test shop item `season_0_test_pack_shop`, linked to `season_0_test_pack`, priced at `100 anteiku_coins`.
+- Refactored Owner pack-opening internals into private helper `private.tcg_open_owner_test_pack_for_profile(...)`.
+- Preserved existing `tcg_owner_open_test_pack(p_pack_code text default 'season_0_test_pack')`.
+- Added Owner-only RPCs:
+  - `tcg_owner_grant_test_coins(p_amount integer default 1000)`
+  - `tcg_get_my_wallet()`
+  - `tcg_owner_get_test_shop()`
+  - `tcg_owner_buy_test_pack(p_shop_item_code text default 'season_0_test_pack_shop')`
+
+RPC behavior:
+- Active Owner profile is resolved server-side through existing active-profile/admin authority.
+- No arbitrary player `profile_id` is accepted from the frontend.
+- Coin grants and shop purchases are server-side wallet mutations with ledger rows.
+- Shop purchases lock the wallet row, reject insufficient balance, deduct the price, open the pack server-side, update inventory/opening history, and return safe pack result metadata.
+- No frontend shop UI, member-facing shop access, payments, premium currency, uploads, Storage, CP references, or member-facing economy release was added.
+
+Validation:
+- Local `npx.cmd supabase db reset` passed.
+- `supabase/tests/tcg_30e_shop_validation.sql` passed `32 PASS / 0 FAIL / 0 SKIP`.
+- Regression tests passed:
+  - `supabase/tests/tcg_30d_pack_validation.sql`: `18 PASS / 0 FAIL / 0 SKIP`
+  - `supabase/tests/tcg_30b_validation.sql`: `19 PASS / 0 FAIL / 0 SKIP`
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+
+Production:
+- Production dry-run showed exactly one pending migration: `20260601000300_tcg_owner_shop_economy.sql`.
+- Migration apply/list verification passed.
+- Read-only production DB verification confirmed new economy tables exist with RLS enabled, no direct anon/authenticated table grants exist on the new economy tables, the Owner test shop item is seeded, new RPCs exist with authenticated execute grants, checked anon execute grants are denied, the private helper is not executable by authenticated clients, new economy RPC definitions contain no CP references, simulated authenticated direct `member_cp`/`cp_snapshots` reads returned zero visible rows, and active Owner count remains `1`.
+- No production Owner coin grant, wallet mutation, shop purchase, or pack purchase smoke was performed; explicit approval is required before creating those controlled production mutations.
+
 ## Milestone 30D-B Owner-Only TCG Pack Preview UI Live
 
 Owner-only pack opening preview UI is implemented and deployed in production through commit `fa50b33 feat: add owner tcg pack preview`.

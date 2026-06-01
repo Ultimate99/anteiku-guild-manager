@@ -11,9 +11,10 @@ Milestone 30A planning is complete. No backend, frontend, SQL, Supabase, or prod
 - Milestone 30C-D adds temporary generated art assets for all 50 Season 0 cards.
 - Milestone 30D-A adds Owner-only test pack backend/RPC support and is production-applied through `20260601000200_tcg_owner_pack_backend.sql`.
 - Milestone 30D-B adds the Owner-only `/tcg` pack preview/opening UI and is deployed through commit `fa50b33 feat: add owner tcg pack preview`.
+- Milestone 30E-A adds the Owner-only shop/economy backend/RPC foundation and is production-applied through `20260601000300_tcg_owner_shop_economy.sql`.
 - Milestone 30B backend/RPC foundation is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
-- No member-facing packs, shop, economy, currency, routes beyond `/tcg`, uploads, or Storage have been implemented.
-- No member-facing TCG release exists yet. The next step is controlled Owner pack-opening smoke/testing; frontend calls the backend RPC and never calculates drops client-side.
+- No member-facing packs, shop, economy UI, routes beyond `/tcg`, uploads, or Storage have been implemented.
+- No member-facing TCG release exists yet. The next step is controlled Owner economy/shop UI planning and Owner smoke testing; frontend must call backend RPCs and never calculate drops or mutate wallets/inventory client-side.
 
 ## Product Direction
 
@@ -292,6 +293,63 @@ Production smoke status:
 - Codex did not click `Open Test Pack` in production.
 - No production pack-opening or inventory mutation was created during deployment.
 - Owner can now manually open a controlled test pack from `/tcg`.
+
+## 30E-A Owner-Only Shop/Economy Backend
+
+Implemented backend/RPC only:
+
+- New migration `20260601000300_tcg_owner_shop_economy.sql`.
+- New tables:
+  - `tcg_wallets`
+  - `tcg_wallet_ledger`
+  - `tcg_shop_items`
+- New currency code: `anteiku_coins`.
+- New seeded Owner-test shop item:
+  - code `season_0_test_pack_shop`
+  - name `Season 0 Test Pack`
+  - price `100`
+  - linked to existing `season_0_test_pack`
+- Private helper `private.tcg_open_owner_test_pack_for_profile(...)` now owns the shared backend pack-opening flow for existing free Owner test packs and future Owner shop purchases.
+- Existing RPC `tcg_owner_open_test_pack(p_pack_code text default 'season_0_test_pack')` is preserved.
+- New Owner-only public RPCs:
+  - `tcg_owner_grant_test_coins(p_amount integer default 1000)`
+  - `tcg_get_my_wallet()`
+  - `tcg_owner_get_test_shop()`
+  - `tcg_owner_buy_test_pack(p_shop_item_code text default 'season_0_test_pack_shop')`
+
+Security:
+
+- Owner-only through existing active-profile/admin authority.
+- No arbitrary target profile id is accepted for player/economy actions.
+- Wallet balance changes are server-side and ledger-backed.
+- Shop purchase locks the wallet row, rejects insufficient balance, deducts coins, records ledger history, opens the pack server-side, and writes inventory/opening history.
+- RLS is enabled on all new tables and direct anon/authenticated table grants are revoked.
+- No member-facing shop access, payments, premium currency, uploads, Storage, frontend shop UI, CP references, or normal CP exposure was added.
+
+Validation:
+
+- Local `npx.cmd supabase db reset` passed.
+- `supabase/tests/tcg_30e_shop_validation.sql` passed `32 PASS / 0 FAIL / 0 SKIP`.
+- Regression validation passed:
+  - `supabase/tests/tcg_30d_pack_validation.sql`: `18 PASS / 0 FAIL / 0 SKIP`
+  - `supabase/tests/tcg_30b_validation.sql`: `19 PASS / 0 FAIL / 0 SKIP`
+- `npm.cmd run build` passed.
+
+Production:
+
+- Dry-run showed exactly one pending migration: `20260601000300_tcg_owner_shop_economy.sql`.
+- Migration apply/list verification passed.
+- Read-only DB verification confirmed:
+  - new economy tables exist and have RLS enabled;
+  - no direct anon/authenticated client grants exist on the new tables;
+  - Owner test shop item is seeded;
+  - new public RPCs exist with authenticated execute grants;
+  - checked anon execute grants are denied;
+  - the private pack helper is not executable by authenticated clients;
+  - new economy RPCs contain no CP references;
+  - simulated authenticated direct reads of `member_cp` and `cp_snapshots` returned zero rows;
+  - active Owner count remains `1`.
+- No production Owner coin grant, wallet mutation, shop purchase, or pack purchase smoke was performed. User approval is required before creating those production economy/inventory mutations.
 
 ## 30B RPC Candidates
 
