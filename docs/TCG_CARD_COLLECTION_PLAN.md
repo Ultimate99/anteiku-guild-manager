@@ -1,6 +1,6 @@
 # TCG/Card Collection Plan
 
-Milestone 30A planning started this document. Milestone 30B is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`. Milestone 30C-A Owner-only Card Collection preview UI is deployed through commit `dbb67da feat: add owner tcg collection preview`; pack opening, shop, economy, and the asset pipeline remain unimplemented.
+Milestone 30A planning started this document. Milestone 30B is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`. Milestone 30C-A Owner-only Card Collection preview UI is deployed through commit `dbb67da feat: add owner tcg collection preview`; Milestone 30C-A2 Owner-only smoke grant control is deployed through commit `e96a489 feat: add owner tcg smoke grant`. Pack opening, shop, economy, and the asset pipeline remain unimplemented.
 
 ## Product Goal
 
@@ -31,6 +31,7 @@ Delayed until later:
 
 - 30B: Card catalog + inventory backend/RPC. Complete and production-applied.
 - 30C-A: Owner-only Card Collection preview UI. Complete and deployed.
+- 30C-A2: Owner-only smoke grant control. Complete and deployed.
 - 30C-B: Preview polish or member release planning after Owner acceptance.
 - 30D: Pack opening backend/RPC.
 - 30E: Pack opening animation/UI.
@@ -279,6 +280,38 @@ Security:
 - The preview remains Owner-only through the existing active admin context.
 - Non-Owner direct URL access should render the blocked preview state.
 - Backend/RPC remains the authority for card ownership and favorites.
+
+## Phase 30C-A2 Owner Smoke Grant
+
+Implemented:
+
+- Owner-only smoke grant button on `/tcg`.
+- Uses existing RPC `tcg_admin_grant_card`.
+- Targets only the current active Owner profile from active admin context.
+- Grants exactly:
+  - `s0_001_20th_ward_civilian` quantity `3`
+  - `s0_019_anteiku_server` quantity `2`
+  - `s0_033_young_one_eyed_ghoul` quantity `1`
+  - `s0_042_half_mask_awakening` quantity `1`
+  - `s0_050_anteiku_origin` quantity `1`
+- Uses reason `30C-A owner visual smoke`.
+- Refetches collection and switches to Owned after success.
+- Disables once the active Owner profile has at least the requested quantities.
+
+Validation:
+
+- `npm.cmd run build` passed.
+- Source checks found no direct inventory/event writes and no normal CP paths in the TCG page/service.
+- Production bundle verification passed.
+
+Expected smoke result:
+
+- Unique owned: `5 / 50`
+- Total owned quantity: `8`
+- Owned filter: `5` cards
+- Missing filter: `45` cards
+
+Codex did not click the production button during implementation.
 
 Canonical v0.1 rules:
 

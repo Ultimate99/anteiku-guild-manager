@@ -5,6 +5,7 @@ Milestone 30A planning is complete. No backend, frontend, SQL, Supabase, or prod
 ## Current Status
 
 - Milestone 30C-A Owner-only Card Collection preview UI is implemented and deployed in production through commit `dbb67da feat: add owner tcg collection preview`.
+- Milestone 30C-A2 Owner-only smoke grant control is implemented and deployed in production through commit `e96a489 feat: add owner tcg smoke grant`.
 - Milestone 30B backend/RPC foundation is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
 - No packs, shop, economy, currency, drop rates, routes beyond `/tcg`, uploads, Storage, or rendered card assets have been implemented.
 - The next step is authenticated Owner/non-Owner preview smoke and then 30C-B planning after Owner acceptance.
@@ -104,6 +105,35 @@ Manual smoke still recommended:
 - Catalog and collection load for Owner.
 - Favorite toggle works only on owned cards.
 - Missing art placeholders render cleanly.
+
+## 30C-A2 Owner Smoke Grant Control
+
+Implemented frontend-only:
+
+- Compact Owner-only smoke panel on `/tcg`.
+- Fixed smoke grant set:
+  - `s0_001_20th_ward_civilian` quantity `3`
+  - `s0_019_anteiku_server` quantity `2`
+  - `s0_033_young_one_eyed_ghoul` quantity `1`
+  - `s0_042_half_mask_awakening` quantity `1`
+  - `s0_050_anteiku_origin` quantity `1`
+- Fixed reason: `30C-A owner visual smoke`.
+- Target profile: current selected active Owner profile from active admin context.
+- RPC: `tcg_admin_grant_card`.
+- After grant, `/tcg` refetches catalog/collection and switches to Owned filter.
+- Button disables as `Smoke cards ready` once the active Owner profile has at least the requested quantities.
+
+Validation:
+
+- `npm.cmd run build` passed.
+- Source checks confirmed no direct `tcg_player_inventory` / `tcg_inventory_events` writes, no normal CP paths, no service-role path, and no uploads/Storage.
+- Production bundle verification confirmed the button/RPC path is deployed.
+
+Production smoke status:
+
+- The button is ready for controlled Owner click.
+- Codex did not perform the production grant mutation during implementation.
+- Expected visual-smoke state after one successful click: Unique owned `5 / 50`, total owned quantity `8`, Owned filter `5`, Missing filter `45`.
 
 ## 30B RPC Candidates
 

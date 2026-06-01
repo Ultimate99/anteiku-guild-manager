@@ -4,6 +4,7 @@
 
 - Milestone 30B: TCG/Card Collection catalog + inventory backend implemented, locally validated, and production-applied.
 - Milestone 30C-A: Owner-only TCG Card Collection preview UI deployed.
+- Milestone 30C-A2: Owner-only TCG smoke grant control deployed.
 - Milestone 30A: TCG/Card Collection planning.
 - Milestone 1: React + Vite scaffold and documentation base.
 - Milestone 2: Supabase schema/RLS plan, migrations, and local validation.
@@ -24,11 +25,11 @@
 
 ## Recommended Next
 
-Milestone 30C-A Owner-only Card Collection preview is live. Next TCG work should gather Owner feedback, run authenticated Owner/non-Owner visual smoke if needed, then plan 30C-B before any member-facing release. Pack opening, shop, economy, wallet/currency, drop rates, payments, trading, marketplace, and battles remain out of scope until separately planned.
+Milestone 30C-A Owner-only Card Collection preview is live, and Milestone 30C-A2 adds a controlled Owner-only smoke grant button to seed the active Owner profile for owned-card visual testing. Next TCG work should complete the Owner visual smoke, gather feedback, then plan 30C-B before any member-facing release. Pack opening, shop, economy, wallet/currency, drop rates, payments, trading, marketplace, and battles remain out of scope until separately planned.
 
 Strong candidates:
 
-- Milestone 30C-B Owner preview polish or member-release planning after Owner acceptance.
+- Owner click-through smoke for `Grant smoke cards`, owned/missing/favorite/detail UI, and then Milestone 30C-B Owner preview polish or member-release planning after acceptance.
 - Manual Vercel GitHub App restriction to only `Ultimate99/anteiku-guild-manager`.
 - Controlled production test member cleanup planning.
 - Staging Supabase + Vercel Preview environment planning.

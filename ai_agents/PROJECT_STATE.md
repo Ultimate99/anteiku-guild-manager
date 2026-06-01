@@ -23,8 +23,41 @@ Security:
 - No packs, shop, economy, wallet/currency, drop rates, payments, uploads, Storage, CP exposure, or production inventory mutation was added.
 
 Next:
-- Run authenticated Owner/non-Owner visual smoke in the production browser if not already done.
+- Use the Owner-only smoke grant control from Milestone 30C-A2 if owned-card album UI needs a controlled visual test.
 - Plan 30C-B only after the Owner preview is accepted; member release should remain gated.
+
+## Milestone 30C-A2 Owner TCG Smoke Grant Control Live
+
+Owner-only smoke grant control is implemented and deployed in production through commit `e96a489 feat: add owner tcg smoke grant`.
+
+Implemented:
+- Added a compact Owner-only test panel on `/tcg`.
+- Added `tcgAdminGrantCard(...)` frontend wrapper using only existing RPC `tcg_admin_grant_card`.
+- The grant target is the selected active Owner profile from `activeAdminContext.activeProfileId`; no profile id, email, or user id is hardcoded.
+- The smoke grant set is fixed to:
+  - `s0_001_20th_ward_civilian` quantity `3`
+  - `s0_019_anteiku_server` quantity `2`
+  - `s0_033_young_one_eyed_ghoul` quantity `1`
+  - `s0_042_half_mask_awakening` quantity `1`
+  - `s0_050_anteiku_origin` quantity `1`
+- Reason is fixed to `30C-A owner visual smoke`.
+- After a successful grant, the page refreshes the collection, switches to the Owned filter, and disables the button once the active Owner profile has at least the smoke quantities.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source checks found no direct TCG table writes, no `member_cp`, no `cp_snapshots`, no normal CP RPCs, no service-role path, no uploads, and no Storage behavior in the TCG page/service path.
+- Production bundle verification confirmed the smoke grant button text, fixed card keys, fixed reason, and `tcg_admin_grant_card` RPC call are present.
+
+Security:
+- Smoke grant control is hidden behind the existing Owner-only `/tcg` guard.
+- Backend/RPC remains authority and will deny non-Owner/non-authorized attempts.
+- This is not a general member grant UI.
+- No CP/GvG/Wall/3v3/Push/Analytics/Ranking/Auth/Approval/Account Switcher behavior changed.
+
+Smoke status:
+- Production UI is ready for Owner to click `Grant smoke cards`.
+- Codex did not click the button or create a production card ownership mutation during implementation.
+- Expected first successful grant result: Unique owned `5 / 50`, total owned quantity `8`, Owned filter `5` cards, Missing filter `45` cards.
 
 ## Milestone 30B TCG Catalog + Inventory Backend Production Applied
 
