@@ -4,9 +4,10 @@ Milestone 30A planning is complete. No backend, frontend, SQL, Supabase, or prod
 
 ## Current Status
 
+- Milestone 30C-A Owner-only Card Collection preview UI is implemented and deployed in production through commit `dbb67da feat: add owner tcg collection preview`.
 - Milestone 30B backend/RPC foundation is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
-- No frontend UI, packs, shop, economy, currency, drop rates, routes, or assets have been implemented.
-- The next step is Milestone 30C frontend planning/implementation for Card Collection UI.
+- No packs, shop, economy, currency, drop rates, routes beyond `/tcg`, uploads, Storage, or rendered card assets have been implemented.
+- The next step is authenticated Owner/non-Owner preview smoke and then 30C-B planning after Owner acceptance.
 
 ## Product Direction
 
@@ -72,6 +73,37 @@ Do not implement:
 - Premium/payments.
 - Trading.
 - Public collection pages.
+
+## 30C-A Owner Preview UI
+
+Implemented frontend only:
+
+- `/tcg` page.
+- Owner-only nav entry.
+- Owner-only page guard using the existing active admin context.
+- `src/services/tcgService.js` RPC wrappers:
+  - `tcgGetCatalog()`
+  - `tcgGetMyCollection()`
+  - `tcgSetCardFavorite(cardKey, isFavorite)`
+- Mobile-first album grid and detail sheet.
+- Catalog progress: unique owned, total owned quantity, and favorites.
+- Filters: All, Owned, Missing, Favorites, and rarity.
+- Missing art placeholder.
+- EN/FR/DE i18n keys.
+
+Validation:
+
+- `npm.cmd run build` passed.
+- Source checks confirmed no direct TCG table reads/writes, no `member_cp`, no `cp_snapshots`, no normal CP RPCs, no uploads/Storage, and no frontend `tcg_admin_grant_card` call.
+- Production bundle verification confirmed `/tcg` serves the app shell and the deployed bundle contains the TCG preview plus read/favorite RPC calls.
+
+Manual smoke still recommended:
+
+- Owner sees Cards nav and can open `/tcg`.
+- Non-Owner does not see Cards nav and direct `/tcg` shows the Owner-only blocked state.
+- Catalog and collection load for Owner.
+- Favorite toggle works only on owned cards.
+- Missing art placeholders render cleanly.
 
 ## 30B RPC Candidates
 

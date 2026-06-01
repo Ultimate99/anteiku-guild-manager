@@ -1,6 +1,6 @@
 # TCG/Card Collection Plan
 
-Milestone 30A planning started this document. Milestone 30B is now implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`; no frontend UI, pack opening, shop, economy, or asset pipeline has been implemented yet.
+Milestone 30A planning started this document. Milestone 30B is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`. Milestone 30C-A Owner-only Card Collection preview UI is deployed through commit `dbb67da feat: add owner tcg collection preview`; pack opening, shop, economy, and the asset pipeline remain unimplemented.
 
 ## Product Goal
 
@@ -30,7 +30,8 @@ Delayed until later:
 ## Recommended Milestones
 
 - 30B: Card catalog + inventory backend/RPC. Complete and production-applied.
-- 30C: Card Collection UI.
+- 30C-A: Owner-only Card Collection preview UI. Complete and deployed.
+- 30C-B: Preview polish or member release planning after Owner acceptance.
 - 30D: Pack opening backend/RPC.
 - 30E: Pack opening animation/UI.
 - 30F: Free shop/economy.
@@ -254,6 +255,30 @@ Production status:
 - Production DB verification confirmed TCG tables/RLS/RPCs, Season 0 counts, no broad direct table grants, no CP references, and active Owner count `1`.
 - Rollback-wrapped production smoke confirmed approved-member catalog/collection reads and blocked direct inventory/admin-grant paths for a normal member.
 - No real production inventory grant/card ownership mutation was performed.
+
+## Phase 30C-A Owner Preview
+
+Implemented:
+
+- Owner-only `/tcg` route and nav entry.
+- RPC-only frontend service for catalog, collection, and favorite toggle.
+- Season 0 album grid with owned/missing/favorite states.
+- Collection progress cards.
+- All/Owned/Missing/Favorites filters and rarity filter.
+- Card detail sheet with rarity, type, faction, collector value, quantity, and favorite action when owned.
+- Missing-art placeholder for catalog cards whose image assets are not present yet.
+
+Validation:
+
+- `npm.cmd run build` passed.
+- Source checks found no direct table reads/writes, no normal CP paths, no uploads/Storage, and no frontend admin-grant call.
+- Production bundle verification confirmed the deployed frontend contains the owner TCG preview and read/favorite RPC calls.
+
+Security:
+
+- The preview remains Owner-only through the existing active admin context.
+- Non-Owner direct URL access should render the blocked preview state.
+- Backend/RPC remains the authority for card ownership and favorites.
 
 Canonical v0.1 rules:
 

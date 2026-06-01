@@ -1,5 +1,31 @@
 # Project State
 
+## Milestone 30C-A Owner-Only TCG Card Collection Preview Live
+
+Owner-only Card Collection preview UI is implemented and deployed in production through commit `dbb67da feat: add owner tcg collection preview`.
+
+Implemented:
+- Added `/tcg` owner-preview page and owner-only navigation entry.
+- Added frontend RPC-only TCG service wrappers for `tcg_get_catalog`, `tcg_get_my_collection`, and `tcg_set_card_favorite`.
+- Added mobile-first card album UI for Season 0 with catalog progress, All/Owned/Missing/Favorites filters, rarity filter, owned/missing states, favorite toggle for owned cards, and card detail sheet.
+- Missing art paths render a controlled dark placeholder instead of broken images.
+- Added EN/FR/DE copy for the Card Collection preview.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source checks confirmed the new TCG service/page use RPCs only, add no direct TCG table reads/writes, add no `member_cp`/`cp_snapshots`/normal CP RPC usage, and include no `tcg_admin_grant_card` frontend call.
+- Production bundle verification confirmed the deployed app shell contains the TCG preview and read/favorite RPC calls.
+
+Security:
+- TCG nav is visible only when the selected active admin context is Owner.
+- Direct `/tcg` route renders an Owner-only blocked state for non-Owner active profiles.
+- Backend/RPC remains authority for catalog, collection, ownership, and favorite writes.
+- No packs, shop, economy, wallet/currency, drop rates, payments, uploads, Storage, CP exposure, or production inventory mutation was added.
+
+Next:
+- Run authenticated Owner/non-Owner visual smoke in the production browser if not already done.
+- Plan 30C-B only after the Owner preview is accepted; member release should remain gated.
+
 ## Milestone 30B TCG Catalog + Inventory Backend Production Applied
 
 TCG/Card Collection backend foundation is implemented, locally validated, and applied to production through `20260601000100_tcg_30b_catalog_inventory.sql`.
