@@ -25,6 +25,7 @@ const TEST_COIN_GRANT_AMOUNT = 1000;
 const PACK_ANIMATION_STORAGE_KEY = 'anteiku.tcg.packAnimationsEnabled';
 const PACK_FRONT_ASSET_PATH = '/assets/tcg/packs/season0_test_pack_front.png';
 const CARD_BACK_ASSET_PATH = '/assets/tcg/cards/tcg_card_back_season0.png';
+const transparentPackAssetCache = new Map();
 const SMOKE_GRANT_REASON = '30C-A owner visual smoke';
 const SMOKE_GRANT_CARDS = [
   { cardKey: 's0_001_20th_ward_civilian', quantity: 3 },
@@ -83,6 +84,121 @@ function readPackAnimationSetting() {
   return window.localStorage.getItem(PACK_ANIMATION_STORAGE_KEY) !== 'false';
 }
 
+function isEdgeBlackPixel(data, offset) {
+  return data[offset + 3] > 0
+    && data[offset] <= 14
+    && data[offset + 1] <= 14
+    && data[offset + 2] <= 14;
+}
+
+function useEdgeTransparentImage(src) {
+  const [processedSrc, setProcessedSrc] = useState('');
+
+  useEffect(() => {
+    if (!src || typeof window === 'undefined') {
+      setProcessedSrc('');
+      return undefined;
+    }
+
+    const cached = transparentPackAssetCache.get(src);
+    if (cached) {
+      setProcessedSrc(cached);
+      return undefined;
+    }
+
+    let cancelled = false;
+    const image = new Image();
+
+    image.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = image.naturalWidth;
+        canvas.height = image.naturalHeight;
+        const context = canvas.getContext('2d', { willReadFrequently: true });
+
+        if (!context) {
+          throw new Error('Canvas unavailable');
+        }
+
+        context.drawImage(image, 0, 0);
+        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        const { data } = imageData;
+        const { width, height } = canvas;
+        const visited = new Uint8Array(width * height);
+        const stack = [];
+        const pushPixel = (x, y) => {
+          if (x < 0 || y < 0 || x >= width || y >= height) {
+            return;
+          }
+
+          const index = y * width + x;
+          if (visited[index]) {
+            return;
+          }
+
+          const offset = index * 4;
+          if (!isEdgeBlackPixel(data, offset)) {
+            return;
+          }
+
+          visited[index] = 1;
+          stack.push(index);
+        };
+
+        for (let x = 0; x < width; x += 1) {
+          pushPixel(x, 0);
+          pushPixel(x, height - 1);
+        }
+
+        for (let y = 0; y < height; y += 1) {
+          pushPixel(0, y);
+          pushPixel(width - 1, y);
+        }
+
+        while (stack.length > 0) {
+          const index = stack.pop();
+          const offset = index * 4;
+          data[offset + 3] = 0;
+          const x = index % width;
+          const y = Math.floor(index / width);
+          pushPixel(x + 1, y);
+          pushPixel(x - 1, y);
+          pushPixel(x, y + 1);
+          pushPixel(x, y - 1);
+        }
+
+        context.putImageData(imageData, 0, 0);
+        const nextSrc = canvas.toDataURL('image/png');
+        transparentPackAssetCache.set(src, nextSrc);
+
+        if (!cancelled) {
+          setProcessedSrc(nextSrc);
+        }
+      } catch {
+        transparentPackAssetCache.set(src, src);
+
+        if (!cancelled) {
+          setProcessedSrc(src);
+        }
+      }
+    };
+
+    image.onerror = () => {
+      if (!cancelled) {
+        setProcessedSrc(src);
+      }
+    };
+
+    image.src = src;
+
+    return () => {
+      cancelled = true;
+    };
+  }, [src]);
+
+  return processedSrc || src;
+}
+
 function TcgArt({ card, size = 'card' }) {
   const [failed, setFailed] = useState(false);
   const imageSrc = failed ? '' : getCardImage(card);
@@ -113,6 +229,7 @@ function TcgArt({ card, size = 'card' }) {
 
 function TcgPackSprite({ pack, t, compact = false }) {
   const [failed, setFailed] = useState(false);
+  const packFrontSrc = useEdgeTransparentImage(PACK_FRONT_ASSET_PATH);
 
   useEffect(() => {
     setFailed(false);
@@ -123,7 +240,7 @@ function TcgPackSprite({ pack, t, compact = false }) {
       <div className="tcg-pack-sprite-inner">
         {!failed ? (
           <img
-            src={PACK_FRONT_ASSET_PATH}
+            src={packFrontSrc}
             alt=""
             draggable="false"
             onError={() => setFailed(true)}
@@ -226,6 +343,13 @@ function TcgPackOpeningOverlay({
   const resultCards = overlay.opening?.results ?? [];
   const canClose = overlay.stage !== 'opening';
   const revealedCount = overlay.revealedIndexes?.size ?? 0;
+  const stageTone = overlay.stage === 'results' ? 'success' : 'warning';
+  const stageLabel = overlay.stage === 'results' ? t('tcg.packOpened') : t('tcg.openPack');
+  const stageCopy = overlay.stage === 'ready'
+    ? t('tcg.swipeToRip')
+    : overlay.stage === 'opening'
+      ? t('tcg.openingPack')
+      : t('tcg.tapCardsToReveal');
 
   return (
     <div className="tcg-pack-overlay" role="presentation">
@@ -238,23 +362,22 @@ function TcgPackOpeningOverlay({
       >
         <div className="tcg-pack-overlay-header">
           <div>
-            <StatusBadge tone={overlay.stage === 'results' ? 'success' : 'warning'}>
-              {overlay.stage === 'results' ? t('tcg.packOpened') : t('tcg.openPack')}
-            </StatusBadge>
+            <StatusBadge tone={stageTone}>{stageLabel}</StatusBadge>
             <h3>{overlay.pack?.packName || t('tcg.seasonZeroTestPack')}</h3>
-            <p>
-              {overlay.stage === 'ready'
-                ? t('tcg.swipeToRip')
-                : overlay.stage === 'opening'
-                  ? t('tcg.openingPack')
-                  : t('tcg.tapCardsToReveal')}
-            </p>
+            <p>{stageCopy}</p>
           </div>
-          {canClose ? (
-            <button type="button" className="secondary-action compact-action" onClick={onClose}>
-              {t('common.close')}
-            </button>
-          ) : null}
+          <div className="tcg-pack-overlay-actions">
+            {overlay.stage === 'results' ? (
+              <span>
+                {t('tcg.packQuantity')} {formatNumber(overlay.opening?.remainingPackQuantity ?? 0, language)}
+              </span>
+            ) : null}
+            {canClose ? (
+              <button type="button" className="secondary-action compact-action" onClick={onClose}>
+                {t('common.close')}
+              </button>
+            ) : null}
+          </div>
         </div>
 
         {overlay.stage === 'ready' || overlay.stage === 'opening' ? (
@@ -285,14 +408,13 @@ function TcgPackOpeningOverlay({
 
         {overlay.stage === 'results' ? (
           <div className="tcg-pack-reveal-shell">
-            <div className="tcg-pack-result-heading">
-              <div>
-                <StatusBadge tone="success">{t('tcg.packOpened')}</StatusBadge>
-                <h4>{overlay.opening?.packName || t('tcg.seasonZeroTestPack')}</h4>
-              </div>
-              <span>
-                {t('tcg.packQuantity')} {formatNumber(overlay.opening?.remainingPackQuantity ?? 0, language)}
-              </span>
+            <div className="tcg-reveal-toolbar">
+              <span>{`${formatNumber(revealedCount, language)} / ${formatNumber(resultCards.length, language)}`}</span>
+              {revealedCount < resultCards.length ? (
+                <button type="button" className="secondary-action compact-action" onClick={onRevealAll}>
+                  {t('tcg.revealAll')}
+                </button>
+              ) : null}
             </div>
 
             <div className="tcg-pack-results-grid" aria-label={t('tcg.tapCardsToReveal')}>
@@ -308,12 +430,6 @@ function TcgPackOpeningOverlay({
                 />
               ))}
             </div>
-
-            {revealedCount < resultCards.length ? (
-              <button type="button" className="secondary-action compact-action" onClick={onRevealAll}>
-                {t('tcg.revealAll')}
-              </button>
-            ) : null}
           </div>
         ) : null}
       </section>
@@ -431,7 +547,9 @@ function TcgOwnedPacksPanel({
 
       <article className="tcg-owned-pack-card" data-empty={quantity <= 0}>
         <div className="tcg-owned-pack-visual">
-          <TcgPackSprite pack={seasonPack} t={t} />
+          <div className="tcg-owned-pack-stage" aria-hidden="true">
+            <TcgPackSprite pack={seasonPack} t={t} />
+          </div>
           <strong>{`x${formatNumber(quantity, language)}`}</strong>
           <button
             type="button"
@@ -450,8 +568,7 @@ function TcgOwnedPacksPanel({
           <h4>{seasonPack.packName || t('tcg.seasonZeroTestPack')}</h4>
           <p>{seasonPack.description || t('tcg.containsFiveCards')}</p>
           <div className="tcg-pack-facts" aria-label={t('tcg.packInventory')}>
-            <span>{`${t('tcg.packQuantity')} ${formatNumber(quantity, language)}`}</span>
-            <span>{`${formatNumber(seasonPack.cardsPerPack || 5, language)} ${t('tcg.cardsPulled')}`}</span>
+            <span>{seasonPack.cardsPerPack ? `${formatNumber(seasonPack.cardsPerPack, language)} ${t('tcg.cardsPulled')}` : t('tcg.containsFiveCards')}</span>
             <span>{t('tcg.backendConsumesPack')}</span>
           </div>
         </div>

@@ -7384,13 +7384,15 @@ button.command-card:focus-visible {
 }
 
 .tcg-pack-sprite {
-  width: min(100%, 176px);
+  width: min(100%, 182px);
   aspect-ratio: 3 / 4;
   display: grid;
   place-items: stretch;
   position: relative;
   isolation: isolate;
-  filter: drop-shadow(0 18px 32px rgba(0, 0, 0, 0.4));
+  filter:
+    drop-shadow(0 20px 26px rgba(0, 0, 0, 0.46))
+    drop-shadow(0 0 22px rgba(196, 30, 58, 0.12));
 }
 
 .tcg-pack-sprite-inner {
@@ -7427,6 +7429,7 @@ button.command-card:focus-visible {
   display: block;
   object-fit: contain;
   object-position: center;
+  transform: scale(1.04);
 }
 
 .tcg-pack-sprite-inner::before,
@@ -7458,12 +7461,14 @@ button.command-card:focus-visible {
 }
 
 .tcg-pack-sprite[data-has-image="true"] .tcg-pack-sprite-inner::after {
-  inset: 4% 8% -5%;
+  inset: 5% 3% -7%;
   z-index: 0;
-  background: radial-gradient(ellipse at 50% 60%, rgba(196, 30, 58, 0.24), transparent 64%);
-  filter: blur(10px);
+  background:
+    radial-gradient(ellipse at 50% 56%, rgba(196, 30, 58, 0.2), transparent 58%),
+    radial-gradient(ellipse at 50% 88%, rgba(0, 0, 0, 0.48), transparent 54%);
+  filter: blur(12px);
   mix-blend-mode: normal;
-  opacity: 0.7;
+  opacity: 0.78;
 }
 
 .tcg-pack-sprite-inner span,
@@ -7492,14 +7497,15 @@ button.command-card:focus-visible {
 
 .tcg-owned-pack-card {
   display: grid;
-  grid-template-columns: minmax(128px, 0.28fr) minmax(0, 1fr);
-  gap: 10px;
+  grid-template-columns: minmax(132px, 0.3fr) minmax(0, 1fr);
+  gap: 12px;
   align-items: center;
-  padding: 8px 10px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.055);
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.045);
   background:
-    radial-gradient(circle at 18% 44%, rgba(196, 30, 58, 0.14), transparent 30%),
-    rgba(0, 0, 0, 0.12);
+    radial-gradient(circle at 20% 42%, rgba(196, 30, 58, 0.12), transparent 32%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.028), transparent 38%),
+    rgba(0, 0, 0, 0.1);
 }
 
 .tcg-owned-pack-card[data-empty="true"] {
@@ -7513,8 +7519,28 @@ button.command-card:focus-visible {
 .tcg-owned-pack-visual {
   display: grid;
   justify-items: center;
-  gap: 6px;
+  gap: 5px;
   min-width: 0;
+}
+
+.tcg-owned-pack-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(100%, 190px);
+  padding: 4px 0 0;
+  isolation: isolate;
+}
+
+.tcg-owned-pack-stage::before {
+  content: "";
+  position: absolute;
+  inset: 16% 0 1%;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse at 50% 52%, rgba(196, 30, 58, 0.14), transparent 54%),
+    radial-gradient(ellipse at 50% 100%, rgba(0, 0, 0, 0.62), transparent 56%);
+  filter: blur(12px);
 }
 
 .tcg-owned-pack-visual > strong {
@@ -7533,7 +7559,7 @@ button.command-card:focus-visible {
 
 .tcg-owned-pack-copy {
   display: grid;
-  gap: 6px;
+  gap: 7px;
   min-width: 0;
 }
 
@@ -7546,6 +7572,7 @@ button.command-card:focus-visible {
 .tcg-owned-pack-copy p {
   margin: 0;
   color: var(--muted);
+  max-width: 48ch;
 }
 
 .tcg-owned-open-button {
@@ -7614,23 +7641,25 @@ button.command-card:focus-visible {
   place-items: center;
   padding: max(14px, env(safe-area-inset-top)) 14px max(82px, calc(72px + env(safe-area-inset-bottom)));
   background:
-    radial-gradient(circle at 50% 16%, rgba(196, 30, 58, 0.28), transparent 32%),
-    rgba(0, 0, 0, 0.74);
-  backdrop-filter: blur(12px);
+    radial-gradient(circle at 50% 12%, rgba(196, 30, 58, 0.22), transparent 30%),
+    radial-gradient(circle at 50% 80%, rgba(255, 216, 116, 0.045), transparent 28%),
+    rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(14px) saturate(1.08);
 }
 
 .tcg-pack-overlay-card {
-  width: min(100%, 760px);
-  max-height: min(760px, calc(100vh - 108px));
+  width: min(100%, 820px);
+  max-height: min(760px, calc(100vh - 96px));
   overflow: auto;
   display: grid;
-  gap: 12px;
+  gap: 10px;
   padding: 12px;
-  border: 1px solid rgba(196, 30, 58, 0.42);
+  border: 1px solid rgba(196, 30, 58, 0.34);
   background:
-    radial-gradient(circle at 12% 8%, rgba(196, 30, 58, 0.22), transparent 32%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 42%),
-    rgba(7, 7, 9, 0.98);
+    radial-gradient(circle at 16% 6%, rgba(196, 30, 58, 0.18), transparent 30%),
+    radial-gradient(circle at 84% 0%, rgba(255, 216, 116, 0.06), transparent 24%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.052), transparent 38%),
+    rgba(6, 6, 8, 0.98);
   box-shadow:
     0 30px 80px rgba(0, 0, 0, 0.58),
     inset 0 0 0 1px rgba(255, 255, 255, 0.035);
@@ -7643,26 +7672,48 @@ button.command-card:focus-visible {
 .tcg-pack-overlay-header {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 10px;
+  gap: 9px;
   align-items: start;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .tcg-pack-overlay-header h3 {
-  margin: 7px 0 3px;
+  margin: 6px 0 2px;
   color: #fff0f3;
+  font-size: clamp(1rem, 3.2vw, 1.35rem);
   overflow-wrap: anywhere;
 }
 
 .tcg-pack-overlay-header p {
   margin: 0;
   color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.tcg-pack-overlay-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.tcg-pack-overlay-actions > span {
+  align-self: center;
+  border: 1px solid rgba(196, 30, 58, 0.3);
+  background: rgba(196, 30, 58, 0.12);
+  color: #ffd8df;
+  padding: 6px 8px;
+  font-size: 0.7rem;
+  font-weight: 950;
+  text-transform: uppercase;
 }
 
 .tcg-pack-rip-stage {
   display: grid;
   justify-items: center;
-  gap: 9px;
-  padding: 10px;
+  gap: 8px;
+  padding: 7px 10px 9px;
 }
 
 .tcg-pack-rip-stage p {
@@ -7676,8 +7727,8 @@ button.command-card:focus-visible {
 .tcg-pack-rip-target {
   display: grid;
   justify-items: center;
-  gap: 12px;
-  width: min(100%, 300px);
+  gap: 10px;
+  width: min(100%, 254px);
   border: 0;
   background: transparent;
   color: inherit;
@@ -7710,7 +7761,60 @@ button.command-card:focus-visible {
 
 .tcg-pack-reveal-shell {
   display: grid;
-  gap: 10px;
+  gap: 9px;
+}
+
+.tcg-pack-reveal-shell .tcg-pack-results-grid {
+  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+  gap: 8px;
+  align-items: stretch;
+}
+
+.tcg-pack-reveal-shell .tcg-pack-result-card {
+  height: 100%;
+  padding: 6px;
+}
+
+.tcg-pack-reveal-shell .tcg-pack-result-copy {
+  gap: 5px;
+}
+
+.tcg-pack-reveal-shell .tcg-card-status-row {
+  gap: 4px;
+}
+
+.tcg-pack-reveal-shell .tcg-card-rarity,
+.tcg-pack-reveal-shell .tcg-owned-pill,
+.tcg-pack-reveal-shell .tcg-pack-quantity-row span {
+  padding: 4px 6px;
+  font-size: 0.64rem;
+}
+
+.tcg-pack-reveal-shell .tcg-pack-result-copy strong {
+  font-size: 0.8rem;
+}
+
+.tcg-reveal-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.tcg-reveal-toolbar > span {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--muted);
+  padding: 6px 8px;
+  font-size: 0.7rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.tcg-reveal-toolbar .compact-action {
+  min-height: 32px;
+  padding: 7px 10px;
 }
 
 .tcg-pack-hidden-card {
@@ -7719,17 +7823,19 @@ button.command-card:focus-visible {
   display: grid;
   align-content: center;
   justify-items: center;
-  gap: 8px;
+  gap: 4px;
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(196, 30, 58, 0.38);
+  border: 1px solid rgba(196, 30, 58, 0.24);
   background:
     radial-gradient(circle at 50% 20%, rgba(196, 30, 58, 0.24), transparent 34%),
     linear-gradient(145deg, rgba(255, 255, 255, 0.06), transparent 34%),
     rgba(8, 8, 10, 0.98);
   color: #fff0f3;
   cursor: pointer;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.035),
+    0 12px 28px rgba(0, 0, 0, 0.28);
   opacity: 0;
   transform: translateY(12px) scale(0.965);
   animation: tcg-pack-reveal 520ms cubic-bezier(0.2, 0.9, 0.28, 1) forwards;
@@ -7744,6 +7850,7 @@ button.command-card:focus-visible {
   display: block;
   object-fit: cover;
   object-position: center;
+  transform: scale(1.012);
 }
 
 .tcg-pack-hidden-card::before {
@@ -7767,10 +7874,10 @@ button.command-card:focus-visible {
 
 .tcg-pack-hidden-card[data-has-image="true"]::before {
   inset: 0;
-  border-color: rgba(196, 30, 58, 0.2);
+  border-color: rgba(196, 30, 58, 0.16);
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.035),
-    inset 0 -36px 52px rgba(0, 0, 0, 0.5);
+    inset 0 -32px 44px rgba(0, 0, 0, 0.46);
 }
 
 .tcg-pack-hidden-card[data-has-image="true"]::after {
@@ -7787,14 +7894,14 @@ button.command-card:focus-visible {
 
 .tcg-pack-hidden-card span {
   color: rgba(255, 255, 255, 0.22);
-  font-size: 1.8rem;
+  font-size: 1.18rem;
   font-weight: 950;
 }
 
 .tcg-pack-hidden-card strong {
   max-width: 11ch;
   color: #ffd8df;
-  font-size: 0.74rem;
+  font-size: 0.66rem;
   font-weight: 950;
   text-transform: uppercase;
   text-align: center;
@@ -7803,19 +7910,19 @@ button.command-card:focus-visible {
 .tcg-pack-hidden-card[data-has-image="true"] span {
   align-self: start;
   justify-self: start;
-  margin: 9px;
-  color: rgba(255, 255, 255, 0.42);
-  font-size: 0.88rem;
+  margin: 7px;
+  color: rgba(255, 255, 255, 0.34);
+  font-size: 0.72rem;
   line-height: 1;
 }
 
 .tcg-pack-hidden-card[data-has-image="true"] strong {
   align-self: end;
-  margin: 0 9px 10px;
-  padding: 5px 7px;
-  border: 1px solid rgba(196, 30, 58, 0.36);
-  background: rgba(0, 0, 0, 0.62);
-  box-shadow: 0 0 18px rgba(196, 30, 58, 0.16);
+  margin: 0 8px 8px;
+  padding: 4px 6px;
+  border: 1px solid rgba(196, 30, 58, 0.26);
+  background: rgba(0, 0, 0, 0.56);
+  box-shadow: 0 0 14px rgba(196, 30, 58, 0.12);
 }
 
 @keyframes tcg-pack-rip-pulse {
@@ -7925,8 +8032,16 @@ button.command-card:focus-visible {
     grid-template-columns: 1fr;
   }
 
+  .tcg-pack-overlay-actions {
+    justify-content: flex-start;
+  }
+
   .tcg-pack-overlay-header .compact-action {
     justify-self: start;
+  }
+
+  .tcg-pack-reveal-shell .tcg-pack-results-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .tcg-open-pack-button,
@@ -7977,6 +8092,14 @@ button.command-card:focus-visible {
 
   .tcg-owned-pack-card {
     padding: 8px;
+  }
+
+  .tcg-pack-overlay-card {
+    gap: 8px;
+  }
+
+  .tcg-pack-reveal-shell .tcg-pack-results-grid {
+    gap: 7px;
   }
 
   .tcg-pack-hidden-card {
