@@ -8,6 +8,7 @@
 - Milestone 30C-B: TCG album visual polish and repo-served art asset pipeline notes.
 - Milestone 30C-C: First five temporary smoke-card art assets added for Owner preview testing.
 - Milestone 30C-D: Full Season 0 temporary art import for all 50 catalog cards.
+- Milestone 30D-A: Owner-only TCG test pack backend/RPC production-applied.
 - Milestone 30A: TCG/Card Collection planning.
 - Milestone 1: React + Vite scaffold and documentation base.
 - Milestone 2: Supabase schema/RLS plan, migrations, and local validation.
@@ -28,11 +29,12 @@
 
 ## Recommended Next
 
-Milestone 30C-A Owner-only Card Collection preview is live, Milestone 30C-A2 adds a controlled Owner-only smoke grant button, Milestone 30C-B improves the album visuals, Milestone 30C-C adds smoke-card art, and Milestone 30C-D adds temporary art for all 50 Season 0 cards. Next TCG work should complete Owner visual smoke, replace temporary art with approved final assets when available, then plan any member-facing release separately. Pack opening, shop, economy, wallet/currency, drop rates, payments, trading, marketplace, and battles remain out of scope until separately planned.
+Milestone 30C-A Owner-only Card Collection preview is live, Milestone 30C-A2 adds a controlled Owner-only smoke grant button, Milestone 30C-B improves the album visuals, Milestone 30C-C/30C-D add temporary art coverage, and Milestone 30D-A adds the Owner-only backend/RPC foundation for test pack opening. Next TCG work should build an Owner-only pack UI for controlled testing, then replace temporary art with approved final assets and plan any member-facing release separately. Shop, economy, wallet/currency, payments, trading, marketplace, and battles remain out of scope until separately planned.
 
 Strong candidates:
 
-- Owner click-through smoke for full Season 0 art coverage, owned/missing/favorite/detail UI, and mobile detail sheet.
+- Owner-only pack opening UI that calls backend `tcg_owner_open_test_pack`; frontend must not calculate drops.
+- Owner click-through smoke for full Season 0 art coverage, owned/missing/favorite/detail UI, mobile detail sheet, and pack-result display.
 - Replace temporary smoke art with approved final card art under `public/assets/tcg/art/`.
 - Plan member-release gating separately after Owner acceptance.
 - Manual Vercel GitHub App restriction to only `Ultimate99/anteiku-guild-manager`.

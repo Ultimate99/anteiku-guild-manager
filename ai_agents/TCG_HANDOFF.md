@@ -9,9 +9,10 @@ Milestone 30A planning is complete. No backend, frontend, SQL, Supabase, or prod
 - Milestone 30C-B TCG album visual polish and repo-served asset-pipeline notes are implemented.
 - Milestone 30C-C adds temporary generated art assets for only the five Owner smoke-test cards.
 - Milestone 30C-D adds temporary generated art assets for all 50 Season 0 cards.
+- Milestone 30D-A adds Owner-only test pack backend/RPC support and is production-applied through `20260601000200_tcg_owner_pack_backend.sql`.
 - Milestone 30B backend/RPC foundation is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
-- No packs, shop, economy, currency, drop rates, routes beyond `/tcg`, uploads, or Storage have been implemented.
-- The next step is authenticated Owner visual smoke for full Season 0 art coverage, then replacement with final approved art or member-release planning after Owner acceptance.
+- No member-facing packs, shop, economy, currency, routes beyond `/tcg`, uploads, or Storage have been implemented.
+- No member-facing TCG release exists yet. The next step is Owner-only pack UI/testing; frontend must call the backend RPC and never calculate drops client-side.
 
 ## Product Direction
 
@@ -31,8 +32,8 @@ Initial staff value:
 
 Delayed:
 
-- Pack opening.
-- Drop rates.
+- Member-facing pack opening.
+- Member-facing drop rates/balancing.
 - Shop/economy.
 - Wallets/currency.
 - Premium/payment flows.
@@ -69,7 +70,7 @@ Implemented backend only:
 Do not implement:
 
 - UI.
-- Pack opening.
+- Member-facing pack opening UI.
 - Drop rates.
 - Shop.
 - Economy.
@@ -211,6 +212,61 @@ Validation:
 - All 50 are valid PNGs at `1086x1448`.
 - `npm.cmd run build` passed.
 - No Supabase Storage, uploads, generated-new-art step, packs, shop, economy, member visibility, or CP paths were added.
+
+## 30D-A Owner-Only Test Pack Backend/RPC
+
+Implemented backend/RPC only:
+
+- Added `tcg_packs`.
+- Added `tcg_pack_drop_rates`.
+- Added `tcg_pack_openings`.
+- Extended `tcg_inventory_events` allowed event/source values for pack openings.
+- Seeded one active Owner-test pack:
+  - code `season_0_test_pack`
+  - name `Season 0 Test Pack`
+  - cards per pack `5`
+  - owner-test-only `true`
+- Seeded temporary integer drop weights:
+  - Common `6000`
+  - Uncommon `2500`
+  - Rare `1000`
+  - Epic `400`
+  - Legendary `90`
+  - Mythic `10`
+- Added `tcg_owner_open_test_pack(p_pack_code text default 'season_0_test_pack')`.
+
+RPC behavior:
+
+- Resolves active profile server-side through existing TCG active-profile helper.
+- Requires active approved Owner profile.
+- Rolls all cards in the backend.
+- Updates `tcg_player_inventory`.
+- Writes one `tcg_inventory_events` row per card.
+- Writes one `tcg_pack_openings` history row.
+- Returns a five-card result payload with safe card metadata for later UI.
+- Duplicates are allowed and stack inventory quantity.
+- No currency, wallet, shop, payment, member access, or frontend UI was added.
+
+Validation:
+
+- Local `npx.cmd supabase db reset` passed through `20260601000200_tcg_owner_pack_backend.sql`.
+- `supabase/tests/tcg_30d_pack_validation.sql` passed `18 PASS / 0 FAIL / 0 SKIP`.
+- Existing `supabase/tests/tcg_30b_validation.sql` passed `19 PASS / 0 FAIL / 0 SKIP`.
+- Broad `supabase/tests/local_validation_anteiku.sql` passed its regression suite with no failures.
+- `npm.cmd run build` passed.
+
+Production:
+
+- Production dry-run showed exactly one pending migration: `20260601000200_tcg_owner_pack_backend.sql`.
+- Production migration apply/list verification passed.
+- Read-only production verification confirmed:
+  - `tcg_packs`, `tcg_pack_drop_rates`, and `tcg_pack_openings` exist with RLS enabled.
+  - No direct anon/authenticated table grants exist for the new pack tables.
+  - `tcg_owner_open_test_pack(p_pack_code text default 'season_0_test_pack')` exists.
+  - Authenticated execute grant exists for the RPC; anon execute was not present.
+  - `season_0_test_pack` is active, Owner-test-only, has 5 cards per pack, 6 drop rates, and total weight 10000.
+  - Active Owner count remains `1`.
+- No production Owner pack opening smoke was performed; user approval is required before creating production pack-opening/inventory mutations.
 
 ## 30B RPC Candidates
 

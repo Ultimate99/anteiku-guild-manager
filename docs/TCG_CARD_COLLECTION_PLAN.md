@@ -1,6 +1,6 @@
 # TCG/Card Collection Plan
 
-Milestone 30A planning started this document. Milestone 30B is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`. Milestone 30C-A Owner-only Card Collection preview UI is deployed through commit `dbb67da feat: add owner tcg collection preview`; Milestone 30C-A2 Owner-only smoke grant control is deployed through commit `e96a489 feat: add owner tcg smoke grant`; Milestone 30C-B album visual polish and repo-served asset-pipeline notes are implemented; Milestone 30C-C adds temporary art for the five smoke-test cards; Milestone 30C-D adds temporary art for all 50 Season 0 cards. Pack opening, shop, economy, and final approved card artwork remain unimplemented.
+Milestone 30A planning started this document. Milestone 30B is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`. Milestone 30C-A Owner-only Card Collection preview UI is deployed through commit `dbb67da feat: add owner tcg collection preview`; Milestone 30C-A2 Owner-only smoke grant control is deployed through commit `e96a489 feat: add owner tcg smoke grant`; Milestone 30C-B album visual polish and repo-served asset-pipeline notes are implemented; Milestone 30C-C adds temporary art for the five smoke-test cards; Milestone 30C-D adds temporary art for all 50 Season 0 cards; Milestone 30D-A adds Owner-only test pack backend/RPC support through `20260601000200_tcg_owner_pack_backend.sql`. Member-facing packs, shop, economy, and final approved card artwork remain unimplemented.
 
 ## Product Goal
 
@@ -22,7 +22,7 @@ Owners/admins should eventually be able to:
 
 Delayed until later:
 
-- Pack opening and drop-rate logic.
+- Member-facing pack opening and final drop-rate balancing.
 - Economy, wallets, duplicate burning, shop, and premium currency.
 - Payments or real-money purchase flows.
 - Battles, card stats, trading, marketplace, or public collection pages.
@@ -37,7 +37,9 @@ Delayed until later:
 - 30C-D: Full Season 0 temporary art import. Complete.
 - 30C-E: Replace temporary art with approved final artwork when ready.
 - 30C-F: Member release planning after Owner acceptance.
-- 30D: Pack opening backend/RPC.
+- 30D-A: Owner-only test pack backend/RPC. Complete and production-applied.
+- 30D-B: Owner-only pack opening UI/animation preview.
+- 30D-C: Owner pack smoke and balancing feedback.
 - 30E: Pack opening animation/UI.
 - 30F: Free shop/economy.
 - 30G: Admin TCG tools.
@@ -163,7 +165,8 @@ Later RPCs:
 
 - `get_public_profile_card_showcase(p_profile_slug text)`
 - `set_my_card_showcase(p_card_keys text[])`
-- `open_tcg_pack(p_pack_key text)`
+- `tcg_owner_open_test_pack(p_pack_code text default 'season_0_test_pack')` is implemented for Owner-only testing.
+- `open_tcg_pack(p_pack_key text)` remains a later member-facing candidate after release planning.
 - `admin_create_or_update_card(...)`
 - `admin_adjust_pack_availability(...)`
 - `sell_duplicate_card(p_card_key text, p_quantity integer)`
@@ -412,6 +415,51 @@ Validation:
 - All 50 are valid PNGs at `1086x1448`.
 - `npm.cmd run build` passed.
 - No SQL, RPC, service, catalog seed, Storage/upload, pack, shop, economy, member visibility, or CP changes.
+
+## Phase 30D-A Owner-Only Test Pack Backend/RPC
+
+Implemented:
+
+- `tcg_packs`
+- `tcg_pack_drop_rates`
+- `tcg_pack_openings`
+- New pack-opening event/source values in `tcg_inventory_events`.
+- Seeded `season_0_test_pack`, Owner-test-only, 5 cards per pack.
+- Seeded integer drop weights:
+  - Common `6000`
+  - Uncommon `2500`
+  - Rare `1000`
+  - Epic `400`
+  - Legendary `90`
+  - Mythic `10`
+- RPC `tcg_owner_open_test_pack(p_pack_code text default 'season_0_test_pack')`.
+
+RPC rules:
+
+- Owner-only.
+- Active approved Owner profile is resolved server-side.
+- Backend calculates drops; frontend must never calculate pack results.
+- Duplicates are allowed.
+- Inventory is updated transactionally by the RPC.
+- One inventory event is written per card.
+- One pack opening history row is written per opening.
+- No currency or pack cost exists yet.
+- No member-facing pack access exists yet.
+
+Validation:
+
+- Local Supabase reset passed.
+- `tcg_30d_pack_validation.sql` passed `18 PASS / 0 FAIL / 0 SKIP`.
+- Existing `tcg_30b_validation.sql` passed `19 PASS / 0 FAIL / 0 SKIP`.
+- Broad `local_validation_anteiku.sql` regression suite passed.
+- `npm.cmd run build` passed.
+
+Production:
+
+- Dry-run showed only `20260601000200_tcg_owner_pack_backend.sql` pending.
+- Migration applied to production.
+- Production DB verification confirmed new tables/RLS, no broad direct grants, RPC existence/authenticated execute grant, seeded pack/rates, and active Owner count `1`.
+- No production pack-opening mutation smoke was performed without explicit approval.
 
 Canonical v0.1 rules:
 

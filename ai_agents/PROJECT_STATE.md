@@ -136,6 +136,46 @@ Security:
 - Backend/RPC authority remains unchanged.
 - No direct TCG inventory/event writes, service-role path, Supabase Storage, uploads, or CP references were added.
 
+## Milestone 30D-A Owner-Only TCG Pack Backend/RPC
+
+Owner-only pack backend/RPC foundation is implemented and production-applied through `20260601000200_tcg_owner_pack_backend.sql`.
+
+Implemented:
+- Added `tcg_packs`, `tcg_pack_drop_rates`, and `tcg_pack_openings`.
+- Enabled RLS and revoked direct anon/authenticated table access for new pack tables.
+- Extended TCG inventory event constraints to support pack-open events.
+- Seeded active Owner-test-only pack `season_0_test_pack`, 5 cards per pack.
+- Seeded temporary integer rarity weights: Common 6000, Uncommon 2500, Rare 1000, Epic 400, Legendary 90, Mythic 10.
+- Added `tcg_owner_open_test_pack(p_pack_code text default 'season_0_test_pack')`.
+
+RPC behavior:
+- Requires authenticated, approved active Owner profile through existing active-profile helpers.
+- Rejects normal members and pending/restricted profiles.
+- Performs all pack rolls backend-side.
+- Updates `tcg_player_inventory`, stacks duplicates, writes one `tcg_inventory_events` row per card, and records `tcg_pack_openings` history.
+- Returns safe card metadata for future UI: card id/no/key/name, rarity, type/faction, collector display value, art path, quantity delta, previous/new quantity, and duplicate flag.
+- No frontend pack UI, member pack access, shop, economy, wallet/currency, payments, client-side drop calculation, or CP paths were added.
+
+Validation:
+- Local `npx.cmd supabase db reset` passed.
+- `supabase/tests/tcg_30d_pack_validation.sql` passed `18 PASS / 0 FAIL / 0 SKIP`.
+- Existing `supabase/tests/tcg_30b_validation.sql` passed `19 PASS / 0 FAIL / 0 SKIP`.
+- Broad `supabase/tests/local_validation_anteiku.sql` passed its regression suite.
+- `npm.cmd run build` passed.
+
+Production:
+- Dry-run showed exactly one pending migration: `20260601000200_tcg_owner_pack_backend.sql`.
+- Migration was applied to production.
+- Migration list shows `20260601000200` applied remotely.
+- Read-only production verification confirmed:
+  - `tcg_packs`, `tcg_pack_drop_rates`, and `tcg_pack_openings` exist with RLS enabled.
+  - No direct anon/authenticated table grants exist on the new pack tables.
+  - `tcg_owner_open_test_pack(p_pack_code text default 'season_0_test_pack')` exists.
+  - Authenticated execute is granted; anon execute was not present.
+  - `season_0_test_pack` is active, Owner-test-only, has `5` cards per pack, `6` drop rates, and total weight `10000`.
+  - Active Owner count remains `1`.
+- No production Owner pack opening smoke was performed because that would intentionally mutate production inventory/opening history and requires explicit approval.
+
 ## Milestone 30B TCG Catalog + Inventory Backend Production Applied
 
 TCG/Card Collection backend foundation is implemented, locally validated, and applied to production through `20260601000100_tcg_30b_catalog_inventory.sql`.
