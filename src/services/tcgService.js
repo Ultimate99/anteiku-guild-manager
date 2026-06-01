@@ -72,6 +72,41 @@ function mapCard(row) {
   };
 }
 
+function mapPackCard(row) {
+  const cardType = safeString(row?.card_type);
+
+  return {
+    cardId: row?.card_id || null,
+    cardNo: safeString(row?.card_no),
+    cardKey: safeString(row?.card_key),
+    cardName: safeString(row?.name) || safeString(row?.card_name),
+    rarityKey: safeString(row?.rarity_key),
+    rarityName: safeString(row?.rarity_name),
+    raritySortOrder: safeNumber(row?.rarity_sort_order),
+    cardType: VALID_CARD_TYPES.has(cardType) ? cardType : 'Character',
+    faction: safeString(row?.faction),
+    collectorValue: safeNumber(row?.collector_value),
+    artPath: safeTcgArtPath(row?.art_path),
+    quantityDelta: safeNumber(row?.quantity_delta),
+    previousQuantity: safeNumber(row?.previous_quantity),
+    newQuantity: safeNumber(row?.new_quantity),
+    isDuplicate: safeBoolean(row?.is_duplicate),
+  };
+}
+
+function mapPackOpening(row) {
+  const results = Array.isArray(row?.results) ? row.results : [];
+
+  return {
+    openingId: row?.opening_id || null,
+    packCode: safeString(row?.pack_code),
+    packName: safeString(row?.pack_name),
+    cardsOpened: safeNumber(row?.cards_opened),
+    createdAt: row?.created_at || null,
+    results: results.map(mapPackCard).filter((card) => card.cardKey),
+  };
+}
+
 export function mergeCatalogWithCollection(catalogRows, collectionRows) {
   const collectionByKey = new Map(
     collectionRows
@@ -193,4 +228,19 @@ export async function tcgAdminGrantCard({ targetProfileId, cardKey, quantity, re
       eventId: row?.event_id || null,
     }))
     : [];
+}
+
+export async function tcgOwnerOpenTestPack(packCode = 'season_0_test_pack') {
+  const client = requireSupabase();
+  const { data, error } = await client.rpc('tcg_owner_open_test_pack', {
+    p_pack_code: safeString(packCode) || 'season_0_test_pack',
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  const row = Array.isArray(data) ? data[0] : data;
+
+  return mapPackOpening(row);
 }

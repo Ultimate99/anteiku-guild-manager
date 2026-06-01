@@ -6,11 +6,13 @@ import {
   tcgAdminGrantCard,
   tcgGetCatalog,
   tcgGetMyCollection,
+  tcgOwnerOpenTestPack,
   tcgSetCardFavorite,
 } from '../services/tcgService.js';
 
 const FILTERS = ['all', 'owned', 'missing', 'favorites'];
 const ALL_RARITIES = 'all';
+const TEST_PACK_CODE = 'season_0_test_pack';
 const SMOKE_GRANT_REASON = '30C-A owner visual smoke';
 const SMOKE_GRANT_CARDS = [
   { cardKey: 's0_001_20th_ward_civilian', quantity: 3 },
@@ -49,6 +51,10 @@ function getDisplayError(error, fallback) {
   return message || fallback;
 }
 
+function getPackResultLabel(card, t) {
+  return card.isDuplicate ? t('tcg.duplicate') : t('tcg.newPull');
+}
+
 function TcgArt({ card, size = 'card' }) {
   const [failed, setFailed] = useState(false);
   const imageSrc = failed ? '' : getCardImage(card);
@@ -74,6 +80,96 @@ function TcgArt({ card, size = 'card' }) {
         </div>
       )}
     </div>
+  );
+}
+
+function TcgPackResultCard({ card, index, language, t }) {
+  const quantityDelta = Math.max(1, Number(card.quantityDelta) || 1);
+
+  return (
+    <article
+      className="tcg-pack-result-card"
+      data-rarity={card.rarityKey || 'common'}
+      data-duplicate={card.isDuplicate}
+      style={{ '--tcg-reveal-index': index }}
+    >
+      <TcgArt card={card} size="pack" />
+      <div className="tcg-pack-result-copy">
+        <div className="tcg-card-status-row">
+          <span className="tcg-card-rarity">{card.rarityName || card.rarityKey}</span>
+          <span className="tcg-owned-pill">{getPackResultLabel(card, t)}</span>
+        </div>
+        <strong>{card.cardName}</strong>
+        <small>{card.cardNo}</small>
+        <div className="tcg-pack-quantity-row">
+          <span>{`+${formatNumber(quantityDelta, language)}`}</span>
+          <span>{`x${formatNumber(card.newQuantity, language)}`}</span>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function TcgPackPreviewPanel({ opening, openingError, openingLoading, language, t, onOpen }) {
+  const pulledCards = opening?.results ?? [];
+  const displayedCardsOpened = opening?.cardsOpened || 5;
+
+  return (
+    <section className="panel tcg-pack-panel" aria-label={t('tcg.testPackTitle')}>
+      <div className="tcg-pack-panel-header">
+        <div>
+          <StatusBadge tone="warning">{t('tcg.ownerTestOnly')}</StatusBadge>
+          <h3>{t('tcg.testPackTitle')}</h3>
+          <p>{t('tcg.testPackSubtitle')}</p>
+        </div>
+        <button
+          type="button"
+          className="primary-action compact-action tcg-open-pack-button"
+          onClick={onOpen}
+          disabled={openingLoading}
+        >
+          {openingLoading ? t('tcg.openingPack') : t('tcg.openTestPack')}
+        </button>
+      </div>
+
+      <div className="tcg-pack-facts" aria-label={t('tcg.packPreview')}>
+        <span>{t('tcg.containsFiveCards')}</span>
+        <span>{t('tcg.backendDecidesDrops')}</span>
+        <span>{t('tcg.comingSoon')}</span>
+      </div>
+
+      {openingError ? (
+        <p className="tcg-pack-error" role="alert">
+          {openingError}
+        </p>
+      ) : null}
+
+      {opening ? (
+        <div className="tcg-pack-result-shell" data-revealed={pulledCards.length > 0}>
+          <div className="tcg-pack-result-heading">
+            <div>
+              <StatusBadge tone="success">{t('tcg.packOpened')}</StatusBadge>
+              <h4>{opening.packName || t('tcg.testPackTitle')}</h4>
+            </div>
+            <span>{`${t('tcg.cardsPulled')} ${formatNumber(displayedCardsOpened, language)}`}</span>
+          </div>
+
+          <div className="tcg-pack-results-grid" aria-label={t('tcg.cardsPulled')}>
+            {pulledCards.map((card, index) => (
+              <TcgPackResultCard
+                key={`${opening.openingId || opening.packCode}-${card.cardKey}-${index}`}
+                card={card}
+                index={index}
+                language={language}
+                t={t}
+              />
+            ))}
+          </div>
+        </div>
+      ) : (
+        <p className="tcg-pack-preview-note">{t('tcg.ownerTestOnlyBody')}</p>
+      )}
+    </section>
   );
 }
 
@@ -202,6 +298,9 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
   const [favoriteBusyKey, setFavoriteBusyKey] = useState('');
   const [smokeGrantLoading, setSmokeGrantLoading] = useState(false);
   const [smokeGrantMessage, setSmokeGrantMessage] = useState('');
+  const [packOpeningLoading, setPackOpeningLoading] = useState(false);
+  const [packOpening, setPackOpening] = useState(null);
+  const [packOpeningError, setPackOpeningError] = useState('');
 
   const isOwner = Boolean(activeAdminContext?.isOwner);
   const activeOwnerProfileId = isOwner ? activeAdminContext?.activeProfileId : null;
@@ -357,6 +456,28 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
     }
   }, [activeOwnerProfileId, isOwner, loadCards, t]);
 
+  const handleOpenTestPack = useCallback(async () => {
+    if (!isOwner) {
+      return;
+    }
+
+    setPackOpeningLoading(true);
+    setPackOpeningError('');
+    setError('');
+
+    try {
+      const opening = await tcgOwnerOpenTestPack(TEST_PACK_CODE);
+      setPackOpening(opening);
+      await loadCards();
+      setFilter('owned');
+      setRarityFilter(ALL_RARITIES);
+    } catch (openingError) {
+      setPackOpeningError(getDisplayError(openingError, t('tcg.packOpeningFailed')));
+    } finally {
+      setPackOpeningLoading(false);
+    }
+  }, [isOwner, loadCards, t]);
+
   if (activeAdminContextLoading) {
     return (
       <div className="stack">
@@ -416,6 +537,15 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
         </button>
         {smokeGrantMessage ? <p className="success-copy">{smokeGrantMessage}</p> : null}
       </section>
+
+      <TcgPackPreviewPanel
+        opening={packOpening}
+        openingError={packOpeningError}
+        openingLoading={packOpeningLoading}
+        language={language}
+        t={t}
+        onOpen={handleOpenTestPack}
+      />
 
       <section className="tcg-progress-grid" aria-label={t('tcg.collectionProgress')}>
         <div className="tcg-progress-card">
