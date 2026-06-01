@@ -20,6 +20,7 @@ Milestone 30A planning is complete. No backend, frontend, SQL, Supabase, or prod
 - Milestone 30F-C adds the Owner-only `/tcg` pack inventory/opening UI and is deployed through commit `ada2b74 feat: add tcg pack inventory opening ui`.
 - Milestone 30F-D adds temporary Season 0 pack-front and card-back assets and is deployed through commit `6bcebab feat: add tcg pack and card back assets`.
 - Milestone 30F-E adds the compact TCG pack inventory UI hotfix and is deployed through commit `bc3c705 fix: compact tcg pack inventory ui`.
+- Milestone 30F-F adds the TCG pack/reveal UI polish hotfix and is deployed through commit `e77a385 style: polish tcg pack reveal ui`.
 - Milestone 30B backend/RPC foundation is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
 - No member-facing packs, shop, economy UI, routes beyond `/tcg`, uploads, or Storage have been implemented.
 - No member-facing TCG release exists yet. The next step is controlled Owner manual mutation smoke for the deployed pack loop; frontend calls backend RPCs and never calculates drops or mutates wallets/inventory client-side.
@@ -674,6 +675,37 @@ Production:
 - Non-mutating smoke passed:
   - `/tcg?tcg-pack-compact-smoke=1` returned HTTP 200.
   - Deployed bundle `assets/index-DLnPnWpl.js` contains `tcg-owned-open-button`, `tcg-shop-success-actions`, `Go to Packs`, `tcg_owner_buy_test_pack_to_inventory`, and `tcg_owner_open_owned_pack`.
+- Codex did not click production Buy, Open, Rip, Grant, Grant Coins, or Favorite controls.
+- No production wallet, pack inventory, card inventory, or favorite mutation was performed by Codex during this smoke.
+
+## 30F-F Pack/Reveal UI Polish Hotfix
+
+Status: complete and deployed through commit `e77a385 style: polish tcg pack reveal ui`.
+
+Implemented:
+
+- Added a local canvas cleanup pass for the pack-front image that turns near-black edge-connected background pixels transparent when possible.
+- Canvas cleanup is frontend-only, pack-image-only, cached by asset path, and falls back to the original image if processing fails.
+- Tightened the Packs window into a collectible-style display with the pack as the hero.
+- Kept compact quantity badge and compact `Open Pack` action.
+- Simplified reveal overlay so the pack name/status appears once in the top bar.
+- Added compact reveal toolbar with revealed-card count and `Reveal all`.
+- Improved reveal grid spacing and alignment for unrevealed/revealed mixed states.
+- Reduced unrevealed card clutter while keeping the temporary Season 0 card-back asset.
+- Preserved Shop stay-in-Shop behavior, swipe/rip, `Rip Open`, tap-to-reveal, `Reveal all`, pack animation setting, and refresh after opening.
+
+Validation:
+
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source checks confirmed no SQL/migration, Supabase/RLS/RPC, service, package, service worker, CP, GvG, Wall, 3v3, Push, Analytics, Ranking, Auth, Approval, or Account Switcher changes.
+- Frontend checks confirmed no direct TCG table access, no `member_cp`, no `cp_snapshots`, no CP analytics RPCs, no client-side drops, and no client-side wallet authority.
+
+Production:
+
+- Commit `e77a385` was pushed to `main`.
+- Non-mutating smoke passed:
+  - `/tcg?tcg-reveal-polish-smoke=1` returned HTTP 200.
+  - Deployed bundle `assets/index-BPcKi_cv.js` contains `tcg-reveal-toolbar`, `tcg-owned-pack-stage`, `tcg_owner_open_owned_pack`, and `tcg_owner_buy_test_pack_to_inventory`.
 - Codex did not click production Buy, Open, Rip, Grant, Grant Coins, or Favorite controls.
 - No production wallet, pack inventory, card inventory, or favorite mutation was performed by Codex during this smoke.
 

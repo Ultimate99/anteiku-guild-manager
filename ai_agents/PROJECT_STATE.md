@@ -1,5 +1,39 @@
 # Project State
 
+## Milestone 30F-F TCG Pack/Reveal UI Polish Hotfix Live
+
+Owner-only `/tcg` Packs and reveal UI received a second visual polish hotfix using the current pack/card-back assets, deployed through commit `e77a385 style: polish tcg pack reveal ui`.
+
+Implemented:
+- Added a small local canvas cleanup pass for the pack-front image that makes near-black edge-connected background pixels transparent when possible, with safe fallback to the original image if canvas processing fails.
+- Tightened the pack display into a collectible-style stage with the pack as the hero, compact quantity badge, and compact `Open Pack` action.
+- Kept the Shop behavior from 30F-E: buying stays in Shop and `Go to Packs` is manual.
+- Simplified the reveal overlay so the pack title/status appears once in a compact top bar.
+- Added a compact reveal toolbar with revealed-card count and `Reveal all`.
+- Improved the reveal grid spacing so unrevealed and revealed cards align better.
+- Reduced unrevealed card visual clutter while keeping the temporary Season 0 card-back asset.
+- Preserved swipe/rip, `Rip Open`, tap-to-reveal, `Reveal all`, collection refresh after opening, and animation toggle behavior.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no SQL/migration, Supabase/RLS/RPC, service, package, service worker, CP, GvG, Wall, 3v3, Push, Analytics, Ranking, Auth, Approval, or Account Switcher changes.
+- TCG checks found no direct TCG table access, no `member_cp`, no `cp_snapshots`, no CP analytics RPC usage, no client-side drops, and no client-side wallet authority.
+
+Production:
+- Commit `e77a385` was pushed to `main`.
+- Non-mutating production smoke passed:
+  - `/tcg?tcg-reveal-polish-smoke=1` returned HTTP 200.
+  - Deployed bundle `assets/index-BPcKi_cv.js` contains `tcg-reveal-toolbar`, `tcg-owned-pack-stage`, `tcg_owner_open_owned_pack`, and `tcg_owner_buy_test_pack_to_inventory`.
+- Codex did not click production Buy, Open, Rip, Grant, Grant Coins, or Favorite controls, and did not mutate production wallet, pack, card inventory, or favorites.
+
+Security:
+- Existing Owner-only `/tcg` guard and nav visibility remain unchanged.
+- Backend/RPC remains authority for pack quantity, wallet deduction, pack consumption, and card rolls.
+- No member-facing TCG access, CP join, CP value exposure, service-role path, direct table access, upload, Storage, or unrelated subsystem behavior change was added.
+
+Next:
+- Owner can visually retest the improved Packs/reveal flow and run controlled pack-loop mutation smoke when approved.
+
 ## Milestone 30F-E TCG Pack UI Compact Hotfix Live
 
 Owner-only `/tcg` pack inventory UI received a compact visual hotfix, deployed through commit `bc3c705 fix: compact tcg pack inventory ui`.
