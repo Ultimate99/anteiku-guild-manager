@@ -15,6 +15,7 @@ import { Gvg } from './pages/Gvg.jsx';
 import { ThreeVThree } from './pages/ThreeVThree.jsx';
 import { GuildWall } from './pages/GuildWall.jsx';
 import { PublicMemberProfile } from './pages/PublicMemberProfile.jsx';
+import { TcgCollection } from './pages/TcgCollection.jsx';
 import { AdminPanel } from './pages/AdminPanel.jsx';
 import { RejectedStatus } from './pages/RejectedStatus.jsx';
 import { RosterRestrictedStatus } from './pages/RosterRestrictedStatus.jsx';
@@ -30,6 +31,7 @@ const pageComponents = {
   gvg: Gvg,
   threeVThree: ThreeVThree,
   guildWall: GuildWall,
+  tcg: TcgCollection,
   publicProfile: PublicMemberProfile,
   admin: AdminPanel,
 };
@@ -73,6 +75,18 @@ function LoadingPanel() {
   );
 }
 
+function readInitialPageFromPath() {
+  if (readPublicProfileSlugFromPath()) {
+    return 'publicProfile';
+  }
+
+  if (typeof window !== 'undefined' && window.location.pathname === '/tcg') {
+    return 'tcg';
+  }
+
+  return 'dashboard';
+}
+
 function OfflineNotice() {
   const [isOnline, setIsOnline] = useState(() => (typeof navigator === 'undefined' ? true : navigator.onLine));
 
@@ -110,7 +124,7 @@ function AppContent() {
   } = useActiveAdminContext();
   const { t } = useLanguage();
   const [publicProfileSlug, setPublicProfileSlug] = useState(() => readPublicProfileSlugFromPath());
-  const [activePage, setActivePage] = useState(() => (readPublicProfileSlugFromPath() ? 'publicProfile' : 'dashboard'));
+  const [activePage, setActivePage] = useState(() => readInitialPageFromPath());
   const rosterStatus = membership?.roster_status ?? 'active';
   const statusItems = useMemo(
     () => ({
@@ -175,10 +189,14 @@ function AppContent() {
             return canViewAdmin;
           }
 
+          if (item.id === 'tcg') {
+            return Boolean(activeAdminContext?.isOwner);
+          }
+
           return true;
         })
         .map((item) => translateShellItem(item, t)),
-    [canViewAdmin, t],
+    [activeAdminContext?.isOwner, canViewAdmin, t],
   );
 
   const handleNavigate = useCallback((pageId, options = {}) => {
@@ -206,8 +224,12 @@ function AppContent() {
     setPublicProfileSlug('');
     setActivePage(pageId);
 
-    if (typeof window !== 'undefined' && window.location.pathname.startsWith('/members/')) {
-      window.history.pushState({ page: pageId }, '', '/');
+    if (typeof window !== 'undefined') {
+      if (pageId === 'tcg') {
+        window.history.pushState({ page: pageId }, '', '/tcg');
+      } else if (window.location.pathname.startsWith('/members/') || window.location.pathname === '/tcg') {
+        window.history.pushState({ page: pageId }, '', '/');
+      }
     }
   }, []);
 
@@ -222,7 +244,7 @@ function AppContent() {
       }
 
       setPublicProfileSlug('');
-      setActivePage('dashboard');
+      setActivePage(window.location.pathname === '/tcg' ? 'tcg' : 'dashboard');
     };
 
     window.addEventListener('popstate', handlePopState);
@@ -243,6 +265,14 @@ function AppContent() {
         id: 'publicProfile',
         label: t('publicProfile.title'),
         eyebrow: t('app.eyebrow.member'),
+      };
+    }
+
+    if (safeActivePage === 'tcg') {
+      return {
+        id: 'tcg',
+        label: t('tcg.title'),
+        eyebrow: t('tcg.ownerPreview'),
       };
     }
 

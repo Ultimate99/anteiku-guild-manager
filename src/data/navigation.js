@@ -56,6 +56,13 @@ export const navigationItems = [
     eyebrowKey: 'app.eyebrow.wall',
   },
   {
+    id: 'tcg',
+    label: 'Cards',
+    labelKey: 'nav.tcg',
+    eyebrow: 'Preview',
+    eyebrowKey: 'tcg.ownerPreview',
+  },
+  {
     id: 'admin',
     label: 'Admin',
     labelKey: 'nav.admin',
