@@ -6963,6 +6963,167 @@ button.command-card:focus-visible {
   padding-bottom: max(52px, calc(env(safe-area-inset-bottom) + 52px));
 }
 
+.tcg-hub-hero {
+  display: grid;
+  gap: 12px;
+  padding: 13px;
+}
+
+.tcg-hub-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+}
+
+.tcg-hub-header h3,
+.tcg-window-heading h3,
+.tcg-owner-lab-card h3 {
+  margin: 7px 0 3px;
+  overflow-wrap: anywhere;
+}
+
+.tcg-hub-header p,
+.tcg-window-heading p,
+.tcg-owner-lab-card p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.tcg-hub-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.tcg-hub-stat {
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  background:
+    linear-gradient(145deg, rgba(196, 30, 58, 0.1), transparent 48%),
+    rgba(5, 5, 7, 0.54);
+}
+
+.tcg-hub-stat span,
+.tcg-owner-lab-wallet span,
+.tcg-owner-lab-wallet small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.tcg-hub-stat strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--text);
+  font-size: clamp(0.92rem, 3.8vw, 1.18rem);
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.tcg-hub-stat[data-stat="coins"] strong {
+  color: #ffd8df;
+}
+
+.tcg-hub-tabs {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  padding: 2px 1px 4px;
+  scrollbar-width: thin;
+}
+
+.tcg-hub-tab {
+  flex: 0 0 auto;
+  min-height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 58%),
+    rgba(10, 10, 12, 0.94);
+  color: var(--muted);
+  padding: 8px 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.tcg-hub-tab[data-active="true"] {
+  border-color: rgba(196, 30, 58, 0.78);
+  background:
+    linear-gradient(180deg, rgba(196, 30, 58, 0.22), rgba(196, 30, 58, 0.08)),
+    rgba(12, 12, 14, 0.98);
+  color: var(--text);
+  box-shadow:
+    inset 0 -2px 0 rgba(196, 30, 58, 0.9),
+    0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+.tcg-hub-window {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.tcg-window-heading {
+  display: grid;
+  gap: 4px;
+  padding: 10px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  background:
+    linear-gradient(135deg, rgba(196, 30, 58, 0.1), transparent 42%),
+    rgba(10, 10, 13, 0.92);
+}
+
+.tcg-owner-lab-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.tcg-owner-lab-card {
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  padding: 12px;
+  border: 1px solid rgba(196, 30, 58, 0.34);
+  background:
+    linear-gradient(135deg, rgba(196, 30, 58, 0.13), transparent 38%),
+    rgba(10, 10, 12, 0.96);
+}
+
+.tcg-owner-lab-card[data-lab-card="coins"] {
+  border-color: rgba(255, 216, 116, 0.26);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 216, 116, 0.12), transparent 34%),
+    linear-gradient(135deg, rgba(196, 30, 58, 0.12), transparent 42%),
+    rgba(9, 9, 11, 0.96);
+}
+
+.tcg-owner-lab-card .success-copy {
+  margin: 0;
+  color: #8ee4a3;
+  font-weight: 800;
+}
+
+.tcg-owner-lab-wallet {
+  display: grid;
+  gap: 3px;
+  padding: 9px;
+  border: 1px solid rgba(255, 216, 116, 0.2);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.tcg-owner-lab-wallet strong {
+  color: #ffd8df;
+  font-size: clamp(1.18rem, 4.4vw, 1.58rem);
+  line-height: 1;
+}
+
 .tcg-progress-grid {
   gap: 7px;
 }
@@ -7249,13 +7410,72 @@ button.command-card:focus-visible {
 
 @media (min-width: 900px) {
   .tcg-card-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1180px) {
+  .tcg-card-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .tcg-hub-header {
+    grid-template-columns: 1fr;
+  }
+
+  .tcg-hub-header .compact-action {
+    justify-self: start;
+  }
+
+  .tcg-hub-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tcg-hub-tab {
+    padding-inline: 10px;
+  }
+
+  .tcg-owner-lab-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tcg-pack-panel-header,
+  .tcg-pack-result-heading,
+  .tcg-shop-header,
+  .tcg-shop-item {
+    grid-template-columns: 1fr;
+  }
+
+  .tcg-open-pack-button,
+  .tcg-shop-item-buy .primary-action,
+  .tcg-owner-lab-card .danger-action {
+    width: 100%;
+  }
+
+  .tcg-wallet-card,
+  .tcg-shop-item-buy {
+    justify-items: start;
+    text-align: left;
   }
 }
 
 @media (max-width: 390px) {
   .tcg-page {
     gap: 8px;
+  }
+
+  .tcg-hub-hero {
+    padding: 11px;
+  }
+
+  .tcg-hub-stats {
+    gap: 6px;
+  }
+
+  .tcg-hub-stat {
+    padding: 7px;
   }
 
   .tcg-smoke-panel {

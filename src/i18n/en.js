@@ -64,6 +64,18 @@ export const en = {
   tcg: {
     title: 'Card Collection',
     subtitle: 'Season 0: Anteiku Origins',
+    seasonZero: 'Season 0',
+    hubNavigation: 'Card collection windows',
+    hub: {
+      album: 'Album',
+      packs: 'Packs',
+      shop: 'Shop',
+      ownerLab: 'Owner Lab',
+    },
+    albumWindowBody: 'Track owned, missing, and favorite Season 0 cards.',
+    ownerLab: 'Owner Lab',
+    ownerLabBody: 'Controlled Owner-only testing controls. Backend remains authority.',
+    ownerLabWalletTitle: 'Test coin control',
     ownerPreview: 'Owner preview',
     accessDenied: 'Owner preview locked',
     ownerOnlyBody: 'This Card Collection preview is available to the Owner only.',

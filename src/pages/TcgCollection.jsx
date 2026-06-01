@@ -15,6 +15,7 @@ import {
 } from '../services/tcgService.js';
 
 const FILTERS = ['all', 'owned', 'missing', 'favorites'];
+const HUB_WINDOWS = ['album', 'packs', 'shop', 'ownerLab'];
 const ALL_RARITIES = 'all';
 const TEST_PACK_CODE = 'season_0_test_pack';
 const TEST_SHOP_ITEM_CODE = 'season_0_test_pack_shop';
@@ -195,12 +196,9 @@ function TcgShopPreviewPanel({
   purchase,
   loading,
   error,
-  grantLoading,
-  grantMessage,
   purchaseLoadingCode,
   language,
   t,
-  onGrantCoins,
   onBuyPack,
 }) {
   const displayedWallet = wallet ?? { balance: 0, currencyCode: 'anteiku_coins' };
@@ -209,7 +207,7 @@ function TcgShopPreviewPanel({
   const displayedCardsOpened = purchase?.opening?.cardsOpened || 5;
 
   return (
-    <section className="panel tcg-shop-panel" data-loading={loading || grantLoading || Boolean(purchaseLoadingCode)} aria-label={t('tcg.shopTestTitle')}>
+    <section className="panel tcg-shop-panel" data-loading={loading || Boolean(purchaseLoadingCode)} aria-label={t('tcg.shopTestTitle')}>
       <div className="tcg-shop-header">
         <div>
           <StatusBadge tone="warning">{t('tcg.ownerTestOnly')}</StatusBadge>
@@ -224,23 +222,6 @@ function TcgShopPreviewPanel({
         </div>
       </div>
 
-      <div className="tcg-shop-dev-row">
-        <div>
-          <strong>{t('tcg.ownerShopPreview')}</strong>
-          <span>{t('tcg.backendHandlesPurchaseDrops')}</span>
-        </div>
-        <button
-          type="button"
-          className="danger-action compact-action"
-          onClick={onGrantCoins}
-          disabled={loading || grantLoading}
-          aria-busy={grantLoading}
-        >
-          {grantLoading ? t('common.working') : t('tcg.grantTestCoins')}
-        </button>
-      </div>
-
-      {grantMessage ? <p className="success-copy">{grantMessage}</p> : null}
       {error ? <p className="tcg-pack-error" role="alert">{error}</p> : null}
 
       <div className="tcg-shop-list" aria-label={t('tcg.ownerShopPreview')}>
@@ -306,6 +287,74 @@ function TcgShopPreviewPanel({
           </p>
         </div>
       ) : null}
+    </section>
+  );
+}
+
+function TcgOwnerLabPanel({
+  activeOwnerProfileId,
+  smokeGrantLoading,
+  smokeGrantMessage,
+  smokeGrantSatisfied,
+  grantCoinsLoading,
+  grantCoinsMessage,
+  grantCoinsError,
+  wallet,
+  language,
+  t,
+  onSmokeGrant,
+  onGrantCoins,
+}) {
+  const displayedWallet = wallet ?? { balance: 0, currencyCode: 'anteiku_coins' };
+  const currencyLabel = getCurrencyLabel(displayedWallet.currencyCode, t);
+
+  return (
+    <section className="tcg-owner-lab-grid" aria-label={t('tcg.ownerLab')}>
+      <article className="tcg-owner-lab-card" data-lab-card="smoke">
+        <div>
+          <StatusBadge tone="warning">{t('tcg.ownerPreview')}</StatusBadge>
+          <h3>{t('tcg.smokeGrantTitle')}</h3>
+          <p>{t('tcg.smokeGrantBody')}</p>
+        </div>
+        <button
+          type="button"
+          className="danger-action compact-action"
+          onClick={onSmokeGrant}
+          disabled={smokeGrantLoading || !activeOwnerProfileId || smokeGrantSatisfied}
+          aria-busy={smokeGrantLoading}
+        >
+          {smokeGrantLoading
+            ? t('common.working')
+            : smokeGrantSatisfied
+              ? t('tcg.smokeGrantReady')
+              : t('tcg.smokeGrantButton')}
+        </button>
+        {smokeGrantMessage ? <p className="success-copy">{smokeGrantMessage}</p> : null}
+      </article>
+
+      <article className="tcg-owner-lab-card" data-lab-card="coins">
+        <div>
+          <StatusBadge tone="warning">{t('tcg.ownerTestOnly')}</StatusBadge>
+          <h3>{t('tcg.ownerLabWalletTitle')}</h3>
+          <p>{t('tcg.ownerLabBody')}</p>
+        </div>
+        <div className="tcg-owner-lab-wallet">
+          <span>{t('tcg.walletBalance')}</span>
+          <strong>{formatNumber(displayedWallet.balance, language)}</strong>
+          <small>{currencyLabel}</small>
+        </div>
+        <button
+          type="button"
+          className="danger-action compact-action"
+          onClick={onGrantCoins}
+          disabled={grantCoinsLoading}
+          aria-busy={grantCoinsLoading}
+        >
+          {grantCoinsLoading ? t('common.working') : t('tcg.grantTestCoins')}
+        </button>
+        {grantCoinsMessage ? <p className="success-copy">{grantCoinsMessage}</p> : null}
+        {grantCoinsError ? <p className="tcg-pack-error" role="alert">{grantCoinsError}</p> : null}
+      </article>
     </section>
   );
 }
@@ -426,6 +475,7 @@ function TcgDetailSheet({ card, language, t, onClose, onToggleFavorite, favorite
 
 export function TcgCollection({ activeAdminContext, activeAdminContextLoading }) {
   const { language, t } = useLanguage();
+  const [activeWindow, setActiveWindow] = useState('album');
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -444,6 +494,7 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
   const [economyError, setEconomyError] = useState('');
   const [grantCoinsLoading, setGrantCoinsLoading] = useState(false);
   const [grantCoinsMessage, setGrantCoinsMessage] = useState('');
+  const [grantCoinsError, setGrantCoinsError] = useState('');
   const [purchaseLoadingCode, setPurchaseLoadingCode] = useState('');
   const [shopPurchase, setShopPurchase] = useState(null);
   const favoriteRequestKeysRef = useRef(new Set());
@@ -508,6 +559,11 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
   useEffect(() => {
     loadEconomy();
   }, [loadEconomy]);
+
+  const handleRefreshAll = useCallback(() => {
+    loadCards();
+    loadEconomy();
+  }, [loadCards, loadEconomy]);
 
   const rarityOptions = useMemo(() => {
     const seen = new Map();
@@ -639,6 +695,7 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
       await loadCards();
       setFilter('owned');
       setRarityFilter(ALL_RARITIES);
+      setActiveWindow('album');
     } catch (grantError) {
       setError(getDisplayError(grantError, t('tcg.smokeGrantError')));
     } finally {
@@ -667,6 +724,7 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
       await loadCards();
       setFilter('owned');
       setRarityFilter(ALL_RARITIES);
+      setActiveWindow('packs');
     } catch (openingError) {
       setPackOpeningError(getDisplayError(openingError, t('tcg.packOpeningFailed')));
     } finally {
@@ -687,7 +745,7 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
     grantCoinsRequestRef.current = true;
     setGrantCoinsLoading(true);
     setGrantCoinsMessage('');
-    setEconomyError('');
+    setGrantCoinsError('');
 
     try {
       const nextWallet = await tcgOwnerGrantTestCoins(TEST_COIN_GRANT_AMOUNT);
@@ -695,7 +753,7 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
       setGrantCoinsMessage(t('tcg.testCoinsGranted'));
       await loadEconomy();
     } catch (grantError) {
-      setEconomyError(getDisplayError(grantError, t('tcg.grantFailed')));
+      setGrantCoinsError(getDisplayError(grantError, t('tcg.grantFailed')));
     } finally {
       grantCoinsRequestRef.current = false;
       setGrantCoinsLoading(false);
@@ -715,6 +773,7 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
     setPurchaseLoadingCode(shopItemCode);
     setEconomyError('');
     setGrantCoinsMessage('');
+    setGrantCoinsError('');
 
     try {
       const purchaseResult = await tcgOwnerBuyTestPack(shopItemCode);
@@ -722,6 +781,7 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
       await Promise.all([loadEconomy(), loadCards()]);
       setFilter('owned');
       setRarityFilter(ALL_RARITIES);
+      setActiveWindow('shop');
     } catch (purchaseError) {
       const message = purchaseError?.message?.toLowerCase() || '';
       setEconomyError(
@@ -761,136 +821,194 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
 
   return (
     <div className="stack tcg-page">
-      <section className="panel hero-panel tcg-hero">
-        <div className="section-heading-row">
+      <section className="panel hero-panel tcg-hero tcg-hub-hero">
+        <div className="tcg-hub-header">
           <div>
             <StatusBadge tone="warning">{t('tcg.ownerPreview')}</StatusBadge>
             <h3>{t('tcg.title')}</h3>
             <p>{t('tcg.subtitle')}</p>
           </div>
-          <button type="button" className="secondary-action compact-action" onClick={loadCards} disabled={loading}>
-            {loading ? t('common.refreshing') : t('common.refresh')}
+          <button
+            type="button"
+            className="secondary-action compact-action"
+            onClick={handleRefreshAll}
+            disabled={loading || economyLoading}
+          >
+            {loading || economyLoading ? t('common.refreshing') : t('common.refresh')}
           </button>
         </div>
-      </section>
 
-      <section className="panel tcg-smoke-panel" aria-label={t('tcg.smokeGrantTitle')}>
-        <div>
-          <StatusBadge tone="warning">{t('tcg.ownerPreview')}</StatusBadge>
-          <h3>{t('tcg.smokeGrantTitle')}</h3>
-          <p>{t('tcg.smokeGrantBody')}</p>
-        </div>
-        <button
-          type="button"
-          className="danger-action compact-action"
-          onClick={handleSmokeGrant}
-          disabled={smokeGrantLoading || !activeOwnerProfileId || smokeGrantSatisfied}
-        >
-          {smokeGrantLoading
-            ? t('common.working')
-            : smokeGrantSatisfied
-              ? t('tcg.smokeGrantReady')
-              : t('tcg.smokeGrantButton')}
-        </button>
-        {smokeGrantMessage ? <p className="success-copy">{smokeGrantMessage}</p> : null}
-      </section>
-
-      <TcgPackPreviewPanel
-        opening={packOpening}
-        openingError={packOpeningError}
-        openingLoading={packOpeningLoading}
-        language={language}
-        t={t}
-        onOpen={handleOpenTestPack}
-      />
-
-      <TcgShopPreviewPanel
-        wallet={wallet}
-        shopItems={shopItems}
-        purchase={shopPurchase}
-        loading={economyLoading}
-        error={economyError}
-        grantLoading={grantCoinsLoading}
-        grantMessage={grantCoinsMessage}
-        purchaseLoadingCode={purchaseLoadingCode}
-        language={language}
-        t={t}
-        onGrantCoins={handleGrantTestCoins}
-        onBuyPack={handleBuyTestPack}
-      />
-
-      <section className="tcg-progress-grid" aria-label={t('tcg.collectionProgress')}>
-        <div className="tcg-progress-card">
-          <span>{t('tcg.uniqueOwned')}</span>
-          <strong>
-            {formatNumber(progress.ownedUnique, language)} / {formatNumber(progress.totalCards, language)}
-          </strong>
-        </div>
-        <div className="tcg-progress-card">
-          <span>{t('tcg.totalOwnedQuantity')}</span>
-          <strong>{formatNumber(progress.totalQuantity, language)}</strong>
-        </div>
-        <div className="tcg-progress-card">
-          <span>{t('tcg.favorites')}</span>
-          <strong>{formatNumber(progress.favorites, language)}</strong>
+        <div className="tcg-hub-stats" aria-label={t('tcg.collectionProgress')}>
+          <div className="tcg-hub-stat">
+            <span>{t('tcg.uniqueOwned')}</span>
+            <strong>
+              {formatNumber(progress.ownedUnique, language)} / {formatNumber(progress.totalCards, language)}
+            </strong>
+          </div>
+          <div className="tcg-hub-stat">
+            <span>{t('tcg.totalOwnedQuantity')}</span>
+            <strong>{formatNumber(progress.totalQuantity, language)}</strong>
+          </div>
+          <div className="tcg-hub-stat">
+            <span>{t('tcg.favorites')}</span>
+            <strong>{formatNumber(progress.favorites, language)}</strong>
+          </div>
+          <div className="tcg-hub-stat" data-stat="coins">
+            <span>{t('tcg.anteikuCoins')}</span>
+            <strong>{formatNumber(wallet?.balance ?? 0, language)}</strong>
+          </div>
         </div>
       </section>
 
-      <section className="panel tcg-controls">
-        <div className="tcg-filter-row" role="tablist" aria-label={t('tcg.collectionFilters')}>
-          {FILTERS.map((filterKey) => (
-            <button
-              key={filterKey}
-              type="button"
-              className="tcg-filter-chip"
-              data-active={filter === filterKey}
-              onClick={() => setFilter(filterKey)}
-            >
-              {t(`tcg.filters.${filterKey}`)}
-            </button>
-          ))}
-        </div>
+      <nav className="tcg-hub-tabs" aria-label={t('tcg.hubNavigation')}>
+        {HUB_WINDOWS.map((windowKey) => (
+          <button
+            key={windowKey}
+            type="button"
+            className="tcg-hub-tab"
+            data-active={activeWindow === windowKey}
+            onClick={() => setActiveWindow(windowKey)}
+          >
+            {t(`tcg.hub.${windowKey}`)}
+          </button>
+        ))}
+      </nav>
 
-        <label className="tcg-rarity-select">
-          <span>{t('tcg.rarity')}</span>
-          <select value={rarityFilter} onChange={(event) => setRarityFilter(event.target.value)}>
-            <option value={ALL_RARITIES}>{t('tcg.filters.all')}</option>
-            {rarityOptions.map((rarity) => (
-              <option key={rarity.key} value={rarity.key}>
-                {rarity.label}
-              </option>
-            ))}
-          </select>
-        </label>
+      <section className="tcg-hub-window" data-window={activeWindow}>
+        {activeWindow === 'album' ? (
+          <>
+            <div className="tcg-window-heading">
+              <div>
+                <StatusBadge tone="neutral">{t('tcg.seasonZero')}</StatusBadge>
+                <h3>{t('tcg.hub.album')}</h3>
+                <p>{t('tcg.albumWindowBody')}</p>
+              </div>
+            </div>
+
+            <section className="tcg-progress-grid" aria-label={t('tcg.collectionProgress')}>
+              <div className="tcg-progress-card">
+                <span>{t('tcg.uniqueOwned')}</span>
+                <strong>
+                  {formatNumber(progress.ownedUnique, language)} / {formatNumber(progress.totalCards, language)}
+                </strong>
+              </div>
+              <div className="tcg-progress-card">
+                <span>{t('tcg.totalOwnedQuantity')}</span>
+                <strong>{formatNumber(progress.totalQuantity, language)}</strong>
+              </div>
+              <div className="tcg-progress-card">
+                <span>{t('tcg.favorites')}</span>
+                <strong>{formatNumber(progress.favorites, language)}</strong>
+              </div>
+            </section>
+
+            <section className="panel tcg-controls">
+              <div className="tcg-filter-row" role="tablist" aria-label={t('tcg.collectionFilters')}>
+                {FILTERS.map((filterKey) => (
+                  <button
+                    key={filterKey}
+                    type="button"
+                    className="tcg-filter-chip"
+                    data-active={filter === filterKey}
+                    onClick={() => setFilter(filterKey)}
+                  >
+                    {t(`tcg.filters.${filterKey}`)}
+                  </button>
+                ))}
+              </div>
+
+              <label className="tcg-rarity-select">
+                <span>{t('tcg.rarity')}</span>
+                <select value={rarityFilter} onChange={(event) => setRarityFilter(event.target.value)}>
+                  <option value={ALL_RARITIES}>{t('tcg.filters.all')}</option>
+                  {rarityOptions.map((rarity) => (
+                    <option key={rarity.key} value={rarity.key}>
+                      {rarity.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </section>
+
+            {error ? (
+              <section className="panel compact-empty-state" role="alert">
+                <h3>{t('common.error')}</h3>
+                <p>{error}</p>
+              </section>
+            ) : null}
+
+            {!loading && !error && visibleCards.length === 0 ? (
+              <section className="panel compact-empty-state">
+                <h3>{t('tcg.noCards')}</h3>
+                <p>{t('tcg.noCardsBody')}</p>
+              </section>
+            ) : null}
+
+            <section className="tcg-card-grid" aria-label={t('tcg.title')}>
+              {visibleCards.map((card) => (
+                <TcgCard
+                  key={card.cardKey}
+                  card={card}
+                  language={language}
+                  t={t}
+                  favoriteBusy={favoriteBusyKey === card.cardKey}
+                  onSelect={setSelectedCard}
+                  onToggleFavorite={handleToggleFavorite}
+                />
+              ))}
+            </section>
+          </>
+        ) : null}
+
+        {activeWindow === 'packs' ? (
+          <TcgPackPreviewPanel
+            opening={packOpening}
+            openingError={packOpeningError}
+            openingLoading={packOpeningLoading}
+            language={language}
+            t={t}
+            onOpen={handleOpenTestPack}
+          />
+        ) : null}
+
+        {activeWindow === 'shop' ? (
+          <TcgShopPreviewPanel
+            wallet={wallet}
+            shopItems={shopItems}
+            purchase={shopPurchase}
+            loading={economyLoading}
+            error={economyError}
+            purchaseLoadingCode={purchaseLoadingCode}
+            language={language}
+            t={t}
+            onBuyPack={handleBuyTestPack}
+          />
+        ) : null}
+
+        {activeWindow === 'ownerLab' ? (
+          <TcgOwnerLabPanel
+            activeOwnerProfileId={activeOwnerProfileId}
+            smokeGrantLoading={smokeGrantLoading}
+            smokeGrantMessage={smokeGrantMessage}
+            smokeGrantSatisfied={smokeGrantSatisfied}
+            grantCoinsLoading={grantCoinsLoading}
+            grantCoinsMessage={grantCoinsMessage}
+            grantCoinsError={grantCoinsError}
+            wallet={wallet}
+            language={language}
+            t={t}
+            onSmokeGrant={handleSmokeGrant}
+            onGrantCoins={handleGrantTestCoins}
+          />
+        ) : null}
       </section>
 
-      {error ? (
+      {error && activeWindow !== 'album' ? (
         <section className="panel compact-empty-state" role="alert">
           <h3>{t('common.error')}</h3>
           <p>{error}</p>
         </section>
       ) : null}
-
-      {!loading && !error && visibleCards.length === 0 ? (
-        <section className="panel compact-empty-state">
-          <h3>{t('tcg.noCards')}</h3>
-          <p>{t('tcg.noCardsBody')}</p>
-        </section>
-      ) : null}
-
-      <section className="tcg-card-grid" aria-label={t('tcg.title')}>
-        {visibleCards.map((card) => (
-          <TcgCard
-            key={card.cardKey}
-            card={card}
-            language={language}
-            t={t}
-            favoriteBusy={favoriteBusyKey === card.cardKey}
-            onSelect={setSelectedCard}
-            onToggleFavorite={handleToggleFavorite}
-          />
-        ))}
-      </section>
 
       <TcgDetailSheet
         card={selectedCard}

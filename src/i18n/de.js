@@ -64,6 +64,18 @@ export const de = {
   tcg: {
     title: 'Kartensammlung',
     subtitle: 'Season 0: Anteiku Origins',
+    seasonZero: 'Season 0',
+    hubNavigation: 'Kartensammlung-Fenster',
+    hub: {
+      album: 'Album',
+      packs: 'Packs',
+      shop: 'Shop',
+      ownerLab: 'Owner Lab',
+    },
+    albumWindowBody: 'Verfolge besessene, fehlende und favorisierte Season-0-Karten.',
+    ownerLab: 'Owner Lab',
+    ownerLabBody: 'Kontrollierte Owner-only Teststeuerung. Das Backend bleibt Autoritaet.',
+    ownerLabWalletTitle: 'Testmuenzen-Steuerung',
     ownerPreview: 'Owner-Vorschau',
     accessDenied: 'Owner-Vorschau gesperrt',
     ownerOnlyBody: 'Diese Kartensammlung-Vorschau ist nur fuer den Owner verfuegbar.',
