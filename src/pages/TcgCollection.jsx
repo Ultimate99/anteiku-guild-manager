@@ -6,11 +6,13 @@ import {
   tcgAdminGrantCard,
   tcgGetCatalog,
   tcgGetMyCollection,
+  tcgGetMyPacks,
   tcgGetMyWallet,
   tcgOwnerOpenTestPack,
-  tcgOwnerBuyTestPack,
+  tcgOwnerBuyTestPackToInventory,
   tcgOwnerGetTestShop,
   tcgOwnerGrantTestCoins,
+  tcgOwnerOpenOwnedPack,
   tcgSetCardFavorite,
 } from '../services/tcgService.js';
 
@@ -20,6 +22,7 @@ const ALL_RARITIES = 'all';
 const TEST_PACK_CODE = 'season_0_test_pack';
 const TEST_SHOP_ITEM_CODE = 'season_0_test_pack_shop';
 const TEST_COIN_GRANT_AMOUNT = 1000;
+const PACK_ANIMATION_STORAGE_KEY = 'anteiku.tcg.packAnimationsEnabled';
 const SMOKE_GRANT_REASON = '30C-A owner visual smoke';
 const SMOKE_GRANT_CARDS = [
   { cardKey: 's0_001_20th_ward_civilian', quantity: 3 },
@@ -70,6 +73,14 @@ function getPackResultLabel(card, t) {
   return card.isDuplicate ? t('tcg.duplicate') : t('tcg.newPull');
 }
 
+function readPackAnimationSetting() {
+  if (typeof window === 'undefined') {
+    return true;
+  }
+
+  return window.localStorage.getItem(PACK_ANIMATION_STORAGE_KEY) !== 'false';
+}
+
 function TcgArt({ card, size = 'card' }) {
   const [failed, setFailed] = useState(false);
   const imageSrc = failed ? '' : getCardImage(card);
@@ -94,6 +105,18 @@ function TcgArt({ card, size = 'card' }) {
           <em>{card.cardName}</em>
         </div>
       )}
+    </div>
+  );
+}
+
+function TcgPackSprite({ pack, t, compact = false }) {
+  return (
+    <div className="tcg-pack-sprite" data-compact={compact}>
+      <div className="tcg-pack-sprite-inner">
+        <span>{t('tcg.seasonZero')}</span>
+        <strong>{pack?.packName || t('tcg.seasonZeroTestPack')}</strong>
+        <small>{t('tcg.ownerTestOnly')}</small>
+      </div>
     </div>
   );
 }
@@ -123,6 +146,144 @@ function TcgPackResultCard({ card, index, language, t }) {
       </div>
       <span className="tcg-pack-result-index">{`0${index + 1}`}</span>
     </article>
+  );
+}
+
+function TcgRevealCard({ card, index, revealed, language, t, onReveal }) {
+  if (!revealed) {
+    return (
+      <button
+        type="button"
+        className="tcg-pack-hidden-card"
+        style={{ '--tcg-reveal-index': index }}
+        onClick={() => onReveal(index)}
+      >
+        <span>{`0${index + 1}`}</span>
+        <strong>{t('tcg.tapToReveal')}</strong>
+      </button>
+    );
+  }
+
+  return (
+    <TcgPackResultCard
+      card={card}
+      index={index}
+      language={language}
+      t={t}
+    />
+  );
+}
+
+function TcgPackOpeningOverlay({
+  overlay,
+  language,
+  t,
+  onRip,
+  onClose,
+  onRevealCard,
+  onRevealAll,
+  onPointerDown,
+  onPointerUp,
+}) {
+  if (!overlay) {
+    return null;
+  }
+
+  const resultCards = overlay.opening?.results ?? [];
+  const canClose = overlay.stage !== 'opening';
+  const revealedCount = overlay.revealedIndexes?.size ?? 0;
+
+  return (
+    <div className="tcg-pack-overlay" role="presentation">
+      <section
+        className="tcg-pack-overlay-card"
+        role="dialog"
+        aria-modal="true"
+        aria-label={overlay.pack?.packName || t('tcg.openPack')}
+        data-stage={overlay.stage}
+      >
+        <div className="tcg-pack-overlay-header">
+          <div>
+            <StatusBadge tone={overlay.stage === 'results' ? 'success' : 'warning'}>
+              {overlay.stage === 'results' ? t('tcg.packOpened') : t('tcg.openPack')}
+            </StatusBadge>
+            <h3>{overlay.pack?.packName || t('tcg.seasonZeroTestPack')}</h3>
+            <p>
+              {overlay.stage === 'ready'
+                ? t('tcg.swipeToRip')
+                : overlay.stage === 'opening'
+                  ? t('tcg.openingPack')
+                  : t('tcg.tapCardsToReveal')}
+            </p>
+          </div>
+          {canClose ? (
+            <button type="button" className="secondary-action compact-action" onClick={onClose}>
+              {t('common.close')}
+            </button>
+          ) : null}
+        </div>
+
+        {overlay.stage === 'ready' || overlay.stage === 'opening' ? (
+          <div className="tcg-pack-rip-stage">
+            <button
+              type="button"
+              className="tcg-pack-rip-target"
+              data-opening={overlay.stage === 'opening'}
+              onPointerDown={onPointerDown}
+              onPointerUp={onPointerUp}
+              onClick={() => {
+                if (overlay.stage === 'ready') {
+                  onRip();
+                }
+              }}
+              disabled={overlay.stage === 'opening'}
+            >
+              <TcgPackSprite pack={overlay.pack} t={t} />
+              <span>{overlay.stage === 'opening' ? t('tcg.openingPack') : t('tcg.ripOpen')}</span>
+            </button>
+            <p>{t('tcg.backendConsumesPack')}</p>
+          </div>
+        ) : null}
+
+        {overlay.error ? (
+          <p className="tcg-pack-error" role="alert">{overlay.error}</p>
+        ) : null}
+
+        {overlay.stage === 'results' ? (
+          <div className="tcg-pack-reveal-shell">
+            <div className="tcg-pack-result-heading">
+              <div>
+                <StatusBadge tone="success">{t('tcg.packOpened')}</StatusBadge>
+                <h4>{overlay.opening?.packName || t('tcg.seasonZeroTestPack')}</h4>
+              </div>
+              <span>
+                {t('tcg.packQuantity')} {formatNumber(overlay.opening?.remainingPackQuantity ?? 0, language)}
+              </span>
+            </div>
+
+            <div className="tcg-pack-results-grid" aria-label={t('tcg.tapCardsToReveal')}>
+              {resultCards.map((card, index) => (
+                <TcgRevealCard
+                  key={`${overlay.opening?.openingId || overlay.pack?.packCode}-${card.cardKey}-${index}`}
+                  card={card}
+                  index={index}
+                  revealed={overlay.revealedIndexes.has(index)}
+                  language={language}
+                  t={t}
+                  onReveal={onRevealCard}
+                />
+              ))}
+            </div>
+
+            {revealedCount < resultCards.length ? (
+              <button type="button" className="secondary-action compact-action" onClick={onRevealAll}>
+                {t('tcg.revealAll')}
+              </button>
+            ) : null}
+          </div>
+        ) : null}
+      </section>
+    </div>
   );
 }
 
@@ -190,6 +351,85 @@ function TcgPackPreviewPanel({ opening, openingError, openingLoading, language, 
   );
 }
 
+function TcgOwnedPacksPanel({
+  packs,
+  loading,
+  error,
+  openingBusy,
+  animationsEnabled,
+  language,
+  t,
+  onOpenPack,
+  onToggleAnimations,
+}) {
+  const seasonPack = packs.find((pack) => pack.packCode === TEST_PACK_CODE) ?? {
+    packCode: TEST_PACK_CODE,
+    packName: t('tcg.seasonZeroTestPack'),
+    description: t('tcg.containsFiveCards'),
+    cardsPerPack: 5,
+    quantity: 0,
+    isOwnerTestOnly: true,
+  };
+  const quantity = Math.max(0, Number(seasonPack.quantity) || 0);
+
+  return (
+    <section className="panel tcg-pack-panel" data-pack-mode="owned" aria-label={t('tcg.packInventory')}>
+      <div className="tcg-pack-panel-header">
+        <div>
+          <StatusBadge tone="warning">{t('tcg.ownerTestOnly')}</StatusBadge>
+          <h3>{t('tcg.ownedPacks')}</h3>
+          <p>{t('tcg.packInventoryBody')}</p>
+        </div>
+        <label className="tcg-animation-toggle">
+          <input
+            type="checkbox"
+            checked={animationsEnabled}
+            onChange={(event) => onToggleAnimations(event.target.checked)}
+          />
+          <span>{t('tcg.packAnimations')}</span>
+          <small>{animationsEnabled ? t('tcg.animationsEnabled') : t('tcg.animationsDisabled')}</small>
+        </label>
+      </div>
+
+      {error ? (
+        <p className="tcg-pack-error" role="alert">{error}</p>
+      ) : null}
+
+      <article className="tcg-owned-pack-card" data-empty={quantity <= 0}>
+        <div className="tcg-owned-pack-visual">
+          <TcgPackSprite pack={seasonPack} t={t} />
+          <strong>{`x${formatNumber(quantity, language)}`}</strong>
+        </div>
+        <div className="tcg-owned-pack-copy">
+          <StatusBadge tone={quantity > 0 ? 'success' : 'neutral'}>
+            {t('tcg.ownerTestOnly')}
+          </StatusBadge>
+          <h4>{seasonPack.packName || t('tcg.seasonZeroTestPack')}</h4>
+          <p>{seasonPack.description || t('tcg.containsFiveCards')}</p>
+          <div className="tcg-pack-facts" aria-label={t('tcg.packInventory')}>
+            <span>{`${t('tcg.packQuantity')} ${formatNumber(quantity, language)}`}</span>
+            <span>{`${formatNumber(seasonPack.cardsPerPack || 5, language)} ${t('tcg.cardsPulled')}`}</span>
+            <span>{t('tcg.backendConsumesPack')}</span>
+          </div>
+          <button
+            type="button"
+            className="primary-action compact-action tcg-open-pack-button"
+            onClick={() => onOpenPack(seasonPack)}
+            disabled={loading || openingBusy || quantity <= 0}
+            aria-busy={openingBusy}
+          >
+            {openingBusy ? t('tcg.openingPack') : t('tcg.openPack')}
+          </button>
+        </div>
+      </article>
+
+      {!loading && quantity <= 0 ? (
+        <p className="tcg-pack-preview-note">{t('tcg.noPacksOwned')}</p>
+      ) : null}
+    </section>
+  );
+}
+
 function TcgShopPreviewPanel({
   wallet,
   shopItems,
@@ -203,8 +443,6 @@ function TcgShopPreviewPanel({
 }) {
   const displayedWallet = wallet ?? { balance: 0, currencyCode: 'anteiku_coins' };
   const currencyLabel = getCurrencyLabel(displayedWallet.currencyCode, t);
-  const pulledCards = purchase?.opening?.results ?? [];
-  const displayedCardsOpened = purchase?.opening?.cardsOpened || 5;
 
   return (
     <section className="panel tcg-shop-panel" data-loading={loading || Boolean(purchaseLoadingCode)} aria-label={t('tcg.shopTestTitle')}>
@@ -212,7 +450,7 @@ function TcgShopPreviewPanel({
         <div>
           <StatusBadge tone="warning">{t('tcg.ownerTestOnly')}</StatusBadge>
           <h3>{t('tcg.shopTestTitle')}</h3>
-          <p>{t('tcg.shopTestBody')}</p>
+          <p>{t('tcg.shopInventoryBody')}</p>
         </div>
         <div className="tcg-wallet-card" aria-label={t('tcg.walletBalance')}>
           <i aria-hidden="true" />
@@ -231,7 +469,7 @@ function TcgShopPreviewPanel({
               <div className="tcg-shop-item-main">
                 <StatusBadge tone="warning">{t('tcg.ownerTestOnly')}</StatusBadge>
                 <h4>{item.shopItemName || t('tcg.seasonZeroTestPack')}</h4>
-                <p>{item.description || t('tcg.containsFiveBackendCards')}</p>
+                <p>{item.description || t('tcg.packAddedNoReveal')}</p>
               </div>
 
               <div className="tcg-shop-item-buy">
@@ -257,11 +495,11 @@ function TcgShopPreviewPanel({
       </div>
 
       {purchase ? (
-        <div className="tcg-pack-result-shell" data-revealed={pulledCards.length > 0} data-result-mode="shop">
+        <div className="tcg-pack-result-shell" data-revealed="true" data-result-mode="shop">
           <div className="tcg-pack-result-heading">
             <div>
               <StatusBadge tone="success">{t('tcg.purchaseComplete')}</StatusBadge>
-              <h4>{purchase.shopItemName || purchase.opening?.packName || t('tcg.seasonZeroTestPack')}</h4>
+              <h4>{purchase.shopItemName || purchase.packName || t('tcg.seasonZeroTestPack')}</h4>
             </div>
             <span>
               {formatNumber(purchase.balanceBefore, language)} - {formatNumber(purchase.price, language)}
@@ -270,20 +508,8 @@ function TcgShopPreviewPanel({
             </span>
           </div>
 
-          <div className="tcg-pack-results-grid" aria-label={t('tcg.cardsPulled')}>
-            {pulledCards.map((card, index) => (
-              <TcgPackResultCard
-                key={`${purchase.opening?.openingId || purchase.shopItemCode}-${card.cardKey}-${index}`}
-                card={card}
-                index={index}
-                language={language}
-                t={t}
-              />
-            ))}
-          </div>
-
           <p className="tcg-pack-preview-note">
-            {`${t('tcg.cardsPulled')} ${formatNumber(displayedCardsOpened, language)}`}
+            {`${t('tcg.packAddedToInventory')} ${t('tcg.packQuantity')} ${formatNumber(purchase.ownedPackQuantity, language)}`}
           </p>
         </div>
       ) : null}
@@ -490,6 +716,11 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
   const [packOpeningError, setPackOpeningError] = useState('');
   const [wallet, setWallet] = useState(null);
   const [shopItems, setShopItems] = useState([]);
+  const [ownedPacks, setOwnedPacks] = useState([]);
+  const [packInventoryLoading, setPackInventoryLoading] = useState(false);
+  const [packInventoryError, setPackInventoryError] = useState('');
+  const [packAnimationsEnabled, setPackAnimationsEnabled] = useState(readPackAnimationSetting);
+  const [packOverlay, setPackOverlay] = useState(null);
   const [economyLoading, setEconomyLoading] = useState(false);
   const [economyError, setEconomyError] = useState('');
   const [grantCoinsLoading, setGrantCoinsLoading] = useState(false);
@@ -500,8 +731,10 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
   const favoriteRequestKeysRef = useRef(new Set());
   const smokeGrantRequestRef = useRef(false);
   const packOpeningRequestRef = useRef(false);
+  const ownedPackOpeningRequestRef = useRef(false);
   const grantCoinsRequestRef = useRef(false);
   const buyPackRequestRef = useRef(false);
+  const ripPointerStartRef = useRef(null);
 
   const isOwner = Boolean(activeAdminContext?.isOwner);
   const activeOwnerProfileId = isOwner ? activeAdminContext?.activeProfileId : null;
@@ -560,10 +793,34 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
     loadEconomy();
   }, [loadEconomy]);
 
+  const loadPackInventory = useCallback(async () => {
+    if (!isOwner) {
+      return;
+    }
+
+    setPackInventoryLoading(true);
+    setPackInventoryError('');
+
+    try {
+      const packRows = await tcgGetMyPacks();
+      setOwnedPacks(packRows);
+    } catch (loadError) {
+      setOwnedPacks([]);
+      setPackInventoryError(getDisplayError(loadError, t('tcg.packInventoryLoadFailed')));
+    } finally {
+      setPackInventoryLoading(false);
+    }
+  }, [isOwner, t]);
+
+  useEffect(() => {
+    loadPackInventory();
+  }, [loadPackInventory]);
+
   const handleRefreshAll = useCallback(() => {
     loadCards();
     loadEconomy();
-  }, [loadCards, loadEconomy]);
+    loadPackInventory();
+  }, [loadCards, loadEconomy, loadPackInventory]);
 
   const rarityOptions = useMemo(() => {
     const seen = new Map();
@@ -721,17 +978,17 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
     try {
       const opening = await tcgOwnerOpenTestPack(TEST_PACK_CODE);
       setPackOpening(opening);
-      await loadCards();
+      await Promise.all([loadCards(), loadPackInventory()]);
       setFilter('owned');
       setRarityFilter(ALL_RARITIES);
-      setActiveWindow('packs');
+      setActiveWindow('ownerLab');
     } catch (openingError) {
       setPackOpeningError(getDisplayError(openingError, t('tcg.packOpeningFailed')));
     } finally {
       packOpeningRequestRef.current = false;
       setPackOpeningLoading(false);
     }
-  }, [isOwner, loadCards, t]);
+  }, [isOwner, loadCards, loadPackInventory, t]);
 
   const handleGrantTestCoins = useCallback(async () => {
     if (!isOwner) {
@@ -772,16 +1029,15 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
     buyPackRequestRef.current = true;
     setPurchaseLoadingCode(shopItemCode);
     setEconomyError('');
+    setShopPurchase(null);
     setGrantCoinsMessage('');
     setGrantCoinsError('');
 
     try {
-      const purchaseResult = await tcgOwnerBuyTestPack(shopItemCode);
+      const purchaseResult = await tcgOwnerBuyTestPackToInventory(shopItemCode);
       setShopPurchase(purchaseResult);
-      await Promise.all([loadEconomy(), loadCards()]);
-      setFilter('owned');
-      setRarityFilter(ALL_RARITIES);
-      setActiveWindow('shop');
+      await Promise.all([loadEconomy(), loadPackInventory()]);
+      setActiveWindow('packs');
     } catch (purchaseError) {
       const message = purchaseError?.message?.toLowerCase() || '';
       setEconomyError(
@@ -793,7 +1049,143 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
       buyPackRequestRef.current = false;
       setPurchaseLoadingCode('');
     }
-  }, [isOwner, loadCards, loadEconomy, t]);
+  }, [isOwner, loadEconomy, loadPackInventory, t]);
+
+  const handleTogglePackAnimations = useCallback((enabled) => {
+    setPackAnimationsEnabled(enabled);
+
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(PACK_ANIMATION_STORAGE_KEY, enabled ? 'true' : 'false');
+    }
+  }, []);
+
+  const performOwnedPackOpen = useCallback(async (pack) => {
+    if (!isOwner || !pack?.packCode) {
+      return;
+    }
+
+    if (ownedPackOpeningRequestRef.current) {
+      return;
+    }
+
+    ownedPackOpeningRequestRef.current = true;
+    setPackInventoryError('');
+    setPackOverlay((currentOverlay) => ({
+      ...(currentOverlay ?? { pack }),
+      pack,
+      stage: 'opening',
+      opening: null,
+      error: '',
+      revealedIndexes: new Set(),
+    }));
+
+    try {
+      const opening = await tcgOwnerOpenOwnedPack(pack.packCode);
+      setPackOverlay({
+        pack,
+        stage: 'results',
+        opening,
+        error: '',
+        revealedIndexes: new Set(),
+      });
+      await Promise.all([loadPackInventory(), loadCards(), loadEconomy()]);
+      setFilter('owned');
+      setRarityFilter(ALL_RARITIES);
+      setActiveWindow('packs');
+    } catch (openError) {
+      const message = getDisplayError(openError, t('tcg.packOpeningFailed'));
+      setPackInventoryError(message);
+      setPackOverlay((currentOverlay) => ({
+        ...(currentOverlay ?? { pack }),
+        pack,
+        stage: 'ready',
+        opening: null,
+        error: message,
+        revealedIndexes: new Set(),
+      }));
+    } finally {
+      ownedPackOpeningRequestRef.current = false;
+    }
+  }, [isOwner, loadCards, loadEconomy, loadPackInventory, t]);
+
+  const handleOpenOwnedPack = useCallback((pack) => {
+    if (!pack || Number(pack.quantity) <= 0) {
+      return;
+    }
+
+    if (packAnimationsEnabled) {
+      setPackOverlay({
+        pack,
+        stage: 'ready',
+        opening: null,
+        error: '',
+        revealedIndexes: new Set(),
+      });
+      return;
+    }
+
+    performOwnedPackOpen(pack);
+  }, [packAnimationsEnabled, performOwnedPackOpen]);
+
+  const handleRipOpen = useCallback(() => {
+    if (!packOverlay?.pack || packOverlay.stage !== 'ready') {
+      return;
+    }
+
+    performOwnedPackOpen(packOverlay.pack);
+  }, [packOverlay, performOwnedPackOpen]);
+
+  const handleRevealPackCard = useCallback((index) => {
+    setPackOverlay((currentOverlay) => {
+      if (!currentOverlay || currentOverlay.stage !== 'results') {
+        return currentOverlay;
+      }
+
+      const nextIndexes = new Set(currentOverlay.revealedIndexes);
+      nextIndexes.add(index);
+
+      return {
+        ...currentOverlay,
+        revealedIndexes: nextIndexes,
+      };
+    });
+  }, []);
+
+  const handleRevealAllPackCards = useCallback(() => {
+    setPackOverlay((currentOverlay) => {
+      if (!currentOverlay || currentOverlay.stage !== 'results') {
+        return currentOverlay;
+      }
+
+      return {
+        ...currentOverlay,
+        revealedIndexes: new Set((currentOverlay.opening?.results ?? []).map((_, index) => index)),
+      };
+    });
+  }, []);
+
+  const handleRipPointerDown = useCallback((event) => {
+    ripPointerStartRef.current = {
+      x: event.clientX,
+      y: event.clientY,
+    };
+  }, []);
+
+  const handleRipPointerUp = useCallback((event) => {
+    const start = ripPointerStartRef.current;
+    ripPointerStartRef.current = null;
+
+    if (!start || !packOverlay || packOverlay.stage !== 'ready') {
+      return;
+    }
+
+    const deltaX = event.clientX - start.x;
+    const deltaY = event.clientY - start.y;
+
+    if (Math.abs(deltaX) >= 48 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      handleRipOpen();
+    }
+  }, [handleRipOpen, packOverlay]);
 
   if (activeAdminContextLoading) {
     return (
@@ -832,9 +1224,9 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
             type="button"
             className="secondary-action compact-action"
             onClick={handleRefreshAll}
-            disabled={loading || economyLoading}
+            disabled={loading || economyLoading || packInventoryLoading}
           >
-            {loading || economyLoading ? t('common.refreshing') : t('common.refresh')}
+            {loading || economyLoading || packInventoryLoading ? t('common.refreshing') : t('common.refresh')}
           </button>
         </div>
 
@@ -961,13 +1353,16 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
         ) : null}
 
         {activeWindow === 'packs' ? (
-          <TcgPackPreviewPanel
-            opening={packOpening}
-            openingError={packOpeningError}
-            openingLoading={packOpeningLoading}
+          <TcgOwnedPacksPanel
+            packs={ownedPacks}
+            loading={packInventoryLoading}
+            error={packInventoryError}
+            openingBusy={ownedPackOpeningRequestRef.current || packOverlay?.stage === 'opening'}
+            animationsEnabled={packAnimationsEnabled}
             language={language}
             t={t}
-            onOpen={handleOpenTestPack}
+            onOpenPack={handleOpenOwnedPack}
+            onToggleAnimations={handleTogglePackAnimations}
           />
         ) : null}
 
@@ -986,20 +1381,30 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
         ) : null}
 
         {activeWindow === 'ownerLab' ? (
-          <TcgOwnerLabPanel
-            activeOwnerProfileId={activeOwnerProfileId}
-            smokeGrantLoading={smokeGrantLoading}
-            smokeGrantMessage={smokeGrantMessage}
-            smokeGrantSatisfied={smokeGrantSatisfied}
-            grantCoinsLoading={grantCoinsLoading}
-            grantCoinsMessage={grantCoinsMessage}
-            grantCoinsError={grantCoinsError}
-            wallet={wallet}
-            language={language}
-            t={t}
-            onSmokeGrant={handleSmokeGrant}
-            onGrantCoins={handleGrantTestCoins}
-          />
+          <>
+            <TcgOwnerLabPanel
+              activeOwnerProfileId={activeOwnerProfileId}
+              smokeGrantLoading={smokeGrantLoading}
+              smokeGrantMessage={smokeGrantMessage}
+              smokeGrantSatisfied={smokeGrantSatisfied}
+              grantCoinsLoading={grantCoinsLoading}
+              grantCoinsMessage={grantCoinsMessage}
+              grantCoinsError={grantCoinsError}
+              wallet={wallet}
+              language={language}
+              t={t}
+              onSmokeGrant={handleSmokeGrant}
+              onGrantCoins={handleGrantTestCoins}
+            />
+            <TcgPackPreviewPanel
+              opening={packOpening}
+              openingError={packOpeningError}
+              openingLoading={packOpeningLoading}
+              language={language}
+              t={t}
+              onOpen={handleOpenTestPack}
+            />
+          </>
         ) : null}
       </section>
 
@@ -1017,6 +1422,17 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
         favoriteBusy={favoriteBusyKey === selectedCard?.cardKey}
         onClose={() => setSelectedCard(null)}
         onToggleFavorite={handleToggleFavorite}
+      />
+      <TcgPackOpeningOverlay
+        overlay={packOverlay}
+        language={language}
+        t={t}
+        onRip={handleRipOpen}
+        onClose={() => setPackOverlay(null)}
+        onRevealCard={handleRevealPackCard}
+        onRevealAll={handleRevealAllPackCards}
+        onPointerDown={handleRipPointerDown}
+        onPointerUp={handleRipPointerUp}
       />
     </div>
   );

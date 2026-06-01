@@ -144,6 +144,45 @@ function mapShopPurchase(row) {
   };
 }
 
+function mapPackInventory(row) {
+  return {
+    profileId: row?.profile_id || null,
+    packId: row?.pack_id || null,
+    packCode: safeString(row?.pack_code),
+    packName: safeString(row?.pack_name),
+    description: safeString(row?.description),
+    cardsPerPack: safeNumber(row?.cards_per_pack),
+    quantity: safeNumber(row?.quantity),
+    isOwnerTestOnly: safeBoolean(row?.is_owner_test_only),
+    firstObtainedAt: row?.first_obtained_at || null,
+    updatedAt: row?.updated_at || null,
+  };
+}
+
+function mapPackInventoryPurchase(row) {
+  return {
+    balanceBefore: safeNumber(row?.balance_before),
+    balanceAfter: safeNumber(row?.balance_after),
+    currencyCode: safeString(row?.currency_code) || 'anteiku_coins',
+    shopItemCode: safeString(row?.shop_item_code),
+    shopItemName: safeString(row?.shop_item_name),
+    price: safeNumber(row?.price),
+    packCode: safeString(row?.pack_code),
+    packName: safeString(row?.pack_name),
+    ownedPackQuantity: safeNumber(row?.owned_pack_quantity),
+    packInventoryEventId: row?.pack_inventory_event_id || null,
+    ledgerId: row?.ledger_id || null,
+    updatedAt: row?.updated_at || null,
+  };
+}
+
+function mapOwnedPackOpening(row) {
+  return {
+    ...mapPackOpening(row),
+    remainingPackQuantity: safeNumber(row?.remaining_pack_quantity),
+  };
+}
+
 export function mergeCatalogWithCollection(catalogRows, collectionRows) {
   const collectionByKey = new Map(
     collectionRows
@@ -306,6 +345,17 @@ export async function tcgOwnerGetTestShop() {
   return Array.isArray(data) ? data.map(mapShopItem).filter((item) => item.shopItemCode) : [];
 }
 
+export async function tcgGetMyPacks() {
+  const client = requireSupabase();
+  const { data, error } = await client.rpc('tcg_get_my_packs');
+
+  if (error) {
+    throw error;
+  }
+
+  return Array.isArray(data) ? data.map(mapPackInventory).filter((pack) => pack.packCode) : [];
+}
+
 export async function tcgOwnerGrantTestCoins(amount = 1000) {
   const numericAmount = Number(amount);
 
@@ -344,4 +394,34 @@ export async function tcgOwnerBuyTestPack(shopItemCode = 'season_0_test_pack_sho
   const row = Array.isArray(data) ? data[0] : data;
 
   return mapShopPurchase(row);
+}
+
+export async function tcgOwnerBuyTestPackToInventory(shopItemCode = 'season_0_test_pack_shop') {
+  const client = requireSupabase();
+  const { data, error } = await client.rpc('tcg_owner_buy_test_pack_to_inventory', {
+    p_shop_item_code: safeString(shopItemCode) || 'season_0_test_pack_shop',
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  const row = Array.isArray(data) ? data[0] : data;
+
+  return mapPackInventoryPurchase(row);
+}
+
+export async function tcgOwnerOpenOwnedPack(packCode = 'season_0_test_pack') {
+  const client = requireSupabase();
+  const { data, error } = await client.rpc('tcg_owner_open_owned_pack', {
+    p_pack_code: safeString(packCode) || 'season_0_test_pack',
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  const row = Array.isArray(data) ? data[0] : data;
+
+  return mapOwnedPackOpening(row);
 }
