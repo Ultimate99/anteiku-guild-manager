@@ -1,5 +1,49 @@
 # Project State
 
+## Milestone 30F-B Owner-Only TCG Pack Inventory Backend Live
+
+Owner-only TCG pack inventory backend support is implemented, locally validated, and production-applied through `20260601000500_tcg_owner_pack_inventory.sql`.
+
+Implemented:
+- Added `tcg_player_packs` for active-profile pack quantities.
+- Added `tcg_pack_inventory_events` for pack quantity audit/event history.
+- Added Owner-only RPCs:
+  - `tcg_get_my_packs()`
+  - `tcg_owner_buy_test_pack_to_inventory(p_shop_item_code text default 'season_0_test_pack_shop')`
+  - `tcg_owner_open_owned_pack(p_pack_code text default 'season_0_test_pack')`
+- New shop-to-pack-inventory flow deducts coins and adds `+1` owned pack quantity without rolling cards.
+- New owned-pack opening flow consumes `-1` owned pack, rolls cards backend-side, updates card inventory, writes card inventory events, and writes pack opening history.
+- Existing `tcg_owner_buy_test_pack(...)` remains backward-compatible and still buys-and-opens immediately for the currently deployed frontend.
+- Existing free Owner `tcg_owner_open_test_pack(...)` remains unchanged.
+
+Validation:
+- Local `npx.cmd supabase db reset` passed.
+- `supabase/tests/tcg_30f_pack_inventory_validation.sql` passed `31 PASS / 0 FAIL / 0 SKIP`.
+- TCG regression tests passed:
+  - `supabase/tests/tcg_30b_validation.sql`: `19 PASS / 0 FAIL / 0 SKIP`
+  - `supabase/tests/tcg_30d_pack_validation.sql`: `18 PASS / 0 FAIL / 0 SKIP`
+  - `supabase/tests/tcg_30e_shop_validation.sql`: `32 PASS / 0 FAIL / 0 SKIP`
+  - `supabase/tests/tcg_30f_balance_report_validation.sql`: `20 PASS / 0 FAIL / 0 SKIP`
+- Broad `supabase/tests/local_validation_anteiku.sql` passed.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+
+Production:
+- Production dry-run initially hit a transient Supabase pooler auth/circuit-breaker error before SQL execution; rerun after cooldown succeeded.
+- Clean dry-run showed exactly one pending migration: `20260601000500_tcg_owner_pack_inventory.sql`.
+- Production migration apply/list verification passed and remote now shows `20260601000500`.
+- Read-only production verification confirmed the new tables exist, RLS is enabled, no direct anon/authenticated table grants exist, all three new RPCs exist, authenticated execute is granted, anon execute is not granted, new RPC definitions contain no CP table references, Owner can read pack inventory through RPC, normal member is denied pack inventory RPC access, normal member direct `member_cp` read remains empty/blocked, and active Owner count remains `1`.
+- Codex did not perform production pack buy, owned-pack open, wallet mutation, inventory mutation, or pack-opening smoke.
+
+Security:
+- Backend/RPC remains authority for pack quantity, wallet deduction, pack consumption, and card rolls.
+- No arbitrary profile id is accepted by the new player-facing RPCs.
+- Direct frontend/table writes remain blocked.
+- No member-facing TCG exposure, CP join, CP value exposure, price/drop-rate/pack-size change, payment/premium path, service-role path, upload, Storage, or unrelated subsystem behavior change was added.
+
+Next:
+- Milestone 30F-C should update the Owner-only `/tcg` frontend so Shop buys packs into inventory, Packs displays owned pack quantity, and opening from Packs consumes an owned pack through `tcg_owner_open_owned_pack(...)`.
+- Keep member-facing TCG release blocked until Owner inventory-flow acceptance and release gates are separately planned.
+
 ## Milestone 30F-A Owner-Only TCG Balance Report Backend Live
 
 Owner-only TCG balance/economy/pack analytics backend support is implemented, locally validated, and production-applied through `20260601000400_tcg_owner_balance_report.sql`.

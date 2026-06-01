@@ -1,6 +1,6 @@
 # TCG/Card Collection Plan
 
-Milestone 30A planning started this document. Milestone 30B is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`. Milestone 30C-A Owner-only Card Collection preview UI is deployed through commit `dbb67da feat: add owner tcg collection preview`; Milestone 30C-A2 Owner-only smoke grant control is deployed through commit `e96a489 feat: add owner tcg smoke grant`; Milestone 30C-B album visual polish and repo-served asset-pipeline notes are implemented; Milestone 30C-C adds temporary art for the five smoke-test cards; Milestone 30C-D adds temporary art for all 50 Season 0 cards; Milestone 30D-A adds Owner-only test pack backend/RPC support through `20260601000200_tcg_owner_pack_backend.sql`; Milestone 30D-B adds the Owner-only `/tcg` pack preview UI through commit `fa50b33 feat: add owner tcg pack preview`; Milestone 30E-A adds the Owner-only shop/economy backend through `20260601000300_tcg_owner_shop_economy.sql`; Milestone 30E-B adds the Owner-only `/tcg` shop/economy preview UI through commit `8e7eb73 feat: add owner tcg shop preview`; Milestone 30E-C polishes the Owner-only shop/wallet/pack UX through commit `053f27d style: polish owner tcg shop ux`; Milestone 30E-D adds the compact `/tcg` hub/window layout through commit `d1f4c4a style: add compact tcg hub layout`; Milestone 30F-A adds Owner-only TCG balance/economy/pack analytics backend support through `20260601000400_tcg_owner_balance_report.sql`. Member-facing packs, shop, economy UI, Owner analytics UI, and final approved card artwork remain unimplemented.
+Milestone 30A planning started this document. Milestone 30B is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`. Milestone 30C-A Owner-only Card Collection preview UI is deployed through commit `dbb67da feat: add owner tcg collection preview`; Milestone 30C-A2 Owner-only smoke grant control is deployed through commit `e96a489 feat: add owner tcg smoke grant`; Milestone 30C-B album visual polish and repo-served asset-pipeline notes are implemented; Milestone 30C-C adds temporary art for the five smoke-test cards; Milestone 30C-D adds temporary art for all 50 Season 0 cards; Milestone 30D-A adds Owner-only test pack backend/RPC support through `20260601000200_tcg_owner_pack_backend.sql`; Milestone 30D-B adds the Owner-only `/tcg` pack preview UI through commit `fa50b33 feat: add owner tcg pack preview`; Milestone 30E-A adds the Owner-only shop/economy backend through `20260601000300_tcg_owner_shop_economy.sql`; Milestone 30E-B adds the Owner-only `/tcg` shop/economy preview UI through commit `8e7eb73 feat: add owner tcg shop preview`; Milestone 30E-C polishes the Owner-only shop/wallet/pack UX through commit `053f27d style: polish owner tcg shop ux`; Milestone 30E-D adds the compact `/tcg` hub/window layout through commit `d1f4c4a style: add compact tcg hub layout`; Milestone 30F-A adds Owner-only TCG balance/economy/pack analytics backend support through `20260601000400_tcg_owner_balance_report.sql`; Milestone 30F-B adds Owner-only pack inventory backend support through `20260601000500_tcg_owner_pack_inventory.sql`. Member-facing packs, shop, economy UI, Owner analytics UI, and final approved card artwork remain unimplemented.
 
 ## Product Goal
 
@@ -45,8 +45,10 @@ Delayed until later:
 - 30E-C: Owner-only shop/pack UX polish. Complete and deployed.
 - 30E-D: Owner-only compact TCG hub/window layout. Complete and deployed.
 - 30F-A: Owner-only balance/economy/pack analytics backend. Complete and production-applied.
-- 30F-B: Owner-only TCG analytics UI in the existing `/tcg` Owner area.
-- 30F-C: Member-facing free shop/economy planning after Owner analytics review.
+- 30F-B: Owner-only pack inventory backend. Complete and production-applied.
+- 30F-C: Owner-only frontend wire-up for shop buy-to-inventory and Packs open-owned-pack flow.
+- 30F-D: Owner-only TCG analytics UI in the existing `/tcg` Owner area.
+- 30F-E: Member-facing free shop/economy planning after Owner analytics and pack-inventory review.
 - 30G: Admin TCG tools.
 - Later: premium/payment system only after the free economy is stable.
 
@@ -172,6 +174,9 @@ Later RPCs:
 - `set_my_card_showcase(p_card_keys text[])`
 - `tcg_owner_open_test_pack(p_pack_code text default 'season_0_test_pack')` is implemented for Owner-only testing.
 - `tcg_owner_get_balance_report()` is implemented for Owner-only read-only balancing analytics.
+- `tcg_get_my_packs()` is implemented for Owner-only pack inventory reads.
+- `tcg_owner_buy_test_pack_to_inventory(p_shop_item_code text default 'season_0_test_pack_shop')` is implemented for Owner-only shop purchases that add pack quantity without opening.
+- `tcg_owner_open_owned_pack(p_pack_code text default 'season_0_test_pack')` is implemented for Owner-only owned-pack consumption and backend card rolls.
 - `open_tcg_pack(p_pack_key text)` remains a later member-facing candidate after release planning.
 - `admin_create_or_update_card(...)`
 - `admin_adjust_pack_availability(...)`
@@ -699,6 +704,80 @@ Production:
   - Report payload check found no CP/private token exposure.
   - Active Owner count remains `1`.
 - No production wallet, inventory, ledger, opening, price, drop-rate, or pack-size mutation was performed.
+
+## Phase 30F-B Owner-Only Pack Inventory Backend
+
+Implemented backend/RPC only:
+
+- New migration `20260601000500_tcg_owner_pack_inventory.sql`.
+- New tables:
+  - `tcg_player_packs`
+  - `tcg_pack_inventory_events`
+- New Owner-only RPCs:
+  - `tcg_get_my_packs()`
+  - `tcg_owner_buy_test_pack_to_inventory(p_shop_item_code text default 'season_0_test_pack_shop')`
+  - `tcg_owner_open_owned_pack(p_pack_code text default 'season_0_test_pack')`
+- Shop-to-inventory purchase flow now exists for future UI:
+  - deducts `100 anteiku_coins`;
+  - writes a wallet ledger spend row;
+  - increments owned `Season 0 Test Pack` quantity by `+1`;
+  - writes a pack inventory event;
+  - does not roll cards;
+  - does not update card inventory;
+  - does not write pack opening history.
+- Owned-pack opening flow now exists for future UI:
+  - checks owned pack quantity;
+  - consumes `-1` pack quantity;
+  - writes a pack inventory event;
+  - rolls cards backend-side through the existing private pack helper;
+  - adds five card quantities;
+  - writes card inventory events and pack opening history;
+  - returns backend-generated pack results and remaining pack quantity.
+
+Backward compatibility:
+
+- Existing `tcg_owner_buy_test_pack(...)` is preserved and still buys-and-opens immediately for the currently deployed frontend.
+- Existing free Owner `tcg_owner_open_test_pack(...)` is preserved.
+- Future frontend should move to the new inventory-based purchase/opening RPCs.
+
+Security:
+
+- Owner-only through existing active-profile/admin authority.
+- No arbitrary profile id is accepted.
+- RLS is enabled on the new pack inventory tables.
+- Direct anon/authenticated table grants are revoked.
+- Frontend must use RPCs only and must never calculate drops or mutate pack inventory directly.
+- No member-facing TCG release, CP joins, CP payload fields, payment/premium path, uploads, Storage, price changes, drop-rate changes, or pack-size changes were added.
+
+Validation:
+
+- Local `npx.cmd supabase db reset` passed.
+- `supabase/tests/tcg_30f_pack_inventory_validation.sql` passed `31 PASS / 0 FAIL / 0 SKIP`.
+- TCG regression tests passed:
+  - `supabase/tests/tcg_30b_validation.sql`: `19 PASS / 0 FAIL / 0 SKIP`
+  - `supabase/tests/tcg_30d_pack_validation.sql`: `18 PASS / 0 FAIL / 0 SKIP`
+  - `supabase/tests/tcg_30e_shop_validation.sql`: `32 PASS / 0 FAIL / 0 SKIP`
+  - `supabase/tests/tcg_30f_balance_report_validation.sql`: `20 PASS / 0 FAIL / 0 SKIP`
+- Broad `supabase/tests/local_validation_anteiku.sql` passed.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+
+Production:
+
+- Production dry-run initially hit a transient Supabase pooler auth/circuit-breaker error before SQL execution; after cooldown, rerun succeeded.
+- Clean dry-run showed exactly one pending migration: `20260601000500_tcg_owner_pack_inventory.sql`.
+- Migration was applied to production and migration list shows `20260601000500` applied remotely.
+- Read-only production verification confirmed:
+  - new tables exist;
+  - RLS is enabled on both;
+  - no direct anon/authenticated table grants exist;
+  - all three new RPCs exist;
+  - authenticated execute grants exist and anon execute is not granted;
+  - new RPC definitions contain no CP table references;
+  - Owner can read pack inventory through RPC;
+  - normal member is denied pack inventory RPC access;
+  - normal member direct `member_cp` read remains empty/blocked;
+  - active Owner count remains `1`.
+- Codex did not perform production pack buy, owned-pack open, wallet mutation, inventory mutation, or pack-opening smoke.
 
 Canonical v0.1 rules:
 
