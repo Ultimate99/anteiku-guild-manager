@@ -1,5 +1,33 @@
 # Project State
 
+## Milestone 30E-D Compact TCG Hub / Windowed UI Polish Live
+
+Owner-only TCG compact hub/window layout is deployed in production through commit `d1f4c4a style: add compact tcg hub layout`.
+
+Implemented:
+- Refactored the Owner-only `/tcg` preview into a compact game-style hub with frontend-only windows.
+- Added a compact header with Owner preview badge, Season 0 title, Refresh, and quick stats for unique owned, total owned quantity, favorites, and Anteiku Coins.
+- Added hub tabs: Album, Packs, Shop, and Owner Lab.
+- Album remains the default window and keeps collection progress, filters, rarity filter, card grid, detail sheet, and favorite behavior.
+- Packs contains the free Owner test pack opening preview.
+- Shop contains wallet, test shop item, and `Buy Test Pack`.
+- Owner Lab contains the controlled Owner-only test controls: `Grant smoke cards` and `Grant 1000 test coins`.
+- Preserved existing double-submit guards for favorite toggle, smoke grant, free test pack, test coin grant, and shop purchase.
+- Kept current test economy values unchanged: grant amount `1000`, test pack price `100 Anteiku Coins`, test pack size `5`, and drop weights unchanged.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source checks found only `src/pages/TcgCollection.jsx`, `src/styles/app.css`, and EN/FR/DE i18n files changed.
+- No SQL/migrations/backend/RPC/RLS/package/service-worker changes were made.
+- No direct TCG table reads/writes, client-side drop calculation, client-side wallet authority, `member_cp`, `cp_snapshots`, CP RPC, service-role, payment, upload, or Storage path was added in the touched TCG files.
+- Existing Owner-only `/tcg` guard remains intact.
+
+Production:
+- Vercel deployed bundle assets `index-B1zvnfTg.js` and `index-E_s9esTL.css`.
+- Non-mutating production smoke confirmed `/tcg` returns HTTP `200` and the deployed bundle contains the hub/window/Owner Lab markers.
+- Codex did not click `Grant smoke cards`, `Open Test Pack`, `Grant 1000 test coins`, `Buy Test Pack`, or favorite toggle in production.
+- Owner can now perform controlled manual mutation smoke from the clearer hub windows.
+
 ## Milestone 30E-C Owner-Only TCG Shop/Pack UX Polish Live
 
 Owner-only TCG shop, wallet, pack purchase, and pack reveal UX polish is deployed in production through commit `053f27d style: polish owner tcg shop ux`.

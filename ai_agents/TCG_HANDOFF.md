@@ -14,9 +14,10 @@ Milestone 30A planning is complete. No backend, frontend, SQL, Supabase, or prod
 - Milestone 30E-A adds the Owner-only shop/economy backend/RPC foundation and is production-applied through `20260601000300_tcg_owner_shop_economy.sql`.
 - Milestone 30E-B adds the Owner-only `/tcg` shop/economy preview UI and is deployed through commit `8e7eb73 feat: add owner tcg shop preview`.
 - Milestone 30E-C polishes the Owner-only `/tcg` shop, wallet, and pack reveal UX and is deployed through commit `053f27d style: polish owner tcg shop ux`.
+- Milestone 30E-D refactors the Owner-only `/tcg` preview into a compact Album/Packs/Shop/Owner Lab hub and is deployed through commit `d1f4c4a style: add compact tcg hub layout`.
 - Milestone 30B backend/RPC foundation is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
 - No member-facing packs, shop, economy UI, routes beyond `/tcg`, uploads, or Storage have been implemented.
-- No member-facing TCG release exists yet. The next step is controlled Owner shop-loop smoke testing; frontend calls backend RPCs and never calculates drops or mutates wallets/inventory client-side.
+- No member-facing TCG release exists yet. The next step is controlled Owner shop-loop smoke testing from the compact hub; frontend calls backend RPCs and never calculates drops or mutates wallets/inventory client-side.
 
 ## Product Direction
 
@@ -417,6 +418,46 @@ Production:
 - Non-mutating production smoke confirmed `/tcg` returns HTTP `200`.
 - Codex did not click any production mutation controls.
 - Owner manual shop-loop smoke remains next: grant coins, buy pack, verify wallet decrease, reveal five cards, verify collection quantity increase.
+
+## 30E-D Compact TCG Hub / Windowed UI Polish
+
+Implemented frontend/style-only:
+
+- Reworked Owner-only `/tcg` into a compact hub instead of one long stacked preview page.
+- Added top header stats for unique owned, total owned quantity, favorites, and Anteiku Coins.
+- Added frontend-only window tabs:
+  - Album
+  - Packs
+  - Shop
+  - Owner Lab
+- Album remains the default window and keeps collection progress, filters, rarity filter, card grid, detail sheet, and favorite behavior.
+- Packs contains the free Owner test pack opening preview.
+- Shop contains wallet, shop item, and `Buy Test Pack`.
+- Owner Lab contains the controlled mutation tools:
+  - `Grant smoke cards`
+  - `Grant 1000 test coins`
+- Preserved existing ref-based double-submit guards for favorite toggle, smoke grant, free test pack, test coin grant, and shop purchase.
+- Current test values remain unchanged:
+  - grant amount `1000`
+  - test pack price `100 Anteiku Coins`
+  - pack size `5`
+  - drop weights unchanged
+
+Validation:
+
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source checks found only `src/pages/TcgCollection.jsx`, `src/styles/app.css`, and EN/FR/DE i18n files changed.
+- No SQL/migrations/backend/RPC/RLS/package/service-worker changes were made.
+- No direct TCG table reads/writes were added.
+- No client-side drop calculation, client-side wallet authority, CP path, service-role path, payments, uploads, or Storage was added.
+
+Production:
+
+- Commit `d1f4c4a style: add compact tcg hub layout` was pushed to `main`.
+- Production serves the updated hub bundle with JS/CSS markers for the tabbed TCG hub and Owner Lab.
+- Non-mutating production smoke confirmed `/tcg` returns HTTP `200`.
+- Codex did not click `Grant smoke cards`, `Open Test Pack`, `Grant 1000 test coins`, `Buy Test Pack`, or favorite toggle in production.
+- Owner manual shop-loop smoke remains next.
 
 ## 30B RPC Candidates
 

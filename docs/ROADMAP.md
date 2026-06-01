@@ -13,6 +13,7 @@
 - Milestone 30E-A: Owner-only TCG shop/economy backend/RPC production-applied.
 - Milestone 30E-B: Owner-only TCG shop/economy UI preview deployed.
 - Milestone 30E-C: Owner-only TCG shop/pack UX polish deployed.
+- Milestone 30E-D: Owner-only compact TCG hub/window layout deployed.
 - Milestone 30A: TCG/Card Collection planning.
 - Milestone 1: React + Vite scaffold and documentation base.
 - Milestone 2: Supabase schema/RLS plan, migrations, and local validation.
@@ -33,12 +34,12 @@
 
 ## Recommended Next
 
-Milestone 30C-A Owner-only Card Collection preview is live, Milestone 30C-A2 adds a controlled Owner-only smoke grant button, Milestone 30C-B improves the album visuals, Milestone 30C-C/30C-D add temporary art coverage, Milestone 30D-A adds the Owner-only backend/RPC foundation for test pack opening, Milestone 30D-B adds the Owner-only pack preview UI, Milestone 30E-A adds the Owner-only backend/RPC foundation for test coins, wallet ledger, Owner test shop listing, and Owner test pack purchase, Milestone 30E-B adds the Owner-only shop/economy UI preview, and Milestone 30E-C polishes the Owner shop/wallet/pack reveal UX. Next TCG work should perform controlled Owner click-through economy/pack smoke only with explicit approval, then decide whether to replace temporary art, tune Owner UX, or plan member-release gates. Member-facing shop/economy release, payments, trading, marketplace, and battles remain out of scope until separately planned.
+Milestone 30C-A Owner-only Card Collection preview is live, Milestone 30C-A2 adds a controlled Owner-only smoke grant button, Milestone 30C-B improves the album visuals, Milestone 30C-C/30C-D add temporary art coverage, Milestone 30D-A adds the Owner-only backend/RPC foundation for test pack opening, Milestone 30D-B adds the Owner-only pack preview UI, Milestone 30E-A adds the Owner-only backend/RPC foundation for test coins, wallet ledger, Owner test shop listing, and Owner test pack purchase, Milestone 30E-B adds the Owner-only shop/economy UI preview, Milestone 30E-C polishes the Owner shop/wallet/pack reveal UX, and Milestone 30E-D refactors `/tcg` into a compact Album/Packs/Shop/Owner Lab hub. Next TCG work should perform controlled Owner click-through economy/pack smoke only with explicit approval, then decide whether to replace temporary art, tune Owner UX, or plan member-release gates. Member-facing shop/economy release, payments, trading, marketplace, and battles remain out of scope until separately planned.
 
 Strong candidates:
 
 - Controlled Owner click-through smoke for the Owner shop loop: grant test coins, buy test pack, verify wallet decrease, pack reveal, and collection quantity increase.
-- Optional Owner shop UX polish after manual smoke feedback.
+- Optional Owner hub/album/shop UX polish after manual smoke feedback.
 - Replace temporary smoke art with approved final card art under `public/assets/tcg/art/`.
 - Plan member-release gating separately after Owner acceptance.
 - Manual Vercel GitHub App restriction to only `Ultimate99/anteiku-guild-manager`.
