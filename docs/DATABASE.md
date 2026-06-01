@@ -1,12 +1,49 @@
 # Database
 
-The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and production-applied through `20260531001300_active_profile_member_ranking.sql`.
+The Supabase schema/RLS/RPC migrations for Anteiku Guild Manager have been implemented and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
+
+Milestone 30B TCG/Card Collection backend foundation is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
 
 Milestone 29F final active-profile regression was frontend/i18n-only, and a focused follow-up migration fixed member Ranking active-profile viewer identity/scope.
 
 Production deployment must follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md).
 
 Global Wall scope, Ghoul Rep backend support, Ghoul Rep Wall UI, own Profile Ghoul Rep display, Public Member Profiles, Ranking Public Profile links, Push Notifications, Account Switcher foundation, active-profile Profile/Cosmetics RPCs, active-profile Wall/Profile Reaction RPCs, active-profile 3v3 RPCs, active-profile Push RPCs, active-profile Own CP RPCs, active-profile member GvG voting RPCs, active-profile GvG vote audit actor alignment, active-admin context foundation, non-CP Admin active-profile RPCs, CP-heavy Admin active-profile RPCs, and member Ranking active-profile viewer identity are implemented, locally validated, production applied, and production-smoke or production-gate validated.
+
+## TCG Card Collection Backend
+
+Migration `20260601000100_tcg_30b_catalog_inventory.sql` is applied and verified in production.
+
+Tables:
+- `tcg_sets`
+- `tcg_rarities`
+- `tcg_cards`
+- `tcg_player_inventory`
+- `tcg_inventory_events`
+
+RPCs:
+- `tcg_get_catalog()`
+- `tcg_get_my_collection()`
+- `tcg_set_card_favorite(p_card_key text, p_is_favorite boolean)`
+- `tcg_admin_grant_card(p_target_profile_id uuid, p_card_key text, p_quantity integer, p_reason text default null)`
+
+Seed:
+- Season 0: Anteiku Origins catalog v0.1 has 50 cards.
+- Rarities: Common 18, Uncommon 14, Rare 9, Epic 5, Legendary 3, Mythic 1.
+- Types: Character 24, Scene 16, Relic 10, Organization 0.
+- Collector values are display-only and not spendable currency.
+
+Security:
+- TCG inventory/event writes are RPC-only.
+- Player-facing TCG RPCs resolve selected active profile server-side.
+- Admin grant is active-admin permission gated and audited.
+- No normal CP, `member_cp`, `cp_snapshots`, pack opening, shop, economy, wallet, currency, or drop-rate behavior is part of 30B.
+
+Production verification:
+- Dry-run showed only `20260601000100_tcg_30b_catalog_inventory.sql`; apply/list verification passed.
+- All TCG tables exist with RLS enabled and no broad anon/authenticated direct table grants.
+- RPC definitions contain no CP references.
+- Rollback-wrapped smoke confirmed approved-member catalog/collection reads and blocked direct inventory/admin-grant access for a normal member.
 
 ## Member Ranking Active Profile
 

@@ -1,0 +1,171 @@
+# TCG/Card Collection Handoff
+
+Milestone 30A planning is complete. No backend, frontend, SQL, Supabase, or production behavior was changed.
+
+## Current Status
+
+- Milestone 30B backend/RPC foundation is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
+- No frontend UI, packs, shop, economy, currency, drop rates, routes, or assets have been implemented.
+- The next step is Milestone 30C frontend planning/implementation for Card Collection UI.
+
+## Product Direction
+
+TCG should add a fun collection layer without touching protected app systems.
+
+Initial player value:
+
+- Browse a card catalog.
+- View own active-profile card inventory.
+- Track duplicates and favorites.
+- Later showcase selected cards.
+
+Initial staff value:
+
+- Audited card grants for events or corrections.
+- Later catalog/pack/admin management tools.
+
+Delayed:
+
+- Pack opening.
+- Drop rates.
+- Shop/economy.
+- Wallets/currency.
+- Premium/payment flows.
+- Trading/marketplace/battles.
+
+## Security Rules
+
+- Do not expose normal CP.
+- Do not use `member_cp`.
+- Do not use `cp_snapshots`.
+- Do not use normal CP RPCs.
+- Do not put service-role keys in frontend.
+- Do not trust frontend-selected `profile_id` for player actions.
+- Use server-side active-profile helpers for player RPCs.
+- Use existing admin permission patterns for admin RPCs.
+- Backend decides ownership, pack results, inventory mutation, and future currency changes.
+- Frontend displays and calls RPCs only.
+
+## 30B Scope
+
+Implemented backend only:
+
+- `tcg_sets`
+- `tcg_rarities`
+- `tcg_cards`
+- `tcg_player_inventory`
+- `tcg_inventory_events`
+- RLS policies
+- RPC-only inventory mutation
+- Catalog/inventory read RPCs
+- Admin card grant RPC
+- Local validation SQL/checklist
+
+Do not implement:
+
+- UI.
+- Pack opening.
+- Drop rates.
+- Shop.
+- Economy.
+- Currency/wallets.
+- Premium/payments.
+- Trading.
+- Public collection pages.
+
+## 30B RPC Candidates
+
+- `tcg_get_catalog()`
+- `tcg_get_my_collection()`
+- `tcg_set_card_favorite(p_card_key text, p_is_favorite boolean)`
+- `tcg_admin_grant_card(p_target_profile_id uuid, p_card_key text, p_quantity integer, p_reason text default null)`
+
+## 30B Local Validation
+
+- `npm.cmd run build` passed.
+- Local `npx.cmd supabase db reset` passed through `20260601000100_tcg_30b_catalog_inventory.sql`.
+- `supabase/tests/tcg_30b_validation.sql` passed `19 PASS / 0 FAIL / 0 SKIP`.
+- The full existing local validation suite passed after the TCG migration.
+
+## 30B Production Verification
+
+- Production dry-run showed exactly one pending migration: `20260601000100_tcg_30b_catalog_inventory.sql`.
+- Production migration apply/list verification passed.
+- Production DB verification confirmed `tcg_sets`, `tcg_rarities`, `tcg_cards`, `tcg_player_inventory`, and `tcg_inventory_events` exist with RLS enabled.
+- Production verification confirmed Season 0 has exactly 50 cards with Common 18, Uncommon 14, Rare 9, Epic 5, Legendary 3, Mythic 1; Character 24, Scene 16, Relic 10, Organization 0.
+- Production verification found no broad anon/authenticated direct table grants and no TCG RPC references to `member_cp`, `cp_snapshots`, normal CP RPCs, or Analytics CP paths.
+- Rollback-wrapped production smoke confirmed approved-member catalog/collection reads work, direct inventory insert is blocked, and normal member admin grant is denied.
+- No real production inventory grant or card ownership mutation was performed.
+
+## Season 0 Catalog
+
+The canonical "Season 0: Anteiku Origins" catalog v0.1 is available in the thread and supersedes earlier placeholder distribution notes.
+
+Catalog shape:
+
+- Exactly 50 cards.
+- Common 18, Uncommon 14, Rare 9, Epic 5, Legendary 3, Mythic 1.
+- Character 24, Scene 16, Relic 10, Organization 0.
+- No invented cards.
+- No pack/drop/economy/combat fields.
+- Collector values are display values only, not spendable currency.
+- `art_path` stores canonical inner-art asset paths.
+- `image_url` and `thumbnail_url` remain `NULL` until approved rendered assets need those fields.
+
+## Asset Pipeline
+
+AI-generated card images are inner art only.
+
+The app owns:
+
+- Frame overlay.
+- Rarity badge.
+- Card name.
+- Duplicate/ownership state.
+- Future coin value.
+
+Generated art must not bake in frames, text, badges, borders, nameplates, UI, or coin values.
+
+## 30C UI Direction
+
+- Mobile-first Card Collection page.
+- Card grid with owned/missing/favorite states.
+- Rarity/type/set filters.
+- Card detail modal.
+- Dark/crimson Anteiku styling.
+- EN/FR/DE i18n.
+- No CP display.
+
+## Validation Focus
+
+Backend:
+
+- Local reset/migration passes.
+- RLS enabled.
+- Catalog read is safe.
+- Inventory is active-profile scoped.
+- Direct inventory/event writes blocked.
+- Admin grant permission-gated and audited.
+- No CP table/RPC references.
+- Active Owner count remains `1`.
+
+Frontend:
+
+- `npm.cmd run build`.
+- RPC-only service.
+- No direct inventory writes.
+- No client-side pack/drop/currency logic.
+- No CP values.
+
+Production-direct gate:
+
+- Dry-run must show exactly the intended TCG migration.
+- Apply only after clean migration list/dry-run.
+- Deploy UI only after target DB has required TCG backend migration.
+
+## References
+
+- Planning document: `docs/TCG_CARD_COLLECTION_PLAN.md`
+- Current project state: `ai_agents/PROJECT_STATE.md`
+- Security rules: `ai_agents/SECURITY_RULES.md`
+- RLS notes: `ai_agents/SUPABASE_RLS.md`

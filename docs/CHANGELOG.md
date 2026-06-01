@@ -1,5 +1,36 @@
 # Changelog
 
+## 2026-06-01 - Milestone 30B TCG Backend Production Rollout
+
+- Implemented TCG/Card Collection backend foundation locally.
+- New local migration:
+  - `20260601000100_tcg_30b_catalog_inventory.sql`
+- New tables:
+  - `tcg_sets`
+  - `tcg_rarities`
+  - `tcg_cards`
+  - `tcg_player_inventory`
+  - `tcg_inventory_events`
+- Seeded canonical Season 0: Anteiku Origins catalog v0.1 with 50 cards.
+- Added display-only collector values and canonical inner-art paths.
+- Added RPCs:
+  - `tcg_get_catalog()`
+  - `tcg_get_my_collection()`
+  - `tcg_set_card_favorite(...)`
+  - `tcg_admin_grant_card(...)`
+- Added focused validation file:
+  - `supabase/tests/tcg_30b_validation.sql`
+- `npm.cmd run build` passed.
+- Local `npx.cmd supabase db reset` passed.
+- Focused TCG validation passed `19 PASS / 0 FAIL / 0 SKIP`.
+- Full existing local validation passed.
+- Production dry-run showed exactly one pending migration: `20260601000100_tcg_30b_catalog_inventory.sql`.
+- Production migration apply/list verification passed.
+- Production DB verification confirmed all TCG tables exist with RLS enabled, all four TCG RPCs exist, no broad anon/authenticated direct table grants exist, Season 0 catalog counts match the canonical catalog, TCG RPC definitions contain no CP references, and active Owner count remains `1`.
+- Rollback-wrapped production smoke confirmed approved-member catalog/collection reads work, direct inventory insert is blocked, and normal member admin grant is denied.
+- No production inventory grant/card ownership mutation was performed.
+- No frontend UI, pack opening, shop, economy, currency, wallet, drop rates, payments, normal CP exposure, `member_cp`, `cp_snapshots`, uploads, or Storage behavior was added.
+
 ## 2026-05-31 - Member Ranking Active-Profile Fix
 
 - Fixed member Ranking viewer identity for linked accounts.

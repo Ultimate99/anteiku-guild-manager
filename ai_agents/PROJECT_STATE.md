@@ -1,5 +1,56 @@
 # Project State
 
+## Milestone 30B TCG Catalog + Inventory Backend Production Applied
+
+TCG/Card Collection backend foundation is implemented, locally validated, and applied to production through `20260601000100_tcg_30b_catalog_inventory.sql`.
+
+Implemented:
+- New migration `20260601000100_tcg_30b_catalog_inventory.sql`.
+- New tables: `tcg_sets`, `tcg_rarities`, `tcg_cards`, `tcg_player_inventory`, and `tcg_inventory_events`.
+- Seeded canonical `Season 0: Anteiku Origins` catalog v0.1 with exactly 50 cards: Common 18, Uncommon 14, Rare 9, Epic 5, Legendary 3, Mythic 1; Character 24, Scene 16, Relic 10, Organization 0.
+- Added display-only `collector_value` and canonical inner-art `art_path` from the supplied catalog. This is not a wallet, currency, shop, or spendable economy.
+- Added RPCs: `tcg_get_catalog()`, `tcg_get_my_collection()`, `tcg_set_card_favorite(p_card_key, p_is_favorite)`, and `tcg_admin_grant_card(p_target_profile_id, p_card_key, p_quantity, p_reason)`.
+- Added private helper `private.tcg_active_member_profile_id()` for approved active-profile member access.
+- Added local validation script `supabase/tests/tcg_30b_validation.sql`.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Local `npx.cmd supabase db reset` applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
+- Focused TCG validation passed `19 PASS / 0 FAIL / 0 SKIP`.
+- Full existing local validation passed after the TCG migration.
+- Production migration dry-run showed exactly one pending migration: `20260601000100_tcg_30b_catalog_inventory.sql`.
+- Production migration apply/list verification passed.
+- Production DB verification confirmed all five TCG tables exist with RLS enabled, no broad anon/authenticated direct table grants, all four TCG RPCs exist, Season 0 card/rarity/type counts match the canonical catalog, RPC definitions contain no CP references, and active Owner count remains `1`.
+- Rollback-wrapped production smoke confirmed an approved member can read catalog/collection, direct `tcg_player_inventory` insert is blocked, and normal member `tcg_admin_grant_card` access is denied.
+
+Security:
+- TCG inventory/event tables have RLS enabled and no direct anon/authenticated table grants.
+- Player-facing TCG RPCs resolve selected active profile server-side.
+- Admin grant uses active-admin context and allows Owner globally, scoped Leader/Vice, or scoped Admin with `manage_members`.
+- No pack opening, shop, wallet, economy, currency, drop rates, UI, frontend service, or production inventory grant/mutation was included.
+- No normal CP values, `member_cp`, `cp_snapshots`, normal CP RPCs, service-role path, uploads, or Storage behavior were added.
+
+Next:
+- Milestone 30C can plan and implement the Card Collection UI against the verified backend.
+- Do not add pack opening, shop, economy, wallet, currency, drop rates, payments, battles, trading, marketplace, uploads, or Storage without a separate milestone and security review.
+
+## Milestone 30A TCG/Card Collection Planning Complete
+
+TCG/Card Collection is planned only. No backend, frontend, SQL, Supabase, RLS/RPC, production, pack, shop, economy, or UI behavior was changed.
+
+Created planning/handoff docs:
+- `docs/TCG_CARD_COLLECTION_PLAN.md`
+- `ai_agents/TCG_HANDOFF.md`
+
+Recommended next step:
+- Milestone 30B should implement only the backend/RPC foundation: `tcg_sets`, `tcg_rarities`, `tcg_cards`, `tcg_player_inventory`, `tcg_inventory_events`, RLS, active-profile catalog/inventory RPCs, and an audited admin grant RPC.
+- The canonical Season 0: Anteiku Origins catalog v0.1 is now available in the thread: 50 cards; Common 18, Uncommon 14, Rare 9, Epic 5, Legendary 3, Mythic 1; Character 24, Scene 16, Relic 10, Organization 0. Collector values are display-only, not spendable currency.
+
+Security decisions:
+- TCG must not use or expose normal CP, `member_cp`, `cp_snapshots`, normal CP RPCs, service-role keys, client-side pack drops, direct frontend inventory writes, or client-side currency mutation.
+- Player-facing TCG RPCs must resolve active profile server-side.
+- Admin TCG RPCs must reuse existing admin permission patterns.
+
 ## Member Ranking Active-Profile Viewer Fix Live
 
 Member-safe Ranking now resolves viewer identity and My Guild scope from the selected active profile.

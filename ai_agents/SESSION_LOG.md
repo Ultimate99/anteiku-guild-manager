@@ -1,5 +1,26 @@
 # Session Log
 
+## 2026-06-01 - Milestone 30B TCG Catalog + Inventory Backend Production Rollout
+
+- Proceeded with the supplied canonical Season 0: Anteiku Origins catalog v0.1 after confirming it supersedes earlier placeholder distribution notes.
+- Added migration `supabase/migrations/20260601000100_tcg_30b_catalog_inventory.sql`.
+- Added TCG tables: `tcg_sets`, `tcg_rarities`, `tcg_cards`, `tcg_player_inventory`, and `tcg_inventory_events`.
+- Seeded Season 0 with exactly 50 cards: Common 18, Uncommon 14, Rare 9, Epic 5, Legendary 3, Mythic 1; Character 24, Scene 16, Relic 10, Organization 0.
+- Stored display-only collector values and canonical inner-art paths; no wallet/economy/shop/drop-rate behavior was added.
+- Added RPCs `tcg_get_catalog()`, `tcg_get_my_collection()`, `tcg_set_card_favorite(...)`, and `tcg_admin_grant_card(...)`.
+- Added private approved-active-profile helper `private.tcg_active_member_profile_id()`.
+- Added focused local validation script `supabase/tests/tcg_30b_validation.sql`.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Local `npx.cmd supabase db reset` applied through the TCG migration cleanly.
+- Focused TCG validation passed `19 PASS / 0 FAIL / 0 SKIP`.
+- Full existing local validation passed after the TCG migration.
+- Production migration dry-run showed exactly one pending migration: `20260601000100_tcg_30b_catalog_inventory.sql`.
+- Production migration apply/list verification passed.
+- Production DB verification confirmed all five TCG tables exist with RLS enabled, no broad anon/authenticated direct table grants exist, all four TCG RPCs exist, Season 0 card/rarity/type counts match the canonical catalog, TCG RPC definitions contain no CP references, and active Owner count remains `1`.
+- Rollback-wrapped production smoke confirmed approved-member catalog/collection reads work, direct inventory insert is blocked, and normal member `tcg_admin_grant_card` access is denied.
+- No frontend UI, service, route, pack opening, shop, economy, currency, wallet, drop rate, payment, or production inventory grant/card ownership mutation was included.
+- No normal CP values, `member_cp`, `cp_snapshots`, normal CP RPCs, service-role path, upload, or Storage behavior was added.
+
 ## 2026-05-31 - Member Ranking Active-Profile Fix
 
 - Investigated the production linked-account Ranking bug where switching from Account A to Account B still highlighted Account A.

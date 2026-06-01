@@ -1,5 +1,27 @@
 # Security Rules
 
+## TCG/Card Collection Security Rules
+
+Milestone 30B TCG backend foundation is production-applied and validated through `20260601000100_tcg_30b_catalog_inventory.sql`.
+
+Rules:
+- Backend is the authority for card ownership.
+- Frontend must not write `tcg_player_inventory` or `tcg_inventory_events` directly.
+- Player-facing TCG RPCs must resolve the selected active profile server-side.
+- Admin card grants must use active-admin authority and existing scoped permission patterns.
+- TCG collector values are display-only and are not currency, wallet balance, shop value, or spendable economy.
+- Pack opening, shop, economy, currency, wallet, drop rates, payments, trading, marketplace, and battles remain unimplemented.
+- Normal CP must not be joined, returned, displayed, inferred, or used by TCG.
+
+Validated controls:
+- TCG inventory/event tables have RLS enabled and no direct anon/authenticated table grants.
+- `tcg_get_catalog()` and `tcg_get_my_collection()` require an approved active profile.
+- `tcg_set_card_favorite(...)` only works for owned cards.
+- `tcg_admin_grant_card(...)` is denied for a plain Admin without `manage_members`.
+- Direct inventory/event writes were blocked in local validation.
+- `member_cp` and `cp_snapshots` probes did not expose rows.
+- Production verification confirmed all TCG tables have RLS enabled, no broad anon/authenticated direct table grants exist, TCG RPC definitions contain no CP references, active Owner count remains `1`, approved-member catalog/collection reads work, direct inventory insert is blocked, and normal member admin grant is denied.
+
 ## Member Ranking Active-Profile Security Checkpoint
 
 The focused member Ranking active-profile fix is live through migration `20260531001300_active_profile_member_ranking.sql` and commit `d23d5eb fix: use active profile for member ranking`.

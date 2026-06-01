@@ -1,5 +1,42 @@
 # Testing
 
+## 2026-06-01 - Milestone 30B TCG Backend Validation + Production Gate
+
+Milestone 30B TCG/Card Collection backend foundation is implemented, validated locally, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
+
+Commands:
+- `npm.cmd run build`
+- `npx.cmd supabase db reset`
+- `Get-Content -Raw -LiteralPath supabase\tests\tcg_30b_validation.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres -v ON_ERROR_STOP=1`
+- `Get-Content -Raw -LiteralPath supabase\tests\local_validation_anteiku.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres -v ON_ERROR_STOP=1`
+- Production `npx.cmd supabase migration list`
+- Production `npx.cmd supabase db push --dry-run`
+- Production `npx.cmd supabase db push`
+- Production read-only/rollback verification through `npx.cmd supabase db query --linked`
+
+Results:
+- Build passed with the existing chunk-size warning only.
+- Local reset applied `20260601000100_tcg_30b_catalog_inventory.sql`.
+- Focused TCG validation passed `19 PASS / 0 FAIL / 0 SKIP`.
+- Full existing local validation passed after the TCG migration.
+- Production dry-run showed exactly one pending migration: `20260601000100_tcg_30b_catalog_inventory.sql`.
+- Production migration apply/list verification passed.
+- Production DB verification passed for table existence/RLS, RPC existence, no broad direct grants, Season 0 counts, no CP references, and active Owner count `1`.
+- Rollback-wrapped production smoke passed: approved-member catalog/collection reads worked, direct inventory insert was blocked, and normal member admin grant was denied.
+
+Covered:
+- Season 0 catalog count/distribution.
+- Approved member catalog/collection RPC reads.
+- Pending denial.
+- Owner admin grant.
+- Admin without `manage_members` denial.
+- Inventory quantity/event write after grant.
+- Favorite denied before ownership and allowed after ownership.
+- Direct TCG inventory/event writes blocked.
+- No CP-named TCG schema columns.
+- Direct normal CP table probes did not expose rows.
+- Active Owner count remains `1`.
+
 ## Member Ranking Active-Profile Fix
 
 Focused active-profile Ranking validation passed after migrating member-safe Ranking to backend-selected active profile identity.

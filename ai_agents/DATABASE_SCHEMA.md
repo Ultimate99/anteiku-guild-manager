@@ -2,6 +2,34 @@
 
 ## Current Backend Status
 
+Milestone 30B TCG/Card Collection backend foundation is implemented and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`. It adds `tcg_sets`, `tcg_rarities`, `tcg_cards`, `tcg_player_inventory`, and `tcg_inventory_events`; seeds Season 0: Anteiku Origins catalog v0.1; and adds RPC-only catalog/collection/favorite/admin-grant flows.
+
+TCG tables:
+- `tcg_sets`: card-set metadata and release status.
+- `tcg_rarities`: rarity order and style metadata.
+- `tcg_cards`: catalog rows, card type, faction, display-only collector value, canonical inner-art path, and nullable future image/thumbnail fields.
+- `tcg_player_inventory`: active-profile card ownership quantities and favorite/locked flags.
+- `tcg_inventory_events`: append-only inventory mutation audit for this phase's admin grants.
+
+TCG RPCs:
+- `tcg_get_catalog()`
+- `tcg_get_my_collection()`
+- `tcg_set_card_favorite(p_card_key text, p_is_favorite boolean)`
+- `tcg_admin_grant_card(p_target_profile_id uuid, p_card_key text, p_quantity integer, p_reason text default null)`
+
+TCG seed:
+- Season 0: Anteiku Origins has 50 cards.
+- Rarities: Common 18, Uncommon 14, Rare 9, Epic 5, Legendary 3, Mythic 1.
+- Types: Character 24, Scene 16, Relic 10, Organization 0.
+- Collector values are display-only and not spendable currency.
+
+Production verification:
+- Production dry-run showed only `20260601000100_tcg_30b_catalog_inventory.sql`, then migration apply/list verification passed.
+- All five TCG tables exist in production with RLS enabled.
+- No broad anon/authenticated direct table grants were found.
+- TCG RPC definitions contain no `member_cp`, `cp_snapshots`, normal CP RPC, or Analytics CP references.
+- Rollback-wrapped production smoke confirmed approved-member catalog/collection reads and blocked direct inventory/admin-grant access for a normal member.
+
 Milestone 29E.8E CP Admin + Analytics + Audit Logs active-profile migration is applied and verified in production through `20260531001100_active_profile_cp_analytics_audit_admin.sql`. It switches Admin CP roster/window/update, Admin CP Ranking, Analytics/Weekly Growth, and Audit Logs/CP metadata redaction to selected active admin authority while preserving member-facing own CP, GvG, 3v3, Wall, Cosmetics, Push, non-CP Admin, auth, role, and member-status behavior.
 
 Milestone 29E.8D Non-CP Admin active-profile migration is applied and verified in production through `20260531001000_active_profile_non_cp_admin.sql`. It switches Approvals, Members management, Permissions, GvG Admin, Owner Tools, and focused non-CP Admin read RPCs to active-admin identity while leaving Admin CP, CP Ranking, Analytics/Weekly Growth, Audit Logs, and CP metadata redaction intentionally unchanged.

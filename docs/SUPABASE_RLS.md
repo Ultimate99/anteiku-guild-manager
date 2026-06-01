@@ -1,10 +1,42 @@
 # Supabase RLS
 
-The Supabase RLS/RPC implementation has been validated and production-applied through `20260531001300_active_profile_member_ranking.sql`.
+The Supabase RLS/RPC implementation has been validated and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
+
+Milestone 30B TCG/Card Collection backend foundation is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
 
 Milestone 29F final active-profile regression was frontend/i18n-only. Follow-up migration `20260531001300_active_profile_member_ranking.sql` fixes member Ranking viewer identity/scope for linked active profiles while preserving CP-hidden member Ranking payloads.
 
 Production setup must not weaken RLS. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) before any production action.
+
+## TCG Card Collection RLS/RPC
+
+Tables:
+- `tcg_sets`
+- `tcg_rarities`
+- `tcg_cards`
+- `tcg_player_inventory`
+- `tcg_inventory_events`
+
+RLS/security:
+- RLS enabled on all TCG tables.
+- Direct anon/authenticated table grants revoked from all TCG tables.
+- Catalog and collection reads go through RPCs.
+- Inventory/event writes are RPC-only.
+- Admin grants write an inventory event and an audit log.
+
+RPCs:
+- `tcg_get_catalog()` and `tcg_get_my_collection()` require approved active-profile access.
+- `tcg_set_card_favorite(...)` only updates owned cards for the selected active profile.
+- `tcg_admin_grant_card(...)` uses active-admin authority and allows Owner globally, scoped Leader/Vice, or scoped Admin with `manage_members`.
+
+Privacy:
+- No CP values, `member_cp`, `cp_snapshots`, or normal CP RPCs are used.
+
+Production verification:
+- Dry-run showed only `20260601000100_tcg_30b_catalog_inventory.sql`; migration apply/list verification passed.
+- All TCG tables exist with RLS enabled.
+- No broad anon/authenticated direct table grants were found.
+- Rollback-wrapped smoke confirmed member catalog/collection RPC reads and denied normal-member direct inventory/admin-grant paths.
 
 ## Member Ranking Active Profile RLS/RPC
 

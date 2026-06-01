@@ -2,6 +2,8 @@
 
 ## Complete
 
+- Milestone 30B: TCG/Card Collection catalog + inventory backend implemented, locally validated, and production-applied.
+- Milestone 30A: TCG/Card Collection planning.
 - Milestone 1: React + Vite scaffold and documentation base.
 - Milestone 2: Supabase schema/RLS plan, migrations, and local validation.
 - Milestone 3: Supabase auth, registration, and pending/rejected/suspended gates.
@@ -21,10 +23,11 @@
 
 ## Recommended Next
 
-Milestone 14B should be a manual production-hardening or cleanup step only after explicit approval.
+Milestone 30C can add the Card Collection UI against the verified TCG backend. Pack opening, shop, economy, wallet/currency, drop rates, payments, trading, marketplace, and battles remain out of scope until separately planned.
 
 Strong candidates:
 
+- Milestone 30C Card Collection UI.
 - Manual Vercel GitHub App restriction to only `Ultimate99/anteiku-guild-manager`.
 - Controlled production test member cleanup planning.
 - Staging Supabase + Vercel Preview environment planning.

@@ -1,5 +1,45 @@
 # Testing And Validation
 
+## Milestone 30B TCG Catalog + Inventory Backend Validation
+
+Milestone 30B is implemented, validated locally, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
+
+Commands/gates:
+- `npm.cmd run build`
+- `npx.cmd supabase db reset`
+- `Get-Content -Raw -LiteralPath supabase\tests\tcg_30b_validation.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres -v ON_ERROR_STOP=1`
+- `Get-Content -Raw -LiteralPath supabase\tests\local_validation_anteiku.sql | docker exec -i supabase_db_Project_Anteiku psql -U postgres -d postgres -v ON_ERROR_STOP=1`
+- Production `npx.cmd supabase migration list`
+- Production `npx.cmd supabase db push --dry-run`
+- Production `npx.cmd supabase db push`
+- Production read-only/rollback verification through `npx.cmd supabase db query --linked`
+
+Results:
+- Build passed with the existing Vite chunk-size warning only.
+- Local reset applied all migrations through `20260601000100_tcg_30b_catalog_inventory.sql`.
+- Focused TCG validation passed `19 PASS / 0 FAIL / 0 SKIP`.
+- Full existing local validation passed after the TCG migration.
+- Production dry-run showed exactly one pending migration: `20260601000100_tcg_30b_catalog_inventory.sql`.
+- Production migration apply/list verification passed.
+- Production DB verification passed for TCG table existence/RLS, RPC existence, no broad direct grants, Season 0 counts, no CP references, and active Owner count `1`.
+- Rollback-wrapped production smoke passed for approved-member catalog/collection reads, normal member admin-grant denial, and direct inventory insert denial.
+
+Focused validation covered:
+- TCG tables exist through migration reset.
+- Season 0 card count is 50.
+- Canonical rarity distribution: Common 18, Uncommon 14, Rare 9, Epic 5, Legendary 3, Mythic 1.
+- Canonical type distribution: Character 24, Scene 16, Relic 10, Organization 0.
+- Approved member can read catalog and own collection through RPCs.
+- Pending user is denied.
+- Favorite is denied for unowned cards and allowed after ownership.
+- Owner can grant cards.
+- Plain Admin without `manage_members` is denied card grants.
+- Grant updates inventory and writes an inventory event.
+- Direct inventory/event writes are blocked.
+- TCG schema has no CP-named columns.
+- Direct `member_cp` and `cp_snapshots` probes did not expose rows.
+- Active Owner count remains `1` in validation data.
+
 ## Member Ranking Active-Profile Fix Validation
 
 The member-safe Ranking active-profile viewer fix passed local validation, production migration gates, production DB verification, build/source validation, and linked-account production smoke.

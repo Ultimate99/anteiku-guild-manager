@@ -1,5 +1,13 @@
 # Code Index
 
+## Milestone 30B TCG Catalog + Inventory Backend
+
+- `supabase/migrations/20260601000100_tcg_30b_catalog_inventory.sql`: Adds TCG backend foundation tables, Season 0 catalog v0.1 seed, RLS/default-deny table grants, active-profile catalog/collection/favorite RPCs, and active-admin audited card grant RPC.
+- `supabase/tests/tcg_30b_validation.sql`: Focused local validation for catalog counts, rarity/type distribution, approved/pending access, admin grant, inventory event, favorite behavior, direct inventory write denial, CP table probes, and active Owner count.
+- `docs/TCG_CARD_COLLECTION_PLAN.md`: Planning document for product, data model, RPC/RLS, UI, asset pipeline, milestones, risks, and validation.
+- `ai_agents/TCG_HANDOFF.md`: AI handoff for TCG status, 30B implementation boundary, security rules, catalog shape, and validation.
+- Status: `npm.cmd run build` passed, local `npx.cmd supabase db reset` passed through `20260601000100`, focused validation passed `19 PASS / 0 FAIL / 0 SKIP`, full existing local validation passed, and production rollout/DB verification passed for `20260601000100_tcg_30b_catalog_inventory.sql`. Rollback-wrapped production smoke confirmed approved-member catalog/collection reads work, direct inventory insert is blocked, normal member admin grant is denied, and no production inventory grant was created.
+
 ## Member Ranking Active-Profile Fix
 
 - `supabase/migrations/20260531001300_active_profile_member_ranking.sql`: Redefines member-safe `get_member_cp_rankings(p_scope text default 'guild')` so selected active profile identity from `private.get_active_profile_id()` controls My Guild scope and `is_current_user`. Ranking order and CP-hidden return payload are unchanged.

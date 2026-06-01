@@ -1,5 +1,39 @@
 # Supabase RLS
 
+## Milestone 30B TCG Catalog + Inventory RLS/RPC
+
+Milestone 30B is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
+
+Tables:
+- `tcg_sets`
+- `tcg_rarities`
+- `tcg_cards`
+- `tcg_player_inventory`
+- `tcg_inventory_events`
+
+Rules:
+- RLS is enabled on all TCG tables.
+- Direct anon/authenticated grants are revoked from all TCG tables.
+- Catalog and collection reads are exposed through RPCs, not direct table access.
+- Player inventory mutation is not exposed through direct table writes.
+- Admin grants are RPC-only and write inventory events.
+
+RPCs:
+- `tcg_get_catalog()` requires approved active-profile access.
+- `tcg_get_my_collection()` resolves selected active profile server-side.
+- `tcg_set_card_favorite(...)` only updates an owned active-profile card.
+- `tcg_admin_grant_card(...)` uses `private.active_admin_profile_id()` and allows Owner globally, scoped Leader/Vice, or scoped Admin with `manage_members`.
+
+Privacy:
+- No normal CP tables, CP RPCs, CP values, `member_cp`, or `cp_snapshots` are used by the TCG migration.
+
+Production verification:
+- Production dry-run showed only `20260601000100_tcg_30b_catalog_inventory.sql`.
+- Migration apply/list verification passed.
+- All TCG tables exist with RLS enabled.
+- No broad anon/authenticated direct table grants were found.
+- Rollback-wrapped smoke confirmed approved-member catalog/collection reads and blocked normal-member direct inventory/admin-grant paths.
+
 ## Milestone 29E.8E CP Admin + Analytics + Audit Logs Active Profile RLS/RPC
 
 Milestone 29E.8E CP Admin + Analytics + Audit Logs active-profile migration is implemented, locally validated, and production applied through `20260531001100_active_profile_cp_analytics_audit_admin.sql`.

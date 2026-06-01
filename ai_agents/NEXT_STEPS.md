@@ -2,19 +2,30 @@
 
 ## Current Recommendation
 
-The member Ranking active-profile bug is fixed in production. Account Switcher active-profile migration remains complete for the planned 29B-29F scope, with Ranking now covered by a focused follow-up fix.
+Milestone 30B TCG/Card Collection backend foundation is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
 
 Recommended next step:
-- Move to normal targeted bug-fix or feature planning.
-- Treat future active-profile issues as specific regressions with focused fixes.
-- Keep frontend selected profile ids as UX input only; backend/RPC remains the authority for any future active-profile-sensitive behavior.
+- Plan Milestone 30C Card Collection UI against the verified backend.
+- Keep pack opening, shop, economy, currency, wallet, drop-rate, payment, battle, trading, and marketplace behavior out of scope until separately planned.
 
 Do not yet:
-- Reopen broad active-profile migration work without a specific bug or new approved milestone.
-- Treat frontend-selected profile ids as authority.
-- Use localStorage-only profile switching.
-- Expose normal CP values or private auth/email/admin metadata in switcher payloads.
-- Change active-profile behavior for existing systems without a reviewed RPC/RLS migration.
+- Deploy TCG frontend UI to any target database without `20260601000100_tcg_30b_catalog_inventory.sql`.
+- Add pack opening, shop, economy, currency, wallet, drop-rate, payment, battle, trading, or marketplace behavior.
+- Use `member_cp`, `cp_snapshots`, normal CP RPCs, client-side inventory writes, client-side drops, or client-side currency mutation.
+- Use frontend-selected `profile_id` as authority for player inventory actions.
+
+Recorded Milestone 30B status:
+- Migration `20260601000100_tcg_30b_catalog_inventory.sql` adds TCG catalog, rarity, card, inventory, and inventory-event tables.
+- Seeded canonical Season 0 catalog v0.1 with 50 cards and display-only collector values.
+- Added RPCs `tcg_get_catalog`, `tcg_get_my_collection`, `tcg_set_card_favorite`, and `tcg_admin_grant_card`.
+- Focused validation passed `19 PASS / 0 FAIL / 0 SKIP`; full local validation passed.
+- Production dry-run showed only `20260601000100_tcg_30b_catalog_inventory.sql`; production apply/list verification passed.
+- Production DB verification passed for tables, RLS, RPCs, grants, catalog counts, no CP references, and active Owner count `1`.
+- Rollback-wrapped production smoke passed without creating a real inventory grant.
+
+## Previous Recommendation
+
+The member Ranking active-profile bug is fixed in production. Account Switcher active-profile migration remains complete for the planned 29B-29F scope, with Ranking now covered by a focused follow-up fix.
 
 Recorded member Ranking active-profile fix:
 - Migration `20260531001300_active_profile_member_ranking.sql` is applied in production.
