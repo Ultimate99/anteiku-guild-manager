@@ -1,5 +1,51 @@
 # Project State
 
+## Milestone 30F-A Owner-Only TCG Balance Report Backend Live
+
+Owner-only TCG balance/economy/pack analytics backend support is implemented, locally validated, and production-applied through `20260601000400_tcg_owner_balance_report.sql`.
+
+Implemented:
+- Added read-only RPC `tcg_owner_get_balance_report()`.
+- Resolves the active Owner profile server-side through the existing active admin context.
+- Rejects non-Owner active profiles.
+- Returns structured JSONB for:
+  - collection summary;
+  - rarity ownership summary;
+  - pack opening summary;
+  - rarity pull summary;
+  - economy summary;
+  - duplicate/card pressure summary;
+  - balance hints.
+- Uses existing TCG catalog, inventory, pack opening, wallet, ledger, and shop tables.
+- Does not accept arbitrary profile ids.
+- Does not mutate inventory, wallet, ledger, pack openings, prices, drop rates, or pack size.
+- Does not add frontend analytics UI or member-facing TCG access.
+
+Validation:
+- Local `npx.cmd supabase db reset` passed.
+- `supabase/tests/tcg_30f_balance_report_validation.sql` passed `20 PASS / 0 FAIL / 0 SKIP`.
+- TCG regression tests passed:
+  - `supabase/tests/tcg_30b_validation.sql`: `19 PASS / 0 FAIL / 0 SKIP`
+  - `supabase/tests/tcg_30d_pack_validation.sql`: `18 PASS / 0 FAIL / 0 SKIP`
+  - `supabase/tests/tcg_30e_shop_validation.sql`: `32 PASS / 0 FAIL / 0 SKIP`
+- Broad `supabase/tests/local_validation_anteiku.sql` passed.
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+
+Production:
+- Production dry-run showed exactly one pending migration: `20260601000400_tcg_owner_balance_report.sql`.
+- Production migration apply/list verification passed and remote now shows `20260601000400`.
+- Read-only production DB verification confirmed the RPC exists, authenticated execute is granted, anon execute is not granted, the function definition has no CP table references, a simulated active Owner report call returned expected sections, a normal member call was denied, no CP/private tokens were present in the checked payload, and active Owner count remains `1`.
+- No production wallet, inventory, ledger, opening, price, drop-rate, or pack-size mutation was performed.
+
+Security:
+- Owner-only backend/RPC gating remains the authority.
+- No service-role path, CP join, CP value exposure, payment/premium path, upload, Storage, member-facing TCG release, or frontend table access was added.
+- TCG remains hidden from members.
+
+Next:
+- Plan or implement an Owner-only balance report UI inside `/tcg` Owner Lab using `tcg_owner_get_balance_report()`.
+- Keep member-facing TCG release blocked until Owner analytics review and release gates are separately planned.
+
 ## Milestone 30E-D Compact TCG Hub / Windowed UI Polish Live
 
 Owner-only TCG compact hub/window layout is deployed in production through commit `d1f4c4a style: add compact tcg hub layout`.
