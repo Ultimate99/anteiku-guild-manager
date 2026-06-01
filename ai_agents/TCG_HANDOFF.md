@@ -13,6 +13,7 @@ Milestone 30A planning is complete. No backend, frontend, SQL, Supabase, or prod
 - Milestone 30D-B adds the Owner-only `/tcg` pack preview/opening UI and is deployed through commit `fa50b33 feat: add owner tcg pack preview`.
 - Milestone 30E-A adds the Owner-only shop/economy backend/RPC foundation and is production-applied through `20260601000300_tcg_owner_shop_economy.sql`.
 - Milestone 30E-B adds the Owner-only `/tcg` shop/economy preview UI and is deployed through commit `8e7eb73 feat: add owner tcg shop preview`.
+- Milestone 30E-C polishes the Owner-only `/tcg` shop, wallet, and pack reveal UX and is deployed through commit `053f27d style: polish owner tcg shop ux`.
 - Milestone 30B backend/RPC foundation is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
 - No member-facing packs, shop, economy UI, routes beyond `/tcg`, uploads, or Storage have been implemented.
 - No member-facing TCG release exists yet. The next step is controlled Owner shop-loop smoke testing; frontend calls backend RPCs and never calculates drops or mutates wallets/inventory client-side.
@@ -378,6 +379,44 @@ Production:
 - Non-mutating production smoke confirmed `/tcg` returns HTTP `200`.
 - Codex did not click production `Grant 1000 test coins` or `Buy Test Pack`.
 - Manual Owner mutation smoke is ready: grant test coins, buy the test pack, confirm wallet decreases by `100`, confirm five backend-returned cards reveal, and confirm collection quantity increases by `+5`.
+
+## 30E-C Owner-Only Shop/Pack UX Polish
+
+Implemented frontend/style-only:
+
+- Polished the Owner-only shop panel into a darker game-shop presentation.
+- Improved wallet HUD styling for `Anteiku Coins`.
+- Improved shop item/price/buy-button visual hierarchy.
+- Kept the free Owner test pack visually separate from the shop purchase flow.
+- Improved pack result stage, rarity glow, card reveal timing, and Epic/Legendary/Mythic impact.
+- Added small card reveal index markers.
+- Added ref-based double-submit guards for mutation actions:
+  - favorite toggle
+  - smoke grant
+  - free Owner test pack
+  - test coin grant
+  - test pack purchase
+- Current test values remain unchanged:
+  - grant amount `1000`
+  - test pack price `100 Anteiku Coins`
+  - pack size `5`
+  - drop weights unchanged
+
+Validation:
+
+- `npm.cmd run build` passed.
+- Source checks found only `src/pages/TcgCollection.jsx` and `src/styles/app.css` changed.
+- No SQL/migrations/backend/RPC/RLS/package/service-worker changes were made.
+- No direct TCG table reads/writes were added.
+- No client-side drop calculation, client-side wallet authority, CP path, service-role path, payments, uploads, or Storage was added.
+
+Production:
+
+- Commit `053f27d style: polish owner tcg shop ux` was pushed to `main`.
+- Production serves the updated JS/CSS bundle with the shop polish markers.
+- Non-mutating production smoke confirmed `/tcg` returns HTTP `200`.
+- Codex did not click any production mutation controls.
+- Owner manual shop-loop smoke remains next: grant coins, buy pack, verify wallet decrease, reveal five cards, verify collection quantity increase.
 
 ## 30B RPC Candidates
 

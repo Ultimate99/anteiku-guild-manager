@@ -1,6 +1,6 @@
 # TCG/Card Collection Plan
 
-Milestone 30A planning started this document. Milestone 30B is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`. Milestone 30C-A Owner-only Card Collection preview UI is deployed through commit `dbb67da feat: add owner tcg collection preview`; Milestone 30C-A2 Owner-only smoke grant control is deployed through commit `e96a489 feat: add owner tcg smoke grant`; Milestone 30C-B album visual polish and repo-served asset-pipeline notes are implemented; Milestone 30C-C adds temporary art for the five smoke-test cards; Milestone 30C-D adds temporary art for all 50 Season 0 cards; Milestone 30D-A adds Owner-only test pack backend/RPC support through `20260601000200_tcg_owner_pack_backend.sql`; Milestone 30D-B adds the Owner-only `/tcg` pack preview UI through commit `fa50b33 feat: add owner tcg pack preview`; Milestone 30E-A adds the Owner-only shop/economy backend through `20260601000300_tcg_owner_shop_economy.sql`; Milestone 30E-B adds the Owner-only `/tcg` shop/economy preview UI through commit `8e7eb73 feat: add owner tcg shop preview`. Member-facing packs, shop, economy UI, and final approved card artwork remain unimplemented.
+Milestone 30A planning started this document. Milestone 30B is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`. Milestone 30C-A Owner-only Card Collection preview UI is deployed through commit `dbb67da feat: add owner tcg collection preview`; Milestone 30C-A2 Owner-only smoke grant control is deployed through commit `e96a489 feat: add owner tcg smoke grant`; Milestone 30C-B album visual polish and repo-served asset-pipeline notes are implemented; Milestone 30C-C adds temporary art for the five smoke-test cards; Milestone 30C-D adds temporary art for all 50 Season 0 cards; Milestone 30D-A adds Owner-only test pack backend/RPC support through `20260601000200_tcg_owner_pack_backend.sql`; Milestone 30D-B adds the Owner-only `/tcg` pack preview UI through commit `fa50b33 feat: add owner tcg pack preview`; Milestone 30E-A adds the Owner-only shop/economy backend through `20260601000300_tcg_owner_shop_economy.sql`; Milestone 30E-B adds the Owner-only `/tcg` shop/economy preview UI through commit `8e7eb73 feat: add owner tcg shop preview`; Milestone 30E-C polishes the Owner-only shop/wallet/pack UX through commit `053f27d style: polish owner tcg shop ux`. Member-facing packs, shop, economy UI, and final approved card artwork remain unimplemented.
 
 ## Product Goal
 
@@ -42,6 +42,7 @@ Delayed until later:
 - 30D-C: Owner pack smoke and balancing feedback.
 - 30E-A: Owner-only shop/economy backend/RPC foundation. Complete and production-applied.
 - 30E-B: Owner-only shop/economy UI preview. Complete and deployed.
+- 30E-C: Owner-only shop/pack UX polish. Complete and deployed.
 - 30F: Member-facing free shop/economy planning after Owner acceptance.
 - 30G: Admin TCG tools.
 - Later: premium/payment system only after the free economy is stable.
@@ -571,6 +572,40 @@ Production:
 - Non-mutating production smoke confirmed `/tcg` returns HTTP `200` and the deployed bundle contains the shop UI plus all four 30E-A shop/economy RPC wrapper names.
 - Codex did not click `Grant 1000 test coins` or `Buy Test Pack` in production.
 - Owner can now perform controlled manual shop-loop smoke: grant test coins, buy the test pack, verify wallet decreases by `100`, verify five backend-returned cards display, and verify collection quantity increases by `+5`.
+
+## Phase 30E-C Owner-Only Shop/Pack UX Polish
+
+Implemented frontend/style-only:
+
+- Polished the Owner-only `TCG Shop Test` panel so it reads more like a dark game shop and less like an admin/debug box.
+- Wallet balance now has a stronger currency-HUD treatment.
+- Shop item card has stronger crimson/gold accents and a clearer price/action area.
+- Free Owner test pack panel remains visually distinct with dashed testing treatment.
+- Pack result stage now has a darker reveal surface, crimson texture, rarity glow, and stronger Epic/Legendary/Mythic impact.
+- Added card reveal index markers and refined CSS-only reveal timing.
+- Added reduced-motion coverage for the new shop loading accent.
+- Added ref-based double-submit guards for favorite, smoke grant, free test pack, test coin grant, and shop purchase actions.
+- Kept current test values unchanged:
+  - grant amount `1000`
+  - test pack price `100 Anteiku Coins`
+  - test pack size `5`
+  - drop weights unchanged
+
+Validation:
+
+- `npm.cmd run build` passed.
+- Source checks found only `src/pages/TcgCollection.jsx` and `src/styles/app.css` changed.
+- No SQL/migrations/backend/RPC/RLS/package/service-worker changes were made.
+- No direct TCG table reads/writes were added; the only `.from` match was JavaScript `Array.from`.
+- No `member_cp`, `cp_snapshots`, CP RPC, service-role, payment, upload, or Storage path was added in the touched TCG files.
+
+Production:
+
+- Commit `053f27d style: polish owner tcg shop ux` was pushed to `main`.
+- Vercel deployed bundle assets `index-CqwRGfAC.js` and `index-BsBoxApK.css`.
+- Non-mutating production smoke confirmed `/tcg` returns HTTP `200` and the deployed bundle contains the new polish markers.
+- Codex did not click `Grant smoke cards`, `Open Test Pack`, `Grant 1000 test coins`, `Buy Test Pack`, or favorite toggle in production.
+- Owner manual mutation smoke remains the next validation step.
 
 Canonical v0.1 rules:
 

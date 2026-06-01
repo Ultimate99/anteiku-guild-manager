@@ -12,6 +12,7 @@
 - Milestone 30D-B: Owner-only TCG pack preview UI deployed.
 - Milestone 30E-A: Owner-only TCG shop/economy backend/RPC production-applied.
 - Milestone 30E-B: Owner-only TCG shop/economy UI preview deployed.
+- Milestone 30E-C: Owner-only TCG shop/pack UX polish deployed.
 - Milestone 30A: TCG/Card Collection planning.
 - Milestone 1: React + Vite scaffold and documentation base.
 - Milestone 2: Supabase schema/RLS plan, migrations, and local validation.
@@ -32,7 +33,7 @@
 
 ## Recommended Next
 
-Milestone 30C-A Owner-only Card Collection preview is live, Milestone 30C-A2 adds a controlled Owner-only smoke grant button, Milestone 30C-B improves the album visuals, Milestone 30C-C/30C-D add temporary art coverage, Milestone 30D-A adds the Owner-only backend/RPC foundation for test pack opening, Milestone 30D-B adds the Owner-only pack preview UI, Milestone 30E-A adds the Owner-only backend/RPC foundation for test coins, wallet ledger, Owner test shop listing, and Owner test pack purchase, and Milestone 30E-B adds the Owner-only shop/economy UI preview. Next TCG work should perform controlled Owner click-through economy/pack smoke only with explicit approval, then decide whether to polish Owner shop UX, replace temporary art, or plan member-release gates. Member-facing shop/economy release, payments, trading, marketplace, and battles remain out of scope until separately planned.
+Milestone 30C-A Owner-only Card Collection preview is live, Milestone 30C-A2 adds a controlled Owner-only smoke grant button, Milestone 30C-B improves the album visuals, Milestone 30C-C/30C-D add temporary art coverage, Milestone 30D-A adds the Owner-only backend/RPC foundation for test pack opening, Milestone 30D-B adds the Owner-only pack preview UI, Milestone 30E-A adds the Owner-only backend/RPC foundation for test coins, wallet ledger, Owner test shop listing, and Owner test pack purchase, Milestone 30E-B adds the Owner-only shop/economy UI preview, and Milestone 30E-C polishes the Owner shop/wallet/pack reveal UX. Next TCG work should perform controlled Owner click-through economy/pack smoke only with explicit approval, then decide whether to replace temporary art, tune Owner UX, or plan member-release gates. Member-facing shop/economy release, payments, trading, marketplace, and battles remain out of scope until separately planned.
 
 Strong candidates:
 

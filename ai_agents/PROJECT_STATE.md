@@ -1,5 +1,32 @@
 # Project State
 
+## Milestone 30E-C Owner-Only TCG Shop/Pack UX Polish Live
+
+Owner-only TCG shop, wallet, pack purchase, and pack reveal UX polish is deployed in production through commit `053f27d style: polish owner tcg shop ux`.
+
+Implemented:
+- Polished the Owner-only `TCG Shop Test` panel into a darker game-shop presentation.
+- Improved `Anteiku Coins` wallet HUD styling.
+- Improved shop item, price, and buy-button visual hierarchy.
+- Kept the free Owner test pack visually distinct from the shop purchase flow.
+- Improved pack result stage styling, rarity glow, card reveal timing, and Epic/Legendary/Mythic visual impact.
+- Added card reveal index markers.
+- Added ref-based double-submit guards for favorite toggle, smoke grant, free test pack, test coin grant, and shop purchase.
+- Kept current test economy values unchanged: grant amount `1000`, test pack price `100 Anteiku Coins`, test pack size `5`, and drop weights unchanged.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source checks found only `src/pages/TcgCollection.jsx` and `src/styles/app.css` changed.
+- No SQL/migrations/backend/RPC/RLS/package/service-worker changes were made.
+- No direct TCG table reads/writes, client-side drop calculation, client-side wallet authority, `member_cp`, `cp_snapshots`, CP RPC, service-role, payment, upload, or Storage path was added in the touched TCG files.
+- Existing Owner-only `/tcg` guard remains intact.
+
+Production:
+- Vercel deployed bundle assets `index-CqwRGfAC.js` and `index-BsBoxApK.css`.
+- Non-mutating production smoke confirmed `/tcg` returns HTTP `200` and the deployed bundle contains the shop polish markers.
+- Codex did not click `Grant smoke cards`, `Open Test Pack`, `Grant 1000 test coins`, `Buy Test Pack`, or favorite toggle in production.
+- Owner can now perform controlled manual mutation smoke for the full shop loop.
+
 ## Milestone 30E-B Owner-Only TCG Shop/Economy UI Preview Live
 
 Owner-only TCG shop/economy preview UI is implemented and deployed in production through commit `8e7eb73 feat: add owner tcg shop preview`.
