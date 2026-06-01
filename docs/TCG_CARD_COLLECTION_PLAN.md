@@ -1,6 +1,6 @@
 # TCG/Card Collection Plan
 
-Milestone 30A planning started this document. Milestone 30B is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`. Milestone 30C-A Owner-only Card Collection preview UI is deployed through commit `dbb67da feat: add owner tcg collection preview`; Milestone 30C-A2 Owner-only smoke grant control is deployed through commit `e96a489 feat: add owner tcg smoke grant`; Milestone 30C-B album visual polish and repo-served asset-pipeline notes are implemented; Milestone 30C-C adds temporary art for the five smoke-test cards. Pack opening, shop, economy, and full final card artwork remain unimplemented.
+Milestone 30A planning started this document. Milestone 30B is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`. Milestone 30C-A Owner-only Card Collection preview UI is deployed through commit `dbb67da feat: add owner tcg collection preview`; Milestone 30C-A2 Owner-only smoke grant control is deployed through commit `e96a489 feat: add owner tcg smoke grant`; Milestone 30C-B album visual polish and repo-served asset-pipeline notes are implemented; Milestone 30C-C adds temporary art for the five smoke-test cards; Milestone 30C-D adds temporary art for all 50 Season 0 cards. Pack opening, shop, economy, and final approved card artwork remain unimplemented.
 
 ## Product Goal
 
@@ -34,8 +34,9 @@ Delayed until later:
 - 30C-A2: Owner-only smoke grant control. Complete and deployed.
 - 30C-B: Album visual polish + art asset pipeline notes. Complete.
 - 30C-C: First five temporary smoke-card art assets. Complete.
-- 30C-C2: Replace temporary smoke art with approved final artwork when ready.
-- 30C-D: Member release planning after Owner acceptance.
+- 30C-D: Full Season 0 temporary art import. Complete.
+- 30C-E: Replace temporary art with approved final artwork when ready.
+- 30C-F: Member release planning after Owner acceptance.
 - 30D: Pack opening backend/RPC.
 - 30E: Pack opening animation/UI.
 - 30F: Free shop/economy.
@@ -249,7 +250,13 @@ Milestone 30C-C temporary smoke assets:
 
 - The five files above are present as temporary generated smoke-test art.
 - They are intended only for Owner preview testing and should be replaced later with approved final artwork.
-- Do not bulk-import the remaining 45 Season 0 images until a separate art-approval/import milestone.
+
+Milestone 30C-D temporary full-set import:
+
+- All 50 Season 0 target files are now present under `public/assets/tcg/art/`.
+- The remaining 45 files were imported from the approved deterministic batch mapping.
+- The exact duplicate source file `ChatGPT Image May 31, 2026, 09_32_31 PM.png` was ignored; `ChatGPT Image May 31, 2026, 09_32_27 PM (1).png` is the source for S0-041.
+- These assets are temporary and should be replaced later with approved final artwork.
 
 Vite/Vercel asset rule:
 
@@ -382,6 +389,29 @@ Validation:
 - `npm.cmd run build` passed.
 - Asset dimensions verified at `1086x1448`.
 - No SQL, RPC, service, catalog seed, Storage/upload, pack, shop, economy, or CP changes.
+
+## Phase 30C-D Full Season 0 Temporary Art Import
+
+Implemented:
+
+- Added the remaining 45 temporary generated inner-art PNG files.
+- All 50 Season 0 catalog `art_path` filenames now exist under `public/assets/tcg/art/`.
+- Kept the five 30C-C smoke-card assets aligned with the same mapping and verified their hashes.
+- Used the approved deterministic source mapping:
+  - Batch 1 items 1-10 -> S0-001 through S0-010
+  - Batch 2 items 1-10 -> S0-011 through S0-020
+  - Batch 3 items 1-10 -> S0-021 through S0-030
+  - Batch 4 items 1-10 -> S0-031 through S0-040
+  - Batch 5 items 1-10 -> S0-041 through S0-050
+- Ignored the exact duplicate unsuffixed Batch 5 item 1 source.
+- No UI/CSS adjustment was needed because all target images are `1086x1448`.
+
+Validation:
+
+- All 50 local target files exist.
+- All 50 are valid PNGs at `1086x1448`.
+- `npm.cmd run build` passed.
+- No SQL, RPC, service, catalog seed, Storage/upload, pack, shop, economy, member visibility, or CP changes.
 
 Canonical v0.1 rules:
 

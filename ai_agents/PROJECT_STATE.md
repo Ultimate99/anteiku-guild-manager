@@ -111,6 +111,31 @@ Security:
 - Owner-only `/tcg` guard remains unchanged.
 - No direct TCG inventory/event writes, no service-role path, no Supabase Storage, no uploads, and no CP references were added.
 
+## Milestone 30C-D Full Season 0 Temporary Art Import
+
+Implemented as asset-only:
+
+- Added the remaining 45 temporary generated inner-art PNGs so all 50 Season 0 catalog cards have repo-served artwork.
+- Kept the five 30C-C smoke-card assets aligned with the same source mapping and verified their hashes.
+- Used the approved deterministic manifest:
+  - Batch 1 items 1-10 -> S0-001 through S0-010
+  - Batch 2 items 1-10 -> S0-011 through S0-020
+  - Batch 3 items 1-10 -> S0-021 through S0-030
+  - Batch 4 items 1-10 -> S0-031 through S0-040
+  - Batch 5 items 1-10 -> S0-041 through S0-050
+- Ignored exact duplicate source `ChatGPT Image May 31, 2026, 09_32_31 PM.png`; used `ChatGPT Image May 31, 2026, 09_32_27 PM (1).png` as Batch 5 item 1 / S0-041.
+- No SQL, RPC, service, UI, CSS, package, catalog seed, Storage/upload, pack, shop, economy, member visibility, or CP behavior changed.
+
+Validation:
+- All 50 local target files exist.
+- All 50 are valid PNGs at `1086x1448`.
+- `npm.cmd run build` passed.
+
+Security:
+- Owner-only `/tcg` guard remains unchanged.
+- Backend/RPC authority remains unchanged.
+- No direct TCG inventory/event writes, service-role path, Supabase Storage, uploads, or CP references were added.
+
 ## Milestone 30B TCG Catalog + Inventory Backend Production Applied
 
 TCG/Card Collection backend foundation is implemented, locally validated, and applied to production through `20260601000100_tcg_30b_catalog_inventory.sql`.
