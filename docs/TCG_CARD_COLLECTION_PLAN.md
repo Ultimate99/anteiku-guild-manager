@@ -1,6 +1,6 @@
 # TCG/Card Collection Plan
 
-Milestone 30A planning started this document. Milestone 30B is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`. Milestone 30C-A Owner-only Card Collection preview UI is deployed through commit `dbb67da feat: add owner tcg collection preview`; Milestone 30C-A2 Owner-only smoke grant control is deployed through commit `e96a489 feat: add owner tcg smoke grant`; Milestone 30C-B album visual polish and repo-served asset-pipeline notes are implemented; Milestone 30C-C adds temporary art for the five smoke-test cards; Milestone 30C-D adds temporary art for all 50 Season 0 cards; Milestone 30D-A adds Owner-only test pack backend/RPC support through `20260601000200_tcg_owner_pack_backend.sql`. Member-facing packs, shop, economy, and final approved card artwork remain unimplemented.
+Milestone 30A planning started this document. Milestone 30B is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`. Milestone 30C-A Owner-only Card Collection preview UI is deployed through commit `dbb67da feat: add owner tcg collection preview`; Milestone 30C-A2 Owner-only smoke grant control is deployed through commit `e96a489 feat: add owner tcg smoke grant`; Milestone 30C-B album visual polish and repo-served asset-pipeline notes are implemented; Milestone 30C-C adds temporary art for the five smoke-test cards; Milestone 30C-D adds temporary art for all 50 Season 0 cards; Milestone 30D-A adds Owner-only test pack backend/RPC support through `20260601000200_tcg_owner_pack_backend.sql`; Milestone 30D-B adds the Owner-only `/tcg` pack preview UI through commit `fa50b33 feat: add owner tcg pack preview`. Member-facing packs, shop, economy, and final approved card artwork remain unimplemented.
 
 ## Product Goal
 
@@ -38,7 +38,7 @@ Delayed until later:
 - 30C-E: Replace temporary art with approved final artwork when ready.
 - 30C-F: Member release planning after Owner acceptance.
 - 30D-A: Owner-only test pack backend/RPC. Complete and production-applied.
-- 30D-B: Owner-only pack opening UI/animation preview.
+- 30D-B: Owner-only pack opening UI/animation preview. Complete and deployed.
 - 30D-C: Owner pack smoke and balancing feedback.
 - 30E: Pack opening animation/UI.
 - 30F: Free shop/economy.
@@ -460,6 +460,30 @@ Production:
 - Migration applied to production.
 - Production DB verification confirmed new tables/RLS, no broad direct grants, RPC existence/authenticated execute grant, seeded pack/rates, and active Owner count `1`.
 - No production pack-opening mutation smoke was performed without explicit approval.
+
+## Phase 30D-B Owner-Only Pack Preview UI
+
+Implemented:
+
+- Owner-only `Season 0 Test Pack` preview panel on `/tcg`.
+- Frontend RPC wrapper `tcgOwnerOpenTestPack()` for `tcg_owner_open_test_pack`.
+- One button: `Open Test Pack`.
+- The backend remains the sole authority for card drops, duplicate stacking, inventory events, and opening history.
+- Result display shows the returned five cards with art, name, card number, rarity, new/duplicate state, quantity delta, and resulting owned quantity.
+- The collection refetches after a successful pack opening.
+- Added EN/FR/DE copy and CSS-only reveal styling.
+
+Validation:
+
+- `npm.cmd run build` passed.
+- Source checks found no direct TCG table reads/writes, no pack/drop table reads, no client-side drop calculation, no normal CP paths, no service-role path, and no uploads/Storage in the TCG page/service path.
+- Production bundle verification confirmed the pack UI and `tcg_owner_open_test_pack` wrapper are deployed.
+
+Production status:
+
+- Codex did not click `Open Test Pack` in production.
+- No production pack-opening/inventory mutation was created by the rollout.
+- Owner can now manually test pack opening from `/tcg`.
 
 Canonical v0.1 rules:
 

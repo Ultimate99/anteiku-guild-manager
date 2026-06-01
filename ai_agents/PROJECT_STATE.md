@@ -1,5 +1,33 @@
 # Project State
 
+## Milestone 30D-B Owner-Only TCG Pack Preview UI Live
+
+Owner-only pack opening preview UI is implemented and deployed in production through commit `fa50b33 feat: add owner tcg pack preview`.
+
+Implemented:
+- Added an Owner-only `Season 0 Test Pack` preview panel on `/tcg`.
+- Added frontend RPC wrapper `tcgOwnerOpenTestPack()` for `tcg_owner_open_test_pack`.
+- Pack opening uses the backend RPC only; no client-side drop calculation, drop table reads, pack table reads, or direct inventory/event writes were added.
+- Pack results render from the backend payload with five revealed card result cards, rarity accents, new/duplicate labels, quantity delta, and resulting owned quantity.
+- After a successful Owner click, `/tcg` refetches `tcg_get_my_collection`, switches to the Owned filter, and leaves existing favorite/detail/smoke-grant behavior intact.
+- Added EN/FR/DE pack-preview copy and CSS-only reveal styling with reduced-motion fallback.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source checks found no `member_cp`, no `cp_snapshots`, no normal CP RPC usage, no service-role path, no uploads/Storage, no direct TCG table writes, and no pack/drop table reads in the TCG page/service path.
+- Production bundle verification confirmed `/tcg` serves the app shell and bundle `assets/index-Cscww8KG.js` contains the new pack preview and `tcg_owner_open_test_pack` RPC wrapper.
+
+Security:
+- `/tcg` remains guarded by the existing active Owner admin context.
+- Non-Owner active profiles still receive the Owner-only blocked state through the existing route guard.
+- Backend/RPC remains authority for pack opening, card drops, and inventory mutation.
+- No member-facing packs, shop, economy, wallet/currency, payments, client-side drop logic, CP/GvG/Wall/3v3/Push/Analytics/Ranking/Auth/Approval/Account Switcher behavior changes were included.
+
+Smoke status:
+- Codex did not click `Open Test Pack` in production.
+- No production pack-opening/inventory mutation was created by this rollout.
+- Owner can now manually test pack opening from `/tcg`.
+
 ## Milestone 30C-A Owner-Only TCG Card Collection Preview Live
 
 Owner-only Card Collection preview UI is implemented and deployed in production through commit `dbb67da feat: add owner tcg collection preview`.

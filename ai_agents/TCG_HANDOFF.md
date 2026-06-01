@@ -10,9 +10,10 @@ Milestone 30A planning is complete. No backend, frontend, SQL, Supabase, or prod
 - Milestone 30C-C adds temporary generated art assets for only the five Owner smoke-test cards.
 - Milestone 30C-D adds temporary generated art assets for all 50 Season 0 cards.
 - Milestone 30D-A adds Owner-only test pack backend/RPC support and is production-applied through `20260601000200_tcg_owner_pack_backend.sql`.
+- Milestone 30D-B adds the Owner-only `/tcg` pack preview/opening UI and is deployed through commit `fa50b33 feat: add owner tcg pack preview`.
 - Milestone 30B backend/RPC foundation is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
 - No member-facing packs, shop, economy, currency, routes beyond `/tcg`, uploads, or Storage have been implemented.
-- No member-facing TCG release exists yet. The next step is Owner-only pack UI/testing; frontend must call the backend RPC and never calculate drops client-side.
+- No member-facing TCG release exists yet. The next step is controlled Owner pack-opening smoke/testing; frontend calls the backend RPC and never calculates drops client-side.
 
 ## Product Direction
 
@@ -267,6 +268,30 @@ Production:
   - `season_0_test_pack` is active, Owner-test-only, has 5 cards per pack, 6 drop rates, and total weight 10000.
   - Active Owner count remains `1`.
 - No production Owner pack opening smoke was performed; user approval is required before creating production pack-opening/inventory mutations.
+
+## 30D-B Owner-Only Pack Preview UI
+
+Implemented frontend-only:
+
+- Added an Owner-only `Season 0 Test Pack` panel on `/tcg`.
+- Added `tcgOwnerOpenTestPack()` in `src/services/tcgService.js`.
+- The button calls only `tcg_owner_open_test_pack(p_pack_code => season_0_test_pack)`.
+- No profile id is sent from the frontend; the backend resolves the active Owner profile.
+- Result cards render directly from the backend payload: art, card name/no, rarity, new/duplicate state, quantity delta, and resulting owned quantity.
+- After success the page refetches `tcg_get_my_collection`, switches to Owned, and keeps existing favorite/detail/smoke-grant behavior.
+- Added EN/FR/DE i18n and CSS-only staggered reveal styling with reduced-motion fallback.
+
+Validation:
+
+- `npm.cmd run build` passed.
+- Source checks confirmed no direct TCG table reads/writes, no pack/drop table reads, no client-side drop calculation, no normal CP paths, no service-role path, and no uploads/Storage in the TCG page/service path.
+- Production bundle verification confirmed `/tcg` serves the app shell and the deployed bundle contains the pack UI plus `tcg_owner_open_test_pack`.
+
+Production smoke status:
+
+- Codex did not click `Open Test Pack` in production.
+- No production pack-opening or inventory mutation was created during deployment.
+- Owner can now manually open a controlled test pack from `/tcg`.
 
 ## 30B RPC Candidates
 
