@@ -24,7 +24,7 @@ Security:
 
 Next:
 - Use the Owner-only smoke grant control from Milestone 30C-A2 if owned-card album UI needs a controlled visual test.
-- Plan 30C-B only after the Owner preview is accepted; member release should remain gated.
+- Continue Owner-only TCG smoke checks before any member release.
 
 ## Milestone 30C-A2 Owner TCG Smoke Grant Control Live
 
@@ -77,7 +77,7 @@ Asset pipeline:
 - Vite serves files under `public/` from the site root.
 - A file at `public/assets/tcg/art/s0_001_20th_ward_civilian.png` is available at `/assets/tcg/art/s0_001_20th_ward_civilian.png`.
 - TCG `art_path` values should continue to use the root-served `/assets/tcg/art/...` path.
-- No Supabase Storage, upload flow, generated art, or image assets were added.
+- No Supabase Storage, upload flow, generated-new-art step, or broad image import was added in 30C-B.
 
 Validation:
 - `npm.cmd run build` passed with the existing Vite chunk-size warning only.
@@ -87,6 +87,29 @@ Security:
 - Owner-only `/tcg` nav/page guard remains unchanged.
 - TCG frontend still calls only the approved RPCs: `tcg_get_catalog`, `tcg_get_my_collection`, `tcg_set_card_favorite`, and Owner-only `tcg_admin_grant_card` for the smoke button.
 - No packs, shop, economy, wallet/currency, drop rates, payments, CP/GvG/Wall/3v3/Push/Analytics/Ranking/Auth/Approval/Account Switcher behavior changed.
+
+## Milestone 30C-C First Smoke-Card Art Assets
+
+Implemented as asset-only:
+
+- Added temporary generated inner-art PNGs for exactly the five smoke-test cards:
+  - `public/assets/tcg/art/s0_001_20th_ward_civilian.png`
+  - `public/assets/tcg/art/s0_019_anteiku_server.png`
+  - `public/assets/tcg/art/s0_033_young_one_eyed_ghoul.png`
+  - `public/assets/tcg/art/s0_042_half_mask_awakening.png`
+  - `public/assets/tcg/art/s0_050_anteiku_origin.png`
+- The files were copied from the user-provided `S0` source set and renamed to the canonical filenames already referenced by catalog `art_path`.
+- Other 45 Season 0 cards intentionally remain on polished placeholders.
+- No CSS changes were needed because the source images are `1086x1448` and match the 3:4 card-art ratio.
+
+Validation:
+- `npm.cmd run build` passed.
+- Asset dimensions verified at `1086x1448`.
+- No SQL, RPC, service, package, Storage/upload, pack, shop, economy, CP/GvG/Wall/3v3/Push/Analytics/Ranking/Auth/Approval/Account Switcher changes.
+
+Security:
+- Owner-only `/tcg` guard remains unchanged.
+- No direct TCG inventory/event writes, no service-role path, no Supabase Storage, no uploads, and no CP references were added.
 
 ## Milestone 30B TCG Catalog + Inventory Backend Production Applied
 

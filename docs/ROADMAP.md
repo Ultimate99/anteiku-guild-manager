@@ -6,6 +6,7 @@
 - Milestone 30C-A: Owner-only TCG Card Collection preview UI deployed.
 - Milestone 30C-A2: Owner-only TCG smoke grant control deployed.
 - Milestone 30C-B: TCG album visual polish and repo-served art asset pipeline notes.
+- Milestone 30C-C: First five temporary smoke-card art assets added for Owner preview testing.
 - Milestone 30A: TCG/Card Collection planning.
 - Milestone 1: React + Vite scaffold and documentation base.
 - Milestone 2: Supabase schema/RLS plan, migrations, and local validation.
@@ -26,12 +27,12 @@
 
 ## Recommended Next
 
-Milestone 30C-A Owner-only Card Collection preview is live, Milestone 30C-A2 adds a controlled Owner-only smoke grant button, and Milestone 30C-B improves the album visuals plus documents the repo-served art asset path. Next TCG work should add real card art files under `public/assets/tcg/art/`, complete Owner visual smoke, gather feedback, then plan any member-facing release separately. Pack opening, shop, economy, wallet/currency, drop rates, payments, trading, marketplace, and battles remain out of scope until separately planned.
+Milestone 30C-A Owner-only Card Collection preview is live, Milestone 30C-A2 adds a controlled Owner-only smoke grant button, Milestone 30C-B improves the album visuals, and Milestone 30C-C adds temporary art for the five smoke-test cards. Next TCG work should complete Owner visual smoke with the owned cards, replace temporary art with approved final assets when available, then plan any member-facing release separately. Pack opening, shop, economy, wallet/currency, drop rates, payments, trading, marketplace, and battles remain out of scope until separately planned.
 
 Strong candidates:
 
-- Add approved real card art files under `public/assets/tcg/art/`.
-- Owner click-through smoke for owned/missing/favorite/detail UI after art files are present.
+- Owner click-through smoke for the five smoke-card art assets, owned/missing/favorite/detail UI, and mobile detail sheet.
+- Replace temporary smoke art with approved final card art under `public/assets/tcg/art/`.
 - Plan member-release gating separately after Owner acceptance.
 - Manual Vercel GitHub App restriction to only `Ultimate99/anteiku-guild-manager`.
 - Controlled production test member cleanup planning.

@@ -7,9 +7,10 @@ Milestone 30A planning is complete. No backend, frontend, SQL, Supabase, or prod
 - Milestone 30C-A Owner-only Card Collection preview UI is implemented and deployed in production through commit `dbb67da feat: add owner tcg collection preview`.
 - Milestone 30C-A2 Owner-only smoke grant control is implemented and deployed in production through commit `e96a489 feat: add owner tcg smoke grant`.
 - Milestone 30C-B TCG album visual polish and repo-served asset-pipeline notes are implemented.
+- Milestone 30C-C adds temporary generated art assets for only the five Owner smoke-test cards.
 - Milestone 30B backend/RPC foundation is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
-- No packs, shop, economy, currency, drop rates, routes beyond `/tcg`, uploads, Storage, or rendered card assets have been implemented.
-- The next step is authenticated Owner/non-Owner preview smoke and then 30C-B planning after Owner acceptance.
+- No packs, shop, economy, currency, drop rates, routes beyond `/tcg`, uploads, or Storage have been implemented.
+- The next step is authenticated Owner visual smoke for the five temporary art assets, then replacement with final approved art or member-release planning after Owner acceptance.
 
 ## Product Direction
 
@@ -164,6 +165,29 @@ Validation:
 
 - `npm.cmd run build` passed.
 - Source checks confirmed no direct TCG table reads/writes, no normal CP paths, no service-role path, and no upload/Storage behavior in the TCG page/service path.
+
+## 30C-C First Smoke-Card Art Assets
+
+Implemented asset-only:
+
+- Added five temporary PNG inner-art files from the provided `S0` source set.
+- Assets were copied to canonical Vite public paths that already match the Season 0 `tcg_cards.art_path` values.
+- No catalog seed, SQL, RPC, service, or frontend behavior changes were needed.
+- Other 45 Season 0 cards intentionally continue using the polished placeholder treatment.
+
+Added files:
+
+- `public/assets/tcg/art/s0_001_20th_ward_civilian.png`
+- `public/assets/tcg/art/s0_019_anteiku_server.png`
+- `public/assets/tcg/art/s0_033_young_one_eyed_ghoul.png`
+- `public/assets/tcg/art/s0_042_half_mask_awakening.png`
+- `public/assets/tcg/art/s0_050_anteiku_origin.png`
+
+Validation:
+
+- Source files are `1086x1448` PNGs, matching the 3:4 card-art ratio.
+- `npm.cmd run build` passed.
+- No Supabase Storage, uploads, generated-new-art step, packs, shop, economy, or CP paths were added.
 
 ## 30B RPC Candidates
 

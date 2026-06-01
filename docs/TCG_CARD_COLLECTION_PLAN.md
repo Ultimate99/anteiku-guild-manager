@@ -1,6 +1,6 @@
 # TCG/Card Collection Plan
 
-Milestone 30A planning started this document. Milestone 30B is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`. Milestone 30C-A Owner-only Card Collection preview UI is deployed through commit `dbb67da feat: add owner tcg collection preview`; Milestone 30C-A2 Owner-only smoke grant control is deployed through commit `e96a489 feat: add owner tcg smoke grant`; Milestone 30C-B album visual polish and repo-served asset-pipeline notes are implemented. Pack opening, shop, economy, and generated/real card artwork remain unimplemented.
+Milestone 30A planning started this document. Milestone 30B is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`. Milestone 30C-A Owner-only Card Collection preview UI is deployed through commit `dbb67da feat: add owner tcg collection preview`; Milestone 30C-A2 Owner-only smoke grant control is deployed through commit `e96a489 feat: add owner tcg smoke grant`; Milestone 30C-B album visual polish and repo-served asset-pipeline notes are implemented; Milestone 30C-C adds temporary art for the five smoke-test cards. Pack opening, shop, economy, and full final card artwork remain unimplemented.
 
 ## Product Goal
 
@@ -33,7 +33,8 @@ Delayed until later:
 - 30C-A: Owner-only Card Collection preview UI. Complete and deployed.
 - 30C-A2: Owner-only smoke grant control. Complete and deployed.
 - 30C-B: Album visual polish + art asset pipeline notes. Complete.
-- 30C-C: Real art asset add/import after approved artwork exists.
+- 30C-C: First five temporary smoke-card art assets. Complete.
+- 30C-C2: Replace temporary smoke art with approved final artwork when ready.
 - 30C-D: Member release planning after Owner acceptance.
 - 30D: Pack opening backend/RPC.
 - 30E: Pack opening animation/UI.
@@ -244,6 +245,12 @@ Recommended structure:
 - `public/assets/tcg/art/s0_042_half_mask_awakening.png`
 - `public/assets/tcg/art/s0_050_anteiku_origin.png`
 
+Milestone 30C-C temporary smoke assets:
+
+- The five files above are present as temporary generated smoke-test art.
+- They are intended only for Owner preview testing and should be replaced later with approved final artwork.
+- Do not bulk-import the remaining 45 Season 0 images until a separate art-approval/import milestone.
+
 Vite/Vercel asset rule:
 
 - Files placed in `public/assets/tcg/art/` are served at `/assets/tcg/art/...`.
@@ -352,6 +359,29 @@ Security:
 - RPC-only frontend path unchanged.
 - No backend/RPC/SQL changes.
 - No packs, shop, economy, currency, wallet, drop rates, payments, uploads, Storage, or generated images.
+
+## Phase 30C-C First Smoke-Card Art Assets
+
+Implemented:
+
+- Added only the five temporary smoke-test inner-art PNG files from the supplied `S0` source set.
+- Copied/renamed them to the canonical public asset filenames already used by the Season 0 catalog.
+- Kept the other 45 cards on polished placeholders.
+- Made no CSS/frontend adjustments because the images are `1086x1448`, matching the expected 3:4 card-art composition.
+
+Added files:
+
+- `public/assets/tcg/art/s0_001_20th_ward_civilian.png`
+- `public/assets/tcg/art/s0_019_anteiku_server.png`
+- `public/assets/tcg/art/s0_033_young_one_eyed_ghoul.png`
+- `public/assets/tcg/art/s0_042_half_mask_awakening.png`
+- `public/assets/tcg/art/s0_050_anteiku_origin.png`
+
+Validation:
+
+- `npm.cmd run build` passed.
+- Asset dimensions verified at `1086x1448`.
+- No SQL, RPC, service, catalog seed, Storage/upload, pack, shop, economy, or CP changes.
 
 Canonical v0.1 rules:
 
