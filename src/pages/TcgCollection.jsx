@@ -23,6 +23,8 @@ const TEST_PACK_CODE = 'season_0_test_pack';
 const TEST_SHOP_ITEM_CODE = 'season_0_test_pack_shop';
 const TEST_COIN_GRANT_AMOUNT = 1000;
 const PACK_ANIMATION_STORAGE_KEY = 'anteiku.tcg.packAnimationsEnabled';
+const PACK_FRONT_ASSET_PATH = '/assets/tcg/packs/season0_test_pack_front.png';
+const CARD_BACK_ASSET_PATH = '/assets/tcg/cards/tcg_card_back_season0.png';
 const SMOKE_GRANT_REASON = '30C-A owner visual smoke';
 const SMOKE_GRANT_CARDS = [
   { cardKey: 's0_001_20th_ward_civilian', quantity: 3 },
@@ -110,12 +112,29 @@ function TcgArt({ card, size = 'card' }) {
 }
 
 function TcgPackSprite({ pack, t, compact = false }) {
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [pack?.packCode]);
+
   return (
-    <div className="tcg-pack-sprite" data-compact={compact}>
+    <div className="tcg-pack-sprite" data-compact={compact} data-has-image={!failed}>
       <div className="tcg-pack-sprite-inner">
-        <span>{t('tcg.seasonZero')}</span>
-        <strong>{pack?.packName || t('tcg.seasonZeroTestPack')}</strong>
-        <small>{t('tcg.ownerTestOnly')}</small>
+        {!failed ? (
+          <img
+            src={PACK_FRONT_ASSET_PATH}
+            alt=""
+            draggable="false"
+            onError={() => setFailed(true)}
+          />
+        ) : (
+          <>
+            <span>{t('tcg.seasonZero')}</span>
+            <strong>{pack?.packName || t('tcg.seasonZeroTestPack')}</strong>
+            <small>{t('tcg.ownerTestOnly')}</small>
+          </>
+        )}
       </div>
     </div>
   );
@@ -150,14 +169,29 @@ function TcgPackResultCard({ card, index, language, t }) {
 }
 
 function TcgRevealCard({ card, index, revealed, language, t, onReveal }) {
+  const [cardBackFailed, setCardBackFailed] = useState(false);
+
+  useEffect(() => {
+    setCardBackFailed(false);
+  }, [card?.cardKey, index]);
+
   if (!revealed) {
     return (
       <button
         type="button"
         className="tcg-pack-hidden-card"
+        data-has-image={!cardBackFailed}
         style={{ '--tcg-reveal-index': index }}
         onClick={() => onReveal(index)}
       >
+        {!cardBackFailed ? (
+          <img
+            src={CARD_BACK_ASSET_PATH}
+            alt=""
+            draggable="false"
+            onError={() => setCardBackFailed(true)}
+          />
+        ) : null}
         <span>{`0${index + 1}`}</span>
         <strong>{t('tcg.tapToReveal')}</strong>
       </button>

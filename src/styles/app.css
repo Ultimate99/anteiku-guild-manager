@@ -7384,8 +7384,8 @@ button.command-card:focus-visible {
 }
 
 .tcg-pack-sprite {
-  width: min(100%, 236px);
-  aspect-ratio: 4 / 3;
+  width: min(100%, 188px);
+  aspect-ratio: 3 / 4;
   display: grid;
   place-items: stretch;
   position: relative;
@@ -7411,6 +7411,21 @@ button.command-card:focus-visible {
     inset 0 22px 44px rgba(255, 255, 255, 0.04);
 }
 
+.tcg-pack-sprite[data-has-image="true"] .tcg-pack-sprite-inner {
+  padding: 0;
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.tcg-pack-sprite-inner img {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  object-position: center;
+}
+
 .tcg-pack-sprite-inner::before,
 .tcg-pack-sprite-inner::after {
   content: "";
@@ -7433,6 +7448,19 @@ button.command-card:focus-visible {
     repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.022) 0 1px, transparent 1px 9px);
   mix-blend-mode: screen;
   opacity: 0.65;
+}
+
+.tcg-pack-sprite[data-has-image="true"] .tcg-pack-sprite-inner::before {
+  inset: 0;
+  border-color: rgba(196, 30, 58, 0.24);
+  box-shadow: inset 0 0 28px rgba(0, 0, 0, 0.28);
+}
+
+.tcg-pack-sprite[data-has-image="true"] .tcg-pack-sprite-inner::after {
+  background:
+    linear-gradient(104deg, transparent 0 39%, rgba(255, 255, 255, 0.16) 40% 43%, transparent 44%),
+    radial-gradient(circle at 50% 0%, rgba(196, 30, 58, 0.12), transparent 38%);
+  opacity: 0.44;
 }
 
 .tcg-pack-sprite-inner span,
@@ -7658,7 +7686,8 @@ button.command-card:focus-visible {
 }
 
 .tcg-pack-hidden-card {
-  min-height: 180px;
+  min-height: 0;
+  aspect-ratio: 3 / 4;
   display: grid;
   align-content: center;
   justify-items: center;
@@ -7679,6 +7708,16 @@ button.command-card:focus-visible {
   animation-delay: calc(var(--tcg-reveal-index, 0) * 80ms);
 }
 
+.tcg-pack-hidden-card img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+}
+
 .tcg-pack-hidden-card::before {
   content: "";
   position: absolute;
@@ -7692,6 +7731,24 @@ button.command-card:focus-visible {
   position: absolute;
   inset: 0;
   background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.026) 0 1px, transparent 1px 9px);
+}
+
+.tcg-pack-hidden-card[data-has-image="true"] {
+  background: rgba(0, 0, 0, 0.84);
+}
+
+.tcg-pack-hidden-card[data-has-image="true"]::before {
+  inset: 0;
+  border-color: rgba(196, 30, 58, 0.2);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.035),
+    inset 0 -36px 52px rgba(0, 0, 0, 0.5);
+}
+
+.tcg-pack-hidden-card[data-has-image="true"]::after {
+  background:
+    linear-gradient(180deg, transparent 48%, rgba(0, 0, 0, 0.62)),
+    linear-gradient(104deg, transparent 0 38%, rgba(255, 255, 255, 0.1) 39% 42%, transparent 43%);
 }
 
 .tcg-pack-hidden-card span,
@@ -7713,6 +7770,24 @@ button.command-card:focus-visible {
   font-weight: 950;
   text-transform: uppercase;
   text-align: center;
+}
+
+.tcg-pack-hidden-card[data-has-image="true"] span {
+  align-self: start;
+  justify-self: start;
+  margin: 9px;
+  color: rgba(255, 255, 255, 0.42);
+  font-size: 0.88rem;
+  line-height: 1;
+}
+
+.tcg-pack-hidden-card[data-has-image="true"] strong {
+  align-self: end;
+  margin: 0 9px 10px;
+  padding: 5px 7px;
+  border: 1px solid rgba(196, 30, 58, 0.36);
+  background: rgba(0, 0, 0, 0.62);
+  box-shadow: 0 0 18px rgba(196, 30, 58, 0.16);
 }
 
 @keyframes tcg-pack-rip-pulse {
@@ -7873,7 +7948,7 @@ button.command-card:focus-visible {
   }
 
   .tcg-pack-hidden-card {
-    min-height: 154px;
+    min-height: 0;
   }
 
   .tcg-open-pack-button,
