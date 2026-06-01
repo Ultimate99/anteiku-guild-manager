@@ -18,6 +18,7 @@
 - Milestone 30F-B: Owner-only TCG pack inventory backend production-applied.
 - Milestone 30F-C: Owner-only TCG pack inventory/open-owned-pack UI deployed.
 - Milestone 30F-D: Temporary TCG pack-front and card-back assets deployed.
+- Milestone 30F-E: Compact TCG pack inventory UI hotfix deployed.
 - Milestone 30A: TCG/Card Collection planning.
 - Milestone 1: React + Vite scaffold and documentation base.
 - Milestone 2: Supabase schema/RLS plan, migrations, and local validation.
@@ -38,11 +39,11 @@
 
 ## Recommended Next
 
-Milestone 30C-A Owner-only Card Collection preview is live, Milestone 30C-A2 adds a controlled Owner-only smoke grant button, Milestone 30C-B improves the album visuals, Milestone 30C-C/30C-D add temporary art coverage, Milestone 30D-A adds the Owner-only backend/RPC foundation for test pack opening, Milestone 30D-B adds the Owner-only pack preview UI, Milestone 30E-A adds the Owner-only backend/RPC foundation for test coins, wallet ledger, Owner test shop listing, and Owner test pack purchase, Milestone 30E-B adds the Owner-only shop/economy UI preview, Milestone 30E-C polishes the Owner shop/wallet/pack reveal UX, Milestone 30E-D refactors `/tcg` into a compact Album/Packs/Shop/Owner Lab hub, Milestone 30F-A adds the Owner-only read-only balance/economy/pack analytics RPC, Milestone 30F-B adds Owner-only pack inventory backend support, Milestone 30F-C deploys the Owner-only frontend flow where Shop buys packs into inventory and Packs opens owned packs later, and Milestone 30F-D deploys temporary pack-front/card-back assets for that flow. Member-facing shop/economy release, payments, trading, marketplace, and battles remain out of scope until separately planned.
+Milestone 30C-A Owner-only Card Collection preview is live, Milestone 30C-A2 adds a controlled Owner-only smoke grant button, Milestone 30C-B improves the album visuals, Milestone 30C-C/30C-D add temporary art coverage, Milestone 30D-A adds the Owner-only backend/RPC foundation for test pack opening, Milestone 30D-B adds the Owner-only pack preview UI, Milestone 30E-A adds the Owner-only backend/RPC foundation for test coins, wallet ledger, Owner test shop listing, and Owner test pack purchase, Milestone 30E-B adds the Owner-only shop/economy UI preview, Milestone 30E-C polishes the Owner shop/wallet/pack reveal UX, Milestone 30E-D refactors `/tcg` into a compact Album/Packs/Shop/Owner Lab hub, Milestone 30F-A adds the Owner-only read-only balance/economy/pack analytics RPC, Milestone 30F-B adds Owner-only pack inventory backend support, Milestone 30F-C deploys the Owner-only frontend flow where Shop buys packs into inventory and Packs opens owned packs later, Milestone 30F-D deploys temporary pack-front/card-back assets for that flow, and Milestone 30F-E deploys the compact pack UI hotfix. Member-facing shop/economy release, payments, trading, marketplace, and battles remain out of scope until separately planned.
 
 Strong candidates:
 
-- Controlled Owner click-through smoke for the deployed pack inventory loop and new visuals: grant test coins if needed, buy a test pack into inventory, open it from Packs, verify pack front/card back visuals, reveal cards, and verify wallet decrease, pack quantity decrease, and collection quantity increase.
+- Owner visual retest for the compact Packs/Shop layout, then controlled Owner click-through smoke for the deployed pack inventory loop and new visuals: grant test coins if needed, buy a test pack into inventory, open it from Packs, verify pack front/card back visuals, reveal cards, and verify wallet decrease, pack quantity decrease, and collection quantity increase.
 - Owner-only TCG balance report UI inside `/tcg` Owner Lab, using `tcg_owner_get_balance_report()`.
 - Optional Owner hub/album/shop UX polish after manual smoke feedback.
 - Replace temporary smoke art with approved final card art under `public/assets/tcg/art/`.

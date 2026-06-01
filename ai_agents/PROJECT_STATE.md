@@ -1,5 +1,40 @@
 # Project State
 
+## Milestone 30F-E TCG Pack UI Compact Hotfix Live
+
+Owner-only `/tcg` pack inventory UI received a compact visual hotfix, deployed through commit `bc3c705 fix: compact tcg pack inventory ui`.
+
+Implemented:
+- Removed the visible UI box treatment around the pack-front image so the pack floats on the dark panel.
+- Kept a subtle glow/shadow and compact `xN` quantity badge near the pack.
+- Moved `Open Pack` directly under the pack as a smaller compact action instead of a giant full-width panel button.
+- Disabled `Open Pack` state remains readable at quantity `0`.
+- Shop purchases now remain on the Shop window after `tcg_owner_buy_test_pack_to_inventory(...)` succeeds.
+- Shop success state stays inline and shows pack-added / current owned-pack quantity.
+- Added a small `Go to Packs` secondary action for manual navigation after purchase.
+- Added EN/FR/DE copy for `Go to Packs`.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no SQL/migration, Supabase/RLS/RPC, service, package, service worker, CP, GvG, Wall, 3v3, Push, Analytics, Ranking, Auth, Approval, or Account Switcher changes.
+- TCG checks found no direct TCG table access, no `member_cp`, no `cp_snapshots`, no CP analytics RPC usage, no client-side drops, and no client-side wallet authority.
+- The pack/card images are `Format24bppRgb`, so they do not contain alpha transparency; CSS removed the app wrapper box, but opaque black pixels baked into the artwork cannot be made transparent without replacing/editing the asset.
+
+Production:
+- Commit `bc3c705` was pushed to `main`.
+- Non-mutating production smoke passed:
+  - `/tcg?tcg-pack-compact-smoke=1` returned HTTP 200.
+  - Deployed bundle `assets/index-DLnPnWpl.js` contains `tcg-owned-open-button`, `tcg-shop-success-actions`, `Go to Packs`, `tcg_owner_buy_test_pack_to_inventory`, and `tcg_owner_open_owned_pack`.
+- Codex did not click production Buy, Open, Rip, Grant, Grant Coins, or Favorite controls, and did not mutate production wallet, pack, card inventory, or favorites.
+
+Security:
+- Existing Owner-only `/tcg` guard and nav visibility remain unchanged.
+- Backend/RPC remains authority for pack quantity, wallet deduction, pack consumption, and card rolls.
+- No member-facing TCG access, CP join, CP value exposure, service-role path, direct table access, upload, Storage, or unrelated subsystem behavior change was added.
+
+Next:
+- Owner can visually retest Packs/Shop compact layout and manually test the pack loop when mutation testing is approved.
+
 ## Milestone 30F-D TCG Pack Front + Card Back Assets Live
 
 Owner-only `/tcg` pack visuals now use temporary repo-served Season 0 pack-front and card-back assets, deployed through commit `6bcebab feat: add tcg pack and card back assets`.

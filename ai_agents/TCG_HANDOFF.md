@@ -19,6 +19,7 @@ Milestone 30A planning is complete. No backend, frontend, SQL, Supabase, or prod
 - Milestone 30F-B adds Owner-only TCG pack inventory backend support and is production-applied through `20260601000500_tcg_owner_pack_inventory.sql`.
 - Milestone 30F-C adds the Owner-only `/tcg` pack inventory/opening UI and is deployed through commit `ada2b74 feat: add tcg pack inventory opening ui`.
 - Milestone 30F-D adds temporary Season 0 pack-front and card-back assets and is deployed through commit `6bcebab feat: add tcg pack and card back assets`.
+- Milestone 30F-E adds the compact TCG pack inventory UI hotfix and is deployed through commit `bc3c705 fix: compact tcg pack inventory ui`.
 - Milestone 30B backend/RPC foundation is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
 - No member-facing packs, shop, economy UI, routes beyond `/tcg`, uploads, or Storage have been implemented.
 - No member-facing TCG release exists yet. The next step is controlled Owner manual mutation smoke for the deployed pack loop; frontend calls backend RPCs and never calculates drops or mutates wallets/inventory client-side.
@@ -641,6 +642,38 @@ Production:
   - `/assets/tcg/packs/season0_test_pack_front.png` returned HTTP 200 image/png.
   - `/assets/tcg/cards/tcg_card_back_season0.png` returned HTTP 200 image/png.
   - Deployed bundle `assets/index-DW84VTFX.js` references both new asset paths and still contains `tcg_get_my_packs` / `tcg_owner_open_owned_pack`.
+- Codex did not click production Buy, Open, Rip, Grant, Grant Coins, or Favorite controls.
+- No production wallet, pack inventory, card inventory, or favorite mutation was performed by Codex during this smoke.
+
+## 30F-E Pack UI Compact Hotfix
+
+Status: complete and deployed through commit `bc3c705 fix: compact tcg pack inventory ui`.
+
+Implemented:
+
+- Removed the app-side hard rectangular box/background around the pack image.
+- Kept the pack floating on the dark panel with subtler glow/shadow.
+- Kept a compact `xN` quantity badge near the pack.
+- Moved `Open Pack` directly under the pack as a smaller compact action.
+- Disabled `Open Pack` at quantity `0` remains readable.
+- Shop purchases remain on the Shop window after `tcg_owner_buy_test_pack_to_inventory(...)` succeeds.
+- Shop success stays inline and shows pack-added / current pack quantity copy.
+- Added a small `Go to Packs` secondary action for manual navigation.
+- Added EN/FR/DE `tcg.goToPacks` copy.
+
+Validation:
+
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source checks confirmed no SQL/migration, Supabase/RLS/RPC, service, package, service worker, CP, GvG, Wall, 3v3, Push, Analytics, Ranking, Auth, Approval, or Account Switcher changes.
+- Frontend checks confirmed no direct TCG table access, no `member_cp`, no `cp_snapshots`, no CP analytics RPCs, no client-side drops, and no client-side wallet authority.
+- The temporary pack/card-back PNGs are `Format24bppRgb`, so CSS can remove the app wrapper box but cannot remove opaque black pixels baked into the artwork.
+
+Production:
+
+- Commit `bc3c705` was pushed to `main`.
+- Non-mutating smoke passed:
+  - `/tcg?tcg-pack-compact-smoke=1` returned HTTP 200.
+  - Deployed bundle `assets/index-DLnPnWpl.js` contains `tcg-owned-open-button`, `tcg-shop-success-actions`, `Go to Packs`, `tcg_owner_buy_test_pack_to_inventory`, and `tcg_owner_open_owned_pack`.
 - Codex did not click production Buy, Open, Rip, Grant, Grant Coins, or Favorite controls.
 - No production wallet, pack inventory, card inventory, or favorite mutation was performed by Codex during this smoke.
 
