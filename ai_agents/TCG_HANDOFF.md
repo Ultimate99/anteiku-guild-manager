@@ -17,9 +17,10 @@ Milestone 30A planning is complete. No backend, frontend, SQL, Supabase, or prod
 - Milestone 30E-D refactors the Owner-only `/tcg` preview into a compact Album/Packs/Shop/Owner Lab hub and is deployed through commit `d1f4c4a style: add compact tcg hub layout`.
 - Milestone 30F-A adds Owner-only TCG balance/economy/pack analytics backend support and is production-applied through `20260601000400_tcg_owner_balance_report.sql`.
 - Milestone 30F-B adds Owner-only TCG pack inventory backend support and is production-applied through `20260601000500_tcg_owner_pack_inventory.sql`.
+- Milestone 30F-C adds the Owner-only `/tcg` pack inventory/opening UI and is deployed through commit `ada2b74 feat: add tcg pack inventory opening ui`.
 - Milestone 30B backend/RPC foundation is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
 - No member-facing packs, shop, economy UI, routes beyond `/tcg`, uploads, or Storage have been implemented.
-- No member-facing TCG release exists yet. The next step is Owner-only frontend wiring so Shop buys packs into pack inventory and the Packs window opens owned packs later; frontend calls backend RPCs and never calculates drops or mutates wallets/inventory client-side.
+- No member-facing TCG release exists yet. The next step is controlled Owner manual mutation smoke for the deployed pack loop; frontend calls backend RPCs and never calculates drops or mutates wallets/inventory client-side.
 
 ## Product Direction
 
@@ -575,13 +576,44 @@ Production:
   - Active Owner count remains `1`.
 - No production pack buy, owned-pack open, wallet mutation, inventory mutation, or pack-opening smoke was performed by Codex.
 
+## 30F-C Owner-Only Pack Inventory UI
+
+Status: complete and deployed through commit `ada2b74 feat: add tcg pack inventory opening ui`.
+
+Implemented:
+
+- Shop `Buy Test Pack` calls `tcg_owner_buy_test_pack_to_inventory(...)`.
+- Shop purchases add a Season 0 Test Pack to pack inventory and do not reveal cards in the Shop.
+- Packs calls `tcg_get_my_packs()` and displays owned Season 0 Test Pack quantity.
+- Packs uses a CSS-only 4:3 pack sprite/card treatment for the Owner test pack.
+- Opening from Packs calls `tcg_owner_open_owned_pack(...)`.
+- The backend remains authority for consuming one pack and rolling five card results.
+- Opening UI uses a dimmed/blurred overlay, swipe-left/right rip gesture, fallback `Rip Open` button, card-by-card reveal, and `Reveal all`.
+- Pack animations are local UI state, default enabled, and can be disabled without changing backend behavior.
+- The older free Owner `Open Test Pack` path remains only in Owner Lab.
+- EN/FR/DE i18n and dark/crimson mobile styling were added.
+
+Validation:
+
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation confirmed no SQL/migration, Supabase/RLS/RPC, package, service worker, CP, GvG, Wall, 3v3, Push, Analytics, Ranking, Auth, Approval, or Account Switcher changes.
+- Frontend checks confirmed no direct TCG table access, no `member_cp`, no `cp_snapshots`, no CP RPCs, no client-side drops, and no client-side wallet authority.
+
+Production:
+
+- Commit `ada2b74` was pushed to `main` and production served the updated bundle.
+- Non-mutating smoke passed: `/tcg?tcg-pack-inventory-smoke=1` returned HTTP 200 and the bundle contained `tcg_get_my_packs`, `tcg_owner_buy_test_pack_to_inventory`, `tcg_owner_open_owned_pack`, `packInventory`, `swipeToRip`, and `packAnimations`.
+- Codex did not click production Buy, Open, Rip, Grant, or Favorite controls.
+- No production wallet, pack inventory, card inventory, or favorite mutation was performed by Codex during this smoke.
+
 Next:
 
-- Implement 30F-C Owner-only frontend flow:
-  - Shop `Buy Test Pack` calls `tcg_owner_buy_test_pack_to_inventory(...)`.
-  - Packs window shows `tcg_get_my_packs()` quantity.
-  - Opening from Packs calls `tcg_owner_open_owned_pack(...)`.
-  - Existing free test pack and old immediate-buy compatibility can remain clearly labeled or moved to Owner Lab.
+- Run controlled Owner manual mutation smoke for the pack loop when approved:
+  - grant test coins if needed;
+  - buy a test pack into inventory from Shop;
+  - open it from Packs;
+  - reveal cards;
+  - verify wallet decrease, pack quantity decrease, collection count update, and favorites still work.
 - Keep member TCG release blocked until this flow is accepted and release gates are planned.
 
 ## 30B RPC Candidates

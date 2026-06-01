@@ -1,5 +1,37 @@
 # Project State
 
+## Milestone 30F-C Owner-Only TCG Pack Inventory UI Live
+
+Owner-only `/tcg` pack inventory frontend support is implemented and deployed through commit `ada2b74 feat: add tcg pack inventory opening ui`.
+
+Implemented:
+- Shop `Buy Test Pack` now calls `tcg_owner_buy_test_pack_to_inventory(...)`, deducting coins and adding pack quantity without revealing cards in the Shop.
+- Packs now loads `tcg_get_my_packs()` and shows owned Season 0 Test Pack quantity with a compact CSS-only 4:3 pack sprite.
+- Opening from Packs calls `tcg_owner_open_owned_pack(...)`, so the backend consumes one owned pack and rolls the five card results.
+- Pack opening uses a dimmed/blurred overlay, swipe-left/right rip gesture, fallback `Rip Open` button, card-by-card reveal, and `Reveal all`.
+- Pack animation preference is local UI state, stored in `localStorage`, and defaults to enabled.
+- The older free Owner `Open Test Pack` smoke flow remains available only in Owner Lab.
+- EN/FR/DE i18n and mobile dark/crimson styling were added for the pack inventory/opening flow.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no SQL/migration, Supabase/RLS/RPC, package, service worker, CP, GvG, Wall, 3v3, Push, Analytics, Ranking, Auth, Approval, or Account Switcher changes.
+- TCG frontend checks found no direct TCG table writes/reads, no `member_cp`, no `cp_snapshots`, no CP RPC usage, and no client-side drop/wallet authority.
+
+Production:
+- Source commit `ada2b74` was pushed to `main` and production served the updated `/tcg` bundle.
+- Non-mutating production smoke passed: `/tcg?tcg-pack-inventory-smoke=1` returned HTTP 200 and the deployed JS bundle contains `tcg_get_my_packs`, `tcg_owner_buy_test_pack_to_inventory`, `tcg_owner_open_owned_pack`, `packInventory`, `swipeToRip`, and `packAnimations`.
+- Codex did not click production Buy, Open, Rip, Grant, or Favorite controls, and did not mutate production wallet, pack, card inventory, or favorites.
+
+Security:
+- Backend/RPC remains authority for pack quantity, wallet deduction, pack consumption, and card rolls.
+- No member-facing TCG access was added.
+- No CP join, CP value exposure, service-role path, direct table access, upload, Storage, or unrelated subsystem behavior change was added.
+
+Next:
+- Controlled Owner manual mutation smoke can now test the pack loop: grant coins if needed, buy a test pack into inventory, open it from Packs, reveal cards, verify pack quantity decreases, wallet decreases, and collection counts update.
+- Keep member-facing TCG release blocked until Owner inventory-flow acceptance and release gates are separately planned.
+
 ## Milestone 30F-B Owner-Only TCG Pack Inventory Backend Live
 
 Owner-only TCG pack inventory backend support is implemented, locally validated, and production-applied through `20260601000500_tcg_owner_pack_inventory.sql`.
