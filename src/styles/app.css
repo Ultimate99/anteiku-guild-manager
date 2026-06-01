@@ -6254,15 +6254,30 @@ button.command-card:focus-visible {
 }
 
 .tcg-shop-panel {
+  position: relative;
   display: grid;
   gap: 10px;
-  padding: 11px;
+  padding: 12px;
   border-color: rgba(196, 30, 58, 0.42);
   background:
-    radial-gradient(circle at 85% 10%, rgba(255, 216, 116, 0.11), transparent 28%),
-    linear-gradient(135deg, rgba(196, 30, 58, 0.16), transparent 36%),
+    radial-gradient(circle at 86% 12%, rgba(255, 216, 116, 0.16), transparent 30%),
+    linear-gradient(135deg, rgba(196, 30, 58, 0.2), transparent 38%),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 10px),
     rgba(8, 8, 10, 0.97);
   overflow: hidden;
+}
+
+.tcg-shop-panel::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: linear-gradient(90deg, rgba(196, 30, 58, 0.95), rgba(255, 216, 116, 0.58), transparent);
+}
+
+.tcg-shop-panel[data-loading="true"] {
+  border-color: rgba(255, 216, 116, 0.34);
 }
 
 .tcg-shop-header,
@@ -6289,14 +6304,32 @@ button.command-card:focus-visible {
 
 .tcg-wallet-card {
   min-width: 132px;
+  position: relative;
+  overflow: hidden;
   display: grid;
-  gap: 2px;
+  gap: 3px;
   justify-items: end;
-  padding: 9px 10px;
+  padding: 10px 12px;
   border: 1px solid rgba(196, 30, 58, 0.36);
   background:
-    linear-gradient(135deg, rgba(196, 30, 58, 0.14), transparent 44%),
+    radial-gradient(circle at 16% 22%, rgba(255, 216, 116, 0.2), transparent 30%),
+    linear-gradient(135deg, rgba(196, 30, 58, 0.18), transparent 44%),
     rgba(0, 0, 0, 0.28);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 14px 28px rgba(0, 0, 0, 0.26);
+}
+
+.tcg-wallet-card i {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  width: 18px;
+  height: 18px;
+  border: 1px solid rgba(255, 216, 116, 0.62);
+  background:
+    radial-gradient(circle, rgba(255, 216, 116, 0.46), rgba(196, 30, 58, 0.24) 55%, rgba(0, 0, 0, 0.32));
+  box-shadow: 0 0 14px rgba(255, 216, 116, 0.22);
 }
 
 .tcg-wallet-card span,
@@ -6312,6 +6345,7 @@ button.command-card:focus-visible {
   color: #ffd8df;
   font-size: clamp(1.25rem, 4.8vw, 1.72rem);
   line-height: 1;
+  text-shadow: 0 0 16px rgba(196, 30, 58, 0.38);
 }
 
 .tcg-shop-dev-row {
@@ -6344,11 +6378,13 @@ button.command-card:focus-visible {
 .tcg-shop-item {
   position: relative;
   overflow: hidden;
-  padding: 10px;
+  padding: 11px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background:
-    linear-gradient(90deg, rgba(196, 30, 58, 0.13), transparent 42%),
+    radial-gradient(circle at 100% 0%, rgba(255, 216, 116, 0.12), transparent 30%),
+    linear-gradient(90deg, rgba(196, 30, 58, 0.15), transparent 44%),
     rgba(13, 13, 16, 0.94);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.025);
 }
 
 .tcg-shop-item::before {
@@ -6357,6 +6393,19 @@ button.command-card:focus-visible {
   inset: 0 auto 0 0;
   width: 4px;
   background: linear-gradient(180deg, rgba(196, 30, 58, 0.92), rgba(255, 216, 116, 0.58));
+}
+
+.tcg-shop-item[data-buying="true"] {
+  border-color: rgba(255, 216, 116, 0.42);
+}
+
+.tcg-shop-item[data-buying="true"]::after {
+  content: "";
+  position: absolute;
+  inset: auto 10px 8px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255, 216, 116, 0.74), transparent);
+  animation: tcg-shop-loading 900ms ease-in-out infinite;
 }
 
 .tcg-shop-item-main,
@@ -6376,7 +6425,13 @@ button.command-card:focus-visible {
   white-space: nowrap;
 }
 
+.tcg-shop-item-buy .primary-action {
+  min-width: 126px;
+  box-shadow: 0 0 20px rgba(196, 30, 58, 0.2);
+}
+
 .tcg-pack-panel {
+  position: relative;
   display: grid;
   gap: 10px;
   padding: 11px;
@@ -6386,6 +6441,10 @@ button.command-card:focus-visible {
     linear-gradient(145deg, rgba(255, 255, 255, 0.045), transparent 38%),
     rgba(9, 9, 12, 0.96);
   overflow: hidden;
+}
+
+.tcg-pack-panel[data-pack-mode="free"] {
+  border-style: dashed;
 }
 
 .tcg-pack-panel-header,
@@ -6437,8 +6496,35 @@ button.command-card:focus-visible {
 }
 
 .tcg-pack-result-shell {
+  position: relative;
   display: grid;
   gap: 10px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(196, 30, 58, 0.22), transparent 38%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent 46%),
+    rgba(0, 0, 0, 0.24);
+  box-shadow: inset 0 0 0 1px rgba(196, 30, 58, 0.06);
+}
+
+.tcg-pack-result-shell::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, transparent, rgba(196, 30, 58, 0.08), transparent),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.024) 0 1px, transparent 1px 12px);
+}
+
+.tcg-pack-result-shell > * {
+  position: relative;
+  z-index: 1;
+}
+
+.tcg-pack-result-shell[data-result-mode="shop"] {
+  border-color: rgba(255, 216, 116, 0.2);
 }
 
 .tcg-pack-results-grid {
@@ -6458,14 +6544,14 @@ button.command-card:focus-visible {
   border: 1px solid var(--tcg-accent);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 36%),
-    radial-gradient(circle at 50% 0%, rgba(196, 30, 58, 0.2), transparent 40%),
+    radial-gradient(circle at 50% 0%, var(--tcg-accent-glow, rgba(196, 30, 58, 0.2)), transparent 42%),
     rgba(8, 8, 10, 0.98);
   padding: 7px;
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
   opacity: 0;
-  transform: translateY(10px) scale(0.98);
-  animation: tcg-pack-reveal 460ms ease forwards;
-  animation-delay: calc(var(--tcg-reveal-index, 0) * 110ms);
+  transform: translateY(12px) scale(0.965);
+  animation: tcg-pack-reveal 520ms cubic-bezier(0.2, 0.9, 0.28, 1) forwards;
+  animation-delay: calc(var(--tcg-reveal-index, 0) * 120ms);
 }
 
 .tcg-pack-result-card::before {
@@ -6478,29 +6564,42 @@ button.command-card:focus-visible {
 
 .tcg-pack-result-card[data-rarity="common"] {
   --tcg-accent: var(--tcg-common);
+  --tcg-accent-glow: rgba(166, 174, 184, 0.12);
 }
 
 .tcg-pack-result-card[data-rarity="uncommon"] {
   --tcg-accent: var(--tcg-uncommon);
+  --tcg-accent-glow: rgba(92, 190, 139, 0.16);
 }
 
 .tcg-pack-result-card[data-rarity="rare"] {
   --tcg-accent: var(--tcg-rare);
+  --tcg-accent-glow: rgba(71, 142, 255, 0.22);
 }
 
 .tcg-pack-result-card[data-rarity="epic"] {
   --tcg-accent: var(--tcg-epic);
+  --tcg-accent-glow: rgba(153, 95, 255, 0.28);
+  box-shadow:
+    0 0 0 1px rgba(153, 95, 255, 0.12),
+    0 18px 38px rgba(0, 0, 0, 0.34);
 }
 
 .tcg-pack-result-card[data-rarity="legendary"] {
   --tcg-accent: var(--tcg-legendary);
+  --tcg-accent-glow: rgba(225, 165, 64, 0.32);
+  box-shadow:
+    0 0 0 1px rgba(225, 165, 64, 0.16),
+    0 18px 40px rgba(0, 0, 0, 0.38);
 }
 
 .tcg-pack-result-card[data-rarity="mythic"] {
   --tcg-accent: var(--tcg-mythic);
+  --tcg-accent-glow: rgba(255, 216, 116, 0.36);
   box-shadow:
-    0 0 0 1px rgba(255, 216, 116, 0.2),
-    0 16px 34px rgba(0, 0, 0, 0.34);
+    0 0 0 1px rgba(255, 216, 116, 0.24),
+    0 0 26px rgba(255, 216, 116, 0.12),
+    0 20px 44px rgba(0, 0, 0, 0.42);
 }
 
 .tcg-pack-result-copy {
@@ -6538,10 +6637,32 @@ button.command-card:focus-visible {
   background: rgba(142, 228, 163, 0.1);
 }
 
+.tcg-pack-result-index {
+  position: absolute;
+  right: 7px;
+  top: 7px;
+  color: rgba(255, 255, 255, 0.16);
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
 @keyframes tcg-pack-reveal {
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes tcg-shop-loading {
+  0%,
+  100% {
+    opacity: 0.28;
+    transform: scaleX(0.35);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scaleX(1);
   }
 }
 
@@ -7174,6 +7295,10 @@ button.command-card:focus-visible {
   .tcg-pack-result-card {
     opacity: 1;
     transform: none;
+    animation: none;
+  }
+
+  .tcg-shop-item[data-buying="true"]::after {
     animation: none;
   }
 }

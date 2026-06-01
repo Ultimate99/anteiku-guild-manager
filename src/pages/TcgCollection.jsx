@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StatusBadge } from '../components/StatusBadge.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import {
@@ -120,6 +120,7 @@ function TcgPackResultCard({ card, index, language, t }) {
           <span>{`x${formatNumber(card.newQuantity, language)}`}</span>
         </div>
       </div>
+      <span className="tcg-pack-result-index">{`0${index + 1}`}</span>
     </article>
   );
 }
@@ -129,7 +130,7 @@ function TcgPackPreviewPanel({ opening, openingError, openingLoading, language, 
   const displayedCardsOpened = opening?.cardsOpened || 5;
 
   return (
-    <section className="panel tcg-pack-panel" aria-label={t('tcg.testPackTitle')}>
+    <section className="panel tcg-pack-panel" data-pack-mode="free" aria-label={t('tcg.testPackTitle')}>
       <div className="tcg-pack-panel-header">
         <div>
           <StatusBadge tone="warning">{t('tcg.ownerTestOnly')}</StatusBadge>
@@ -141,6 +142,7 @@ function TcgPackPreviewPanel({ opening, openingError, openingLoading, language, 
           className="primary-action compact-action tcg-open-pack-button"
           onClick={onOpen}
           disabled={openingLoading}
+          aria-busy={openingLoading}
         >
           {openingLoading ? t('tcg.openingPack') : t('tcg.openTestPack')}
         </button>
@@ -159,7 +161,7 @@ function TcgPackPreviewPanel({ opening, openingError, openingLoading, language, 
       ) : null}
 
       {opening ? (
-        <div className="tcg-pack-result-shell" data-revealed={pulledCards.length > 0}>
+        <div className="tcg-pack-result-shell" data-revealed={pulledCards.length > 0} data-result-mode="free">
           <div className="tcg-pack-result-heading">
             <div>
               <StatusBadge tone="success">{t('tcg.packOpened')}</StatusBadge>
@@ -207,7 +209,7 @@ function TcgShopPreviewPanel({
   const displayedCardsOpened = purchase?.opening?.cardsOpened || 5;
 
   return (
-    <section className="panel tcg-shop-panel" aria-label={t('tcg.shopTestTitle')}>
+    <section className="panel tcg-shop-panel" data-loading={loading || grantLoading || Boolean(purchaseLoadingCode)} aria-label={t('tcg.shopTestTitle')}>
       <div className="tcg-shop-header">
         <div>
           <StatusBadge tone="warning">{t('tcg.ownerTestOnly')}</StatusBadge>
@@ -215,6 +217,7 @@ function TcgShopPreviewPanel({
           <p>{t('tcg.shopTestBody')}</p>
         </div>
         <div className="tcg-wallet-card" aria-label={t('tcg.walletBalance')}>
+          <i aria-hidden="true" />
           <span>{t('tcg.walletBalance')}</span>
           <strong>{formatNumber(displayedWallet.balance, language)}</strong>
           <small>{currencyLabel}</small>
@@ -231,6 +234,7 @@ function TcgShopPreviewPanel({
           className="danger-action compact-action"
           onClick={onGrantCoins}
           disabled={loading || grantLoading}
+          aria-busy={grantLoading}
         >
           {grantLoading ? t('common.working') : t('tcg.grantTestCoins')}
         </button>
@@ -242,7 +246,7 @@ function TcgShopPreviewPanel({
       <div className="tcg-shop-list" aria-label={t('tcg.ownerShopPreview')}>
         {shopItems.length > 0 ? (
           shopItems.map((item) => (
-            <article className="tcg-shop-item" key={item.shopItemCode}>
+            <article className="tcg-shop-item" key={item.shopItemCode} data-buying={purchaseLoadingCode === item.shopItemCode}>
               <div className="tcg-shop-item-main">
                 <StatusBadge tone="warning">{t('tcg.ownerTestOnly')}</StatusBadge>
                 <h4>{item.shopItemName || t('tcg.seasonZeroTestPack')}</h4>
@@ -259,6 +263,7 @@ function TcgShopPreviewPanel({
                   className="primary-action compact-action"
                   onClick={() => onBuyPack(item.shopItemCode)}
                   disabled={loading || Boolean(purchaseLoadingCode)}
+                  aria-busy={purchaseLoadingCode === item.shopItemCode}
                 >
                   {purchaseLoadingCode === item.shopItemCode ? t('tcg.buyingPack') : t('tcg.buyTestPack')}
                 </button>
@@ -271,7 +276,7 @@ function TcgShopPreviewPanel({
       </div>
 
       {purchase ? (
-        <div className="tcg-pack-result-shell" data-revealed={pulledCards.length > 0}>
+        <div className="tcg-pack-result-shell" data-revealed={pulledCards.length > 0} data-result-mode="shop">
           <div className="tcg-pack-result-heading">
             <div>
               <StatusBadge tone="success">{t('tcg.purchaseComplete')}</StatusBadge>
@@ -441,6 +446,11 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
   const [grantCoinsMessage, setGrantCoinsMessage] = useState('');
   const [purchaseLoadingCode, setPurchaseLoadingCode] = useState('');
   const [shopPurchase, setShopPurchase] = useState(null);
+  const favoriteRequestKeysRef = useRef(new Set());
+  const smokeGrantRequestRef = useRef(false);
+  const packOpeningRequestRef = useRef(false);
+  const grantCoinsRequestRef = useRef(false);
+  const buyPackRequestRef = useRef(false);
 
   const isOwner = Boolean(activeAdminContext?.isOwner);
   const activeOwnerProfileId = isOwner ? activeAdminContext?.activeProfileId : null;
@@ -568,7 +578,12 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
       return;
     }
 
+    if (favoriteRequestKeysRef.current.has(card.cardKey)) {
+      return;
+    }
+
     const nextFavorite = !card.isFavorite;
+    favoriteRequestKeysRef.current.add(card.cardKey);
     setFavoriteBusyKey(card.cardKey);
     setError('');
 
@@ -584,6 +599,7 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
     } catch (favoriteError) {
       setError(getDisplayError(favoriteError, t('tcg.backendUnavailable')));
     } finally {
+      favoriteRequestKeysRef.current.delete(card.cardKey);
       setFavoriteBusyKey('');
     }
   }, [t]);
@@ -593,9 +609,15 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
       return;
     }
 
+    if (smokeGrantRequestRef.current) {
+      return;
+    }
+
+    smokeGrantRequestRef.current = true;
     const confirmed = window.confirm(t('tcg.smokeGrantConfirm'));
 
     if (!confirmed) {
+      smokeGrantRequestRef.current = false;
       return;
     }
 
@@ -620,6 +642,7 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
     } catch (grantError) {
       setError(getDisplayError(grantError, t('tcg.smokeGrantError')));
     } finally {
+      smokeGrantRequestRef.current = false;
       setSmokeGrantLoading(false);
     }
   }, [activeOwnerProfileId, isOwner, loadCards, t]);
@@ -629,6 +652,11 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
       return;
     }
 
+    if (packOpeningRequestRef.current) {
+      return;
+    }
+
+    packOpeningRequestRef.current = true;
     setPackOpeningLoading(true);
     setPackOpeningError('');
     setError('');
@@ -642,6 +670,7 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
     } catch (openingError) {
       setPackOpeningError(getDisplayError(openingError, t('tcg.packOpeningFailed')));
     } finally {
+      packOpeningRequestRef.current = false;
       setPackOpeningLoading(false);
     }
   }, [isOwner, loadCards, t]);
@@ -651,6 +680,11 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
       return;
     }
 
+    if (grantCoinsRequestRef.current) {
+      return;
+    }
+
+    grantCoinsRequestRef.current = true;
     setGrantCoinsLoading(true);
     setGrantCoinsMessage('');
     setEconomyError('');
@@ -663,6 +697,7 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
     } catch (grantError) {
       setEconomyError(getDisplayError(grantError, t('tcg.grantFailed')));
     } finally {
+      grantCoinsRequestRef.current = false;
       setGrantCoinsLoading(false);
     }
   }, [isOwner, loadEconomy, t]);
@@ -672,6 +707,11 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
       return;
     }
 
+    if (buyPackRequestRef.current) {
+      return;
+    }
+
+    buyPackRequestRef.current = true;
     setPurchaseLoadingCode(shopItemCode);
     setEconomyError('');
     setGrantCoinsMessage('');
@@ -690,6 +730,7 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
           : getDisplayError(purchaseError, t('tcg.purchaseFailed')),
       );
     } finally {
+      buyPackRequestRef.current = false;
       setPurchaseLoadingCode('');
     }
   }, [isOwner, loadCards, loadEconomy, t]);
