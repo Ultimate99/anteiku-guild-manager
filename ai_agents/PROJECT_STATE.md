@@ -1,5 +1,45 @@
 # Project State
 
+## Milestone 30F-H Owner-Only TCG UI Polish Pass Live
+
+Owner-only `/tcg` received a frontend-only UI polish pass after the pack-front and real card-back asset wire-up, deployed through commit `3d92c37 style: polish owner tcg ui`.
+
+Implemented:
+- Made the `/tcg` page feel more like a compact game hub and less like an admin/dev panel.
+- Tightened the top header, refresh action, and HUD stats for Unique Owned, Total Owned, Favorites, and Anteiku Coins.
+- Polished Album filters, rarity selector, card grid density, owned/missing/favorite states, card hover/focus treatment, and detail sheet sizing.
+- Polished Packs composition while keeping the pack front as the hero and `Open Pack` compact.
+- Added an existing pack-front preview to Shop items and tightened wallet, price, purchase, success, and `Go to Packs` presentation.
+- Reworked Owner Lab into a separated test-only area with compact warning styling for smoke grants and test coins.
+- Polished the reveal overlay shell, reveal toolbar, card grid sizing, hidden card spacing, and mobile sizing.
+- Added responsive rules for 360px, 390px, 430px, tablet, and desktop layouts.
+
+Preserved behavior:
+- Shop buy stays on Shop and still only adds a pack to inventory.
+- Packs open owned packs through backend RPC authority.
+- Swipe/rip, `Rip Open`, card-by-card reveal, `Reveal all`, pack animation toggle, wallet/collection refetch, pack quantity refetch, and favorite toggle behavior remain unchanged.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no SQL/migration, Supabase/RLS/RPC, service, package, service worker, CP, GvG, Wall, 3v3, Push, Analytics, Ranking, Auth, Approval, or Account Switcher changes.
+- TCG checks found no direct TCG table access, no `member_cp`, no `cp_snapshots`, no CP analytics RPC usage, no client-side drops, and no client-side wallet authority.
+
+Production:
+- Commit `3d92c37` was pushed to `main`.
+- Non-mutating production smoke passed:
+  - `/tcg?tcg-ui-polish-smoke=2` returned HTTP 200.
+  - Deployed bundle `assets/index-C9n3v1dY.js` contains `tcg-shop-pack-preview` and `tcg-owner-lab-section`.
+  - Deployed CSS `assets/index-DSO3TEr-.css` contains `tcg-shop-pack-preview`, `tcg-owner-lab-section`, and `tcg-hub-hero`.
+- Codex did not click production Buy, Open, Rip, Grant, Grant Coins, or Favorite controls, and did not mutate production wallet, pack, card inventory, or favorites.
+
+Security:
+- Existing Owner-only `/tcg` guard and nav visibility remain unchanged.
+- Backend/RPC remains authority for pack quantity, wallet deduction, pack consumption, and card rolls.
+- No member-facing TCG access, CP join, CP value exposure, service-role path, direct table access, upload, Storage, or unrelated subsystem behavior change was added.
+
+Next:
+- Owner can visually retest the polished `/tcg` UI across Album, Packs, Shop, Owner Lab, and reveal overlay.
+
 ## Milestone 30F-G TCG Pack Front + Real Card Back Asset Wire-Up Live
 
 Owner-only `/tcg` pack visuals now use the newly replaced canonical pack-front and card-back assets, deployed through commit `332e38f fix: use tcg card back for reveal cards`.

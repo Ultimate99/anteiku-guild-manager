@@ -1,6 +1,6 @@
 # TCG/Card Collection Plan
 
-Milestone 30A planning started this document. Milestone 30B is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`. Milestone 30C-A Owner-only Card Collection preview UI is deployed through commit `dbb67da feat: add owner tcg collection preview`; Milestone 30C-A2 Owner-only smoke grant control is deployed through commit `e96a489 feat: add owner tcg smoke grant`; Milestone 30C-B album visual polish and repo-served asset-pipeline notes are implemented; Milestone 30C-C adds temporary art for the five smoke-test cards; Milestone 30C-D adds temporary art for all 50 Season 0 cards; Milestone 30D-A adds Owner-only test pack backend/RPC support through `20260601000200_tcg_owner_pack_backend.sql`; Milestone 30D-B adds the Owner-only `/tcg` pack preview UI through commit `fa50b33 feat: add owner tcg pack preview`; Milestone 30E-A adds the Owner-only shop/economy backend through `20260601000300_tcg_owner_shop_economy.sql`; Milestone 30E-B adds the Owner-only `/tcg` shop/economy preview UI through commit `8e7eb73 feat: add owner tcg shop preview`; Milestone 30E-C polishes the Owner-only shop/wallet/pack UX through commit `053f27d style: polish owner tcg shop ux`; Milestone 30E-D adds the compact `/tcg` hub/window layout through commit `d1f4c4a style: add compact tcg hub layout`; Milestone 30F-A adds Owner-only TCG balance/economy/pack analytics backend support through `20260601000400_tcg_owner_balance_report.sql`; Milestone 30F-B adds Owner-only pack inventory backend support through `20260601000500_tcg_owner_pack_inventory.sql`; Milestone 30F-C adds the Owner-only `/tcg` pack inventory/opening UI through commit `ada2b74 feat: add tcg pack inventory opening ui`; Milestone 30F-D adds temporary pack-front and card-back assets through commit `6bcebab feat: add tcg pack and card back assets`; Milestone 30F-E adds a compact pack UI hotfix through commit `bc3c705 fix: compact tcg pack inventory ui`; Milestone 30F-F adds the pack/reveal UI polish hotfix through commit `e77a385 style: polish tcg pack reveal ui`; Milestone 30F-G wires the replaced pack-front and real card-back assets through commit `332e38f fix: use tcg card back for reveal cards`. Member-facing packs, shop, economy UI, Owner analytics UI, and final approved card artwork remain unimplemented.
+Milestone 30A planning started this document. Milestone 30B is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`. Milestone 30C-A Owner-only Card Collection preview UI is deployed through commit `dbb67da feat: add owner tcg collection preview`; Milestone 30C-A2 Owner-only smoke grant control is deployed through commit `e96a489 feat: add owner tcg smoke grant`; Milestone 30C-B album visual polish and repo-served asset-pipeline notes are implemented; Milestone 30C-C adds temporary art for the five smoke-test cards; Milestone 30C-D adds temporary art for all 50 Season 0 cards; Milestone 30D-A adds Owner-only test pack backend/RPC support through `20260601000200_tcg_owner_pack_backend.sql`; Milestone 30D-B adds the Owner-only `/tcg` pack preview UI through commit `fa50b33 feat: add owner tcg pack preview`; Milestone 30E-A adds the Owner-only shop/economy backend through `20260601000300_tcg_owner_shop_economy.sql`; Milestone 30E-B adds the Owner-only `/tcg` shop/economy preview UI through commit `8e7eb73 feat: add owner tcg shop preview`; Milestone 30E-C polishes the Owner-only shop/wallet/pack UX through commit `053f27d style: polish owner tcg shop ux`; Milestone 30E-D adds the compact `/tcg` hub/window layout through commit `d1f4c4a style: add compact tcg hub layout`; Milestone 30F-A adds Owner-only TCG balance/economy/pack analytics backend support through `20260601000400_tcg_owner_balance_report.sql`; Milestone 30F-B adds Owner-only pack inventory backend support through `20260601000500_tcg_owner_pack_inventory.sql`; Milestone 30F-C adds the Owner-only `/tcg` pack inventory/opening UI through commit `ada2b74 feat: add tcg pack inventory opening ui`; Milestone 30F-D adds temporary pack-front and card-back assets through commit `6bcebab feat: add tcg pack and card back assets`; Milestone 30F-E adds a compact pack UI hotfix through commit `bc3c705 fix: compact tcg pack inventory ui`; Milestone 30F-F adds the pack/reveal UI polish hotfix through commit `e77a385 style: polish tcg pack reveal ui`; Milestone 30F-G wires the replaced pack-front and real card-back assets through commit `332e38f fix: use tcg card back for reveal cards`; Milestone 30F-H polishes the Owner-only `/tcg` UI through commit `3d92c37 style: polish owner tcg ui`. Member-facing packs, shop, economy UI, Owner analytics UI, and final approved card artwork remain unimplemented.
 
 ## Product Goal
 
@@ -51,8 +51,9 @@ Delayed until later:
 - 30F-E: Compact pack inventory UI hotfix. Complete and deployed.
 - 30F-F: Pack/reveal UI polish hotfix. Complete and deployed.
 - 30F-G: Pack front + real card-back asset wire-up. Complete and deployed.
-- 30F-H: Owner-only TCG analytics UI in the existing `/tcg` Owner area.
-- 30F-I: Member-facing free shop/economy planning after Owner analytics and pack-inventory review.
+- 30F-H: Owner-only `/tcg` UI polish pass. Complete and deployed.
+- 30F-I: Owner-only TCG analytics UI in the existing `/tcg` Owner area.
+- 30F-J: Member-facing free shop/economy planning after Owner analytics and pack-inventory review.
 - 30G: Admin TCG tools.
 - Later: premium/payment system only after the free economy is stable.
 
@@ -945,6 +946,43 @@ Production:
   - Deployed bundle `assets/index-DZ6Xj5gs.js` and CSS `assets/index-D5PKDyGy.css` contain the real card-back image wire-up/styling.
   - `/assets/tcg/packs/season0_test_pack_front.png` returned HTTP 200 and 1,799,800 bytes.
   - `/assets/tcg/cards/tcg_card_back_season0.png` returned HTTP 200 and 2,185,757 bytes.
+- Codex did not click production Buy, Open, Rip, Grant, Grant Coins, or Favorite controls.
+- No production wallet, pack inventory, card inventory, or favorite mutation was performed by Codex during this smoke.
+
+## Phase 30F-H Owner-Only TCG UI Polish Pass
+
+Status: complete and deployed through commit `3d92c37 style: polish owner tcg ui`.
+
+Implemented:
+
+- Polished the overall `/tcg` page into a compact Owner-only game hub.
+- Tightened top header hierarchy, refresh action, and HUD stat cards.
+- Improved Album filter density, rarity selector, card grid density, owned/missing/favorite states, hover/focus treatment, and detail sheet sizing.
+- Improved Packs composition while keeping the pack front as the hero and `Open Pack` compact.
+- Added an existing pack-front preview to Shop items and tightened wallet, price, purchase, success, and `Go to Packs` presentation.
+- Reworked Owner Lab into a separated test-only section for smoke grants and test coins.
+- Polished reveal overlay spacing, toolbar, hidden/revealed card grid sizing, and mobile safety.
+
+Preserved behavior:
+
+- Shop buy stays on Shop.
+- Shop buy adds pack inventory through backend RPC.
+- Packs open owned packs through backend RPC.
+- Swipe/rip, `Rip Open`, card-by-card reveal, `Reveal all`, animation toggle, wallet and collection refetch, pack quantity refetch, and favorite toggle remain unchanged.
+
+Validation:
+
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation confirmed no SQL/migration, Supabase/RLS/RPC, service, package, service worker, CP, GvG, Wall, 3v3, Push, Analytics, Ranking, Auth, Approval, or Account Switcher changes.
+- Frontend checks confirmed no direct TCG table access, no `member_cp`, no `cp_snapshots`, no CP analytics RPCs, no client-side drops, and no client-side wallet authority.
+
+Production:
+
+- Commit `3d92c37` was pushed to `main`.
+- Non-mutating production smoke passed:
+  - `/tcg?tcg-ui-polish-smoke=2` returned HTTP 200.
+  - Deployed bundle `assets/index-C9n3v1dY.js` contains `tcg-shop-pack-preview` and `tcg-owner-lab-section`.
+  - Deployed CSS `assets/index-DSO3TEr-.css` contains `tcg-shop-pack-preview`, `tcg-owner-lab-section`, and `tcg-hub-hero`.
 - Codex did not click production Buy, Open, Rip, Grant, Grant Coins, or Favorite controls.
 - No production wallet, pack inventory, card inventory, or favorite mutation was performed by Codex during this smoke.
 
