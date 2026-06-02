@@ -8987,6 +8987,263 @@ button.command-card:focus-visible {
   }
 }
 
+/* 30F-J TCG slim pack/shop windows + wallet HUD polish */
+.tcg-pack-panel[data-pack-mode="owned"] .tcg-owned-pack-card {
+  width: min(100%, 360px);
+  gap: 7px;
+  padding: 9px;
+  border-color: rgba(255, 216, 116, 0.2);
+  background:
+    radial-gradient(circle at 50% 26%, rgba(196, 30, 58, 0.16), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.044), transparent 40%),
+    rgba(5, 5, 7, 0.9);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.032),
+    0 14px 30px rgba(0, 0, 0, 0.28);
+}
+
+.tcg-pack-panel[data-pack-mode="owned"] .tcg-owned-pack-stage {
+  width: min(100%, 196px);
+}
+
+.tcg-pack-panel[data-pack-mode="owned"] .tcg-owned-pack-stage .tcg-pack-sprite {
+  width: min(100%, 176px);
+}
+
+.tcg-pack-panel[data-pack-mode="owned"] .tcg-owned-pack-visual {
+  padding: 2px 2px 0;
+}
+
+.tcg-pack-panel[data-pack-mode="owned"] .tcg-owned-pack-visual > strong {
+  margin-top: -7px;
+  padding: 4px 10px;
+  font-size: 0.72rem;
+}
+
+.tcg-pack-panel[data-pack-mode="owned"] .tcg-owned-pack-copy {
+  gap: 5px;
+}
+
+.tcg-pack-panel[data-pack-mode="owned"] .tcg-owned-pack-copy p {
+  max-width: 28ch;
+  font-size: 0.76rem;
+  line-height: 1.28;
+}
+
+.tcg-pack-panel[data-pack-mode="owned"] .tcg-pack-facts span {
+  padding: 4px 6px;
+  font-size: 0.58rem;
+}
+
+.tcg-pack-panel[data-pack-mode="owned"] .tcg-owned-open-button {
+  min-width: 124px;
+  min-height: 34px;
+  padding: 7px 12px;
+}
+
+.tcg-pack-panel[data-pack-mode="owned"] .tcg-pack-preview-note,
+.tcg-pack-result-shell[data-result-mode="shop"] {
+  width: min(100%, 360px);
+}
+
+.tcg-shop-list {
+  grid-template-columns: repeat(auto-fit, minmax(194px, 222px));
+  gap: 10px;
+}
+
+.tcg-shop-item {
+  width: min(100%, 222px);
+  gap: 6px;
+  padding: 8px;
+  border-color: rgba(255, 216, 116, 0.18);
+  background:
+    radial-gradient(circle at 50% 18%, rgba(196, 30, 58, 0.18), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.044), transparent 38%),
+    rgba(5, 5, 7, 0.92);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.032),
+    0 12px 26px rgba(0, 0, 0, 0.26);
+}
+
+.tcg-shop-pack-preview {
+  padding-top: 0;
+}
+
+.tcg-shop-pack-preview .tcg-pack-sprite {
+  width: min(100%, 118px);
+  filter:
+    drop-shadow(0 14px 18px rgba(0, 0, 0, 0.38))
+    drop-shadow(0 0 16px rgba(196, 30, 58, 0.1));
+}
+
+.tcg-shop-item-main {
+  gap: 4px;
+}
+
+.tcg-shop-item-main h4 {
+  margin: 4px 0 1px;
+  font-size: 0.92rem;
+}
+
+.tcg-shop-item-main p {
+  max-width: 22ch;
+  font-size: 0.72rem;
+  line-height: 1.25;
+}
+
+.tcg-shop-item-buy {
+  gap: 4px;
+  padding: 6px;
+}
+
+.tcg-shop-item-buy span {
+  font-size: 0.58rem;
+}
+
+.tcg-shop-item-buy strong {
+  font-size: 0.82rem;
+}
+
+.tcg-shop-item-buy .primary-action {
+  min-height: 32px;
+  padding: 7px 9px;
+  font-size: 0.68rem;
+}
+
+.tcg-wallet-card {
+  width: max-content;
+  max-width: min(100%, 220px);
+  min-width: 0;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1px 8px;
+  align-items: center;
+  justify-items: start;
+  padding: 7px 10px;
+  border-color: rgba(255, 216, 116, 0.34);
+  background:
+    radial-gradient(circle at 16% 22%, rgba(255, 216, 116, 0.24), transparent 32%),
+    linear-gradient(135deg, rgba(196, 30, 58, 0.2), transparent 46%),
+    rgba(0, 0, 0, 0.36);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 12px 24px rgba(0, 0, 0, 0.24),
+    0 0 24px rgba(255, 216, 116, 0.08);
+}
+
+.tcg-wallet-card i {
+  position: static;
+  grid-row: 1 / span 3;
+  width: 28px;
+  height: 28px;
+  border-color: rgba(255, 216, 116, 0.8);
+  background:
+    radial-gradient(circle at 42% 36%, rgba(255, 255, 255, 0.72), transparent 13%),
+    radial-gradient(circle, rgba(255, 216, 116, 0.82), rgba(196, 30, 58, 0.36) 58%, rgba(0, 0, 0, 0.42));
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.28),
+    0 0 18px rgba(255, 216, 116, 0.28);
+}
+
+.tcg-wallet-card span,
+.tcg-wallet-card small {
+  max-width: 100%;
+  font-size: 0.55rem;
+  line-height: 1.05;
+}
+
+.tcg-wallet-card strong {
+  max-width: 100%;
+  color: #ffe28a;
+  font-size: clamp(1.05rem, 3vw, 1.36rem);
+  line-height: 0.98;
+  text-shadow:
+    0 0 14px rgba(255, 216, 116, 0.24),
+    0 0 18px rgba(196, 30, 58, 0.22);
+}
+
+.tcg-hub-stat[data-stat="coins"] {
+  border-color: rgba(255, 216, 116, 0.24);
+  background:
+    radial-gradient(circle at 12% 24%, rgba(255, 216, 116, 0.16), transparent 36%),
+    linear-gradient(135deg, rgba(196, 30, 58, 0.14), transparent 48%),
+    rgba(5, 5, 7, 0.7);
+}
+
+.tcg-hub-stat[data-stat="coins"] strong {
+  color: #ffe28a;
+  text-shadow: 0 0 14px rgba(255, 216, 116, 0.16);
+}
+
+@media (min-width: 1080px) {
+  .tcg-pack-panel[data-pack-mode="owned"] .tcg-owned-pack-card {
+    width: min(100%, 380px);
+  }
+
+  .tcg-shop-list {
+    grid-template-columns: repeat(auto-fit, minmax(194px, 228px));
+  }
+
+  .tcg-shop-item {
+    width: min(100%, 228px);
+  }
+}
+
+@media (max-width: 640px) {
+  .tcg-pack-panel[data-pack-mode="owned"] .tcg-owned-pack-card,
+  .tcg-pack-panel[data-pack-mode="owned"] .tcg-pack-preview-note,
+  .tcg-pack-result-shell[data-result-mode="shop"] {
+    width: min(100%, 320px);
+  }
+
+  .tcg-pack-panel[data-pack-mode="owned"] .tcg-owned-pack-stage {
+    width: min(62vw, 180px);
+  }
+
+  .tcg-pack-panel[data-pack-mode="owned"] .tcg-owned-pack-stage .tcg-pack-sprite {
+    width: min(100%, 162px);
+  }
+
+  .tcg-shop-list {
+    grid-template-columns: minmax(0, min(100%, 260px));
+  }
+
+  .tcg-shop-pack-preview .tcg-pack-sprite {
+    width: min(42vw, 112px);
+  }
+
+  .tcg-wallet-card {
+    justify-self: start;
+    max-width: min(100%, 210px);
+  }
+}
+
+@media (max-width: 390px) {
+  .tcg-pack-panel[data-pack-mode="owned"] .tcg-owned-pack-card {
+    width: min(100%, 300px);
+    padding: 8px;
+  }
+
+  .tcg-pack-panel[data-pack-mode="owned"] .tcg-owned-pack-stage {
+    width: min(62vw, 166px);
+  }
+
+  .tcg-pack-panel[data-pack-mode="owned"] .tcg-owned-pack-stage .tcg-pack-sprite {
+    width: min(100%, 150px);
+  }
+
+  .tcg-shop-item {
+    padding: 7px;
+  }
+
+  .tcg-shop-pack-preview .tcg-pack-sprite {
+    width: min(43vw, 104px);
+  }
+
+  .tcg-wallet-card {
+    padding: 6px 9px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tcg-pack-result-card,
   .tcg-pack-hidden-card {
