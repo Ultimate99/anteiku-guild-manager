@@ -1,5 +1,41 @@
 # Project State
 
+## Milestone 30F-L TCG Centering / Alignment Hotfix Live
+
+Owner-only `/tcg` Packs and Shop windows received a CSS-only centering hotfix, deployed through commit `ff94b1c style: center tcg shop pack windows`.
+
+Implemented:
+- Centered the owned Packs card inside the Packs window while keeping the header full-width.
+- Centered the pack image, quantity badge, metadata, and `Open Pack` action on one clearer visual axis.
+- Centered the compact Shop item list/card inside the Shop window on a dedicated content rail.
+- Kept the wallet HUD in the Shop header while preventing it from visually pulling the main Shop card off-center.
+- Added mobile rules so the Shop card remains centered with safe margins and no horizontal overflow.
+
+Preserved behavior:
+- Shop buy stays on Shop and still only adds a pack to inventory.
+- `Go to Packs`, owned-pack open, swipe/rip, `Rip Open`, card-by-card reveal, `Reveal all`, pack animation toggle, wallet/collection refetch, pack quantity refetch, and favorite toggle behavior remain unchanged.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found only `src/styles/app.css` changed for the source patch.
+- TCG checks found no direct TCG table access, no `member_cp`, no `cp_snapshots`, no CP analytics RPC usage, no client-side drops, no service-role path, and no client-side wallet authority.
+- Owner-only `/tcg` source guard remains in `TcgCollection.jsx` through `activeAdminContext?.isOwner`.
+
+Production:
+- Commit `ff94b1c` was pushed to `main`.
+- Non-mutating production smoke passed:
+  - `/tcg?tcg-centering-smoke=1` returned the production app shell.
+  - Deployed CSS `assets/index-Cm2PILN7.css` contains the centering content rail, pack card centering, wallet alignment, and mobile width rules.
+- Codex did not click production Buy, Open, Rip, Grant, Grant Coins, or Favorite controls, and did not mutate production wallet, pack, card inventory, or favorites.
+
+Security:
+- Existing Owner-only `/tcg` guard and nav visibility remain unchanged.
+- Backend/RPC remains authority for pack quantity, wallet deduction, pack consumption, and card rolls.
+- No member-facing TCG access, CP join, CP value exposure, service-role path, direct table access, upload, Storage, or unrelated subsystem behavior change was added.
+
+Next:
+- Owner can visually retest the Packs/Shop centering.
+
 ## Milestone 30F-K TCG Wallet Icon HUD Hotfix Live
 
 Owner-only `/tcg` wallet HUD received a CSS-only icon hotfix, deployed through commit `07d65a9 style: polish tcg wallet hud icon`.

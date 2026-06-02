@@ -26,6 +26,7 @@ Milestone 30A planning is complete. No backend, frontend, SQL, Supabase, or prod
 - Milestone 30F-I makes the Owner-only Packs and Shop windows compact/windowed instead of full-width item panels and is deployed through commit `14219fe style: make tcg pack shop windows compact`.
 - Milestone 30F-J slims the Owner-only Packs/Shop item windows and turns the wallet into a compact currency HUD, deployed through commit `7840366 style: slim tcg pack shop wallet ui`.
 - Milestone 30F-K replaces the Owner-only wallet HUD glowing square with a CSS wallet/currency icon, deployed through commit `07d65a9 style: polish tcg wallet hud icon`.
+- Milestone 30F-L centers the Owner-only Packs and Shop item windows inside their active panels, deployed through commit `ff94b1c style: center tcg shop pack windows`.
 - Milestone 30B backend/RPC foundation is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
 - No member-facing packs, shop, economy UI, routes beyond `/tcg`, uploads, or Storage have been implemented.
 - No member-facing TCG release exists yet. The next step is controlled Owner manual mutation smoke for the deployed pack loop; frontend calls backend RPCs and never calculates drops or mutates wallets/inventory client-side.
@@ -914,6 +915,46 @@ Production:
 Next:
 
 - Owner can visually retest the wallet HUD icon.
+- Keep controlled pack-loop mutation smoke gated until explicitly approved.
+
+## 30F-L Centering / Alignment Hotfix
+
+Status: complete and deployed through commit `ff94b1c style: center tcg shop pack windows`.
+
+Implemented:
+
+- Centered the owned Packs card inside the Packs window while keeping the panel header full-width.
+- Aligned the pack image, quantity badge, metadata, and `Open Pack` action on one cleaner visual axis.
+- Centered the compact Shop item card/list inside the Shop window on a dedicated content rail.
+- Kept the wallet HUD in the Shop header and reduced its effect on the main Shop card's visual center.
+- Added mobile rules so the Shop card stays centered with safe margins and no horizontal overflow.
+
+Preserved behavior:
+
+- Shop buy stays on Shop.
+- Shop buy adds pack inventory through backend RPC.
+- `Go to Packs` remains manual.
+- Packs open owned packs through backend RPC.
+- Swipe/rip, `Rip Open`, card-by-card reveal, `Reveal all`, animation toggle, wallet and collection refetch, pack quantity refetch, and favorite toggle remain unchanged.
+
+Validation:
+
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source checks confirmed only `src/styles/app.css` changed for the source patch.
+- TCG checks confirmed no direct TCG table access, no `member_cp`, no `cp_snapshots`, no CP analytics RPCs, no client-side drops, no service-role path, and no client-side wallet authority.
+
+Production:
+
+- Commit `ff94b1c` was pushed to `main`.
+- Non-mutating smoke passed:
+  - `/tcg?tcg-centering-smoke=1` returned the production app shell.
+  - Deployed CSS `assets/index-Cm2PILN7.css` contains the centering content rail, pack card centering, wallet alignment, and mobile width rules.
+- Codex did not click production Buy, Open, Rip, Grant, Grant Coins, or Favorite controls.
+- No production wallet, pack inventory, card inventory, or favorite mutation was performed by Codex during this smoke.
+
+Next:
+
+- Owner can visually retest Packs and Shop centering.
 - Keep controlled pack-loop mutation smoke gated until explicitly approved.
 
 ## 30B RPC Candidates
