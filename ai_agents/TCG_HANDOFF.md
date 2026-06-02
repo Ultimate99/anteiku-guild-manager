@@ -23,6 +23,7 @@ Milestone 30A planning is complete. No backend, frontend, SQL, Supabase, or prod
 - Milestone 30F-F adds the TCG pack/reveal UI polish hotfix and is deployed through commit `e77a385 style: polish tcg pack reveal ui`.
 - Milestone 30F-G wires the replaced pack-front and real card-back assets into the Owner-only pack/reveal flow and is deployed through commit `332e38f fix: use tcg card back for reveal cards`.
 - Milestone 30F-H polishes the Owner-only `/tcg` UI across Album, Packs, Shop, Owner Lab, and reveal overlay and is deployed through commit `3d92c37 style: polish owner tcg ui`.
+- Milestone 30F-I makes the Owner-only Packs and Shop windows compact/windowed instead of full-width item panels and is deployed through commit `14219fe style: make tcg pack shop windows compact`.
 - Milestone 30B backend/RPC foundation is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
 - No member-facing packs, shop, economy UI, routes beyond `/tcg`, uploads, or Storage have been implemented.
 - No member-facing TCG release exists yet. The next step is controlled Owner manual mutation smoke for the deployed pack loop; frontend calls backend RPCs and never calculates drops or mutates wallets/inventory client-side.
@@ -781,6 +782,44 @@ Production:
   - `/tcg?tcg-ui-polish-smoke=2` returned HTTP 200.
   - Deployed bundle `assets/index-C9n3v1dY.js` contains `tcg-shop-pack-preview` and `tcg-owner-lab-section`.
   - Deployed CSS `assets/index-DSO3TEr-.css` contains `tcg-shop-pack-preview`, `tcg-owner-lab-section`, and `tcg-hub-hero`.
+- Codex did not click production Buy, Open, Rip, Grant, Grant Coins, or Favorite controls.
+- No production wallet, pack inventory, card inventory, or favorite mutation was performed by Codex during this smoke.
+
+## 30F-I Windowed Pack/Shop Layout Hotfix
+
+Status: complete and deployed through commit `14219fe style: make tcg pack shop windows compact`.
+
+Implemented:
+
+- Changed the owned Packs item from a wide row into a compact centered pack window/card.
+- Kept the pack front as the hero with quantity badge and compact `Open Pack` action under/near the pack.
+- Centered compact metadata chips and no-pack state around the pack card.
+- Changed Shop items from wide rows into compact 3:4-style shelf cards.
+- Kept the pack image as Shop item art with pack name, price, and `Buy Test Pack` inside/directly under the compact card.
+- Kept wallet in the Shop header/HUD area.
+- Kept Shop purchase success inline and compact with `Go to Packs` as secondary.
+- Added responsive CSS so the compact items center on desktop and stack safely on mobile.
+
+Preserved behavior:
+
+- Shop buy stays on Shop.
+- Shop buy adds pack inventory through backend RPC.
+- Packs open owned packs through backend RPC.
+- Swipe/rip, `Rip Open`, card-by-card reveal, `Reveal all`, animation toggle, wallet and collection refetch, pack quantity refetch, and favorite toggle remain unchanged.
+
+Validation:
+
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source checks confirmed the source hotfix only changed `src/styles/app.css`.
+- TCG checks confirmed no direct TCG table access, no `member_cp`, no `cp_snapshots`, no CP analytics RPCs, no client-side drops, and no client-side wallet authority.
+- Owner-only `/tcg` source guard remains based on `activeAdminContext?.isOwner`.
+
+Production:
+
+- Commit `14219fe` was pushed to `main`.
+- Non-mutating smoke passed:
+  - `/tcg?tcg-windowed-pack-shop-smoke=1` returned HTTP 200.
+  - Deployed CSS `assets/index-lRpgZHRE.css` contains the compact pack/shop layout rules.
 - Codex did not click production Buy, Open, Rip, Grant, Grant Coins, or Favorite controls.
 - No production wallet, pack inventory, card inventory, or favorite mutation was performed by Codex during this smoke.
 

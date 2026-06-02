@@ -1,5 +1,45 @@
 # Project State
 
+## Milestone 30F-I TCG Windowed Pack/Shop Layout Hotfix Live
+
+Owner-only `/tcg` Packs and Shop windows received a CSS-only layout hotfix, deployed through commit `14219fe style: make tcg pack shop windows compact`.
+
+Implemented:
+- Converted the owned Packs item from a full-width row into a compact centered pack window/card.
+- Kept the pack front as the hero with quantity badge and compact `Open Pack` action under/near the pack.
+- Centered compact metadata chips and no-pack state around the pack card.
+- Converted Shop items from full-width dashboard rows into compact 3:4-style shelf cards.
+- Kept the existing pack image as Shop item art, with price and `Buy Test Pack` inside the compact card.
+- Kept wallet in the Shop header/HUD area and kept purchase success inline but compact.
+- Added responsive rules so the pack/shop cards stay centered on desktop and stack without horizontal overflow on mobile.
+
+Preserved behavior:
+- Shop buy stays on Shop and still only adds a pack to inventory.
+- `Go to Packs` remains secondary.
+- Packs open owned packs through backend RPC authority.
+- Swipe/rip, `Rip Open`, card-by-card reveal, `Reveal all`, pack animation toggle, wallet/collection refetch, pack quantity refetch, and favorite toggle behavior remain unchanged.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found only `src/styles/app.css` changed for the source hotfix.
+- TCG checks found no direct TCG table access, no `member_cp`, no `cp_snapshots`, no CP analytics RPC usage, no client-side drops, and no client-side wallet authority.
+- Owner-only `/tcg` source guard remains in `TcgCollection.jsx` through `activeAdminContext?.isOwner`.
+
+Production:
+- Commit `14219fe` was pushed to `main`.
+- Non-mutating production smoke passed:
+  - `/tcg?tcg-windowed-pack-shop-smoke=1` returned HTTP 200.
+  - Deployed CSS `assets/index-lRpgZHRE.css` contains the compact pack/shop layout rules.
+- Codex did not click production Buy, Open, Rip, Grant, Grant Coins, or Favorite controls, and did not mutate production wallet, pack, card inventory, or favorites.
+
+Security:
+- Existing Owner-only `/tcg` guard and nav visibility remain unchanged.
+- Backend/RPC remains authority for pack quantity, wallet deduction, pack consumption, and card rolls.
+- No member-facing TCG access, CP join, CP value exposure, service-role path, direct table access, upload, Storage, or unrelated subsystem behavior change was added.
+
+Next:
+- Owner can visually retest the compact windowed Packs and Shop layout.
+
 ## Milestone 30F-H Owner-Only TCG UI Polish Pass Live
 
 Owner-only `/tcg` received a frontend-only UI polish pass after the pack-front and real card-back asset wire-up, deployed through commit `3d92c37 style: polish owner tcg ui`.

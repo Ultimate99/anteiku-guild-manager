@@ -22,6 +22,7 @@
 - Milestone 30F-F: TCG pack/reveal UI polish hotfix deployed.
 - Milestone 30F-G: TCG pack front + real card-back asset wire-up deployed.
 - Milestone 30F-H: Owner-only TCG UI polish pass deployed.
+- Milestone 30F-I: TCG windowed Packs/Shop layout hotfix deployed.
 - Milestone 30A: TCG/Card Collection planning.
 - Milestone 1: React + Vite scaffold and documentation base.
 - Milestone 2: Supabase schema/RLS plan, migrations, and local validation.
@@ -42,11 +43,11 @@
 
 ## Recommended Next
 
-Milestone 30C-A Owner-only Card Collection preview is live, Milestone 30C-A2 adds a controlled Owner-only smoke grant button, Milestone 30C-B improves the album visuals, Milestone 30C-C/30C-D add temporary art coverage, Milestone 30D-A adds the Owner-only backend/RPC foundation for test pack opening, Milestone 30D-B adds the Owner-only pack preview UI, Milestone 30E-A adds the Owner-only backend/RPC foundation for test coins, wallet ledger, Owner test shop listing, and Owner test pack purchase, Milestone 30E-B adds the Owner-only shop/economy UI preview, Milestone 30E-C polishes the Owner shop/wallet/pack reveal UX, Milestone 30E-D refactors `/tcg` into a compact Album/Packs/Shop/Owner Lab hub, Milestone 30F-A adds the Owner-only read-only balance/economy/pack analytics RPC, Milestone 30F-B adds Owner-only pack inventory backend support, Milestone 30F-C deploys the Owner-only frontend flow where Shop buys packs into inventory and Packs opens owned packs later, Milestone 30F-D deploys temporary pack-front/card-back assets for that flow, Milestone 30F-E deploys the compact pack UI hotfix, Milestone 30F-F deploys the pack/reveal UI polish hotfix, Milestone 30F-G deploys the replaced pack-front and real card-back asset wire-up, and Milestone 30F-H deploys the Owner-only `/tcg` UI polish pass. Member-facing shop/economy release, payments, trading, marketplace, and battles remain out of scope until separately planned.
+Milestone 30C-A Owner-only Card Collection preview is live, Milestone 30C-A2 adds a controlled Owner-only smoke grant button, Milestone 30C-B improves the album visuals, Milestone 30C-C/30C-D add temporary art coverage, Milestone 30D-A adds the Owner-only backend/RPC foundation for test pack opening, Milestone 30D-B adds the Owner-only pack preview UI, Milestone 30E-A adds the Owner-only backend/RPC foundation for test coins, wallet ledger, Owner test shop listing, and Owner test pack purchase, Milestone 30E-B adds the Owner-only shop/economy UI preview, Milestone 30E-C polishes the Owner shop/wallet/pack reveal UX, Milestone 30E-D refactors `/tcg` into a compact Album/Packs/Shop/Owner Lab hub, Milestone 30F-A adds the Owner-only read-only balance/economy/pack analytics RPC, Milestone 30F-B adds Owner-only pack inventory backend support, Milestone 30F-C deploys the Owner-only frontend flow where Shop buys packs into inventory and Packs opens owned packs later, Milestone 30F-D deploys temporary pack-front/card-back assets for that flow, Milestone 30F-E deploys the compact pack UI hotfix, Milestone 30F-F deploys the pack/reveal UI polish hotfix, Milestone 30F-G deploys the replaced pack-front and real card-back asset wire-up, Milestone 30F-H deploys the Owner-only `/tcg` UI polish pass, and Milestone 30F-I deploys compact windowed Packs/Shop cards. Member-facing shop/economy release, payments, trading, marketplace, and battles remain out of scope until separately planned.
 
 Strong candidates:
 
-- Owner visual retest for the polished `/tcg` hub across Album, Packs, Shop, Owner Lab, and reveal overlay, then controlled Owner click-through smoke for the deployed pack inventory loop when mutation testing is approved.
+- Owner visual retest for the compact windowed Packs and Shop layout, then controlled Owner click-through smoke for the deployed pack inventory loop when mutation testing is approved.
 - Owner-only TCG balance report UI inside `/tcg` Owner Lab, using `tcg_owner_get_balance_report()`.
 - Optional Owner hub/album/shop UX polish after manual smoke feedback.
 - Replace temporary smoke art with approved final card art under `public/assets/tcg/art/`.
