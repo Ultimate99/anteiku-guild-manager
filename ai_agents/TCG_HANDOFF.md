@@ -25,6 +25,7 @@ Milestone 30A planning is complete. No backend, frontend, SQL, Supabase, or prod
 - Milestone 30F-H polishes the Owner-only `/tcg` UI across Album, Packs, Shop, Owner Lab, and reveal overlay and is deployed through commit `3d92c37 style: polish owner tcg ui`.
 - Milestone 30F-I makes the Owner-only Packs and Shop windows compact/windowed instead of full-width item panels and is deployed through commit `14219fe style: make tcg pack shop windows compact`.
 - Milestone 30F-J slims the Owner-only Packs/Shop item windows and turns the wallet into a compact currency HUD, deployed through commit `7840366 style: slim tcg pack shop wallet ui`.
+- Milestone 30F-K replaces the Owner-only wallet HUD glowing square with a CSS wallet/currency icon, deployed through commit `07d65a9 style: polish tcg wallet hud icon`.
 - Milestone 30B backend/RPC foundation is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
 - No member-facing packs, shop, economy UI, routes beyond `/tcg`, uploads, or Storage have been implemented.
 - No member-facing TCG release exists yet. The next step is controlled Owner manual mutation smoke for the deployed pack loop; frontend calls backend RPCs and never calculates drops or mutates wallets/inventory client-side.
@@ -874,6 +875,45 @@ Production:
 Next:
 
 - Owner can visually retest Packs, Shop, and Wallet HUD.
+- Keep controlled pack-loop mutation smoke gated until explicitly approved.
+
+## 30F-K Wallet Icon HUD Hotfix
+
+Status: complete and deployed through commit `07d65a9 style: polish tcg wallet hud icon`.
+
+Implemented:
+
+- Replaced the wallet HUD glowing-square mark with a compact CSS wallet/currency object.
+- Added wallet body, flap, and clasp pseudo-elements.
+- Used a restrained dark gold, black, and crimson treatment so it reads as a wallet/token without becoming too bright.
+- Added a matching small wallet mark to the top Anteiku Coins HUD stat.
+
+Preserved behavior:
+
+- Wallet balance remains backend-derived.
+- Shop buy stays on Shop.
+- Shop buy adds pack inventory through backend RPC.
+- Packs open owned packs through backend RPC.
+- Swipe/rip, `Rip Open`, card-by-card reveal, `Reveal all`, animation toggle, wallet and collection refetch, pack quantity refetch, and favorite toggle remain unchanged.
+
+Validation:
+
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source checks confirmed only `src/styles/app.css` changed for the source patch.
+- TCG checks confirmed no direct TCG table access, no `member_cp`, no `cp_snapshots`, no CP analytics RPCs, no client-side drops, no service-role path, and no client-side wallet authority.
+
+Production:
+
+- Commit `07d65a9` was pushed to `main`.
+- Non-mutating smoke passed:
+  - `/tcg?tcg-wallet-icon-smoke=1` returned the production app shell.
+  - Deployed CSS `assets/index-CIvARjRw.css` contains the wallet body, flap, clasp, and Anteiku Coins HUD icon rules.
+- Codex did not click production Buy, Open, Rip, Grant, Grant Coins, or Favorite controls.
+- No production wallet, pack inventory, card inventory, or favorite mutation was performed by Codex during this smoke.
+
+Next:
+
+- Owner can visually retest the wallet HUD icon.
 - Keep controlled pack-loop mutation smoke gated until explicitly approved.
 
 ## 30B RPC Candidates

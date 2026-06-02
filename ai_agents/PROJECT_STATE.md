@@ -1,5 +1,39 @@
 # Project State
 
+## Milestone 30F-K TCG Wallet Icon HUD Hotfix Live
+
+Owner-only `/tcg` wallet HUD received a CSS-only icon hotfix, deployed through commit `07d65a9 style: polish tcg wallet hud icon`.
+
+Implemented:
+- Replaced the glowing-square wallet mark with a small wallet/currency object built from CSS.
+- Added wallet body, flap, and clasp pseudo-elements with dark gold, black, and crimson styling.
+- Added a matching compact wallet mark to the top Anteiku Coins HUD stat.
+- Kept the icon compact so the Shop wallet HUD and mobile layout remain tight.
+
+Preserved behavior:
+- Wallet balance display remains backend-derived.
+- Shop buy, Packs, pack opening, card reveal, favorite toggle, wallet refetch, and pack inventory behavior remain unchanged.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found only `src/styles/app.css` changed for the source patch.
+- TCG checks found no direct TCG table access, no `member_cp`, no `cp_snapshots`, no CP analytics RPC usage, no client-side drops, no service-role path, and no client-side wallet authority.
+
+Production:
+- Commit `07d65a9` was pushed to `main`.
+- Non-mutating production smoke passed:
+  - `/tcg?tcg-wallet-icon-smoke=1` returned the production app shell.
+  - Deployed CSS `assets/index-CIvARjRw.css` contains the wallet body, flap, clasp, and Anteiku Coins HUD icon rules.
+- Codex did not click production Buy, Open, Rip, Grant, Grant Coins, or Favorite controls, and did not mutate production wallet, pack, card inventory, or favorites.
+
+Security:
+- Existing Owner-only `/tcg` guard and nav visibility remain unchanged.
+- Backend/RPC remains authority for pack quantity, wallet deduction, pack consumption, and card rolls.
+- No member-facing TCG access, CP join, CP value exposure, service-role path, direct table access, upload, Storage, or unrelated subsystem behavior change was added.
+
+Next:
+- Owner can visually retest the wallet HUD icon.
+
 ## Milestone 30F-J TCG Slim Windows + Wallet HUD Polish Live
 
 Owner-only `/tcg` Packs, Shop, and wallet HUD received a CSS-only slim-window polish pass, deployed through commit `7840366 style: slim tcg pack shop wallet ui`.
