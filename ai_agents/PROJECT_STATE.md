@@ -1,5 +1,44 @@
 # Project State
 
+## Milestone 30F-M Owner-Only TCG Balance Report UI Live
+
+Owner-only `/tcg` now includes a read-only Balance tab using the existing production RPC `tcg_owner_get_balance_report()`, deployed through commit `4c4ebc6 feat: add owner tcg balance report ui`.
+
+Implemented:
+- Added a `Balance` hub tab between Shop and Owner Lab.
+- Added frontend service wrapper `tcgOwnerGetBalanceReport()` for `tcg_owner_get_balance_report`.
+- Rendered compact game-dashboard sections for collection summary, rarity ownership, pack summary, rarity pulls, economy summary, duplicate pressure, and backend-provided balance hints.
+- Added `Refresh Report`, loading, empty, and error states.
+- Added EN/FR/DE i18n for the Balance tab and report labels.
+- Added mobile-safe stat/table/card styling for the report.
+
+Preserved behavior:
+- TCG remains Owner-only.
+- Album, Packs, Shop, Owner Lab, pack opening/reveal, wallet, pack inventory, favorite toggle, smoke grant, and test coin controls remain unchanged.
+- Balance report is read-only and does not apply price, drop-rate, pack-size, wallet, or economy changes.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found frontend-only changes in `src/pages/TcgCollection.jsx`, `src/services/tcgService.js`, `src/styles/app.css`, and EN/FR/DE i18n.
+- TCG checks found no direct TCG table access, no `member_cp` or `cp_snapshots` in the TCG page/service path, no CP analytics RPC usage, no client-side drops, no payments/uploads/storage additions, no service-role path, and no client-side wallet authority.
+- Owner-only `/tcg` source guard remains in `TcgCollection.jsx` through `activeAdminContext?.isOwner`.
+
+Production:
+- Commit `4c4ebc6` was pushed to `main`.
+- Non-mutating production smoke passed:
+  - `/tcg?tcg-balance-ui-smoke=1` returned the production app shell.
+  - Deployed bundle `assets/index-BQrXiP8d.js` contains `tcg_owner_get_balance_report` and Balance UI text.
+  - Deployed CSS `assets/index-D23BkU1w.css` contains the Balance report panel/table rules.
+- Codex did not click production Buy, Open, Rip, Grant, Grant Coins, or Favorite controls, and did not mutate production wallet, pack, card inventory, or favorites.
+
+Security:
+- Existing Owner-only `/tcg` guard and nav visibility remain unchanged.
+- Backend/RPC remains authority for report access and all inventory/economy mutations.
+- No member-facing TCG access, CP join, CP value exposure, service-role path, direct table access, upload, Storage, or unrelated subsystem behavior change was added.
+
+Next:
+- Owner can visually review the Balance tab and use it to inform future member release/economy planning.
+
 ## Milestone 30F-L TCG Centering / Alignment Hotfix Live
 
 Owner-only `/tcg` Packs and Shop windows received a CSS-only centering hotfix, deployed through commit `ff94b1c style: center tcg shop pack windows`.

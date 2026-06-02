@@ -27,6 +27,7 @@ Milestone 30A planning is complete. No backend, frontend, SQL, Supabase, or prod
 - Milestone 30F-J slims the Owner-only Packs/Shop item windows and turns the wallet into a compact currency HUD, deployed through commit `7840366 style: slim tcg pack shop wallet ui`.
 - Milestone 30F-K replaces the Owner-only wallet HUD glowing square with a CSS wallet/currency icon, deployed through commit `07d65a9 style: polish tcg wallet hud icon`.
 - Milestone 30F-L centers the Owner-only Packs and Shop item windows inside their active panels, deployed through commit `ff94b1c style: center tcg shop pack windows`.
+- Milestone 30F-M adds the Owner-only read-only Balance tab using `tcg_owner_get_balance_report()`, deployed through commit `4c4ebc6 feat: add owner tcg balance report ui`.
 - Milestone 30B backend/RPC foundation is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
 - No member-facing packs, shop, economy UI, routes beyond `/tcg`, uploads, or Storage have been implemented.
 - No member-facing TCG release exists yet. The next step is controlled Owner manual mutation smoke for the deployed pack loop; frontend calls backend RPCs and never calculates drops or mutates wallets/inventory client-side.
@@ -956,6 +957,46 @@ Next:
 
 - Owner can visually retest Packs and Shop centering.
 - Keep controlled pack-loop mutation smoke gated until explicitly approved.
+
+## 30F-M Owner-Only Balance Report UI
+
+Status: complete and deployed through commit `4c4ebc6 feat: add owner tcg balance report ui`.
+
+Implemented:
+
+- Added a `Balance` tab/window to the Owner-only `/tcg` hub.
+- Added frontend service wrapper `tcgOwnerGetBalanceReport()` for the existing production RPC `tcg_owner_get_balance_report()`.
+- Displayed collection summary, rarity ownership, pack summary, rarity pulls, economy summary, duplicate pressure, and balance hints in compact dashboard sections.
+- Added loading, empty, error, and `Refresh Report` states.
+- Added EN/FR/DE labels and mobile-safe report styling.
+
+Preserved behavior:
+
+- TCG remains Owner-only.
+- Album, Packs, Shop, Owner Lab, pack opening/reveal, wallet, pack inventory, favorite toggle, smoke grant, and test coin controls remain unchanged.
+- Balance report is read-only and does not apply price, drop-rate, pack-size, wallet, or economy changes.
+
+Validation:
+
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source checks confirmed frontend-only changes in `TcgCollection.jsx`, `tcgService.js`, `app.css`, and EN/FR/DE i18n.
+- TCG checks confirmed no direct TCG table access, no `member_cp` or `cp_snapshots` in the TCG page/service path, no CP analytics RPCs, no client-side drops, no payments/uploads/storage additions, no service-role path, and no client-side wallet authority.
+- Owner-only `/tcg` source guard remains based on `activeAdminContext?.isOwner`.
+
+Production:
+
+- Commit `4c4ebc6` was pushed to `main`.
+- Non-mutating smoke passed:
+  - `/tcg?tcg-balance-ui-smoke=1` returned the production app shell.
+  - Deployed bundle `assets/index-BQrXiP8d.js` contains `tcg_owner_get_balance_report` and Balance UI text.
+  - Deployed CSS `assets/index-D23BkU1w.css` contains the Balance report panel/table rules.
+- Codex did not click production Buy, Open, Rip, Grant, Grant Coins, or Favorite controls.
+- No production wallet, pack inventory, card inventory, or favorite mutation was performed by Codex during this smoke.
+
+Next:
+
+- Owner can visually review Balance analytics.
+- Use Balance feedback to plan member-facing release/economy gates separately.
 
 ## 30B RPC Candidates
 
