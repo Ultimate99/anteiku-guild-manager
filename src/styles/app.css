@@ -9249,6 +9249,69 @@ button.command-card:focus-visible {
   text-shadow: 0 0 14px rgba(255, 216, 116, 0.16);
 }
 
+/* 30F-L TCG Packs/Shop centering hotfix */
+.tcg-pack-panel[data-pack-mode="owned"],
+.tcg-shop-panel {
+  align-content: start;
+  justify-items: center;
+}
+
+.tcg-pack-panel[data-pack-mode="owned"] .tcg-pack-panel-header,
+.tcg-shop-panel .tcg-shop-header {
+  justify-self: stretch;
+  align-items: start;
+}
+
+.tcg-shop-panel .tcg-shop-header {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.tcg-shop-panel .tcg-wallet-card {
+  justify-self: end;
+  align-self: start;
+  transform: translateY(2px);
+}
+
+.tcg-pack-panel[data-pack-mode="owned"] .tcg-owned-pack-card,
+.tcg-shop-panel .tcg-shop-list,
+.tcg-pack-panel[data-pack-mode="owned"] .tcg-pack-preview-note,
+.tcg-pack-result-shell[data-result-mode="shop"] {
+  margin-inline: auto;
+}
+
+.tcg-pack-panel[data-pack-mode="owned"] .tcg-owned-pack-card {
+  justify-items: center;
+  place-self: start center;
+}
+
+.tcg-pack-panel[data-pack-mode="owned"] .tcg-owned-pack-visual,
+.tcg-pack-panel[data-pack-mode="owned"] .tcg-owned-pack-stage,
+.tcg-pack-panel[data-pack-mode="owned"] .tcg-owned-pack-copy {
+  justify-self: center;
+}
+
+.tcg-pack-panel[data-pack-mode="owned"] .tcg-owned-pack-copy {
+  text-align: center;
+}
+
+.tcg-shop-panel .tcg-shop-list {
+  width: min(100%, 500px);
+  min-width: 0;
+  justify-content: center;
+  justify-items: center;
+  place-self: start center;
+  padding-block: 6px 2px;
+}
+
+.tcg-shop-panel .tcg-shop-item {
+  place-self: start center;
+}
+
+.tcg-shop-panel .tcg-shop-success-actions {
+  justify-self: center;
+  width: min(100%, 360px);
+}
+
 @media (min-width: 1080px) {
   .tcg-pack-panel[data-pack-mode="owned"] .tcg-owned-pack-card {
     width: min(100%, 380px);
@@ -9289,6 +9352,20 @@ button.command-card:focus-visible {
   .tcg-wallet-card {
     justify-self: start;
     max-width: min(100%, 210px);
+  }
+
+  .tcg-shop-panel .tcg-shop-header {
+    grid-template-columns: 1fr;
+  }
+
+  .tcg-shop-panel .tcg-wallet-card {
+    justify-self: start;
+    transform: none;
+  }
+
+  .tcg-shop-panel .tcg-shop-list {
+    width: min(100%, 280px);
+    padding-block: 4px 0;
   }
 }
 
