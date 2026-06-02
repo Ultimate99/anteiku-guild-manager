@@ -24,6 +24,7 @@ Milestone 30A planning is complete. No backend, frontend, SQL, Supabase, or prod
 - Milestone 30F-G wires the replaced pack-front and real card-back assets into the Owner-only pack/reveal flow and is deployed through commit `332e38f fix: use tcg card back for reveal cards`.
 - Milestone 30F-H polishes the Owner-only `/tcg` UI across Album, Packs, Shop, Owner Lab, and reveal overlay and is deployed through commit `3d92c37 style: polish owner tcg ui`.
 - Milestone 30F-I makes the Owner-only Packs and Shop windows compact/windowed instead of full-width item panels and is deployed through commit `14219fe style: make tcg pack shop windows compact`.
+- Milestone 30F-J slims the Owner-only Packs/Shop item windows and turns the wallet into a compact currency HUD, deployed through commit `7840366 style: slim tcg pack shop wallet ui`.
 - Milestone 30B backend/RPC foundation is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
 - No member-facing packs, shop, economy UI, routes beyond `/tcg`, uploads, or Storage have been implemented.
 - No member-facing TCG release exists yet. The next step is controlled Owner manual mutation smoke for the deployed pack loop; frontend calls backend RPCs and never calculates drops or mutates wallets/inventory client-side.
@@ -832,6 +833,48 @@ Next:
   - reveal cards;
   - verify wallet decrease, pack quantity decrease, collection count update, and favorites still work.
 - Keep member TCG release blocked until this flow is accepted and release gates are planned.
+
+## 30F-J Slim Windows + Wallet HUD Polish
+
+Status: complete and deployed through commit `7840366 style: slim tcg pack shop wallet ui`.
+
+Implemented:
+
+- Slimmed the owned Packs card into a tighter centered pack window.
+- Reduced pack preview, copy, metadata chips, and `Open Pack` button weight while keeping the control tappable.
+- Slimmed Shop item cards with smaller pack previews, tighter text, compact price display, and smaller `Buy Test Pack` controls.
+- Reworked the Shop wallet card into a compact game-currency HUD with a gold/crimson coin mark and stronger balance hierarchy.
+- Applied matching gold/crimson polish to the top Anteiku Coins HUD stat.
+- Added responsive CSS so Packs, Shop cards, and wallet HUD stay compact on desktop and safe on mobile.
+
+Preserved behavior:
+
+- Shop buy stays on Shop.
+- Shop buy adds pack inventory through backend RPC.
+- Packs open owned packs through backend RPC.
+- Wallet values remain backend-derived.
+- Swipe/rip, `Rip Open`, card-by-card reveal, `Reveal all`, animation toggle, wallet and collection refetch, pack quantity refetch, and favorite toggle remain unchanged.
+
+Validation:
+
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source checks confirmed only `src/styles/app.css` changed for the source patch.
+- TCG checks confirmed no direct TCG table access, no `member_cp`, no `cp_snapshots`, no CP analytics RPCs, no client-side drops, no service-role path, and no client-side wallet authority.
+- Owner-only `/tcg` source guard remains based on `activeAdminContext?.isOwner`.
+
+Production:
+
+- Commit `7840366` was pushed to `main`.
+- Non-mutating smoke passed:
+  - `/tcg?tcg-slim-wallet-smoke=1` returned the production app shell.
+  - Deployed CSS `assets/index-Bzxq0oc_.css` contains the slim pack, slim shop, and wallet HUD rules.
+- Codex did not click production Buy, Open, Rip, Grant, Grant Coins, or Favorite controls.
+- No production wallet, pack inventory, card inventory, or favorite mutation was performed by Codex during this smoke.
+
+Next:
+
+- Owner can visually retest Packs, Shop, and Wallet HUD.
+- Keep controlled pack-loop mutation smoke gated until explicitly approved.
 
 ## 30B RPC Candidates
 

@@ -1,5 +1,44 @@
 # Project State
 
+## Milestone 30F-J TCG Slim Windows + Wallet HUD Polish Live
+
+Owner-only `/tcg` Packs, Shop, and wallet HUD received a CSS-only slim-window polish pass, deployed through commit `7840366 style: slim tcg pack shop wallet ui`.
+
+Implemented:
+- Slimmed the owned Packs card from a larger centered window into a tighter pack display.
+- Reduced pack preview sizing, copy density, metadata chip weight, and `Open Pack` button size while preserving tappability.
+- Slimmed Shop item cards with smaller pack previews, tighter product copy, compact price area, and smaller `Buy Test Pack` controls.
+- Reworked the Shop wallet display into a compact game-currency HUD with a gold/crimson coin mark and more legible balance treatment.
+- Added matching gold/crimson treatment to the top Anteiku Coins HUD stat.
+- Added responsive overrides so Packs, Shop cards, and wallet HUD stay compact on desktop and safe at mobile widths.
+
+Preserved behavior:
+- Shop buy stays on Shop and still only adds a pack to inventory.
+- Packs open owned packs through backend RPC authority.
+- Wallet balance remains read from backend data.
+- Swipe/rip, `Rip Open`, card-by-card reveal, `Reveal all`, pack animation toggle, wallet/collection refetch, pack quantity refetch, and favorite toggle behavior remain unchanged.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found only `src/styles/app.css` changed for the source patch.
+- TCG checks found no direct TCG table access, no `member_cp`, no `cp_snapshots`, no CP analytics RPC usage, no client-side drops, no service-role path, and no client-side wallet authority.
+- Owner-only `/tcg` source guard remains in `TcgCollection.jsx` through `activeAdminContext?.isOwner`.
+
+Production:
+- Commit `7840366` was pushed to `main`.
+- Non-mutating production smoke passed:
+  - `/tcg?tcg-slim-wallet-smoke=1` returned the production app shell.
+  - Deployed CSS `assets/index-Bzxq0oc_.css` contains the slim pack, slim shop, and wallet HUD rules.
+- Codex did not click production Buy, Open, Rip, Grant, Grant Coins, or Favorite controls, and did not mutate production wallet, pack, card inventory, or favorites.
+
+Security:
+- Existing Owner-only `/tcg` guard and nav visibility remain unchanged.
+- Backend/RPC remains authority for pack quantity, wallet deduction, pack consumption, and card rolls.
+- No member-facing TCG access, CP join, CP value exposure, service-role path, direct table access, upload, Storage, or unrelated subsystem behavior change was added.
+
+Next:
+- Owner can visually retest the slimmer Packs, Shop, and Wallet HUD presentation.
+
 ## Milestone 30F-I TCG Windowed Pack/Shop Layout Hotfix Live
 
 Owner-only `/tcg` Packs and Shop windows received a CSS-only layout hotfix, deployed through commit `14219fe style: make tcg pack shop windows compact`.
