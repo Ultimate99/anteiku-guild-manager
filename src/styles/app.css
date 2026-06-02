@@ -9131,17 +9131,54 @@ button.command-card:focus-visible {
 }
 
 .tcg-wallet-card i {
-  position: static;
+  position: relative;
+  display: block;
   grid-row: 1 / span 3;
-  width: 28px;
-  height: 28px;
-  border-color: rgba(255, 216, 116, 0.8);
+  width: 30px;
+  height: 24px;
+  border: 1px solid rgba(255, 216, 116, 0.64);
+  border-radius: 8px 8px 7px 7px;
   background:
-    radial-gradient(circle at 42% 36%, rgba(255, 255, 255, 0.72), transparent 13%),
-    radial-gradient(circle, rgba(255, 216, 116, 0.82), rgba(196, 30, 58, 0.36) 58%, rgba(0, 0, 0, 0.42));
+    linear-gradient(145deg, rgba(255, 216, 116, 0.34), rgba(121, 64, 22, 0.58) 42%, rgba(21, 12, 8, 0.9)),
+    radial-gradient(circle at 22% 18%, rgba(255, 241, 170, 0.34), transparent 28%);
   box-shadow:
-    inset 0 0 0 1px rgba(0, 0, 0, 0.28),
-    0 0 18px rgba(255, 216, 116, 0.28);
+    inset 0 0 0 1px rgba(0, 0, 0, 0.38),
+    inset 0 -7px 12px rgba(0, 0, 0, 0.3),
+    0 0 16px rgba(255, 216, 116, 0.16),
+    0 7px 12px rgba(0, 0, 0, 0.26);
+  transform: skewX(-4deg);
+}
+
+.tcg-wallet-card i::before,
+.tcg-wallet-card i::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.tcg-wallet-card i::before {
+  left: 5px;
+  right: 3px;
+  top: 5px;
+  height: 8px;
+  border: 1px solid rgba(255, 216, 116, 0.22);
+  border-top-color: rgba(255, 238, 157, 0.42);
+  border-radius: 5px 5px 4px 4px;
+  background:
+    linear-gradient(155deg, rgba(255, 216, 116, 0.26), rgba(196, 30, 58, 0.18) 58%, rgba(0, 0, 0, 0.18));
+  clip-path: polygon(0 0, 100% 0, 84% 100%, 10% 100%);
+}
+
+.tcg-wallet-card i::after {
+  right: 5px;
+  top: 11px;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: #ffe28a;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.3),
+    0 0 9px rgba(255, 216, 116, 0.36);
 }
 
 .tcg-wallet-card span,
@@ -9162,11 +9199,49 @@ button.command-card:focus-visible {
 }
 
 .tcg-hub-stat[data-stat="coins"] {
+  position: relative;
+  padding-left: 42px;
   border-color: rgba(255, 216, 116, 0.24);
   background:
     radial-gradient(circle at 12% 24%, rgba(255, 216, 116, 0.16), transparent 36%),
     linear-gradient(135deg, rgba(196, 30, 58, 0.14), transparent 48%),
     rgba(5, 5, 7, 0.7);
+}
+
+.tcg-hub-stat[data-stat="coins"]::before,
+.tcg-hub-stat[data-stat="coins"]::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.tcg-hub-stat[data-stat="coins"]::before {
+  left: 9px;
+  top: 50%;
+  width: 24px;
+  height: 19px;
+  border: 1px solid rgba(255, 216, 116, 0.56);
+  border-radius: 7px 7px 6px 6px;
+  background:
+    linear-gradient(145deg, rgba(255, 216, 116, 0.3), rgba(121, 64, 22, 0.56) 42%, rgba(18, 10, 8, 0.92)),
+    radial-gradient(circle at 22% 18%, rgba(255, 241, 170, 0.32), transparent 28%);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.36),
+    0 0 13px rgba(255, 216, 116, 0.14);
+  transform: translateY(-50%) skewX(-4deg);
+}
+
+.tcg-hub-stat[data-stat="coins"]::after {
+  left: 26px;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: #ffe28a;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.34),
+    0 0 8px rgba(255, 216, 116, 0.32);
+  transform: translateY(-6%);
 }
 
 .tcg-hub-stat[data-stat="coins"] strong {
