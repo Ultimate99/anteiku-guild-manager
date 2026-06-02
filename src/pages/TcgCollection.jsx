@@ -12,12 +12,13 @@ import {
   tcgOwnerBuyTestPackToInventory,
   tcgOwnerGetTestShop,
   tcgOwnerGrantTestCoins,
+  tcgOwnerGetBalanceReport,
   tcgOwnerOpenOwnedPack,
   tcgSetCardFavorite,
 } from '../services/tcgService.js';
 
 const FILTERS = ['all', 'owned', 'missing', 'favorites'];
-const HUB_WINDOWS = ['album', 'packs', 'shop', 'ownerLab'];
+const HUB_WINDOWS = ['album', 'packs', 'shop', 'balance', 'ownerLab'];
 const ALL_RARITIES = 'all';
 const TEST_PACK_CODE = 'season_0_test_pack';
 const TEST_SHOP_ITEM_CODE = 'season_0_test_pack_shop';
@@ -43,6 +44,42 @@ function formatNumber(value, language) {
   }
 
   return new Intl.NumberFormat(language).format(numericValue);
+}
+
+function getReportObject(value) {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+}
+
+function getReportArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+function getReportNumber(value) {
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) ? numericValue : 0;
+}
+
+function formatPercent(value, language) {
+  return `${formatNumber(getReportNumber(value), language)}%`;
+}
+
+function formatReportDate(value, language, fallback) {
+  if (!value) {
+    return fallback;
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return fallback;
+  }
+
+  return new Intl.DateTimeFormat(language, {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
 }
 
 function getCardImage(card) {
@@ -691,6 +728,213 @@ function TcgShopPreviewPanel({
   );
 }
 
+function TcgBalanceStat({ label, value, tone = 'neutral' }) {
+  return (
+    <div className="tcg-balance-stat" data-tone={tone}>
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
+function TcgBalanceSection({ title, body, children }) {
+  return (
+    <section className="tcg-balance-section">
+      <div className="tcg-balance-section-heading">
+        <h4>{title}</h4>
+        {body ? <p>{body}</p> : null}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function TcgBalanceTable({ columns, rows, emptyLabel }) {
+  const visibleRows = getReportArray(rows);
+
+  if (visibleRows.length === 0) {
+    return <p className="tcg-balance-empty">{emptyLabel}</p>;
+  }
+
+  return (
+    <div className="tcg-balance-table" style={{ '--tcg-balance-columns': columns.length }}>
+      <div className="tcg-balance-row tcg-balance-row-head">
+        {columns.map((column) => (
+          <span key={column.key}>{column.label}</span>
+        ))}
+      </div>
+      {visibleRows.map((row, index) => (
+        <div className="tcg-balance-row" key={`${row.card_key || row.rarity_code || row.card_no || 'row'}-${index}`}>
+          {columns.map((column) => (
+            <span key={column.key} data-label={column.label}>
+              {column.render(row)}
+            </span>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function TcgBalanceReportPanel({
+  report,
+  loading,
+  error,
+  language,
+  t,
+  onRefresh,
+}) {
+  const collection = getReportObject(report?.collection_summary);
+  const packSummary = getReportObject(report?.pack_opening_summary);
+  const economy = getReportObject(report?.economy_summary);
+  const duplicatePressure = getReportObject(report?.duplicate_pressure_summary);
+  const balanceHints = getReportObject(report?.balance_hints);
+  const rarityOwnership = getReportArray(report?.rarity_ownership_summary);
+  const rarityPulls = getReportArray(report?.rarity_pull_summary);
+  const mostDuplicated = getReportArray(duplicatePressure.most_duplicated_cards);
+  const newestObtained = getReportArray(duplicatePressure.newest_obtained_cards);
+  const missingCards = getReportArray(duplicatePressure.missing_cards);
+  const fallback = t('common.notSet');
+  const hasReport = Boolean(report);
+  const currencyLabel = getCurrencyLabel(economy.currency_code || 'anteiku_coins', t);
+
+  const rarityOwnershipColumns = [
+    { key: 'rarity', label: t('tcg.balanceLabels.rarity'), render: (row) => row.rarity_name || row.rarity_code || fallback },
+    { key: 'catalog', label: t('tcg.balanceLabels.catalog'), render: (row) => formatNumber(row.catalog_count, language) },
+    { key: 'owned', label: t('tcg.balanceLabels.owned'), render: (row) => formatNumber(row.unique_owned, language) },
+    { key: 'missing', label: t('tcg.balanceLabels.missing'), render: (row) => formatNumber(row.missing_count, language) },
+    { key: 'quantity', label: t('tcg.balanceLabels.quantity'), render: (row) => formatNumber(row.total_quantity_owned, language) },
+    { key: 'duplicates', label: t('tcg.balanceLabels.duplicates'), render: (row) => formatNumber(row.duplicate_quantity, language) },
+    { key: 'complete', label: t('tcg.balanceLabels.complete'), render: (row) => formatPercent(row.completion_percent, language) },
+  ];
+
+  const rarityPullColumns = [
+    { key: 'rarity', label: t('tcg.balanceLabels.rarity'), render: (row) => row.rarity_name || row.rarity_code || fallback },
+    { key: 'pulled', label: t('tcg.balanceLabels.pulled'), render: (row) => formatNumber(row.pulled_quantity, language) },
+    { key: 'pullPercent', label: t('tcg.balanceLabels.pullPercent'), render: (row) => formatPercent(row.pull_percent, language) },
+    { key: 'owned', label: t('tcg.balanceLabels.owned'), render: (row) => formatNumber(row.owned_unique, language) },
+    { key: 'catalog', label: t('tcg.balanceLabels.catalog'), render: (row) => formatNumber(row.catalog_count, language) },
+  ];
+
+  const cardPressureColumns = [
+    { key: 'card', label: t('tcg.balanceLabels.card'), render: (row) => `${row.card_no || ''} ${row.card_name || row.card_key || fallback}`.trim() },
+    { key: 'rarity', label: t('tcg.balanceLabels.rarity'), render: (row) => row.rarity_name || row.rarity_code || fallback },
+    { key: 'quantity', label: t('tcg.balanceLabels.quantity'), render: (row) => formatNumber(row.quantity, language) },
+    { key: 'duplicates', label: t('tcg.balanceLabels.duplicates'), render: (row) => formatNumber(row.duplicate_quantity, language) },
+  ];
+
+  const newestColumns = [
+    { key: 'card', label: t('tcg.balanceLabels.card'), render: (row) => `${row.card_no || ''} ${row.card_name || row.card_key || fallback}`.trim() },
+    { key: 'rarity', label: t('tcg.balanceLabels.rarity'), render: (row) => row.rarity_name || row.rarity_code || fallback },
+    { key: 'quantity', label: t('tcg.balanceLabels.quantity'), render: (row) => formatNumber(row.quantity, language) },
+    { key: 'last', label: t('tcg.balanceLabels.lastObtained'), render: (row) => formatReportDate(row.last_acquired_at, language, fallback) },
+  ];
+
+  return (
+    <section className="panel tcg-balance-panel" aria-label={t('tcg.balanceReport')}>
+      <div className="tcg-balance-header">
+        <div>
+          <StatusBadge tone="warning">{t('tcg.ownerReadOnly')}</StatusBadge>
+          <h3>{t('tcg.balanceReport')}</h3>
+          <p>{t('tcg.balanceReportBody')}</p>
+          {report?.generated_at ? (
+            <small>{`${t('tcg.generatedAt')} ${formatReportDate(report.generated_at, language, fallback)}`}</small>
+          ) : null}
+        </div>
+        <button
+          type="button"
+          className="secondary-action compact-action"
+          onClick={onRefresh}
+          disabled={loading}
+          aria-busy={loading}
+        >
+          {loading ? t('common.refreshing') : t('tcg.refreshReport')}
+        </button>
+      </div>
+
+      {error ? (
+        <p className="tcg-pack-error" role="alert">{error}</p>
+      ) : null}
+
+      {!loading && !error && !hasReport ? (
+        <p className="tcg-balance-empty">{t('tcg.noBalanceReport')}</p>
+      ) : null}
+
+      {hasReport ? (
+        <>
+          <TcgBalanceSection title={t('tcg.collectionSummary')} body={t('tcg.collectionSummaryBody')}>
+            <div className="tcg-balance-stat-grid">
+              <TcgBalanceStat label={t('tcg.uniqueOwned')} value={formatNumber(collection.unique_owned, language)} tone="success" />
+              <TcgBalanceStat label={t('tcg.missingCards')} value={formatNumber(collection.missing_cards, language)} tone="warning" />
+              <TcgBalanceStat label={t('tcg.totalOwnedQuantity')} value={formatNumber(collection.total_quantity_owned, language)} />
+              <TcgBalanceStat label={t('tcg.duplicateQuantityTotal')} value={formatNumber(collection.duplicate_quantity_total, language)} />
+              <TcgBalanceStat label={t('tcg.completionPercent')} value={formatPercent(collection.completion_percent, language)} tone="success" />
+              <TcgBalanceStat label={t('tcg.favorites')} value={formatNumber(collection.favorites_count, language)} />
+            </div>
+          </TcgBalanceSection>
+
+          <TcgBalanceSection title={t('tcg.rarityOwnership')} body={t('tcg.rarityOwnershipBody')}>
+            <TcgBalanceTable columns={rarityOwnershipColumns} rows={rarityOwnership} emptyLabel={t('tcg.noBalanceRows')} />
+          </TcgBalanceSection>
+
+          <TcgBalanceSection title={t('tcg.packSummary')} body={t('tcg.packSummaryBody')}>
+            <div className="tcg-balance-stat-grid">
+              <TcgBalanceStat label={t('tcg.totalPackOpenings')} value={formatNumber(packSummary.total_pack_openings, language)} />
+              <TcgBalanceStat label={t('tcg.totalCardsPulled')} value={formatNumber(packSummary.total_cards_pulled, language)} />
+              <TcgBalanceStat label={t('tcg.testPackOpenings')} value={formatNumber(packSummary.test_pack_openings, language)} />
+              <TcgBalanceStat label={t('tcg.shopPackOpenings')} value={formatNumber(packSummary.shop_pack_openings, language)} />
+              <TcgBalanceStat label={t('tcg.freeTestPackOpenings')} value={formatNumber(packSummary.free_test_pack_openings, language)} />
+              <TcgBalanceStat label={t('tcg.lastPackOpenedAt')} value={formatReportDate(packSummary.last_pack_opened_at, language, fallback)} />
+            </div>
+          </TcgBalanceSection>
+
+          <TcgBalanceSection title={t('tcg.rarityPulls')} body={t('tcg.rarityPullsBody')}>
+            <TcgBalanceTable columns={rarityPullColumns} rows={rarityPulls} emptyLabel={t('tcg.noBalanceRows')} />
+          </TcgBalanceSection>
+
+          <TcgBalanceSection title={t('tcg.economySummary')} body={t('tcg.economySummaryBody')}>
+            <div className="tcg-balance-stat-grid">
+              <TcgBalanceStat label={t('tcg.currentBalance')} value={`${formatNumber(economy.current_balance, language)} ${currencyLabel}`} tone="success" />
+              <TcgBalanceStat label={t('tcg.totalCoinsGranted')} value={formatNumber(economy.total_coins_granted, language)} />
+              <TcgBalanceStat label={t('tcg.totalCoinsSpent')} value={formatNumber(economy.total_coins_spent, language)} />
+              <TcgBalanceStat label={t('tcg.totalCoinDelta')} value={formatNumber(economy.total_coin_delta, language)} />
+              <TcgBalanceStat label={t('tcg.totalPackPurchaseSpend')} value={formatNumber(economy.total_pack_purchase_spend, language)} />
+              <TcgBalanceStat label={t('tcg.averageSpendPerPack')} value={formatNumber(economy.average_spend_per_pack, language)} />
+            </div>
+          </TcgBalanceSection>
+
+          <TcgBalanceSection title={t('tcg.duplicatePressure')} body={t('tcg.duplicatePressureBody')}>
+            <div className="tcg-balance-stat-grid tcg-balance-stat-grid-compact">
+              <TcgBalanceStat label={t('tcg.cardsNeverObtained')} value={formatNumber(duplicatePressure.cards_never_obtained_count, language)} tone="warning" />
+              <TcgBalanceStat label={t('tcg.missingCards')} value={formatNumber(missingCards.length, language)} tone="warning" />
+              <TcgBalanceStat label={t('tcg.newestObtainedCards')} value={formatNumber(newestObtained.length, language)} />
+            </div>
+
+            <div className="tcg-balance-split">
+              <div>
+                <h5>{t('tcg.mostDuplicatedCards')}</h5>
+                <TcgBalanceTable columns={cardPressureColumns} rows={mostDuplicated} emptyLabel={t('tcg.noBalanceRows')} />
+              </div>
+              <div>
+                <h5>{t('tcg.newestObtainedCards')}</h5>
+                <TcgBalanceTable columns={newestColumns} rows={newestObtained} emptyLabel={t('tcg.noBalanceRows')} />
+              </div>
+            </div>
+          </TcgBalanceSection>
+
+          <TcgBalanceSection title={t('tcg.balanceHints')} body={t('tcg.balanceHintsBody')}>
+            <div className="tcg-balance-hints">
+              <TcgBalanceStat label={t('tcg.duplicateRate')} value={formatPercent(balanceHints.duplicate_rate_percent, language)} />
+              <TcgBalanceStat label={t('tcg.missingCardRate')} value={formatPercent(balanceHints.missing_card_percent, language)} />
+              <TcgBalanceStat label={t('tcg.averageCardsPerOpening')} value={formatNumber(balanceHints.average_cards_per_opening, language)} />
+            </div>
+          </TcgBalanceSection>
+        </>
+      ) : null}
+    </section>
+  );
+}
+
 function TcgOwnerLabPanel({
   activeOwnerProfileId,
   smokeGrantLoading,
@@ -911,6 +1155,9 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
   const [grantCoinsError, setGrantCoinsError] = useState('');
   const [purchaseLoadingCode, setPurchaseLoadingCode] = useState('');
   const [shopPurchase, setShopPurchase] = useState(null);
+  const [balanceReport, setBalanceReport] = useState(null);
+  const [balanceReportLoading, setBalanceReportLoading] = useState(false);
+  const [balanceReportError, setBalanceReportError] = useState('');
   const favoriteRequestKeysRef = useRef(new Set());
   const smokeGrantRequestRef = useRef(false);
   const packOpeningRequestRef = useRef(false);
@@ -999,11 +1246,39 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
     loadPackInventory();
   }, [loadPackInventory]);
 
+  const loadBalanceReport = useCallback(async () => {
+    if (!isOwner) {
+      return;
+    }
+
+    setBalanceReportLoading(true);
+    setBalanceReportError('');
+
+    try {
+      const report = await tcgOwnerGetBalanceReport();
+      setBalanceReport(report);
+    } catch (loadError) {
+      setBalanceReport(null);
+      setBalanceReportError(getDisplayError(loadError, t('tcg.balanceReportLoadFailed')));
+    } finally {
+      setBalanceReportLoading(false);
+    }
+  }, [isOwner, t]);
+
+  useEffect(() => {
+    if (activeWindow === 'balance') {
+      loadBalanceReport();
+    }
+  }, [activeWindow, loadBalanceReport]);
+
   const handleRefreshAll = useCallback(() => {
     loadCards();
     loadEconomy();
     loadPackInventory();
-  }, [loadCards, loadEconomy, loadPackInventory]);
+    if (activeWindow === 'balance') {
+      loadBalanceReport();
+    }
+  }, [activeWindow, loadBalanceReport, loadCards, loadEconomy, loadPackInventory]);
 
   const rarityOptions = useMemo(() => {
     const seen = new Map();
@@ -1406,9 +1681,11 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
             type="button"
             className="secondary-action compact-action"
             onClick={handleRefreshAll}
-            disabled={loading || economyLoading || packInventoryLoading}
+            disabled={loading || economyLoading || packInventoryLoading || (activeWindow === 'balance' && balanceReportLoading)}
           >
-            {loading || economyLoading || packInventoryLoading ? t('common.refreshing') : t('common.refresh')}
+            {loading || economyLoading || packInventoryLoading || (activeWindow === 'balance' && balanceReportLoading)
+              ? t('common.refreshing')
+              : t('common.refresh')}
           </button>
         </div>
 
@@ -1560,6 +1837,17 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
             t={t}
             onBuyPack={handleBuyTestPack}
             onGoToPacks={() => setActiveWindow('packs')}
+          />
+        ) : null}
+
+        {activeWindow === 'balance' ? (
+          <TcgBalanceReportPanel
+            report={balanceReport}
+            loading={balanceReportLoading}
+            error={balanceReportError}
+            language={language}
+            t={t}
+            onRefresh={loadBalanceReport}
           />
         ) : null}
 

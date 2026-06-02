@@ -425,3 +425,14 @@ export async function tcgOwnerOpenOwnedPack(packCode = 'season_0_test_pack') {
 
   return mapOwnedPackOpening(row);
 }
+
+export async function tcgOwnerGetBalanceReport() {
+  const client = requireSupabase();
+  const { data, error } = await client.rpc('tcg_owner_get_balance_report');
+
+  if (error) {
+    throw error;
+  }
+
+  return data && typeof data === 'object' && !Array.isArray(data) ? data : null;
+}

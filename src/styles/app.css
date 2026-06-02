@@ -9249,6 +9249,177 @@ button.command-card:focus-visible {
   text-shadow: 0 0 14px rgba(255, 216, 116, 0.16);
 }
 
+/* 30F-M Owner-only TCG Balance Report UI */
+.tcg-balance-panel {
+  display: grid;
+  gap: 10px;
+  border-color: rgba(196, 30, 58, 0.38);
+  background:
+    radial-gradient(circle at 12% 10%, rgba(255, 216, 116, 0.12), transparent 30%),
+    linear-gradient(145deg, rgba(196, 30, 58, 0.12), transparent 42%),
+    rgba(8, 8, 10, 0.96);
+}
+
+.tcg-balance-header,
+.tcg-balance-section-heading {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.tcg-balance-header {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+.tcg-balance-header h3,
+.tcg-balance-section-heading h4,
+.tcg-balance-split h5 {
+  margin: 6px 0 2px;
+  overflow-wrap: anywhere;
+}
+
+.tcg-balance-header p,
+.tcg-balance-section-heading p,
+.tcg-balance-header small,
+.tcg-balance-empty {
+  margin: 0;
+  color: var(--muted);
+}
+
+.tcg-balance-header small {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.tcg-balance-section {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  background:
+    linear-gradient(135deg, rgba(196, 30, 58, 0.08), transparent 42%),
+    rgba(5, 5, 7, 0.62);
+}
+
+.tcg-balance-stat-grid,
+.tcg-balance-hints {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.tcg-balance-stat-grid-compact {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.tcg-balance-stat {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.035), transparent 48%),
+    rgba(0, 0, 0, 0.22);
+}
+
+.tcg-balance-stat[data-tone="success"] {
+  border-color: rgba(142, 228, 163, 0.24);
+  background:
+    linear-gradient(145deg, rgba(142, 228, 163, 0.1), transparent 48%),
+    rgba(0, 0, 0, 0.22);
+}
+
+.tcg-balance-stat[data-tone="warning"] {
+  border-color: rgba(255, 216, 116, 0.24);
+  background:
+    linear-gradient(145deg, rgba(255, 216, 116, 0.1), transparent 48%),
+    rgba(0, 0, 0, 0.22);
+}
+
+.tcg-balance-stat span,
+.tcg-balance-row-head span,
+.tcg-balance-row span::before {
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.tcg-balance-stat strong {
+  color: var(--text);
+  font-size: clamp(0.94rem, 3vw, 1.18rem);
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.tcg-balance-stat[data-tone="success"] strong {
+  color: #8ee4a3;
+}
+
+.tcg-balance-stat[data-tone="warning"] strong {
+  color: #ffe28a;
+}
+
+.tcg-balance-table {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.tcg-balance-row {
+  display: grid;
+  grid-template-columns: repeat(var(--tcg-balance-columns), minmax(0, 1fr));
+  gap: 6px;
+  align-items: center;
+  padding: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.tcg-balance-row-head {
+  padding-block: 4px;
+  border-color: rgba(196, 30, 58, 0.18);
+  background: rgba(196, 30, 58, 0.08);
+}
+
+.tcg-balance-row span {
+  min-width: 0;
+  color: var(--text);
+  font-size: 0.76rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.tcg-balance-row span:first-child {
+  color: #ffd8df;
+}
+
+.tcg-balance-split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.tcg-balance-split > div {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.tcg-balance-split h5 {
+  color: var(--text);
+}
+
+.tcg-balance-empty {
+  padding: 9px;
+  border: 1px dashed rgba(255, 216, 116, 0.18);
+  background: rgba(0, 0, 0, 0.18);
+  font-weight: 800;
+}
+
 /* 30F-L TCG Packs/Shop centering hotfix */
 .tcg-pack-panel[data-pack-mode="owned"],
 .tcg-shop-panel {
@@ -9354,6 +9525,41 @@ button.command-card:focus-visible {
     max-width: min(100%, 210px);
   }
 
+  .tcg-balance-header,
+  .tcg-balance-split {
+    grid-template-columns: 1fr;
+  }
+
+  .tcg-balance-header .compact-action {
+    justify-self: start;
+  }
+
+  .tcg-balance-stat-grid,
+  .tcg-balance-hints,
+  .tcg-balance-stat-grid-compact {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tcg-balance-row,
+  .tcg-balance-row-head {
+    grid-template-columns: 1fr;
+  }
+
+  .tcg-balance-row-head {
+    display: none;
+  }
+
+  .tcg-balance-row span {
+    display: grid;
+    grid-template-columns: minmax(86px, 0.45fr) minmax(0, 1fr);
+    gap: 8px;
+    align-items: start;
+  }
+
+  .tcg-balance-row span::before {
+    content: attr(data-label);
+  }
+
   .tcg-shop-panel .tcg-shop-header {
     grid-template-columns: 1fr;
   }
@@ -9393,6 +9599,24 @@ button.command-card:focus-visible {
 
   .tcg-wallet-card {
     padding: 6px 9px;
+  }
+
+  .tcg-balance-stat-grid,
+  .tcg-balance-hints,
+  .tcg-balance-stat-grid-compact {
+    grid-template-columns: 1fr;
+  }
+
+  .tcg-balance-section {
+    padding: 8px;
+  }
+
+  .tcg-balance-row {
+    padding: 6px;
+  }
+
+  .tcg-balance-row span {
+    grid-template-columns: minmax(78px, 0.42fr) minmax(0, 1fr);
   }
 }
 
