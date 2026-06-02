@@ -21,6 +21,7 @@ Milestone 30A planning is complete. No backend, frontend, SQL, Supabase, or prod
 - Milestone 30F-D adds temporary Season 0 pack-front and card-back assets and is deployed through commit `6bcebab feat: add tcg pack and card back assets`.
 - Milestone 30F-E adds the compact TCG pack inventory UI hotfix and is deployed through commit `bc3c705 fix: compact tcg pack inventory ui`.
 - Milestone 30F-F adds the TCG pack/reveal UI polish hotfix and is deployed through commit `e77a385 style: polish tcg pack reveal ui`.
+- Milestone 30F-G wires the replaced pack-front and real card-back assets into the Owner-only pack/reveal flow and is deployed through commit `332e38f fix: use tcg card back for reveal cards`.
 - Milestone 30B backend/RPC foundation is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
 - No member-facing packs, shop, economy UI, routes beyond `/tcg`, uploads, or Storage have been implemented.
 - No member-facing TCG release exists yet. The next step is controlled Owner manual mutation smoke for the deployed pack loop; frontend calls backend RPCs and never calculates drops or mutates wallets/inventory client-side.
@@ -706,6 +707,41 @@ Production:
 - Non-mutating smoke passed:
   - `/tcg?tcg-reveal-polish-smoke=1` returned HTTP 200.
   - Deployed bundle `assets/index-BPcKi_cv.js` contains `tcg-reveal-toolbar`, `tcg-owned-pack-stage`, `tcg_owner_open_owned_pack`, and `tcg_owner_buy_test_pack_to_inventory`.
+- Codex did not click production Buy, Open, Rip, Grant, Grant Coins, or Favorite controls.
+- No production wallet, pack inventory, card inventory, or favorite mutation was performed by Codex during this smoke.
+
+## 30F-G Pack Front + Real Card Back Asset Wire-Up
+
+Status: complete and deployed through commit `332e38f fix: use tcg card back for reveal cards`.
+
+Implemented:
+
+- Kept the pack front on `/assets/tcg/packs/season0_test_pack_front.png` for pack inventory and pack opening/rip overlay.
+- Wired unrevealed pack result cards to `/assets/tcg/cards/tcg_card_back_season0.png`.
+- Kept the CSS/React card-back design as fallback if the real card-back image fails to load.
+- Kept the small `Tap to Reveal` overlay label.
+- Preserved Shop/Packs behavior: buying stays in Shop, `Go to Packs` remains manual, pack count stays in Packs, and `Open Pack` remains compact.
+- Preserved Open Pack, swipe/rip, `Rip Open`, card-by-card reveal, `Reveal all`, pack animation toggle, collection refetch, and pack quantity refetch behavior.
+
+Asset verification:
+
+- Pack front: `public/assets/tcg/packs/season0_test_pack_front.png`, 1086x1448 PNG, 1,799,800 bytes.
+- Card back: `public/assets/tcg/cards/tcg_card_back_season0.png`, 1086x1448 PNG, 2,185,757 bytes.
+
+Validation:
+
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source checks confirmed no SQL/migration, Supabase/RLS/RPC, service, package, service worker, CP, GvG, Wall, 3v3, Push, Analytics, Ranking, Auth, Approval, or Account Switcher changes.
+- Frontend checks confirmed no direct TCG table access, no `member_cp`, no `cp_snapshots`, no CP analytics RPCs, no client-side drops, and no client-side wallet authority.
+
+Production:
+
+- Commit `332e38f` was pushed to `main`.
+- Non-mutating smoke passed:
+  - `/tcg` app shell returned HTTP 200.
+  - Deployed bundle `assets/index-DZ6Xj5gs.js` and CSS `assets/index-D5PKDyGy.css` contain the card-back image wire-up/styling.
+  - `/assets/tcg/packs/season0_test_pack_front.png` returned HTTP 200 and 1,799,800 bytes.
+  - `/assets/tcg/cards/tcg_card_back_season0.png` returned HTTP 200 and 2,185,757 bytes.
 - Codex did not click production Buy, Open, Rip, Grant, Grant Coins, or Favorite controls.
 - No production wallet, pack inventory, card inventory, or favorite mutation was performed by Codex during this smoke.
 

@@ -1,5 +1,43 @@
 # Project State
 
+## Milestone 30F-G TCG Pack Front + Real Card Back Asset Wire-Up Live
+
+Owner-only `/tcg` pack visuals now use the newly replaced canonical pack-front and card-back assets, deployed through commit `332e38f fix: use tcg card back for reveal cards`.
+
+Implemented:
+- Kept `/assets/tcg/packs/season0_test_pack_front.png` as the pack-front asset for pack inventory and pack opening/rip overlay presentation.
+- Wired `/assets/tcg/cards/tcg_card_back_season0.png` back into unrevealed pack result cards after the asset was replaced with a true card-back design.
+- Preserved the CSS/React card-back design as fallback if the card-back image fails to load.
+- Kept `Tap to Reveal` as a small overlay label.
+- Preserved Shop/Packs behavior from 30F-E/30F-F: buying stays in Shop, `Go to Packs` remains manual, pack count stays in Packs, and `Open Pack` remains compact.
+- Preserved swipe/rip, `Rip Open`, tap-to-reveal, `Reveal all`, pack animation toggle, collection refetch, and pack quantity refetch behavior.
+
+Asset verification:
+- `public/assets/tcg/packs/season0_test_pack_front.png`: 1086x1448 PNG, 1,799,800 bytes.
+- `public/assets/tcg/cards/tcg_card_back_season0.png`: 1086x1448 PNG, 2,185,757 bytes.
+
+Validation:
+- `npm.cmd run build` passed with the existing Vite chunk-size warning only.
+- Source validation found no SQL/migration, Supabase/RLS/RPC, service, package, service worker, CP, GvG, Wall, 3v3, Push, Analytics, Ranking, Auth, Approval, or Account Switcher changes.
+- TCG checks found no direct TCG table access, no `member_cp`, no `cp_snapshots`, no CP analytics RPC usage, no client-side drops, and no client-side wallet authority.
+
+Production:
+- Commit `332e38f` was pushed to `main`.
+- Non-mutating production smoke passed:
+  - `/tcg` app shell returned HTTP 200.
+  - Deployed bundle `assets/index-DZ6Xj5gs.js` and CSS `assets/index-D5PKDyGy.css` contain the new card-back image styling/wire-up.
+  - `/assets/tcg/packs/season0_test_pack_front.png` returned HTTP 200 and 1,799,800 bytes.
+  - `/assets/tcg/cards/tcg_card_back_season0.png` returned HTTP 200 and 2,185,757 bytes.
+- Codex did not click production Buy, Open, Rip, Grant, Grant Coins, or Favorite controls, and did not mutate production wallet, pack, card inventory, or favorites.
+
+Security:
+- Existing Owner-only `/tcg` guard and nav visibility remain unchanged.
+- Backend/RPC remains authority for pack quantity, wallet deduction, pack consumption, and card rolls.
+- No member-facing TCG access, CP join, CP value exposure, service-role path, direct table access, upload, Storage, or unrelated subsystem behavior change was added.
+
+Next:
+- Owner can visually retest the pack front and real face-down card-back assets in the deployed pack/reveal flow.
+
 ## Milestone 30F-F TCG Pack/Reveal UI Polish Hotfix Live
 
 Owner-only `/tcg` Packs and reveal UI received a second visual polish hotfix using the current pack/card-back assets, deployed through commit `e77a385 style: polish tcg pack reveal ui`.
