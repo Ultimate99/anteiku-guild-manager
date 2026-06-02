@@ -303,13 +303,20 @@ function TcgRevealCard({ card, index, revealed, language, t, onReveal }) {
       >
         {!cardBackFailed ? (
           <img
+            className="tcg-card-back-image"
             src={CARD_BACK_ASSET_PATH}
             alt=""
             draggable="false"
             onError={() => setCardBackFailed(true)}
           />
         ) : null}
-        <span>{`0${index + 1}`}</span>
+        <span className="tcg-card-back-index">{`0${index + 1}`}</span>
+        {cardBackFailed ? (
+          <span className="tcg-card-back-emblem" aria-hidden="true">
+            <i />
+            <b />
+          </span>
+        ) : null}
         <strong>{t('tcg.tapToReveal')}</strong>
       </button>
     );
