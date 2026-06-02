@@ -625,6 +625,16 @@ function TcgShopPreviewPanel({
         {shopItems.length > 0 ? (
           shopItems.map((item) => (
             <article className="tcg-shop-item" key={item.shopItemCode} data-buying={purchaseLoadingCode === item.shopItemCode}>
+              <div className="tcg-shop-pack-preview" aria-hidden="true">
+                <TcgPackSprite
+                  pack={{
+                    packCode: item.packCode || TEST_PACK_CODE,
+                    packName: item.packName || item.shopItemName || t('tcg.seasonZeroTestPack'),
+                  }}
+                  t={t}
+                  compact
+                />
+              </div>
               <div className="tcg-shop-item-main">
                 <StatusBadge tone="warning">{t('tcg.ownerTestOnly')}</StatusBadge>
                 <h4>{item.shopItemName || t('tcg.seasonZeroTestPack')}</h4>
@@ -699,52 +709,61 @@ function TcgOwnerLabPanel({
   const currencyLabel = getCurrencyLabel(displayedWallet.currencyCode, t);
 
   return (
-    <section className="tcg-owner-lab-grid" aria-label={t('tcg.ownerLab')}>
-      <article className="tcg-owner-lab-card" data-lab-card="smoke">
+    <section className="tcg-owner-lab-section" aria-label={t('tcg.ownerLab')}>
+      <div className="tcg-owner-lab-heading">
+        <StatusBadge tone="warning">{t('tcg.ownerTestOnly')}</StatusBadge>
         <div>
-          <StatusBadge tone="warning">{t('tcg.ownerPreview')}</StatusBadge>
-          <h3>{t('tcg.smokeGrantTitle')}</h3>
-          <p>{t('tcg.smokeGrantBody')}</p>
-        </div>
-        <button
-          type="button"
-          className="danger-action compact-action"
-          onClick={onSmokeGrant}
-          disabled={smokeGrantLoading || !activeOwnerProfileId || smokeGrantSatisfied}
-          aria-busy={smokeGrantLoading}
-        >
-          {smokeGrantLoading
-            ? t('common.working')
-            : smokeGrantSatisfied
-              ? t('tcg.smokeGrantReady')
-              : t('tcg.smokeGrantButton')}
-        </button>
-        {smokeGrantMessage ? <p className="success-copy">{smokeGrantMessage}</p> : null}
-      </article>
-
-      <article className="tcg-owner-lab-card" data-lab-card="coins">
-        <div>
-          <StatusBadge tone="warning">{t('tcg.ownerTestOnly')}</StatusBadge>
-          <h3>{t('tcg.ownerLabWalletTitle')}</h3>
+          <h3>{t('tcg.ownerLab')}</h3>
           <p>{t('tcg.ownerLabBody')}</p>
         </div>
-        <div className="tcg-owner-lab-wallet">
-          <span>{t('tcg.walletBalance')}</span>
-          <strong>{formatNumber(displayedWallet.balance, language)}</strong>
-          <small>{currencyLabel}</small>
-        </div>
-        <button
-          type="button"
-          className="danger-action compact-action"
-          onClick={onGrantCoins}
-          disabled={grantCoinsLoading}
-          aria-busy={grantCoinsLoading}
-        >
-          {grantCoinsLoading ? t('common.working') : t('tcg.grantTestCoins')}
-        </button>
-        {grantCoinsMessage ? <p className="success-copy">{grantCoinsMessage}</p> : null}
-        {grantCoinsError ? <p className="tcg-pack-error" role="alert">{grantCoinsError}</p> : null}
-      </article>
+      </div>
+
+      <div className="tcg-owner-lab-grid">
+        <article className="tcg-owner-lab-card" data-lab-card="smoke">
+          <div>
+            <StatusBadge tone="warning">{t('tcg.ownerPreview')}</StatusBadge>
+            <h3>{t('tcg.smokeGrantTitle')}</h3>
+            <p>{t('tcg.smokeGrantBody')}</p>
+          </div>
+          <button
+            type="button"
+            className="danger-action compact-action"
+            onClick={onSmokeGrant}
+            disabled={smokeGrantLoading || !activeOwnerProfileId || smokeGrantSatisfied}
+            aria-busy={smokeGrantLoading}
+          >
+            {smokeGrantLoading
+              ? t('common.working')
+              : smokeGrantSatisfied
+                ? t('tcg.smokeGrantReady')
+                : t('tcg.smokeGrantButton')}
+          </button>
+          {smokeGrantMessage ? <p className="success-copy">{smokeGrantMessage}</p> : null}
+        </article>
+
+        <article className="tcg-owner-lab-card" data-lab-card="coins">
+          <div>
+            <StatusBadge tone="warning">{t('tcg.ownerTestOnly')}</StatusBadge>
+            <h3>{t('tcg.ownerLabWalletTitle')}</h3>
+          </div>
+          <div className="tcg-owner-lab-wallet">
+            <span>{t('tcg.walletBalance')}</span>
+            <strong>{formatNumber(displayedWallet.balance, language)}</strong>
+            <small>{currencyLabel}</small>
+          </div>
+          <button
+            type="button"
+            className="danger-action compact-action"
+            onClick={onGrantCoins}
+            disabled={grantCoinsLoading}
+            aria-busy={grantCoinsLoading}
+          >
+            {grantCoinsLoading ? t('common.working') : t('tcg.grantTestCoins')}
+          </button>
+          {grantCoinsMessage ? <p className="success-copy">{grantCoinsMessage}</p> : null}
+          {grantCoinsError ? <p className="tcg-pack-error" role="alert">{grantCoinsError}</p> : null}
+        </article>
+      </div>
     </section>
   );
 }
