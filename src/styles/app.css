@@ -9420,6 +9420,364 @@ button.command-card:focus-visible {
   font-weight: 800;
 }
 
+/* 30G-F3 Owner-only TCG Fragments / Crafting UI */
+.tcg-craft-panel {
+  display: grid;
+  gap: 10px;
+  border-color: rgba(255, 216, 116, 0.26);
+  background:
+    radial-gradient(circle at 14% 0%, rgba(255, 216, 116, 0.13), transparent 31%),
+    linear-gradient(145deg, rgba(196, 30, 58, 0.13), transparent 43%),
+    rgba(7, 7, 10, 0.96);
+}
+
+.tcg-craft-header,
+.tcg-craft-section-heading,
+.tcg-pity-card-heading {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.tcg-craft-header {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+.tcg-craft-header h3,
+.tcg-craft-section-heading h4,
+.tcg-burn-card h4,
+.tcg-craft-card h4,
+.tcg-fragment-hud h4,
+.tcg-pity-card h4 {
+  margin: 6px 0 2px;
+  overflow-wrap: anywhere;
+}
+
+.tcg-craft-header p,
+.tcg-craft-section-heading p,
+.tcg-fragment-hud p,
+.tcg-craft-footnote {
+  margin: 0;
+  color: var(--muted);
+}
+
+.tcg-craft-panel .success-copy {
+  margin: 0;
+  color: #8ee4a3;
+  font-weight: 900;
+}
+
+.tcg-fragment-hud {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 11px;
+  border: 1px solid rgba(255, 216, 116, 0.24);
+  background:
+    linear-gradient(135deg, rgba(255, 216, 116, 0.12), transparent 44%),
+    rgba(0, 0, 0, 0.28);
+}
+
+.tcg-fragment-icon {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 216, 116, 0.42);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 216, 116, 0.32), transparent 34%),
+    linear-gradient(145deg, rgba(196, 30, 58, 0.28), rgba(0, 0, 0, 0.82));
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.45),
+    0 0 18px rgba(255, 216, 116, 0.14);
+}
+
+.tcg-fragment-icon::before,
+.tcg-fragment-icon::after,
+.tcg-fragment-icon span {
+  content: "";
+  position: absolute;
+  display: block;
+}
+
+.tcg-fragment-icon::before {
+  width: 21px;
+  height: 21px;
+  border: 1px solid rgba(255, 232, 156, 0.85);
+  transform: rotate(45deg);
+  background: rgba(255, 216, 116, 0.08);
+}
+
+.tcg-fragment-icon::after {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: #ffe28a;
+  box-shadow: 0 0 12px rgba(255, 216, 116, 0.52);
+}
+
+.tcg-fragment-icon span {
+  inset: 7px;
+  border: 1px solid rgba(196, 30, 58, 0.65);
+}
+
+.tcg-fragment-hud > strong {
+  color: #ffe28a;
+  font-size: clamp(1.4rem, 5vw, 2rem);
+  line-height: 1;
+  text-shadow: 0 0 16px rgba(255, 216, 116, 0.16);
+}
+
+.tcg-craft-section {
+  display: grid;
+  gap: 9px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  background:
+    linear-gradient(135deg, rgba(196, 30, 58, 0.08), transparent 42%),
+    rgba(3, 3, 5, 0.5);
+}
+
+.tcg-burn-grid,
+.tcg-craft-grid,
+.tcg-pity-status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 9px;
+  min-width: 0;
+}
+
+.tcg-burn-card,
+.tcg-craft-card,
+.tcg-pity-card {
+  min-width: 0;
+  position: relative;
+  display: grid;
+  gap: 9px;
+  padding: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.085);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 38%),
+    radial-gradient(circle at 50% 0%, rgba(196, 30, 58, 0.15), transparent 42%),
+    rgba(5, 5, 8, 0.94);
+}
+
+.tcg-burn-card,
+.tcg-craft-card {
+  grid-template-columns: minmax(76px, 0.38fr) minmax(0, 1fr);
+  align-items: start;
+}
+
+.tcg-burn-card::before,
+.tcg-craft-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--tcg-accent, rgba(196, 30, 58, 0.7)), transparent);
+}
+
+.tcg-burn-card[data-rarity="common"],
+.tcg-craft-card[data-rarity="common"] {
+  --tcg-accent: var(--tcg-common);
+}
+
+.tcg-burn-card[data-rarity="uncommon"],
+.tcg-craft-card[data-rarity="uncommon"] {
+  --tcg-accent: var(--tcg-uncommon);
+}
+
+.tcg-burn-card[data-rarity="rare"],
+.tcg-craft-card[data-rarity="rare"] {
+  --tcg-accent: var(--tcg-rare);
+}
+
+.tcg-burn-card[data-rarity="epic"],
+.tcg-craft-card[data-rarity="epic"] {
+  --tcg-accent: var(--tcg-epic);
+}
+
+.tcg-burn-card[data-rarity="legendary"],
+.tcg-craft-card[data-rarity="legendary"] {
+  --tcg-accent: var(--tcg-legendary);
+}
+
+.tcg-burn-card[data-rarity="mythic"],
+.tcg-craft-card[data-rarity="mythic"] {
+  --tcg-accent: var(--tcg-mythic);
+}
+
+.tcg-burn-card .tcg-art-frame,
+.tcg-craft-card .tcg-art-frame {
+  aspect-ratio: 3 / 4;
+  min-height: 0;
+}
+
+.tcg-burn-card-copy,
+.tcg-craft-card-copy {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.tcg-burn-card-copy small,
+.tcg-craft-card-copy small,
+.tcg-pity-card-heading > span,
+.tcg-pity-dates span,
+.tcg-pity-meter small {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.tcg-burn-stats {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 8px;
+  padding: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.tcg-burn-stats span,
+.tcg-craft-cost span {
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.tcg-burn-stats strong,
+.tcg-craft-cost strong {
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-align: right;
+}
+
+.tcg-burn-actions {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 118px) minmax(0, 1fr);
+  gap: 8px;
+  align-items: end;
+}
+
+.tcg-burn-actions label {
+  display: grid;
+  gap: 4px;
+}
+
+.tcg-burn-actions label span {
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.tcg-burn-actions input {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.34);
+  color: var(--text);
+  padding: 8px;
+  font-weight: 900;
+}
+
+.tcg-craft-cost {
+  display: grid;
+  gap: 4px;
+  padding: 7px;
+  border: 1px solid rgba(255, 216, 116, 0.16);
+  background: rgba(255, 216, 116, 0.055);
+}
+
+.tcg-craft-card > .primary-action {
+  grid-column: 1 / -1;
+}
+
+.tcg-craft-card[data-locked="true"] {
+  opacity: 0.72;
+}
+
+.tcg-craft-card[data-locked="true"] .tcg-art-frame {
+  filter: saturate(0.55);
+}
+
+.tcg-pity-card {
+  border-color: rgba(196, 30, 58, 0.2);
+}
+
+.tcg-pity-card-heading {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+.tcg-pity-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.tcg-pity-meter {
+  display: grid;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.tcg-pity-meter-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.tcg-pity-meter-row span {
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.tcg-pity-meter-row strong {
+  color: #ffe28a;
+  font-size: 0.78rem;
+  line-height: 1;
+}
+
+.tcg-pity-bar {
+  height: 7px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.tcg-pity-bar span {
+  display: block;
+  width: var(--tcg-pity-progress, 0%);
+  height: 100%;
+  background: linear-gradient(90deg, rgba(196, 30, 58, 0.88), rgba(255, 216, 116, 0.82));
+}
+
+.tcg-pity-dates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.tcg-pity-dates span,
+.tcg-craft-footnote {
+  padding: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  background: rgba(0, 0, 0, 0.2);
+}
+
 /* 30F-L TCG Packs/Shop centering hotfix */
 .tcg-pack-panel[data-pack-mode="owned"],
 .tcg-shop-panel {
@@ -9573,6 +9931,36 @@ button.command-card:focus-visible {
     width: min(100%, 280px);
     padding-block: 4px 0;
   }
+
+  .tcg-craft-header,
+  .tcg-fragment-hud,
+  .tcg-pity-card-heading,
+  .tcg-pity-dates {
+    grid-template-columns: 1fr;
+  }
+
+  .tcg-craft-header .compact-action {
+    justify-self: start;
+  }
+
+  .tcg-burn-grid,
+  .tcg-craft-grid,
+  .tcg-pity-status-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tcg-fragment-hud > strong {
+    justify-self: start;
+  }
+
+  .tcg-burn-card,
+  .tcg-craft-card {
+    grid-template-columns: minmax(72px, 0.34fr) minmax(0, 1fr);
+  }
+
+  .tcg-pity-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 390px) {
@@ -9617,6 +10005,29 @@ button.command-card:focus-visible {
 
   .tcg-balance-row span {
     grid-template-columns: minmax(78px, 0.42fr) minmax(0, 1fr);
+  }
+
+  .tcg-craft-section {
+    padding: 8px;
+  }
+
+  .tcg-burn-card,
+  .tcg-craft-card {
+    grid-template-columns: 1fr;
+  }
+
+  .tcg-burn-card .tcg-art-frame,
+  .tcg-craft-card .tcg-art-frame {
+    width: min(46vw, 136px);
+    justify-self: center;
+  }
+
+  .tcg-burn-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .tcg-burn-stats {
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 }
 

@@ -116,6 +116,86 @@ function mapWallet(row) {
   };
 }
 
+function mapFragments(row) {
+  return {
+    profileId: row?.profile_id || null,
+    balance: safeNumber(row?.balance),
+    updatedAt: row?.updated_at || null,
+  };
+}
+
+function mapDuplicateSummaryCard(row) {
+  return {
+    cardId: row?.card_id || null,
+    cardNo: safeString(row?.card_no),
+    cardKey: safeString(row?.card_key) || safeString(row?.slug),
+    slug: safeString(row?.slug) || safeString(row?.card_key),
+    cardName: safeString(row?.card_name),
+    rarityKey: safeString(row?.rarity_key),
+    rarityName: safeString(row?.rarity_name),
+    artPath: safeTcgArtPath(row?.art_path),
+    quantity: safeNumber(row?.quantity),
+    burnableQuantity: safeNumber(row?.burnable_quantity),
+    dustValue: safeNumber(row?.dust_value),
+    maxFragmentGain: safeNumber(row?.max_fragment_gain),
+  };
+}
+
+function mapBurnDuplicateResult(row) {
+  return {
+    profileId: row?.profile_id || null,
+    cardId: row?.card_id || null,
+    cardNo: safeString(row?.card_no),
+    cardKey: safeString(row?.card_key),
+    cardName: safeString(row?.card_name),
+    rarityKey: safeString(row?.rarity_key),
+    quantityBurned: safeNumber(row?.quantity_burned),
+    fragmentsGained: safeNumber(row?.fragments_gained),
+    fragmentBalance: safeNumber(row?.fragment_balance),
+    remainingQuantity: safeNumber(row?.remaining_quantity),
+    inventoryEventId: row?.inventory_event_id || null,
+    fragmentLedgerId: row?.fragment_ledger_id || null,
+  };
+}
+
+function mapCraftMissingResult(row) {
+  return {
+    profileId: row?.profile_id || null,
+    cardId: row?.card_id || null,
+    cardNo: safeString(row?.card_no),
+    cardKey: safeString(row?.card_key),
+    cardName: safeString(row?.card_name),
+    rarityKey: safeString(row?.rarity_key),
+    craftingCost: safeNumber(row?.crafting_cost),
+    fragmentBalance: safeNumber(row?.fragment_balance),
+    newQuantity: safeNumber(row?.new_quantity),
+    inventoryEventId: row?.inventory_event_id || null,
+    fragmentLedgerId: row?.fragment_ledger_id || null,
+  };
+}
+
+function mapPityStatus(row) {
+  return {
+    profileId: row?.profile_id || null,
+    packId: row?.pack_id || null,
+    packCode: safeString(row?.pack_code),
+    packName: safeString(row?.pack_name),
+    setId: row?.set_id || null,
+    setCode: safeString(row?.set_code),
+    setName: safeString(row?.set_name),
+    packsSinceLegendary: safeNumber(row?.packs_since_legendary),
+    legendaryThreshold: safeNumber(row?.legendary_threshold),
+    legendaryRemaining: safeNumber(row?.legendary_remaining),
+    packsSinceMythic: safeNumber(row?.packs_since_mythic),
+    mythicThreshold: safeNumber(row?.mythic_threshold),
+    mythicRemaining: safeNumber(row?.mythic_remaining),
+    totalEligibleOpenings: safeNumber(row?.total_eligible_openings),
+    lastLegendaryAt: row?.last_legendary_at || null,
+    lastMythicAt: row?.last_mythic_at || null,
+    lastEligibleOpeningAt: row?.last_eligible_opening_at || null,
+  };
+}
+
 function mapShopItem(row) {
   return {
     shopItemCode: safeString(row?.shop_item_code),
@@ -332,6 +412,91 @@ export async function tcgGetMyWallet() {
   const row = Array.isArray(data) ? data[0] : data;
 
   return mapWallet(row);
+}
+
+export async function tcgGetMyFragments() {
+  const client = requireSupabase();
+  const { data, error } = await client.rpc('tcg_get_my_fragments');
+
+  if (error) {
+    throw error;
+  }
+
+  const row = Array.isArray(data) ? data[0] : data;
+
+  return mapFragments(row);
+}
+
+export async function tcgGetMyDuplicateSummary() {
+  const client = requireSupabase();
+  const { data, error } = await client.rpc('tcg_get_my_duplicate_summary');
+
+  if (error) {
+    throw error;
+  }
+
+  return Array.isArray(data)
+    ? data.map(mapDuplicateSummaryCard).filter((card) => card.cardId && card.burnableQuantity > 0)
+    : [];
+}
+
+export async function tcgBurnDuplicateCard(cardId, quantity) {
+  const normalizedCardId = safeString(cardId);
+  const numericQuantity = Number(quantity);
+
+  if (!normalizedCardId) {
+    throw new Error('Card is required.');
+  }
+
+  if (!Number.isInteger(numericQuantity) || numericQuantity <= 0) {
+    throw new Error('Burn quantity must be positive.');
+  }
+
+  const client = requireSupabase();
+  const { data, error } = await client.rpc('tcg_burn_duplicate_card', {
+    p_card_id: normalizedCardId,
+    p_quantity: numericQuantity,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  const row = Array.isArray(data) ? data[0] : data;
+
+  return mapBurnDuplicateResult(row);
+}
+
+export async function tcgCraftMissingCard(cardId) {
+  const normalizedCardId = safeString(cardId);
+
+  if (!normalizedCardId) {
+    throw new Error('Card is required.');
+  }
+
+  const client = requireSupabase();
+  const { data, error } = await client.rpc('tcg_craft_missing_card', {
+    p_card_id: normalizedCardId,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  const row = Array.isArray(data) ? data[0] : data;
+
+  return mapCraftMissingResult(row);
+}
+
+export async function tcgGetMyPityStatus() {
+  const client = requireSupabase();
+  const { data, error } = await client.rpc('tcg_get_my_pity_status');
+
+  if (error) {
+    throw error;
+  }
+
+  return Array.isArray(data) ? data.map(mapPityStatus).filter((status) => status.packCode) : [];
 }
 
 export async function tcgOwnerGetTestShop() {

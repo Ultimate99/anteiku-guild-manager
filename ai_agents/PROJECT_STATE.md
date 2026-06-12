@@ -1,5 +1,407 @@
 # Project State
 
+## Milestone 30G-F3 TCG Fragments / Crafting UI Complete
+
+Milestone 30G-F3 adds an Owner-only `/tcg` Craft window for Anteiku Fragments, duplicate burning, missing-card crafting, and read-only pity status. This is frontend/service UI only; no SQL, migrations, backend/RPC/RLS, prices, drop weights, pack size, fragment values, crafting costs, pity thresholds, coin grants, CP systems, or member release behavior changed.
+
+Frontend behavior:
+- `/tcg` hub adds `Craft` beside Album, Packs, Shop, Balance, and Owner Lab.
+- Fragment HUD shows the active Owner profile's Anteiku Fragment balance from `tcg_get_my_fragments()`.
+- Duplicate Burn lists backend-provided burnable duplicates from `tcg_get_my_duplicate_summary()`.
+- Burn actions require confirmation and call only `tcg_burn_duplicate_card(p_card_id, p_quantity)`.
+- Missing-card Craft lists missing Season 0 cards from the existing catalog/collection merge, displays approved v1 crafting costs, disables Mythic crafting, and calls only `tcg_craft_missing_card(p_card_id)`.
+- Pity Status shows read-only progress from `tcg_get_my_pity_status()`.
+- Successful burn/craft actions refetch fragments, duplicates, collection, and already-loaded balance report data.
+
+Security posture:
+- Existing Owner-only `/tcg` guard remains intact.
+- Non-Owner TCG nav/direct `/tcg` behavior remains blocked by the existing page guard.
+- Frontend uses RPC wrappers only and does not read/write TCG tables directly.
+- Frontend does not choose profile IDs, fragment authority, crafting authority, or pity authority.
+- No CP tables, CP RPCs, `member_cp`, `cp_snapshots`, payments, uploads, or storage were added.
+- Codex must not perform production burn/craft/pack/shop/favorite mutations; Owner manual smoke is required for mutation behavior.
+
+Validation:
+- `npm.cmd run build` passed.
+- Source checks found no direct TCG table reads/writes and no CP path additions in the F3 frontend path.
+
+Next:
+- Owner can manually test burn/craft/pity UI in production.
+- Continue to 30G-G member-safe TCG release planning or 30G-F4 UI polish after Owner manual smoke feedback.
+
+## Milestone 30G-F2 TCG Soft Pity Backend Integration Complete
+
+Milestone 30G-F2 implemented and production-applied backend-only Soft Pity counters for Owner-owned pack openings. No frontend UI, member release, drop weights, pack price, pack size, fragment values, crafting costs, coin grants, CP systems, or production pack/wallet/card/pity mutations from Codex changed.
+
+Migration and validation artifacts:
+- `supabase/migrations/20260612150113_tcg_soft_pity_backend.sql`
+- `supabase/tests/tcg_30g_pity_validation.sql`
+
+Table added:
+- `tcg_pity_counters`: per active profile + set + pack Legendary/Mythic pity progress.
+
+RPC added:
+- `tcg_get_my_pity_status()`: read-only own active-profile pity status, returning zero values when no counter exists.
+
+Pity behavior:
+- Pity starts from zero after migration; existing Owner test openings are not backfilled.
+- Owned-pack openings through `tcg_owner_open_owned_pack` count as eligible for current Owner-only testing.
+- Free Owner test packs, admin grants, smoke grants, and legacy immediate buy-and-open calls do not count.
+- Mythic pity has priority at `150` packs since Mythic.
+- Legendary pity triggers at `50` packs since Legendary or better.
+- Guarantees choose a random active card of the guaranteed rarity in the pack/set, with no missing-card bias in v1.
+- Pulling Mythic resets both Legendary and Mythic counters; pulling Legendary resets Legendary and increments Mythic.
+
+Security posture:
+- RLS is enabled on `tcg_pity_counters`.
+- Direct grants are revoked from `public`, `anon`, and `authenticated`.
+- Pity mutation happens only inside backend pack-opening transactions.
+- No arbitrary `profile_id` parameter, no CP joins, no CP columns, no CP RPCs, and no frontend/service changes.
+
+Local validation:
+- `npx.cmd supabase db reset` applied all local migrations including 30G-F2.
+- `supabase/tests/tcg_30g_pity_validation.sql`: 22 PASS / 0 FAIL / 0 SKIP.
+- Existing TCG regression validations passed:
+  - 30B catalog/inventory: 19 PASS / 0 FAIL / 0 SKIP.
+  - 30D pack backend: 18 PASS / 0 FAIL / 0 SKIP.
+  - 30E shop economy: 32 PASS / 0 FAIL / 0 SKIP.
+  - 30F balance report: 20 PASS / 0 FAIL / 0 SKIP.
+  - 30F pack inventory: 31 PASS / 0 FAIL / 0 SKIP.
+  - 30G-F1 fragments/crafting: 37 PASS / 0 FAIL / 0 SKIP.
+
+Production rollout:
+- Production dry-run showed only `20260612150113_tcg_soft_pity_backend.sql` pending.
+- Production migration was applied to project `mzflfyxxkascrfpteexz`.
+- Remote migration list shows `20260612150113` applied.
+- Read-only verification confirmed the pity table exists, RLS is enabled, no broad direct `anon`/`authenticated` grants exist, `tcg_get_my_pity_status()` exists with authenticated execute grant, active Owner count remains `1`, and TCG has no CP-named columns.
+- No production pack opening or pity-counter mutation was performed by Codex.
+
+Next:
+- 30G-F3: Owner-only fragment/burn/craft/pity UI preview, or continue with member-safe TCG release planning once Owner accepts backend behavior.
+
+## Milestone 30G-F1 TCG Fragments / Duplicate Burn / Crafting Backend Complete
+
+Milestone 30G-F1 implemented and production-applied the backend/RPC/RLS foundation for Anteiku Fragments, duplicate burning, duplicate summary, and missing-card crafting. Soft pity is intentionally deferred to 30G-F2. No frontend UI, pack RNG, prices, drop weights, pack size, coin grants, production wallet/inventory/fragment mutation, CP systems, or member release behavior changed.
+
+Migration and validation artifacts:
+- `supabase/migrations/20260612143019_tcg_fragments_duplicate_economy.sql`
+- `supabase/tests/tcg_30g_fragments_validation.sql`
+
+Tables added:
+- `tcg_fragment_wallets`: own-profile Anteiku Fragment balance.
+- `tcg_fragment_ledger`: immutable fragment gain/spend ledger.
+- `tcg_crafting_rules`: migration-seeded rarity dust/crafting rules.
+
+Crafting rules seeded:
+- Common: burn value `2`, craft cost `30`, craftable.
+- Uncommon: burn value `5`, craft cost `90`, craftable.
+- Rare: burn value `18`, craft cost `350`, craftable.
+- Epic: burn value `60`, craft cost `1400`, craftable.
+- Legendary: burn value `200`, craft cost `5000`, craftable.
+- Mythic: burn value `700`, craft cost `null`, not craftable / future locked.
+
+RPCs added:
+- `tcg_get_my_fragments()`
+- `tcg_get_my_duplicate_summary()`
+- `tcg_burn_duplicate_card(p_card_id uuid, p_quantity integer)`
+- `tcg_craft_missing_card(p_card_id uuid)`
+
+Security posture:
+- All new tables have RLS enabled.
+- Direct grants are revoked from `public`, `anon`, and `authenticated`.
+- Mutations are RPC-only and resolve the active profile server-side.
+- No arbitrary `profile_id` parameters.
+- No CP joins, CP columns, CP RPCs, `member_cp`, or `cp_snapshots` usage.
+- Mythic crafting is disabled for v1.
+- Burning the last copy, burning zero/negative quantity, burning more than duplicate quantity, crafting already-owned cards, crafting inactive cards, and overspending fragments are rejected.
+
+Local validation:
+- `npx.cmd supabase db reset` applied all local migrations including 30G-F1.
+- `supabase/tests/tcg_30g_fragments_validation.sql`: 37 PASS / 0 FAIL / 0 SKIP.
+- Existing TCG regression validations passed:
+  - 30B catalog/inventory: 19 PASS / 0 FAIL / 0 SKIP.
+  - 30D pack backend: 18 PASS / 0 FAIL / 0 SKIP.
+  - 30E shop economy: 32 PASS / 0 FAIL / 0 SKIP.
+  - 30F balance report: 20 PASS / 0 FAIL / 0 SKIP.
+  - 30F pack inventory: 31 PASS / 0 FAIL / 0 SKIP.
+- Broad `local_validation_anteiku.sql` still has unrelated cosmetics catalog expectation failures from current catalog counts; 30G-F1-specific and TCG/CP privacy validations passed.
+
+Production rollout:
+- Production dry-run showed only `20260612143019_tcg_fragments_duplicate_economy.sql` pending.
+- Production migration was applied to project `mzflfyxxkascrfpteexz`.
+- Remote migration list shows `20260612143019` applied.
+- Read-only verification confirmed new tables exist, RLS is enabled, no broad direct `anon`/`authenticated` grants exist on new fragment tables, RPCs exist with authenticated execute grants, crafting rules are seeded, active Owner count remains `1`, and TCG has no CP-named columns.
+- Existing CP tables retain RLS protection; no production burn/craft mutation was performed.
+
+Next:
+- 30G-F2 is complete. Continue with an Owner-only fragment/burn/craft/pity UI preview or member-safe TCG release planning after Owner review.
+
+## Milestone 30G-E Duplicate Economy Backend/RPC/RLS Implementation Plan Complete
+
+Milestone 30G-E added a docs-only backend/RPC/RLS implementation plan for the TCG duplicate economy using the approved Balanced Dust + Soft Pity design. No SQL, migrations, RPCs, prices, drop weights, pack size, coin grants, frontend UI, production data, or member access changed.
+
+Implementation plan artifact:
+- `docs/TCG_DUPLICATE_ECONOMY_IMPLEMENTATION_PLAN.md`
+
+Existing system notes:
+- Current TCG uses RLS-enabled tables with broad direct grants revoked.
+- Current frontend access goes through `security definer` RPCs granted to `authenticated`.
+- `private.tcg_active_member_profile_id()` resolves active profile and approved active membership.
+- Owner/admin TCG paths use `private.active_admin_profile_id()` and `private.is_owner(...)`.
+- Existing pack opening helper owns card rolls, inventory updates, opening logs, and inventory events.
+
+Planned future tables:
+- `tcg_fragment_wallets`
+- `tcg_fragment_ledger`
+- `tcg_pity_counters`
+- `tcg_crafting_rules`
+
+Planned future RPCs:
+- `tcg_get_my_fragments()`
+- `tcg_get_my_duplicate_summary()`
+- `tcg_burn_duplicate_card(p_card_id uuid, p_quantity integer)`
+- `tcg_craft_missing_card(p_card_id uuid)`
+- `tcg_get_my_pity_status(p_pack_code text default 'season_0_test_pack')`
+- Updated private pack-opening helper with backend-only pity support.
+
+Pity implementation plan:
+- Member-eligible shop/owned pack openings count.
+- Admin grants and Owner free test packs do not count for production pity.
+- Mythic pity takes priority if both pity counters are active.
+- Legendary pity guarantees Legendary or better.
+- Mythic pity guarantees Mythic.
+- No missing-card bias in v1.
+- Pity display must come from backend RPC only.
+
+Security/RLS plan:
+- Enable RLS and revoke broad direct grants on all new tables.
+- Prefer RPC-only reads/writes for v1.
+- Use active profile server-side.
+- No arbitrary `profile_id`.
+- No direct fragment wallet, inventory burn, or pity counter writes from frontend.
+- No CP joins or CP exposure.
+
+Validation plan:
+- Future focused local validation should cover table/RLS/grant posture, burn/craft success and denial paths, fragment ledger and inventory event consistency, pity threshold behavior, no direct writes, no CP columns, existing TCG regressions, and active Owner count remains 1.
+
+Next:
+- 30G-F1 and 30G-F2 are complete. Continue with an Owner-only fragment/burn/craft/pity UI preview or member-safe TCG release planning after Owner review.
+
+## Milestone 30G-D Duplicate Economy Design Specification Complete
+
+Milestone 30G-D added a docs-only design specification for the future TCG duplicate economy using the 30G-C recommendation: Balanced Dust + Soft Pity. No SQL, migrations, RPCs, prices, drop weights, pack size, coin grants, frontend UI, production data, or member access changed.
+
+Design artifact:
+- `docs/TCG_DUPLICATE_ECONOMY_DESIGN.md`
+
+V1 design direction:
+- Currency name: Anteiku Fragments.
+- Currency type: non-premium crafting currency.
+- Source: duplicate burn only in v1; future event rewards only if approved.
+- Not purchasable with real money.
+- Not the same as Anteiku Coins.
+- Backend-authoritative wallet and ledger required later.
+
+Balanced burn values:
+- Common: 2 fragments.
+- Uncommon: 5 fragments.
+- Rare: 18 fragments.
+- Epic: 60 fragments.
+- Legendary: 200 fragments.
+- Mythic: 700 fragments.
+
+Crafting rules:
+- Missing-card focused in v1.
+- Crafting adds exactly 1 card.
+- Common: 30 fragments.
+- Uncommon: 90 fragments.
+- Rare: 350 fragments.
+- Epic: 1400 fragments.
+- Legendary: 5000 fragments, gated or optional.
+- Mythic: 16000 fragments, future locked / not v1.
+
+Soft pity rules:
+- Track per active profile and pack/set.
+- Legendary pity: after 50 eligible packs without Legendary or better, next eligible pack guarantees Legendary or better.
+- Mythic pity: after 150 eligible packs without Mythic, next eligible pack guarantees Mythic.
+- Pity counters reset when relevant rarity is pulled.
+- Count only normal member-eligible pack openings; admin grants and Owner free test packs should not count for production member economy.
+- Pity display must come from backend RPC only.
+
+Conceptual future backend:
+- `tcg_fragment_wallets`
+- `tcg_fragment_ledger`
+- `tcg_pity_counters`
+- Optional `tcg_crafting_recipes` or backend static rarity config.
+- Future RPCs: `tcg_get_my_fragments`, `tcg_get_my_duplicate_summary`, `tcg_burn_duplicate_card`, `tcg_craft_missing_card`, `tcg_get_my_pity_status`, and updated pack-opening helper with pity support.
+
+Security/abuse posture:
+- Backend/RPC authority only.
+- No direct fragment wallet, inventory burn, or pity counter writes from frontend.
+- No arbitrary `profile_id`; active profile resolved server-side.
+- Burn only `quantity - 1`; never burn last copy.
+- Reject inactive/non-collectible/out-of-set crafting.
+- Reject already-owned crafting under v1 missing-only rule.
+- Reject Mythic crafting while future locked.
+- Ledger every fragment gain/spend and inventory event every burn/craft.
+- Pack opening with pity must be atomic.
+- No CP joins or CP exposure.
+
+Release impact:
+- Member release remains blocked until duplicate economy backend exists and is validated, or Owner explicitly accepts high duplicate pressure without duplicate value.
+- Current low drop rates remain unchanged.
+
+Next:
+- 30G-E duplicate economy backend/RPC/RLS implementation planning.
+
+## Milestone 30G-C Duplicate Economy Simulation Complete
+
+Milestone 30G-C added local-only duplicate sell, dust/crafting, and pity/trade-in simulation for the TCG Current Low-Rate Baseline. No SQL, migrations, RPCs, prices, drop weights, pack size, coin grants, frontend UI, production data, or member access changed.
+
+Simulation artifacts:
+- `scripts/tcg-duplicate-economy-sim.mjs`
+- `docs/TCG_DUPLICATE_ECONOMY_SIMULATION.md`
+
+Simulation method:
+- 10,000 simulated players.
+- Deterministic seed 300703.
+- Season 0 modeled as 50 cards.
+- Pack price 100 Anteiku Coins.
+- Pack size 5 cards.
+- Drop weights Common 6000, Uncommon 2500, Rare 1000, Epic 400, Legendary 90, Mythic 10.
+- Compared no duplicate value, three coin sell tables, three dust/crafting tables, soft pity, and dust trade-in style missing-card crafting.
+
+Coin sell results:
+- Conservative sell: 12.41 average refund per pack by 100 packs; effective pack cost 87.59; safe but mild.
+- Balanced sell: 17.26 average refund per pack by 100 packs; effective pack cost 82.74; viable but speeds pack count.
+- Generous sell: 32.05 average refund per pack by 100 packs; effective pack cost 67.95; too inflationary for v1.
+
+Dust/crafting results:
+- Conservative Dust is too weak to solve duplicate pressure.
+- Balanced Dust reaches average 943.95 dust at 40 packs and 3269.94 dust at 100 packs.
+- Balanced Dust gives practical Rare/Epic relief while keeping Legendary and Mythic scarce.
+- Generous Dust lets 52.56% of simulated players craft Legendary by 100 packs, which is too fast for v1.
+
+Pity/trade-in results:
+- Soft pity barely changes early completion.
+- Legendary soft pity protects extreme bad luck around the 50-pack threshold.
+- Mythic soft pity guarantees Mythic by pack 151 and keeps Mythic a long-tail flex pull.
+- Trade-in style dust crafting should be backend-owned, missing-card-only, and guarded by rarity/cooldown rules.
+
+Recommendation:
+- Keep current low drop rates unchanged.
+- Do not apply higher drop rates yet.
+- Prefer Balanced Dust + Soft Pity as the future implementation direction.
+- Avoid generous coin refunds.
+- Keep Mythic prestige/event/pity-only for v1.
+
+Next:
+- 30G-D Duplicate Economy Design Specification.
+
+## Milestone 30G-B TCG Balance Simulation Complete
+
+Milestone 30G-B added a deterministic local simulation for the TCG Current Low-Rate Baseline. No SQL, migrations, RPCs, prices, drop weights, pack size, coin grants, frontend UI, production data, or member access changed.
+
+Simulation artifacts:
+- `scripts/tcg-balance-sim.mjs`
+- `docs/TCG_BALANCE_SIMULATION.md`
+
+Simulation method:
+- 10,000 simulated players.
+- Deterministic seed 300702.
+- Season 0 modeled as 50 cards.
+- Pack price 100 Anteiku Coins.
+- Pack size 5 cards.
+- Drop weights Common 6000, Uncommon 2500, Rare 1000, Epic 400, Legendary 90, Mythic 10.
+- No pity, duplicate protection, duplicate selling, crafting, event rewards, trading, or admin grants included.
+
+Checkpoint results:
+- 20 packs: average 38.78 unique, 77.56% completion, 61.22 duplicates, 61.22% duplicate rate, 58.92% Legendary ownership, 10.08% Mythic ownership.
+- 40 packs: average 45.20 unique, 90.41% completion, 154.80 duplicates, 77.40% duplicate rate, 83.43% Legendary ownership, 18.15% Mythic ownership.
+- 60 packs: average 47.23 unique, 94.45% completion, 252.77 duplicates, 84.26% duplicate rate, 93.02% Legendary ownership, 26.13% Mythic ownership.
+- 100 packs: average 48.60 unique, 97.21% completion, 451.40 duplicates, 90.28% duplicate rate, 99.00% Legendary ownership, 39.15% Mythic ownership.
+
+First-pull timing:
+- Epic: 18.46% chance per pack, 5.42 expected packs, 4 median packs.
+- Legendary: 4.42% chance per pack, 22.63 expected packs, 16 median packs.
+- Mythic: 0.50% chance per pack, 200.40 expected packs, 139 median packs.
+
+Coin-income pacing:
+- 400 coins/week: about 4 packs/week, average 90% completion in 9.41 weeks, expected Mythic in 50.10 weeks.
+- 500 coins/week: about 5 packs/week, average 90% completion in 7.53 weeks, expected Mythic in 40.08 weeks.
+- 550 coins/week: about 5.5 packs/week, average 90% completion in 6.84 weeks, expected Mythic in 36.44 weeks.
+
+Recommendation:
+- Keep current low rates for now.
+- Keep pack price at 100 Anteiku Coins for now.
+- Keep 4-5 packs/week as a reasonable member pacing test.
+- Do not apply higher drop rates yet.
+- Add/simulate duplicate value, sell/burn, crafting, event rewards, or pity before member release.
+
+Next:
+- Duplicate sell/burn/pity simulation before any drop-rate patch.
+
+## Milestone 30G-A TCG Economy / Drop Balance Planning Complete
+
+Milestone 30G-A added docs-only balance planning for the Owner-only TCG economy/drop-rate system. No code, SQL, migrations, RPCs, prices, drop weights, pack size, coin grants, frontend UI, production data, or member access changed.
+
+Primary direction:
+- Keep the current low-rate production baseline as the primary next simulation model.
+- Current pack price remains 100 Anteiku Coins.
+- Current pack size remains 5 cards.
+- Current drop weights remain Common 6000, Uncommon 2500, Rare 1000, Epic 400, Legendary 90, Mythic 10.
+- Season 0 remains 50 cards with rarity distribution 18 Common, 14 Uncommon, 9 Rare, 5 Epic, 3 Legendary, 1 Mythic.
+- Legendary and Mythic remain rare/flex pulls for now.
+- Do not recommend applying higher drop rates yet.
+
+Observed Owner test data:
+- Unique owned: 45 / 50.
+- Missing cards: 5.
+- Total owned quantity: 208.
+- Duplicate quantity total: 163.
+- Completion: 90%.
+- Total pack openings: 40.
+- Cards pulled: 200.
+- Shop openings: 36; free test openings: 4.
+- Current balance: 100 Anteiku Coins.
+- Coins granted: 4000; coins spent: 3900; pack spend: 3900.
+- Average spend per pack: 100.
+- Duplicate rate: 78.37%; missing rate: 10%.
+- Rarity pulls: Common 108, Uncommon 56, Rare 27, Epic 8, Legendary 1, Mythic 0.
+
+Planning interpretation:
+- Owner test data is polluted by smoke grants, free test packs, shop test packs, and manual testing, so it is directional only.
+- Duplicate pressure is the main visible issue at 90% completion.
+- Mythic 0 from 200 pulls is plausible under a 0.1% per-card Mythic rate.
+- First test low rates with controlled weekly coin income and duplicate sinks before changing high-rarity rates.
+
+Next simulation defaults:
+- 30G-B should simulate Current Low-Rate Baseline first.
+- Keep pack price at 100 Anteiku Coins.
+- Simulate active member income around 400-550 coins per week, or about 4-5 packs per week.
+- Measure progress and duplicate pressure at 20, 40, 60, and 100 packs.
+- Measure expected time to first Legendary and first Mythic.
+- Keep Casual, Balanced, and Prestige higher-rate models documented as alternatives only and marked "do not apply yet."
+
+Release remains blocked until:
+- Balance simulation is reviewed.
+- A balance patch is selected or current low-rate baseline is explicitly accepted.
+- Member-safe pack/shop RPCs are planned.
+- Owner test controls are hidden from members.
+- Free coin sources and abuse checks are planned.
+- Duplicate value, pity, crafting, event rewards, or equivalent long-tail relief is selected.
+- Backend-only drops, no direct table writes, no CP exposure, and no payment/premium currency rules remain intact.
+
+Files updated:
+- `docs/TCG_BALANCE_PLAN.md`
+- `docs/TCG_CARD_COLLECTION_PLAN.md`
+- `ai_agents/TCG_HANDOFF.md`
+- `docs/ROADMAP.md`
+- `ai_agents/PROJECT_STATE.md`
+
+Next:
+- 30G-B Balance Simulation for Current Low-Rate Baseline.
+
 ## Milestone 30F-M Owner-Only TCG Balance Report UI Live
 
 Owner-only `/tcg` now includes a read-only Balance tab using the existing production RPC `tcg_owner_get_balance_report()`, deployed through commit `4c4ebc6 feat: add owner tcg balance report ui`.

@@ -4,9 +4,14 @@ import { useLanguage } from '../context/LanguageContext.jsx';
 import {
   mergeCatalogWithCollection,
   tcgAdminGrantCard,
+  tcgBurnDuplicateCard,
+  tcgCraftMissingCard,
   tcgGetCatalog,
+  tcgGetMyDuplicateSummary,
+  tcgGetMyFragments,
   tcgGetMyCollection,
   tcgGetMyPacks,
+  tcgGetMyPityStatus,
   tcgGetMyWallet,
   tcgOwnerOpenTestPack,
   tcgOwnerBuyTestPackToInventory,
@@ -18,11 +23,20 @@ import {
 } from '../services/tcgService.js';
 
 const FILTERS = ['all', 'owned', 'missing', 'favorites'];
-const HUB_WINDOWS = ['album', 'packs', 'shop', 'balance', 'ownerLab'];
+const HUB_WINDOWS = ['album', 'packs', 'shop', 'craft', 'balance', 'ownerLab'];
 const ALL_RARITIES = 'all';
 const TEST_PACK_CODE = 'season_0_test_pack';
 const TEST_SHOP_ITEM_CODE = 'season_0_test_pack_shop';
 const TEST_COIN_GRANT_AMOUNT = 1000;
+const MYTHIC_RARITY_KEY = 'mythic';
+const CRAFTING_COSTS = {
+  common: 30,
+  uncommon: 90,
+  rare: 350,
+  epic: 1400,
+  legendary: 5000,
+  mythic: null,
+};
 const PACK_ANIMATION_STORAGE_KEY = 'anteiku.tcg.packAnimationsEnabled';
 const PACK_FRONT_ASSET_PATH = '/assets/tcg/packs/season0_test_pack_front.png';
 const CARD_BACK_ASSET_PATH = '/assets/tcg/cards/tcg_card_back_season0.png';
@@ -80,6 +94,21 @@ function formatReportDate(value, language, fallback) {
     hour: '2-digit',
     minute: '2-digit',
   }).format(date);
+}
+
+function getCraftingCost(card) {
+  const rarityKey = card?.rarityKey || '';
+  return Object.prototype.hasOwnProperty.call(CRAFTING_COSTS, rarityKey)
+    ? CRAFTING_COSTS[rarityKey]
+    : null;
+}
+
+function getPityProgress(current, threshold) {
+  if (!threshold) {
+    return 0;
+  }
+
+  return Math.min(100, Math.max(0, (Number(current) / Number(threshold)) * 100));
 }
 
 function getCardImage(card) {
@@ -935,6 +964,321 @@ function TcgBalanceReportPanel({
   );
 }
 
+function TcgFragmentHud({ fragments, language, t }) {
+  const balance = fragments?.balance ?? 0;
+
+  return (
+    <section className="tcg-fragment-hud" aria-label={t('tcg.anteikuFragments')}>
+      <div className="tcg-fragment-icon" aria-hidden="true">
+        <span />
+      </div>
+      <div>
+        <StatusBadge tone="warning">{t('tcg.ownerTestOnly')}</StatusBadge>
+        <h4>{t('tcg.anteikuFragments')}</h4>
+        <p>{t('tcg.fragmentsEarnedByBurning')}</p>
+      </div>
+      <strong>{formatNumber(balance, language)}</strong>
+    </section>
+  );
+}
+
+function TcgPityMeter({ title, current, threshold, remaining, language, t }) {
+  const progress = getPityProgress(current, threshold);
+
+  return (
+    <div className="tcg-pity-meter">
+      <div className="tcg-pity-meter-row">
+        <span>{title}</span>
+        <strong>
+          {formatNumber(current, language)} / {formatNumber(threshold, language)}
+        </strong>
+      </div>
+      <div className="tcg-pity-bar" style={{ '--tcg-pity-progress': `${progress}%` }}>
+        <span />
+      </div>
+      <small>{`${formatNumber(remaining, language)} ${t('tcg.remaining')}`}</small>
+    </div>
+  );
+}
+
+function TcgPityStatusCard({ status, language, t }) {
+  const fallback = t('common.notSet');
+
+  return (
+    <article className="tcg-pity-card">
+      <div className="tcg-pity-card-heading">
+        <div>
+          <StatusBadge tone="neutral">{status.setName || status.setCode || t('tcg.seasonZero')}</StatusBadge>
+          <h4>{status.packName || status.packCode || t('tcg.seasonZeroTestPack')}</h4>
+        </div>
+        <span>
+          {t('tcg.eligibleOpenings')}
+          {' '}
+          {formatNumber(status.totalEligibleOpenings, language)}
+        </span>
+      </div>
+
+      <div className="tcg-pity-grid">
+        <TcgPityMeter
+          title={t('tcg.legendaryPity')}
+          current={status.packsSinceLegendary}
+          threshold={status.legendaryThreshold}
+          remaining={status.legendaryRemaining}
+          language={language}
+          t={t}
+        />
+        <TcgPityMeter
+          title={t('tcg.mythicPity')}
+          current={status.packsSinceMythic}
+          threshold={status.mythicThreshold}
+          remaining={status.mythicRemaining}
+          language={language}
+          t={t}
+        />
+      </div>
+
+      <div className="tcg-pity-dates">
+        <span>{`${t('tcg.lastLegendary')} ${formatReportDate(status.lastLegendaryAt, language, fallback)}`}</span>
+        <span>{`${t('tcg.lastMythic')} ${formatReportDate(status.lastMythicAt, language, fallback)}`}</span>
+      </div>
+    </article>
+  );
+}
+
+function TcgDuplicateBurnCard({
+  card,
+  burnQuantity,
+  busy,
+  language,
+  t,
+  onQuantityChange,
+  onBurn,
+}) {
+  const quantity = Math.min(Math.max(Number(burnQuantity) || 1, 1), card.burnableQuantity);
+  const fragmentGain = quantity * card.dustValue;
+
+  return (
+    <article className="tcg-burn-card" data-rarity={card.rarityKey || 'common'}>
+      <TcgArt card={card} />
+      <div className="tcg-burn-card-copy">
+        <span className="tcg-card-rarity">{card.rarityName || card.rarityKey}</span>
+        <h4>{card.cardName}</h4>
+        <small>{card.cardNo}</small>
+        <div className="tcg-burn-stats">
+          <span>{t('tcg.ownedQuantity')}</span>
+          <strong>{formatNumber(card.quantity, language)}</strong>
+          <span>{t('tcg.burnableQuantity')}</span>
+          <strong>{formatNumber(card.burnableQuantity, language)}</strong>
+          <span>{t('tcg.dustValue')}</span>
+          <strong>{formatNumber(card.dustValue, language)}</strong>
+          <span>{t('tcg.fragmentGain')}</span>
+          <strong>{formatNumber(fragmentGain, language)}</strong>
+        </div>
+      </div>
+      <div className="tcg-burn-actions">
+        <label>
+          <span>{t('tcg.burnQuantity')}</span>
+          <input
+            type="number"
+            min="1"
+            max={card.burnableQuantity}
+            step="1"
+            value={quantity}
+            onChange={(event) => onQuantityChange(card, event.target.value)}
+          />
+        </label>
+        <button
+          type="button"
+          className="danger-action compact-action"
+          onClick={() => onBurn(card)}
+          disabled={busy || card.burnableQuantity <= 0}
+          aria-busy={busy}
+        >
+          {busy ? t('common.working') : t('tcg.burnDuplicates')}
+        </button>
+      </div>
+    </article>
+  );
+}
+
+function TcgCraftCard({
+  card,
+  fragmentBalance,
+  busy,
+  language,
+  t,
+  onCraft,
+}) {
+  const craftingCost = getCraftingCost(card);
+  const isMythic = card.rarityKey === MYTHIC_RARITY_KEY;
+  const isCraftable = !isMythic && craftingCost !== null;
+  const hasEnoughFragments = isCraftable && fragmentBalance >= craftingCost;
+
+  return (
+    <article className="tcg-craft-card" data-rarity={card.rarityKey || 'common'} data-locked={!isCraftable}>
+      <TcgArt card={card} />
+      <div className="tcg-craft-card-copy">
+        <span className="tcg-card-rarity">{card.rarityName || card.rarityKey}</span>
+        <h4>{card.cardName}</h4>
+        <small>{card.cardNo}</small>
+        <div className="tcg-craft-cost">
+          <span>{t('tcg.craftingCost')}</span>
+          <strong>
+            {craftingCost === null
+              ? t('tcg.futureLocked')
+              : `${formatNumber(craftingCost, language)} ${t('tcg.fragmentsShort')}`}
+          </strong>
+        </div>
+      </div>
+      <button
+        type="button"
+        className="primary-action compact-action"
+        onClick={() => onCraft(card)}
+        disabled={busy || !hasEnoughFragments}
+        aria-busy={busy}
+      >
+        {isMythic
+          ? t('tcg.mythicLocked')
+          : busy
+            ? t('common.working')
+            : hasEnoughFragments
+              ? t('tcg.craftCard')
+              : t('tcg.insufficientFragments')}
+      </button>
+    </article>
+  );
+}
+
+function TcgCraftPanel({
+  fragments,
+  duplicates,
+  missingCards,
+  pityStatuses,
+  loading,
+  error,
+  actionMessage,
+  actionError,
+  burnQuantities,
+  burnBusyCardId,
+  craftBusyCardId,
+  language,
+  t,
+  onRefresh,
+  onBurnQuantityChange,
+  onBurn,
+  onCraft,
+}) {
+  const fragmentBalance = fragments?.balance ?? 0;
+
+  return (
+    <section className="panel tcg-craft-panel" aria-label={t('tcg.craftWindowTitle')}>
+      <div className="tcg-craft-header">
+        <div>
+          <StatusBadge tone="warning">{t('tcg.ownerTestOnly')}</StatusBadge>
+          <h3>{t('tcg.craftWindowTitle')}</h3>
+          <p>{t('tcg.craftWindowBody')}</p>
+        </div>
+        <button
+          type="button"
+          className="secondary-action compact-action"
+          onClick={onRefresh}
+          disabled={loading}
+          aria-busy={loading}
+        >
+          {loading ? t('common.refreshing') : t('tcg.refreshCraft')}
+        </button>
+      </div>
+
+      {error ? <p className="tcg-pack-error" role="alert">{error}</p> : null}
+      {actionError ? <p className="tcg-pack-error" role="alert">{actionError}</p> : null}
+      {actionMessage ? <p className="success-copy">{actionMessage}</p> : null}
+
+      <TcgFragmentHud fragments={fragments} language={language} t={t} />
+
+      <section className="tcg-craft-section">
+        <div className="tcg-craft-section-heading">
+          <h4>{t('tcg.duplicateBurn')}</h4>
+          <p>{t('tcg.duplicateBurnBody')}</p>
+        </div>
+
+        {loading ? <p className="tcg-balance-empty">{t('common.loading')}</p> : null}
+
+        {!loading && duplicates.length === 0 ? (
+          <p className="tcg-balance-empty">{t('tcg.noDuplicates')}</p>
+        ) : null}
+
+        {duplicates.length > 0 ? (
+          <div className="tcg-burn-grid">
+            {duplicates.map((card) => (
+              <TcgDuplicateBurnCard
+                key={card.cardId}
+                card={card}
+                burnQuantity={burnQuantities[card.cardId] ?? 1}
+                busy={burnBusyCardId === card.cardId}
+                language={language}
+                t={t}
+                onQuantityChange={onBurnQuantityChange}
+                onBurn={onBurn}
+              />
+            ))}
+          </div>
+        ) : null}
+      </section>
+
+      <section className="tcg-craft-section">
+        <div className="tcg-craft-section-heading">
+          <h4>{t('tcg.craftMissingCards')}</h4>
+          <p>{t('tcg.craftMissingCardsBody')}</p>
+        </div>
+
+        {!loading && missingCards.length === 0 ? (
+          <p className="tcg-balance-empty">{t('tcg.noCraftableMissingCards')}</p>
+        ) : null}
+
+        {missingCards.length > 0 ? (
+          <div className="tcg-craft-grid">
+            {missingCards.map((card) => (
+              <TcgCraftCard
+                key={card.cardId}
+                card={card}
+                fragmentBalance={fragmentBalance}
+                busy={craftBusyCardId === card.cardId}
+                language={language}
+                t={t}
+                onCraft={onCraft}
+              />
+            ))}
+          </div>
+        ) : null}
+      </section>
+
+      <section className="tcg-craft-section">
+        <div className="tcg-craft-section-heading">
+          <h4>{t('tcg.pityStatus')}</h4>
+          <p>{t('tcg.pityStatusBody')}</p>
+        </div>
+
+        {pityStatuses.length === 0 ? (
+          <p className="tcg-balance-empty">{t('tcg.noPityCounters')}</p>
+        ) : (
+          <div className="tcg-pity-status-grid">
+            {pityStatuses.map((status) => (
+              <TcgPityStatusCard
+                key={status.packId || status.packCode}
+                status={status}
+                language={language}
+                t={t}
+              />
+            ))}
+          </div>
+        )}
+
+        <p className="tcg-craft-footnote">{t('tcg.ownedPackPityOnly')}</p>
+      </section>
+    </section>
+  );
+}
+
 function TcgOwnerLabPanel({
   activeOwnerProfileId,
   smokeGrantLoading,
@@ -1158,12 +1502,24 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
   const [balanceReport, setBalanceReport] = useState(null);
   const [balanceReportLoading, setBalanceReportLoading] = useState(false);
   const [balanceReportError, setBalanceReportError] = useState('');
+  const [fragments, setFragments] = useState(null);
+  const [duplicateSummary, setDuplicateSummary] = useState([]);
+  const [pityStatuses, setPityStatuses] = useState([]);
+  const [craftLoading, setCraftLoading] = useState(false);
+  const [craftError, setCraftError] = useState('');
+  const [craftActionMessage, setCraftActionMessage] = useState('');
+  const [craftActionError, setCraftActionError] = useState('');
+  const [burnQuantities, setBurnQuantities] = useState({});
+  const [burnBusyCardId, setBurnBusyCardId] = useState('');
+  const [craftBusyCardId, setCraftBusyCardId] = useState('');
   const favoriteRequestKeysRef = useRef(new Set());
   const smokeGrantRequestRef = useRef(false);
   const packOpeningRequestRef = useRef(false);
   const ownedPackOpeningRequestRef = useRef(false);
   const grantCoinsRequestRef = useRef(false);
   const buyPackRequestRef = useRef(false);
+  const burnRequestRef = useRef(false);
+  const craftRequestRef = useRef(false);
   const ripPointerStartRef = useRef(null);
 
   const isOwner = Boolean(activeAdminContext?.isOwner);
@@ -1271,6 +1627,52 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
     }
   }, [activeWindow, loadBalanceReport]);
 
+  const loadCrafting = useCallback(async () => {
+    if (!isOwner) {
+      return;
+    }
+
+    setCraftLoading(true);
+    setCraftError('');
+
+    try {
+      const [fragmentRow, duplicateRows, pityRows] = await Promise.all([
+        tcgGetMyFragments(),
+        tcgGetMyDuplicateSummary(),
+        tcgGetMyPityStatus(),
+      ]);
+      setFragments(fragmentRow);
+      setDuplicateSummary(duplicateRows);
+      setPityStatuses(pityRows);
+      setBurnQuantities((currentQuantities) => {
+        const nextQuantities = {};
+
+        duplicateRows.forEach((card) => {
+          const currentValue = Number(currentQuantities[card.cardId]) || 1;
+          nextQuantities[card.cardId] = Math.min(
+            Math.max(currentValue, 1),
+            Math.max(card.burnableQuantity, 1),
+          );
+        });
+
+        return nextQuantities;
+      });
+    } catch (loadError) {
+      setFragments(null);
+      setDuplicateSummary([]);
+      setPityStatuses([]);
+      setCraftError(getDisplayError(loadError, t('tcg.fragmentsLoadFailed')));
+    } finally {
+      setCraftLoading(false);
+    }
+  }, [isOwner, t]);
+
+  useEffect(() => {
+    if (activeWindow === 'craft') {
+      loadCrafting();
+    }
+  }, [activeWindow, loadCrafting]);
+
   const handleRefreshAll = useCallback(() => {
     loadCards();
     loadEconomy();
@@ -1278,7 +1680,10 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
     if (activeWindow === 'balance') {
       loadBalanceReport();
     }
-  }, [activeWindow, loadBalanceReport, loadCards, loadEconomy, loadPackInventory]);
+    if (activeWindow === 'craft') {
+      loadCrafting();
+    }
+  }, [activeWindow, loadBalanceReport, loadCards, loadCrafting, loadEconomy, loadPackInventory]);
 
   const rarityOptions = useMemo(() => {
     const seen = new Map();
@@ -1342,6 +1747,14 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
         return true;
       }),
     [cards, filter, rarityFilter],
+  );
+
+  const missingCraftCards = useMemo(
+    () =>
+      cards
+        .filter((card) => card.cardId && (!card.isOwned || card.quantity <= 0))
+        .sort((a, b) => (a.raritySortOrder - b.raritySortOrder) || a.cardNo.localeCompare(b.cardNo)),
+    [cards],
   );
 
   const handleToggleFavorite = useCallback(async (card) => {
@@ -1621,6 +2034,112 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
     });
   }, []);
 
+  const refreshCraftingAfterMutation = useCallback(async () => {
+    const refreshes = [loadCrafting(), loadCards()];
+
+    if (balanceReport) {
+      refreshes.push(loadBalanceReport());
+    }
+
+    await Promise.all(refreshes);
+  }, [balanceReport, loadBalanceReport, loadCards, loadCrafting]);
+
+  const handleBurnQuantityChange = useCallback((card, value) => {
+    const numericValue = Number.parseInt(value, 10);
+    const nextQuantity = Number.isFinite(numericValue)
+      ? Math.min(Math.max(numericValue, 1), Math.max(card.burnableQuantity, 1))
+      : 1;
+
+    setBurnQuantities((currentQuantities) => ({
+      ...currentQuantities,
+      [card.cardId]: nextQuantity,
+    }));
+  }, []);
+
+  const handleBurnDuplicate = useCallback(async (card) => {
+    if (!isOwner || !card?.cardId || burnRequestRef.current) {
+      return;
+    }
+
+    const quantity = Math.min(
+      Math.max(Number(burnQuantities[card.cardId]) || 1, 1),
+      card.burnableQuantity,
+    );
+
+    if (quantity <= 0) {
+      return;
+    }
+
+    const fragmentsGained = quantity * card.dustValue;
+    const confirmed = window.confirm(t('tcg.burnConfirm', {
+      quantity: formatNumber(quantity, language),
+      fragments: formatNumber(fragmentsGained, language),
+      cardName: card.cardName,
+    }));
+
+    if (!confirmed) {
+      return;
+    }
+
+    burnRequestRef.current = true;
+    setBurnBusyCardId(card.cardId);
+    setCraftActionMessage('');
+    setCraftActionError('');
+
+    try {
+      const result = await tcgBurnDuplicateCard(card.cardId, quantity);
+      setCraftActionMessage(t('tcg.burnSuccess', {
+        fragments: formatNumber(result.fragmentsGained, language),
+        cardName: result.cardName || card.cardName,
+      }));
+      await refreshCraftingAfterMutation();
+    } catch (burnError) {
+      setCraftActionError(getDisplayError(burnError, t('tcg.burnFailed')));
+    } finally {
+      burnRequestRef.current = false;
+      setBurnBusyCardId('');
+    }
+  }, [burnQuantities, isOwner, language, refreshCraftingAfterMutation, t]);
+
+  const handleCraftMissingCard = useCallback(async (card) => {
+    if (!isOwner || !card?.cardId || craftRequestRef.current) {
+      return;
+    }
+
+    const craftingCost = getCraftingCost(card);
+
+    if (card.rarityKey === MYTHIC_RARITY_KEY || craftingCost === null) {
+      return;
+    }
+
+    const confirmed = window.confirm(t('tcg.craftConfirm', {
+      cardName: card.cardName,
+      fragments: formatNumber(craftingCost, language),
+    }));
+
+    if (!confirmed) {
+      return;
+    }
+
+    craftRequestRef.current = true;
+    setCraftBusyCardId(card.cardId);
+    setCraftActionMessage('');
+    setCraftActionError('');
+
+    try {
+      const result = await tcgCraftMissingCard(card.cardId);
+      setCraftActionMessage(t('tcg.craftSuccess', {
+        cardName: result.cardName || card.cardName,
+      }));
+      await refreshCraftingAfterMutation();
+    } catch (craftErrorResult) {
+      setCraftActionError(getDisplayError(craftErrorResult, t('tcg.craftFailed')));
+    } finally {
+      craftRequestRef.current = false;
+      setCraftBusyCardId('');
+    }
+  }, [isOwner, language, refreshCraftingAfterMutation, t]);
+
   const handleRipPointerDown = useCallback((event) => {
     ripPointerStartRef.current = {
       x: event.clientX,
@@ -1681,9 +2200,9 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
             type="button"
             className="secondary-action compact-action"
             onClick={handleRefreshAll}
-            disabled={loading || economyLoading || packInventoryLoading || (activeWindow === 'balance' && balanceReportLoading)}
+            disabled={loading || economyLoading || packInventoryLoading || (activeWindow === 'balance' && balanceReportLoading) || (activeWindow === 'craft' && craftLoading)}
           >
-            {loading || economyLoading || packInventoryLoading || (activeWindow === 'balance' && balanceReportLoading)
+            {loading || economyLoading || packInventoryLoading || (activeWindow === 'balance' && balanceReportLoading) || (activeWindow === 'craft' && craftLoading)
               ? t('common.refreshing')
               : t('common.refresh')}
           </button>
@@ -1837,6 +2356,28 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
             t={t}
             onBuyPack={handleBuyTestPack}
             onGoToPacks={() => setActiveWindow('packs')}
+          />
+        ) : null}
+
+        {activeWindow === 'craft' ? (
+          <TcgCraftPanel
+            fragments={fragments}
+            duplicates={duplicateSummary}
+            missingCards={missingCraftCards}
+            pityStatuses={pityStatuses}
+            loading={craftLoading}
+            error={craftError}
+            actionMessage={craftActionMessage}
+            actionError={craftActionError}
+            burnQuantities={burnQuantities}
+            burnBusyCardId={burnBusyCardId}
+            craftBusyCardId={craftBusyCardId}
+            language={language}
+            t={t}
+            onRefresh={loadCrafting}
+            onBurnQuantityChange={handleBurnQuantityChange}
+            onBurn={handleBurnDuplicate}
+            onCraft={handleCraftMissingCard}
           />
         ) : null}
 
