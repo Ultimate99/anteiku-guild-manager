@@ -8610,6 +8610,57 @@ button.command-card:focus-visible {
     rgba(8, 8, 10, 0.92);
 }
 
+.tcg-owner-reset-card {
+  border-color: rgba(255, 82, 103, 0.28);
+  background:
+    linear-gradient(135deg, rgba(196, 30, 58, 0.16), transparent 38%),
+    radial-gradient(circle at 100% 0%, rgba(255, 216, 116, 0.1), transparent 32%),
+    rgba(8, 8, 10, 0.94);
+}
+
+.tcg-reset-warning,
+.tcg-reset-count {
+  margin: 0;
+  color: #ffd8a8;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.tcg-reset-warning {
+  padding: 7px 8px;
+  border: 1px solid rgba(255, 82, 103, 0.25);
+  background: rgba(196, 30, 58, 0.08);
+}
+
+.tcg-reset-confirm-field {
+  display: grid;
+  gap: 5px;
+}
+
+.tcg-reset-confirm-field span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.tcg-reset-confirm-field input {
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 82, 103, 0.32);
+  border-radius: 0;
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--text);
+  font-weight: 900;
+}
+
+.tcg-reset-confirm-field input:focus {
+  outline: 2px solid rgba(255, 82, 103, 0.26);
+  outline-offset: 2px;
+  border-color: rgba(255, 216, 116, 0.5);
+}
+
 .tcg-owner-lab-wallet {
   padding: 8px;
 }

@@ -36,9 +36,12 @@ Milestone 30A planning is complete. No backend, frontend, SQL, Supabase, or prod
 - Milestone 30G-F1 implements and production-applies Anteiku Fragments, duplicate burn, duplicate summary, and missing-card crafting backend/RPC/RLS through `20260612143019_tcg_fragments_duplicate_economy.sql`.
 - Milestone 30G-F2 implements and production-applies backend-only Soft Pity counters and owned-pack opening integration through `20260612150113_tcg_soft_pity_backend.sql`.
 - Milestone 30G-F3 adds the Owner-only `/tcg` Craft window for Anteiku Fragments, duplicate burn, missing-card crafting, and read-only pity status.
+- Milestone 30G-G resets public-release balance direction: Duplicate Burn/Craft is experimental/later, Trading is preferred for duplicate/social value, and Epic-rate Candidate A/B simulations are recorded in `docs/TCG_BALANCE_SIMULATION.md`.
+- Milestone 30G-H applies the approved Candidate A Epic-rate balance patch through `20260613101908_tcg_candidate_a_epic_rate_balance.sql`.
+- Milestone 30G-I0 adds the dangerous Owner-only TCG test-state reset RPC and Owner Lab UI through `20260613105500_tcg_owner_reset_test_state.sql`.
 - Milestone 30B backend/RPC foundation is implemented, locally validated, and production-applied through `20260601000100_tcg_30b_catalog_inventory.sql`.
 - No member-facing packs, shop, economy UI, routes beyond `/tcg`, uploads, or Storage have been implemented.
-- No member-facing TCG release exists yet. The next step is Owner manual burn/craft/pity UI smoke or member-safe TCG release planning after Owner review; frontend calls backend RPCs and never calculates drops or mutates wallets/inventory client-side.
+- No member-facing TCG release exists yet. The next step is Owner pack-feel review on Candidate A after optional Owner-only reset, Trading design/spec, or member-safe release planning with Duplicate Economy excluded by default; frontend calls backend RPCs and never calculates drops or mutates wallets/inventory client-side.
 
 ## Product Direction
 
@@ -64,6 +67,7 @@ Delayed:
 - Wallets/currency.
 - Premium/payment flows.
 - Trading/marketplace/battles.
+- Duplicate Burn/Craft public release unless explicitly re-approved later.
 
 ## Security Rules
 
@@ -84,6 +88,139 @@ Delayed:
 - Pity counters are backend/RPC authority only.
 - Frontend must not write pity counters, choose guaranteed rarities, or control pity thresholds.
 - The 30G-F3 Craft window is Owner-only and uses RPC wrappers only for fragments, duplicates, burn, craft, and pity status.
+- 30G-G keeps Duplicate Burn/Craft experimental/later for public release and prefers future Trading for duplicate/social value.
+- The 30G-I0 reset tool is Owner-only, requires exact `RESET_TCG`, resolves the active Owner profile server-side, accepts no `profile_id`, and must not be exposed to members.
+
+## 30G-I0 Owner-Only TCG Test State Reset
+
+Status: implemented, locally validated, production-applied, and frontend-deployed for Owner-only manual use. Codex did not click the production reset button.
+
+Migration:
+
+- `supabase/migrations/20260613105500_tcg_owner_reset_test_state.sql`
+
+Validation artifact:
+
+- `supabase/tests/tcg_30g_owner_reset_validation.sql`
+
+RPC:
+
+- `tcg_owner_reset_my_tcg_test_state(p_confirm text)`
+
+Behavior:
+
+- Requires authenticated active Owner profile.
+- Rejects non-Owner users.
+- Rejects unless `p_confirm = 'RESET_TCG'`.
+- Does not accept arbitrary `profile_id`.
+- Deletes mutable TCG test state only for the active Owner profile.
+- Returns deleted row counts and reset timestamp.
+
+Tables reset for active Owner profile only:
+
+- `tcg_player_inventory`
+- `tcg_inventory_events`
+- `tcg_player_packs`
+- `tcg_pack_inventory_events`
+- `tcg_pack_openings`
+- `tcg_wallets`
+- `tcg_wallet_ledger`
+- `tcg_fragment_wallets`
+- `tcg_fragment_ledger`
+- `tcg_pity_counters`
+
+Tables not touched:
+
+- `tcg_sets`
+- `tcg_rarities`
+- `tcg_cards`
+- `tcg_packs`
+- `tcg_pack_drop_rates`
+- `tcg_shop_items`
+- `tcg_crafting_rules`
+- Other profiles' TCG rows
+- CP tables/systems
+
+Owner Lab UI:
+
+- Shows `Reset TCG Test State` inside Owner Lab only.
+- Requires typing exact `RESET_TCG`.
+- Uses a final confirmation prompt.
+- Calls only `tcg_owner_reset_my_tcg_test_state`.
+- Refetches collection, wallet/shop, packs, fragments/duplicates/pity, and balance report after success.
+- Does not auto-grant coins/cards after reset.
+
+Validation:
+
+- Local `npx.cmd supabase db reset` passed.
+- Focused reset validation: `10 PASS / 0 FAIL / 0 SKIP`.
+- Existing TCG regressions passed for 30B, 30D, 30E, 30F pack inventory, 30G-F1 fragments, 30G-F2 pity, and 30G-H Epic-rate validation.
+- `npm.cmd run build` passed with existing chunk-size warning only.
+- Production dry-run showed only `20260613105500_tcg_owner_reset_test_state.sql`.
+- Production read-only verification confirmed RPC signature, definition rows, Candidate A weights, active Owner count `1`, and no TCG CP-named columns.
+
+## 30G-H Candidate A Epic-Rate Balance Patch
+
+Status: implemented, locally validated, production-applied, and read-only verified. No pack price, pack size, Legendary/Mythic weight, duplicate economy backend, fragments/crafting, pity thresholds, frontend UI, member access, inventory, wallet, pack opening history, shop item, CP system, or unrelated behavior changed.
+
+Migration:
+
+- `supabase/migrations/20260613101908_tcg_candidate_a_epic_rate_balance.sql`
+
+Validation artifact:
+
+- `supabase/tests/tcg_30g_epic_rate_validation.sql`
+
+Applied Season 0 Test Pack weights:
+
+| Rarity | Previous | Current |
+| --- | ---: | ---: |
+| Common | 6000 | 6200 |
+| Uncommon | 2500 | 2500 |
+| Rare | 1000 | 900 |
+| Epic | 400 | 300 |
+| Legendary | 90 | 90 |
+| Mythic | 10 | 10 |
+
+Verification:
+
+- Total weight remains `10000`.
+- Exact Candidate A weights verified in local validation and production read-only query.
+- `tcg_owner_open_owned_pack` and `tcg_get_my_pity_status` remain present.
+- TCG schema still has no CP-named columns.
+- No production pack opening or inventory/wallet mutation was performed by Codex.
+
+## 30G-G Balance Direction Reset + Epic Rate Simulation
+
+Status: complete as docs/local simulation only. No SQL, migrations, RPC/RLS, production values, frontend UI, member access, production data, CP systems, or unrelated app behavior changed.
+
+Direction reset:
+
+- Duplicate Burn/Craft remains Owner-only experimental infrastructure.
+- Do not include Duplicate Economy in the default public member release unless Owner explicitly re-approves it later.
+- Trading is now the preferred future duplicate/social solution.
+- Burning may later become optional as coin sell, event trade-in, fragments backup, pity support, or limited duplicate sink.
+
+Trading design notes:
+
+- Future trading requires a separate spec.
+- One-to-one or offer-based trades are candidates.
+- Both players must confirm.
+- Backend escrow and trade logs/audit are required.
+- No CP exposure, no direct inventory writes, no arbitrary profile authority.
+- Cooldowns, limits, rarity restrictions, and locked/favorite-card restrictions should be designed before implementation.
+
+Epic-rate simulation:
+
+- Current baseline: `6000 / 2500 / 1000 / 400 / 90 / 10`.
+- Candidate A: `6200 / 2500 / 900 / 300 / 90 / 10`.
+- Candidate B: `6300 / 2500 / 850 / 250 / 90 / 10`.
+- Legendary and Mythic are unchanged in both candidates.
+- Current Epic chance is `18.46%` per pack.
+- Candidate A Epic chance is `14.13%` per pack.
+- Candidate B Epic chance is `11.89%` per pack.
+- 30G-G recommendation: Candidate A was the preferred next balance candidate because it makes Epic less casual without making packs feel flat.
+- 30G-H later approved and applied Candidate A.
 
 ## 30G-A Balance Planning
 
@@ -169,7 +306,8 @@ Interpretation:
 - 100 coins/pack remains a reasonable baseline with 400-550 coins/week.
 - Mythic is too rare for full-completion expectations without pity, event rewards, crafting, or trade-ins.
 - Duplicate value is needed before member release; duplicate pressure is already painful around 40 packs.
-- Do not apply higher drop rates yet.
+- Historical 30G-B recommendation was not to apply higher drop rates yet.
+- 30G-H later applies Candidate A as a low-rate Epic tuning patch, not a high-rarity buff.
 
 Next:
 
@@ -198,11 +336,11 @@ Key results:
 - Generous Dust makes Legendary crafting possible for 52.56% of simulated players by 100 packs, which is too fast for v1.
 - Soft pity barely changes early completion but guarantees Mythic by pack 151 and protects the extreme tail.
 
-Recommendation:
+Historical recommendation:
 
-- Keep current low drop rates unchanged.
+- Keep current low drop rates unchanged at that time.
 - Prefer Balanced Dust + Soft Pity as the future design direction.
-- Do not apply higher drop rates yet.
+- Do not apply higher drop rates yet at that time.
 - Do not use generous coin refunds.
 - Keep Mythic prestige/event/pity-only for v1.
 

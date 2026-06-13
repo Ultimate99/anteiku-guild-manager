@@ -1,5 +1,160 @@
 # Project State
 
+## Milestone 30G-I0 Owner-Only TCG Test State Reset Complete
+
+Milestone 30G-I0 adds a dangerous Owner-only reset tool for the current active Owner profile's TCG test state. It is intended only for clean Owner pack/economy feel retesting while TCG remains Owner-only.
+
+Backend:
+- Added `supabase/migrations/20260613105500_tcg_owner_reset_test_state.sql`.
+- Added RPC `tcg_owner_reset_my_tcg_test_state(p_confirm text)`.
+- RPC resolves the active Owner profile server-side with existing active-profile/Owner helpers.
+- RPC rejects non-Owner users and rejects any confirmation other than exact `RESET_TCG`.
+- RPC accepts no `profile_id` and cannot reset arbitrary profiles.
+
+Reset scope:
+- Resets only the current active Owner profile's mutable TCG test rows:
+  - `tcg_player_inventory`
+  - `tcg_inventory_events`
+  - `tcg_player_packs`
+  - `tcg_pack_inventory_events`
+  - `tcg_pack_openings`
+  - `tcg_wallets`
+  - `tcg_wallet_ledger`
+  - `tcg_fragment_wallets`
+  - `tcg_fragment_ledger`
+  - `tcg_pity_counters`
+- Does not touch catalog/drop-rate/shop/crafting definitions:
+  - `tcg_sets`
+  - `tcg_rarities`
+  - `tcg_cards`
+  - `tcg_packs`
+  - `tcg_pack_drop_rates`
+  - `tcg_shop_items`
+  - `tcg_crafting_rules`
+
+Frontend:
+- Added an Owner Lab reset card in `/tcg`.
+- Requires typing exact `RESET_TCG`.
+- Uses a final confirmation prompt.
+- Calls only `tcg_owner_reset_my_tcg_test_state`.
+- After success, refetches collection, wallet/shop, owned packs, fragments/duplicates/pity, and balance report state.
+- Does not auto-grant cards/coins after reset.
+
+Validation:
+- Local `npx.cmd supabase db reset` passed through `20260613105500_tcg_owner_reset_test_state.sql`.
+- Focused reset validation passed: `10 PASS / 0 FAIL / 0 SKIP`.
+- Existing TCG regressions passed:
+  - 30B catalog/inventory: `19 PASS / 0 FAIL / 0 SKIP`.
+  - 30D pack backend: `18 PASS / 0 FAIL / 0 SKIP`.
+  - 30E shop economy: `32 PASS / 0 FAIL / 0 SKIP`.
+  - 30F pack inventory: `31 PASS / 0 FAIL / 0 SKIP`.
+  - 30G-F1 fragments/crafting: `37 PASS / 0 FAIL / 0 SKIP`.
+  - 30G-F2 pity: `22 PASS / 0 FAIL / 0 SKIP`.
+  - 30G-H Epic-rate patch: `9 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing chunk-size warning only.
+
+Production:
+- Dry-run showed only `20260613105500_tcg_owner_reset_test_state.sql` pending.
+- Migration applied to production project `mzflfyxxkascrfpteexz`.
+- Read-only verification confirmed the RPC exists with only `p_confirm text`, is security definer, Candidate A drop weights remain live, definition tables remain populated, active Owner count is `1`, and TCG has no CP-named columns.
+- Codex did not click the production reset button or mutate production TCG test state through the reset RPC.
+
+Next:
+- Owner can manually reset their own TCG test state from Owner Lab when ready.
+- After reset, Owner can retest Candidate A pack feel from clean inventory/wallet/fragments/pity state.
+- Trading design/spec and member-safe TCG release planning remain future work.
+
+## Milestone 30G-H TCG Candidate A Epic-Rate Balance Patch Complete
+
+Milestone 30G-H implemented, locally validated, production-applied, and read-only verified the approved Candidate A drop-rate tuning patch for the Owner-only Season 0 Test Pack.
+
+Migration and validation artifacts:
+- `supabase/migrations/20260613101908_tcg_candidate_a_epic_rate_balance.sql`
+- `supabase/tests/tcg_30g_epic_rate_validation.sql`
+
+Applied weights:
+- Common: `6200`
+- Uncommon: `2500`
+- Rare: `900`
+- Epic: `300`
+- Legendary: `90`
+- Mythic: `10`
+- Total weight: `10000`
+
+Scope preserved:
+- Pack price remains `100` Anteiku Coins.
+- Pack size remains `5`.
+- Legendary and Mythic weights are unchanged.
+- Duplicate Burn/Craft remains experimental/later.
+- Trading remains the preferred future duplicate/social direction.
+- No frontend UI, member release, inventory, wallet, fragments, crafting rules, pity thresholds, pack openings, shop items, CP systems, or unrelated app behavior changed.
+
+Validation:
+- Local Supabase reset applied all migrations including 30G-H.
+- Focused 30G-H validation passed: `9 PASS / 0 FAIL / 0 SKIP`.
+- Existing TCG regressions passed:
+  - 30B catalog/inventory: `19 PASS / 0 FAIL / 0 SKIP`.
+  - 30D pack backend: `18 PASS / 0 FAIL / 0 SKIP`.
+  - 30E shop economy: `32 PASS / 0 FAIL / 0 SKIP`.
+  - 30F balance report: `20 PASS / 0 FAIL / 0 SKIP`.
+  - 30F pack inventory: `31 PASS / 0 FAIL / 0 SKIP`.
+  - 30G-F1 fragments/crafting: `37 PASS / 0 FAIL / 0 SKIP`.
+  - 30G-F2 pity: `22 PASS / 0 FAIL / 0 SKIP`.
+- `npm.cmd run build` passed with the existing chunk-size warning only.
+
+Production:
+- Dry-run showed only `20260613101908_tcg_candidate_a_epic_rate_balance.sql` pending.
+- Migration applied to production project `mzflfyxxkascrfpteexz`.
+- Read-only production verification confirmed exact Candidate A weights, total weight `10000`, `tcg_owner_open_owned_pack` exists, `tcg_get_my_pity_status` exists, and TCG has no CP-named columns.
+- Codex did not open production packs or mutate production inventory/wallet/pity data.
+
+Next:
+- Owner should review pack feel with Candidate A live.
+- Continue with Trading design/spec before any duplicate-social implementation, or member-safe release planning with test controls hidden.
+
+## Milestone 30G-G TCG Balance Direction Reset + Epic Rate Simulation Complete
+
+Milestone 30G-G is docs/local simulation only. No SQL, migrations, RPC/RLS, production drop rates, prices, pack size, frontend UI, member access, production data, CP systems, or unrelated app behavior changed.
+
+Direction reset:
+- Duplicate Burn/Craft is now experimental/later for public member release.
+- 30G-F1/F2/F3 remain Owner-only testing infrastructure.
+- Duplicate Economy is not required for initial member release unless explicitly approved later.
+- Trading is the preferred future duplicate/social solution.
+- Burning may later become optional as coin sell, event trade-in, fragments backup, pity support, or limited duplicate sink.
+
+Trading future notes:
+- Future trading needs a separate spec.
+- One-to-one or offer-based trades are candidates.
+- Both players must confirm.
+- Backend escrow and trade logs/audit are required.
+- No CP exposure, no direct inventory writes, no arbitrary profile authority.
+- Cooldowns, limits, rarity restrictions, and locked/favorite-card restrictions should be designed before implementation.
+
+Epic-rate simulation:
+- Current baseline: Common 6000, Uncommon 2500, Rare 1000, Epic 400, Legendary 90, Mythic 10.
+- Candidate A: Common 6200, Uncommon 2500, Rare 900, Epic 300, Legendary 90, Mythic 10.
+- Candidate B: Common 6300, Uncommon 2500, Rare 850, Epic 250, Legendary 90, Mythic 10.
+- Current Epic chance per pack: `18.46%`; expected first Epic: `5.42` packs.
+- Candidate A Epic chance per pack: `14.13%`; expected first Epic: `7.08` packs.
+- Candidate B Epic chance per pack: `11.89%`; expected first Epic: `8.41` packs.
+- Candidate A moves 90% collection timing at 5 packs/week from `7.53` weeks to `8.47` weeks.
+- Candidate B moves 90% collection timing at 5 packs/week to `9.05` weeks.
+
+Recommendation:
+- 30G-G recommended Candidate A as the next balance patch candidate if Owner wants Epics to feel less casual.
+- 30G-H later approved and applied Candidate A.
+- Keep Legendary and Mythic unchanged.
+- Keep TCG Owner-only until a member-release gate is separately planned.
+
+Validation:
+- `node scripts/tcg-balance-sim.mjs` completed.
+- `npm.cmd run build` should be run before handoff closes.
+- No Supabase commands are needed or allowed for this milestone.
+
+Next:
+- Owner pack-feel review with Candidate A live, or Trading design spec before member release planning.
+
 ## Milestone 30G-F3 TCG Fragments / Crafting UI Complete
 
 Milestone 30G-F3 adds an Owner-only `/tcg` Craft window for Anteiku Fragments, duplicate burning, missing-card crafting, and read-only pity status. This is frontend/service UI only; no SQL, migrations, backend/RPC/RLS, prices, drop weights, pack size, fragment values, crafting costs, pity thresholds, coin grants, CP systems, or member release behavior changed.
@@ -289,8 +444,8 @@ Pity/trade-in results:
 - Trade-in style dust crafting should be backend-owned, missing-card-only, and guarded by rarity/cooldown rules.
 
 Recommendation:
-- Keep current low drop rates unchanged.
-- Do not apply higher drop rates yet.
+- Keep current low drop rates unchanged at that time.
+- Do not apply higher drop rates yet at that time.
 - Prefer Balanced Dust + Soft Pity as the future implementation direction.
 - Avoid generous coin refunds.
 - Keep Mythic prestige/event/pity-only for v1.
@@ -335,7 +490,7 @@ Recommendation:
 - Keep current low rates for now.
 - Keep pack price at 100 Anteiku Coins for now.
 - Keep 4-5 packs/week as a reasonable member pacing test.
-- Do not apply higher drop rates yet.
+- Do not apply higher drop rates yet at that time.
 - Add/simulate duplicate value, sell/burn, crafting, event rewards, or pity before member release.
 
 Next:

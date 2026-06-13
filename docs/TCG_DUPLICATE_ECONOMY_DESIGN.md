@@ -1,10 +1,10 @@
 # TCG Duplicate Economy Design
 
-Milestone 30G-D is a docs-only design specification for the future TCG duplicate economy. It uses the 30G-C recommendation: **Balanced Dust + Soft Pity**. 30G-F1 has since implemented and production-applied the Balanced Dust backend foundation for Anteiku Fragments, duplicate burning, duplicate summary, and missing-card crafting. 30G-F2 has since implemented and production-applied backend-only Soft Pity counters and owned-pack integration. 30G-F3 adds the Owner-only `/tcg` Craft UI for fragments, duplicate burn, missing-card crafting, and read-only pity status. Current production prices, drop weights, pack size, coin grants, production wallet/inventory/fragment/pity data from Codex, and member access remain unchanged.
+Milestone 30G-D is a docs-only design specification for the future TCG duplicate economy. It originally used the 30G-C recommendation: **Balanced Dust + Soft Pity**. 30G-F1 has since implemented and production-applied the Balanced Dust backend foundation for Anteiku Fragments, duplicate burning, duplicate summary, and missing-card crafting. 30G-F2 has since implemented and production-applied backend-only Soft Pity counters and owned-pack integration. 30G-F3 adds the Owner-only `/tcg` Craft UI for fragments, duplicate burn, missing-card crafting, and read-only pity status. 30G-G resets the public-release direction: Duplicate Burn/Craft is experimental/later, and Trading is the preferred future duplicate/social solution. Current production prices, drop weights, pack size, coin grants, production wallet/inventory/fragment/pity data from Codex, and member access remain unchanged.
 
 ## Summary
 
-Recommended v1 direction:
+Historical 30G-D direction:
 
 - Add a non-premium crafting currency named **Anteiku Fragments**.
 - Let players burn duplicates into fragments.
@@ -14,7 +14,31 @@ Recommended v1 direction:
 - Add server-side Legendary/Mythic soft pity counters to protect extreme bad luck.
 - Keep current low drop rates unchanged.
 
-TCG remains Owner-only until this design is implemented, validated, and approved for member release.
+30G-G public-release direction:
+
+- Keep this Duplicate Economy system Owner-only and experimental/later by default.
+- Do not require Duplicate Burn/Craft for initial member release unless Owner explicitly re-approves it.
+- Prefer card Trading as the future duplicate/social solution.
+- Keep burn/craft available as optional later backup infrastructure: coin sell, event trade-in, dust/fragments, pity support, or limited duplicate sinks.
+
+TCG remains Owner-only until member-release gates are separately planned and approved.
+
+## Trading-First Duplicate Direction
+
+Trading should receive its own future design/spec before implementation.
+
+Planning notes:
+
+- Support one-to-one or offer-based trades.
+- Both players must confirm.
+- Backend escrow is required.
+- Trade logs/audit are required.
+- No CP exposure, CP joins, email, auth IDs, or private admin metadata.
+- No direct inventory writes from frontend.
+- Cooldowns, daily/weekly limits, or request limits should be considered to avoid abuse.
+- Rarity restrictions may be needed for Legendary/Mythic.
+- Locked/favorite cards should not be tradable unless explicitly unlocked.
+- Trades should resolve active profile server-side and must not accept arbitrary profile authority from the client.
 
 ## 30G-F3 Owner UI Status
 

@@ -263,6 +263,24 @@ function mapOwnedPackOpening(row) {
   };
 }
 
+function mapOwnerResetResult(row) {
+  return {
+    resetProfileId: row?.reset_profile_id || null,
+    inventoryDeleted: safeNumber(row?.inventory_deleted),
+    inventoryEventsDeleted: safeNumber(row?.inventory_events_deleted),
+    playerPacksDeleted: safeNumber(row?.player_packs_deleted),
+    packInventoryEventsDeleted: safeNumber(row?.pack_inventory_events_deleted),
+    packOpeningsDeleted: safeNumber(row?.pack_openings_deleted),
+    walletsDeleted: safeNumber(row?.wallets_deleted),
+    walletLedgerDeleted: safeNumber(row?.wallet_ledger_deleted),
+    fragmentWalletsDeleted: safeNumber(row?.fragment_wallets_deleted),
+    fragmentLedgerDeleted: safeNumber(row?.fragment_ledger_deleted),
+    pityCountersDeleted: safeNumber(row?.pity_counters_deleted),
+    resetAt: row?.reset_at || null,
+    message: safeString(row?.message),
+  };
+}
+
 export function mergeCatalogWithCollection(catalogRows, collectionRows) {
   const collectionByKey = new Map(
     collectionRows
@@ -600,4 +618,23 @@ export async function tcgOwnerGetBalanceReport() {
   }
 
   return data && typeof data === 'object' && !Array.isArray(data) ? data : null;
+}
+
+export async function tcgOwnerResetMyTcgTestState(confirmText) {
+  if (confirmText !== 'RESET_TCG') {
+    throw new Error('RESET_TCG confirmation is required.');
+  }
+
+  const client = requireSupabase();
+  const { data, error } = await client.rpc('tcg_owner_reset_my_tcg_test_state', {
+    p_confirm: confirmText,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  const row = Array.isArray(data) ? data[0] : data;
+
+  return mapOwnerResetResult(row);
 }

@@ -19,6 +19,7 @@ import {
   tcgOwnerGrantTestCoins,
   tcgOwnerGetBalanceReport,
   tcgOwnerOpenOwnedPack,
+  tcgOwnerResetMyTcgTestState,
   tcgSetCardFavorite,
 } from '../services/tcgService.js';
 
@@ -28,6 +29,7 @@ const ALL_RARITIES = 'all';
 const TEST_PACK_CODE = 'season_0_test_pack';
 const TEST_SHOP_ITEM_CODE = 'season_0_test_pack_shop';
 const TEST_COIN_GRANT_AMOUNT = 1000;
+const RESET_TCG_CONFIRMATION = 'RESET_TCG';
 const MYTHIC_RARITY_KEY = 'mythic';
 const CRAFTING_COSTS = {
   common: 30,
@@ -1287,14 +1289,36 @@ function TcgOwnerLabPanel({
   grantCoinsLoading,
   grantCoinsMessage,
   grantCoinsError,
+  resetConfirmValue,
+  resetLoading,
+  resetMessage,
+  resetError,
+  resetResult,
   wallet,
   language,
   t,
   onSmokeGrant,
   onGrantCoins,
+  onResetConfirmChange,
+  onResetTestState,
 }) {
   const displayedWallet = wallet ?? { balance: 0, currencyCode: 'anteiku_coins' };
   const currencyLabel = getCurrencyLabel(displayedWallet.currencyCode, t);
+  const resetReady = resetConfirmValue === RESET_TCG_CONFIRMATION;
+  const resetDeletedRows = resetResult
+    ? [
+      resetResult.inventoryDeleted,
+      resetResult.inventoryEventsDeleted,
+      resetResult.playerPacksDeleted,
+      resetResult.packInventoryEventsDeleted,
+      resetResult.packOpeningsDeleted,
+      resetResult.walletsDeleted,
+      resetResult.walletLedgerDeleted,
+      resetResult.fragmentWalletsDeleted,
+      resetResult.fragmentLedgerDeleted,
+      resetResult.pityCountersDeleted,
+    ].reduce((sum, count) => sum + count, 0)
+    : null;
 
   return (
     <section className="tcg-owner-lab-section" aria-label={t('tcg.ownerLab')}>
@@ -1350,6 +1374,47 @@ function TcgOwnerLabPanel({
           </button>
           {grantCoinsMessage ? <p className="success-copy">{grantCoinsMessage}</p> : null}
           {grantCoinsError ? <p className="tcg-pack-error" role="alert">{grantCoinsError}</p> : null}
+        </article>
+
+        <article className="tcg-owner-lab-card tcg-owner-reset-card" data-lab-card="reset">
+          <div>
+            <StatusBadge tone="danger">{t('tcg.ownerOnlyTestTool')}</StatusBadge>
+            <h3>{t('tcg.resetTcgTestState')}</h3>
+            <p>{t('tcg.resetTcgTestStateBody')}</p>
+          </div>
+
+          <p className="tcg-reset-warning">{t('tcg.resetCannotBeUndone')}</p>
+
+          <label className="tcg-reset-confirm-field">
+            <span>{t('tcg.resetTcgConfirmLabel')}</span>
+            <input
+              type="text"
+              value={resetConfirmValue}
+              onChange={(event) => onResetConfirmChange(event.target.value)}
+              placeholder={RESET_TCG_CONFIRMATION}
+              autoComplete="off"
+              spellCheck="false"
+              aria-label={t('tcg.resetTcgConfirmLabel')}
+            />
+          </label>
+
+          <button
+            type="button"
+            className="danger-action compact-action"
+            onClick={onResetTestState}
+            disabled={resetLoading || !resetReady}
+            aria-busy={resetLoading}
+          >
+            {resetLoading ? t('common.working') : t('tcg.resetTcgButton')}
+          </button>
+
+          {resetMessage ? <p className="success-copy">{resetMessage}</p> : null}
+          {resetDeletedRows !== null ? (
+            <p className="tcg-reset-count">
+              {t('tcg.resetDeletedRows', { count: formatNumber(resetDeletedRows, language) })}
+            </p>
+          ) : null}
+          {resetError ? <p className="tcg-pack-error" role="alert">{resetError}</p> : null}
         </article>
       </div>
     </section>
@@ -1497,6 +1562,11 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
   const [grantCoinsLoading, setGrantCoinsLoading] = useState(false);
   const [grantCoinsMessage, setGrantCoinsMessage] = useState('');
   const [grantCoinsError, setGrantCoinsError] = useState('');
+  const [resetConfirmValue, setResetConfirmValue] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetMessage, setResetMessage] = useState('');
+  const [resetError, setResetError] = useState('');
+  const [resetResult, setResetResult] = useState(null);
   const [purchaseLoadingCode, setPurchaseLoadingCode] = useState('');
   const [shopPurchase, setShopPurchase] = useState(null);
   const [balanceReport, setBalanceReport] = useState(null);
@@ -1518,6 +1588,7 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
   const ownedPackOpeningRequestRef = useRef(false);
   const grantCoinsRequestRef = useRef(false);
   const buyPackRequestRef = useRef(false);
+  const resetRequestRef = useRef(false);
   const burnRequestRef = useRef(false);
   const craftRequestRef = useRef(false);
   const ripPointerStartRef = useRef(null);
@@ -1887,6 +1958,68 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
       setGrantCoinsLoading(false);
     }
   }, [isOwner, loadEconomy, t]);
+
+  const handleResetTcgTestState = useCallback(async () => {
+    if (!isOwner || resetRequestRef.current || resetConfirmValue !== RESET_TCG_CONFIRMATION) {
+      return;
+    }
+
+    const confirmed = window.confirm(t('tcg.resetTcgFinalConfirm'));
+
+    if (!confirmed) {
+      return;
+    }
+
+    resetRequestRef.current = true;
+    setResetLoading(true);
+    setResetMessage('');
+    setResetError('');
+    setResetResult(null);
+    setSmokeGrantMessage('');
+    setGrantCoinsMessage('');
+    setGrantCoinsError('');
+    setCraftActionMessage('');
+    setCraftActionError('');
+    setPackOpeningError('');
+    setPackInventoryError('');
+    setEconomyError('');
+    setBalanceReportError('');
+    setShopPurchase(null);
+    setPackOpening(null);
+    setPackOverlay(null);
+    setSelectedCard(null);
+
+    try {
+      const result = await tcgOwnerResetMyTcgTestState(RESET_TCG_CONFIRMATION);
+      setResetResult(result);
+      setResetMessage(t('tcg.resetTcgComplete'));
+      setResetConfirmValue('');
+      setFilter('all');
+      setRarityFilter(ALL_RARITIES);
+      setActiveWindow('ownerLab');
+      await Promise.allSettled([
+        loadCards(),
+        loadEconomy(),
+        loadPackInventory(),
+        loadCrafting(),
+        loadBalanceReport(),
+      ]);
+    } catch (resetFailure) {
+      setResetError(getDisplayError(resetFailure, t('tcg.resetTcgFailed')));
+    } finally {
+      resetRequestRef.current = false;
+      setResetLoading(false);
+    }
+  }, [
+    isOwner,
+    loadBalanceReport,
+    loadCards,
+    loadCrafting,
+    loadEconomy,
+    loadPackInventory,
+    resetConfirmValue,
+    t,
+  ]);
 
   const handleBuyTestPack = useCallback(async (shopItemCode = TEST_SHOP_ITEM_CODE) => {
     if (!isOwner) {
@@ -2402,11 +2535,18 @@ export function TcgCollection({ activeAdminContext, activeAdminContextLoading })
               grantCoinsLoading={grantCoinsLoading}
               grantCoinsMessage={grantCoinsMessage}
               grantCoinsError={grantCoinsError}
+              resetConfirmValue={resetConfirmValue}
+              resetLoading={resetLoading}
+              resetMessage={resetMessage}
+              resetError={resetError}
+              resetResult={resetResult}
               wallet={wallet}
               language={language}
               t={t}
               onSmokeGrant={handleSmokeGrant}
               onGrantCoins={handleGrantTestCoins}
+              onResetConfirmChange={setResetConfirmValue}
+              onResetTestState={handleResetTcgTestState}
             />
             <TcgPackPreviewPanel
               opening={packOpening}
