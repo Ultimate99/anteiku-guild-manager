@@ -34,6 +34,14 @@ Only browser-safe Supabase values belong in `.env.local`.
 
 Never add service role keys, `sb_secret_*` keys, database URLs, JWT secrets, SMTP secrets, or OAuth secrets to frontend env files.
 
+For local Edge Function testing, copy the server-only template separately:
+
+```powershell
+copy supabase\functions\.env.example supabase\functions\.env
+```
+
+Set `PUSH_SENDER_SECRET` and the VAPID values only in that ignored server-side file. Never place them in `.env.local`, Vite variables, browser code, or committed docs.
+
 ## Local Supabase
 
 Use local Supabase for development and disposable validation.

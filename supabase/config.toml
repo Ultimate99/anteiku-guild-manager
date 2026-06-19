@@ -380,6 +380,11 @@ deno_version = 2
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 
+[functions.send-push-notifications]
+# This server-to-server function performs its own mandatory PUSH_SENDER_SECRET
+# validation so either the Authorization bearer header or x-cron-secret can be used.
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 55432
