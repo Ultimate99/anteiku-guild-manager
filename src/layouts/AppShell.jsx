@@ -15,7 +15,7 @@ export function AppShell({ activeItem, activePage, children, navigationItems, on
   const activeDiffersFromLegacy = Boolean(activeProfile?.profileId && profile?.id && activeProfile.profileId !== profile.id);
 
   return (
-    <div className="app-shell">
+    <div className="app-shell" data-page={activePage}>
       <header className="topbar">
         <div className="brand-lockup">
           <img src="/anteiku-mark.svg" alt="" className="brand-mark" />
