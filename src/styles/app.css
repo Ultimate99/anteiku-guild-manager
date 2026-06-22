@@ -3865,6 +3865,9 @@ button.command-card:focus-visible {
 
 .guild-wall-page {
   gap: 12px;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
   padding-bottom: 34px;
 }
 
@@ -3947,16 +3950,24 @@ button.command-card:focus-visible {
 
 .wall-composer-panel {
   display: grid;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   gap: 9px;
   padding: 12px;
 }
 
 .wall-composer-form {
   display: grid;
+  min-width: 0;
+  max-width: 100%;
   gap: 8px;
 }
 
 .wall-composer-form textarea {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   min-height: 82px;
   resize: vertical;
 }
@@ -3971,14 +3982,22 @@ button.command-card:focus-visible {
 
 .guild-wall-feed {
   display: grid;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   align-items: start;
   align-content: start;
+  grid-template-columns: 1fr;
   gap: 12px;
 }
 
 .wall-post-card {
   display: grid;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   align-self: start;
+  align-content: start;
   height: fit-content;
   gap: 10px;
   padding: 13px;
@@ -4004,6 +4023,7 @@ button.command-card:focus-visible {
   align-items: center;
   gap: 10px;
   min-width: 0;
+  max-width: 100%;
 }
 
 .wall-post-avatar .cosmetic-preview-stage {
@@ -4019,6 +4039,7 @@ button.command-card:focus-visible {
   display: grid;
   gap: 4px;
   min-width: 0;
+  max-width: 100%;
 }
 
 .wall-post-author-row,
@@ -4028,6 +4049,7 @@ button.command-card:focus-visible {
   align-items: center;
   gap: 7px;
   min-width: 0;
+  max-width: 100%;
 }
 
 .wall-post-meta-row {
@@ -4035,6 +4057,7 @@ button.command-card:focus-visible {
   flex-wrap: wrap;
   gap: 4px 8px;
   min-width: 0;
+  max-width: 100%;
 }
 
 .wall-post-identity strong,
@@ -4128,6 +4151,9 @@ button.command-card:focus-visible {
 
 .wall-card-actions {
   display: grid;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   align-items: start;
   align-content: start;
   gap: 8px;
@@ -4135,10 +4161,12 @@ button.command-card:focus-visible {
 
 .wall-reactions {
   display: flex;
+  max-width: 100%;
   align-items: center;
   align-self: start;
   gap: 6px;
   overflow-x: auto;
+  overscroll-behavior-x: contain;
   padding: 1px 0 3px;
   scrollbar-width: none;
 }
@@ -4151,6 +4179,7 @@ button.command-card:focus-visible {
   display: inline-flex;
   flex: 0 0 auto;
   align-self: center;
+  height: auto;
   min-height: 34px;
   align-items: center;
   gap: 5px;
@@ -4266,6 +4295,9 @@ button.command-card:focus-visible {
 
 .wall-comments {
   display: grid;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   gap: 9px;
   padding-top: 10px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -4273,6 +4305,8 @@ button.command-card:focus-visible {
 
 .wall-comments-title {
   display: flex;
+  min-width: 0;
+  max-width: 100%;
   align-items: center;
   justify-content: space-between;
   color: #f2f2f5;
@@ -4287,11 +4321,15 @@ button.command-card:focus-visible {
 
 .wall-comment-list {
   display: grid;
+  min-width: 0;
+  max-width: 100%;
   gap: 8px;
 }
 
 .wall-comment-card {
   display: grid;
+  min-width: 0;
+  max-width: 100%;
   gap: 7px;
   padding: 9px;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -4311,8 +4349,15 @@ button.command-card:focus-visible {
 .wall-comment-form {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
+  min-width: 0;
+  max-width: 100%;
   align-items: center;
   gap: 8px;
+}
+
+.wall-comment-form input {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .wall-load-older {
@@ -11513,7 +11558,10 @@ textarea {
     max-width: none;
   }
 
-  .guild-wall-feed,
+  .guild-wall-feed {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr));
+  }
+
   .three-v-three-team-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
