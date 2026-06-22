@@ -304,7 +304,9 @@ export function PublicMemberProfile({ profileSlug, onNavigate }) {
                 <div className="status-badge-row public-profile-badges">
                   {profile.guildName ? <StatusBadge tone="crimson">{profile.guildName}</StatusBadge> : null}
                   {profile.roleLabel ? <StatusBadge tone="info">{profile.roleLabel}</StatusBadge> : null}
-                  {profile.rosterStatus ? <StatusBadge tone="success">{profile.rosterStatus}</StatusBadge> : null}
+                  {profile.rosterStatus && String(profile.rosterStatus).toLowerCase() !== 'active' ? (
+                    <StatusBadge tone="warning">{profile.rosterStatus}</StatusBadge>
+                  ) : null}
                 </div>
               </div>
             </div>

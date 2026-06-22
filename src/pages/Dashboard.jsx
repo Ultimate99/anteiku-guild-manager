@@ -30,9 +30,12 @@ export function Dashboard({ onNavigate }) {
   const guildName = dashboardProfile?.guildName || guild?.name || t('guild.assigned');
   const displayRole = dashboardProfile?.role || membership?.role || 'member';
   const displayRosterStatus = dashboardProfile?.rosterStatus || membership?.roster_status || 'active';
+  const displayApprovalStatus = dashboardProfile?.approvalStatus || profile?.approval_status || 'approved';
   const activeDiffersFromLegacy = Boolean(dashboardProfile?.profileId && profile?.id && dashboardProfile.profileId !== profile.id);
-  const rosterStatus = membership?.roster_status ?? 'active';
+  const rosterStatus = displayRosterStatus;
   const gvgStatus = isGvgLimitedRosterStatus(rosterStatus) ? t('dashboard.notExpected') : t('dashboard.awaitingEvent');
+  const shouldShowApprovalBadge = displayApprovalStatus !== 'approved';
+  const shouldShowRosterBadge = displayRosterStatus !== 'active';
   const canNavigate = typeof onNavigate === 'function';
 
   useEffect(() => {
@@ -121,10 +124,16 @@ export function Dashboard({ onNavigate }) {
               <p>@{displaySlug}</p>
             </div>
           </div>
-          <div className="status-badge-row dashboard-status-row">
-            <StatusBadge tone="success">{t(`approvalStatus.${dashboardProfile?.approvalStatus || profile?.approval_status || 'approved'}`)}</StatusBadge>
-            <StatusBadge tone={rosterStatusTone(displayRosterStatus)}>{t(`roster.status.${displayRosterStatus}.label`)}</StatusBadge>
-          </div>
+          {shouldShowApprovalBadge || shouldShowRosterBadge ? (
+            <div className="status-badge-row dashboard-status-row">
+              {shouldShowApprovalBadge ? (
+                <StatusBadge tone="warning">{t(`approvalStatus.${displayApprovalStatus}`)}</StatusBadge>
+              ) : null}
+              {shouldShowRosterBadge ? (
+                <StatusBadge tone={rosterStatusTone(displayRosterStatus)}>{t(`roster.status.${displayRosterStatus}.label`)}</StatusBadge>
+              ) : null}
+            </div>
+          ) : null}
         </div>
         {activeDiffersFromLegacy ? (
           <div className="active-profile-viewer-note" data-switched={activeDiffersFromLegacy}>
@@ -149,7 +158,6 @@ export function Dashboard({ onNavigate }) {
         </div>
         <div className="member-id-badges dashboard-rank-row">
           <RankBadge compact summary={rankSummary} loading={rankLoading} error={rankError} />
-          <StatusBadge tone={rosterStatusTone(rosterStatus)}>{t(`roster.status.${rosterStatus}.label`)}</StatusBadge>
         </div>
         {rosterStatus !== 'active' ? <p className="muted-copy">{t(`roster.status.${rosterStatus}.summary`)}</p> : null}
       </section>

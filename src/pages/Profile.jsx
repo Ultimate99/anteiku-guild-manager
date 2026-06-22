@@ -137,6 +137,8 @@ export function Profile() {
   const displayProfileSlug = displayProfile?.profileSlug || displayProfile?.username || '';
   const displayIgn = displayProfile?.ign || '';
   const rosterStatus = displayRosterStatus;
+  const shouldShowApprovalBadge = displayApprovalStatus !== 'approved';
+  const shouldShowRosterBadge = rosterStatus !== 'active';
   const rankVisualKey = rankSummary?.visualKey ?? 'unranked';
   const canSubmitCp = Boolean(cpWindowState?.can_submit);
   const pushConfigured = Boolean(VAPID_PUBLIC_KEY);
@@ -872,11 +874,17 @@ export function Profile() {
               <h3>{displayIgn || t('dashboard.memberFallback')}</h3>
               <p>@{displayProfileSlug || t('common.unknown')}</p>
             </div>
-            <div className="status-badge-row">
-              <StatusBadge tone="success">{t(`approvalStatus.${displayApprovalStatus}`)}</StatusBadge>
-              <StatusBadge tone={rosterStatusTone(rosterStatus)}>{t(`roster.status.${rosterStatus}.label`)}</StatusBadge>
-              {activeProfileDiffersFromLegacy ? <StatusBadge tone="warning">{t('profile.activeProfile')}</StatusBadge> : null}
-            </div>
+            {shouldShowApprovalBadge || shouldShowRosterBadge || activeProfileDiffersFromLegacy ? (
+              <div className="status-badge-row">
+                {shouldShowApprovalBadge ? (
+                  <StatusBadge tone="warning">{t(`approvalStatus.${displayApprovalStatus}`)}</StatusBadge>
+                ) : null}
+                {shouldShowRosterBadge ? (
+                  <StatusBadge tone={rosterStatusTone(rosterStatus)}>{t(`roster.status.${rosterStatus}.label`)}</StatusBadge>
+                ) : null}
+                {activeProfileDiffersFromLegacy ? <StatusBadge tone="warning">{t('profile.activeProfile')}</StatusBadge> : null}
+              </div>
+            ) : null}
           </div>
           <div className="profile-identity-actions">
             {canUseLegacyOwnProfileStats ? (
@@ -1435,7 +1443,6 @@ export function Profile() {
                     </button>
                   </div>
                   <strong>{displayIgn || t('common.notSet')}</strong>
-                  <small>{t('profile.editableIgn')}</small>
                 </div>
               )}
               <div>
@@ -1445,15 +1452,6 @@ export function Profile() {
               <div>
                 <span>{t('profile.role')}</span>
                 <strong>{t(`roles.${displayRole}`)}</strong>
-              </div>
-              <div>
-                <span>{t('profile.rosterStatus')}</span>
-                <strong>{t(`roster.status.${rosterStatus}.label`)}</strong>
-                <small>{t(`roster.status.${rosterStatus}.summary`)}</small>
-              </div>
-              <div>
-                <span>{t('profile.profileStatus')}</span>
-                <strong>{t(`approvalStatus.${displayApprovalStatus}`)}</strong>
               </div>
             </div>
 

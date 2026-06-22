@@ -51,6 +51,7 @@ export function Gvg() {
     isMembershipBlocked || isHardBlockedRosterStatus(rosterStatus);
   const isGvgLimited = isGvgLimitedRosterStatus(rosterStatus);
   const canUseGvg = activeProfileReady && !isRosterBlocked && !isGvgLimited;
+  const shouldShowRosterBadge = rosterStatus !== 'active';
   const [events, setEvents] = useState([]);
   const [selectedEventId, setSelectedEventId] = useState('');
   const [currentVote, setCurrentVote] = useState(null);
@@ -220,7 +221,9 @@ export function Gvg() {
           <div>
             <div className="status-badge-row">
               <StatusBadge tone={selectedEvent ? 'success' : 'warning'}>{t('gvg.voteBadge')}</StatusBadge>
-              <StatusBadge tone={rosterStatusTone(rosterStatus)}>{t(`roster.status.${rosterStatus}.label`)}</StatusBadge>
+              {shouldShowRosterBadge ? (
+                <StatusBadge tone={rosterStatusTone(rosterStatus)}>{t(`roster.status.${rosterStatus}.label`)}</StatusBadge>
+              ) : null}
             </div>
             <h3>{t('gvg.readinessTitle')}</h3>
             <p>{t('gvg.readinessBody')}</p>
