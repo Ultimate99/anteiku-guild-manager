@@ -3971,11 +3971,15 @@ button.command-card:focus-visible {
 
 .guild-wall-feed {
   display: grid;
+  align-items: start;
+  align-content: start;
   gap: 12px;
 }
 
 .wall-post-card {
   display: grid;
+  align-self: start;
+  height: fit-content;
   gap: 10px;
   padding: 13px;
   overflow: hidden;
@@ -4124,11 +4128,15 @@ button.command-card:focus-visible {
 
 .wall-card-actions {
   display: grid;
+  align-items: start;
+  align-content: start;
   gap: 8px;
 }
 
 .wall-reactions {
   display: flex;
+  align-items: center;
+  align-self: start;
   gap: 6px;
   overflow-x: auto;
   padding: 1px 0 3px;
@@ -4142,6 +4150,7 @@ button.command-card:focus-visible {
 .wall-reaction-button {
   display: inline-flex;
   flex: 0 0 auto;
+  align-self: center;
   min-height: 34px;
   align-items: center;
   gap: 5px;
