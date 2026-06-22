@@ -388,6 +388,8 @@ export const fr = {
     postPinned: 'Post epingle.',
     postUnpinned: 'Post desenpingle.',
     comment: 'Commentaire',
+    showComments: 'Afficher les commentaires ({count})',
+    hideComments: 'Masquer les commentaires ({count})',
     commentCreated: 'Commentaire ajoute.',
     commentDeleted: 'Commentaire supprime.',
     addComment: 'Ajouter un commentaire...',

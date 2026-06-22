@@ -4208,6 +4208,45 @@ button.command-card:focus-visible {
   color: #fff;
 }
 
+.wall-comment-toggle {
+  display: inline-flex;
+  width: fit-content;
+  min-width: 0;
+  min-height: 36px;
+  align-items: center;
+  justify-self: start;
+  gap: 6px;
+  padding: 7px 11px;
+  border: 1px solid rgba(255, 98, 115, 0.26);
+  background:
+    linear-gradient(135deg, rgba(197, 22, 39, 0.18), transparent 70%),
+    rgba(0, 0, 0, 0.3);
+  color: #f4d9dd;
+  font-size: 0.78rem;
+  font-weight: 950;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.035);
+}
+
+.wall-comment-toggle span {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.wall-comment-toggle strong {
+  color: #fff;
+  font-size: 0.82rem;
+}
+
+.wall-comment-toggle[data-active="true"] {
+  border-color: rgba(255, 204, 118, 0.42);
+  background:
+    linear-gradient(135deg, rgba(255, 204, 118, 0.16), transparent 68%),
+    rgba(197, 22, 39, 0.2);
+  color: #fff3d5;
+}
+
 .wall-reaction-details-panel {
   position: fixed;
   right: 18px;

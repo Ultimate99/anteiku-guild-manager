@@ -388,6 +388,8 @@ export const en = {
     postPinned: 'Post pinned.',
     postUnpinned: 'Post unpinned.',
     comment: 'Comment',
+    showComments: 'Show comments ({count})',
+    hideComments: 'Hide comments ({count})',
     commentCreated: 'Comment added.',
     commentDeleted: 'Comment deleted.',
     addComment: 'Add a comment...',

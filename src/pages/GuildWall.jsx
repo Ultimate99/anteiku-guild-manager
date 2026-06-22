@@ -368,9 +368,11 @@ function WallPostCard({
   post,
   viewerCanPost,
   commentDraft,
+  commentsExpanded,
   busyAction,
   onCommentDraftChange,
   onCommentSubmit,
+  onToggleComments,
   onDeletePost,
   onModerateDeletePost,
   onTogglePin,
@@ -386,6 +388,8 @@ function WallPostCard({
   const canModerateOnly = post.canModerate && !post.canDelete;
   const authorGuild = post.guildName || post.authorGuildName || t('wall.guildOnly');
   const scopeLabel = post.isGlobal ? `${t('wall.global')} - ${authorGuild}` : authorGuild;
+  const commentCount = post.comments.length;
+  const commentsId = `wall-comments-${post.id}`;
 
   return (
     <article className="panel wall-post-card" data-pinned={post.isPinned} data-global={post.isGlobal}>
@@ -435,6 +439,23 @@ function WallPostCard({
           ))}
         </div>
 
+        <button
+          type="button"
+          className="wall-comment-toggle"
+          data-active={commentsExpanded ? 'true' : 'false'}
+          aria-expanded={commentsExpanded}
+          aria-controls={commentsId}
+          aria-label={
+            commentsExpanded
+              ? t('wall.hideComments', { count: commentCount })
+              : t('wall.showComments', { count: commentCount })
+          }
+          onClick={() => onToggleComments(post.id)}
+        >
+          <span aria-hidden="true">💬</span>
+          <strong>{formatWallNumber(commentCount, language)}</strong>
+        </button>
+
         <div className="wall-moderation-actions">
           {post.canDelete ? (
             <button type="button" className="inline-text-action" onClick={() => onDeletePost(post.id)} disabled={busyAction === post.id}>
@@ -459,47 +480,49 @@ function WallPostCard({
         </div>
       </div>
 
-      <section className="wall-comments">
-        <div className="wall-comments-title">
-          <strong>{t('wall.comment')}</strong>
-          <span>{post.comments.length}</span>
-        </div>
-
-        {post.comments.length > 0 ? (
-          <div className="wall-comment-list">
-            {post.comments.map((comment) => (
-              <WallComment
-                key={comment.id}
-                comment={comment}
-                viewerCanPost={viewerCanPost}
-                busyAction={busyAction}
-                onDelete={onCommentDelete}
-                onModerateDelete={onCommentModerateDelete}
-                onReactionToggle={onCommentReactionToggle}
-                onShowReactionDetails={onCommentReactionDetails}
-                onOpenProfile={onOpenProfile}
-              />
-            ))}
+      {commentsExpanded ? (
+        <section className="wall-comments" id={commentsId}>
+          <div className="wall-comments-title">
+            <strong>{t('wall.comment')}</strong>
+            <span>{formatWallNumber(commentCount, language)}</span>
           </div>
-        ) : null}
 
-        {viewerCanPost && !post.isLocked ? (
-          <form className="wall-comment-form" onSubmit={(event) => onCommentSubmit(event, post.id)}>
-            <input
-              type="text"
-              value={commentDraft}
-              onChange={(event) => onCommentDraftChange(post.id, event.target.value)}
-              placeholder={t('wall.addComment')}
-              maxLength={500}
-            />
-            <button type="submit" className="secondary-action compact-action" disabled={!commentDraft.trim() || busyAction === post.id}>
-              {t('wall.comment')}
-            </button>
-          </form>
-        ) : post.isLocked ? (
-          <p className="notice-line">{t('wall.locked')}</p>
-        ) : null}
-      </section>
+          {commentCount > 0 ? (
+            <div className="wall-comment-list">
+              {post.comments.map((comment) => (
+                <WallComment
+                  key={comment.id}
+                  comment={comment}
+                  viewerCanPost={viewerCanPost}
+                  busyAction={busyAction}
+                  onDelete={onCommentDelete}
+                  onModerateDelete={onCommentModerateDelete}
+                  onReactionToggle={onCommentReactionToggle}
+                  onShowReactionDetails={onCommentReactionDetails}
+                  onOpenProfile={onOpenProfile}
+                />
+              ))}
+            </div>
+          ) : null}
+
+          {viewerCanPost && !post.isLocked ? (
+            <form className="wall-comment-form" onSubmit={(event) => onCommentSubmit(event, post.id)}>
+              <input
+                type="text"
+                value={commentDraft}
+                onChange={(event) => onCommentDraftChange(post.id, event.target.value)}
+                placeholder={t('wall.addComment')}
+                maxLength={500}
+              />
+              <button type="submit" className="secondary-action compact-action" disabled={!commentDraft.trim() || busyAction === post.id}>
+                {t('wall.comment')}
+              </button>
+            </form>
+          ) : post.isLocked ? (
+            <p className="notice-line">{t('wall.locked')}</p>
+          ) : null}
+        </section>
+      ) : null}
     </article>
   );
 }
@@ -513,6 +536,7 @@ export function GuildWall({ onNavigate }) {
   const [posts, setPosts] = useState([]);
   const [postDraft, setPostDraft] = useState('');
   const [commentDrafts, setCommentDrafts] = useState({});
+  const [expandedCommentPostIds, setExpandedCommentPostIds] = useState(() => new Set());
   const [loading, setLoading] = useState(false);
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [busyAction, setBusyAction] = useState('');
@@ -606,6 +630,7 @@ export function GuildWall({ onNavigate }) {
     setMessage('');
     setPostDraft('');
     setCommentDrafts({});
+    setExpandedCommentPostIds(new Set());
     setReactionDetails((current) => ({
       ...current,
       open: false,
@@ -707,6 +732,20 @@ export function GuildWall({ onNavigate }) {
     );
   }
 
+  function togglePostComments(postId) {
+    setExpandedCommentPostIds((current) => {
+      const next = new Set(current);
+
+      if (next.has(postId)) {
+        next.delete(postId);
+      } else {
+        next.add(postId);
+      }
+
+      return next;
+    });
+  }
+
   function handleCommentSubmit(event, postId) {
     event.preventDefault();
     const content = (commentDrafts[postId] ?? '').trim();
@@ -720,6 +759,11 @@ export function GuildWall({ onNavigate }) {
       async () => {
         await createWallComment({ postId, content });
         setCommentDrafts((current) => ({ ...current, [postId]: '' }));
+        setExpandedCommentPostIds((current) => {
+          const next = new Set(current);
+          next.add(postId);
+          return next;
+        });
       },
       t('wall.commentCreated'),
     );
@@ -797,9 +841,11 @@ export function GuildWall({ onNavigate }) {
               post={post}
               viewerCanPost={viewerCanPost}
               commentDraft={commentDrafts[post.id] ?? ''}
+              commentsExpanded={expandedCommentPostIds.has(post.id)}
               busyAction={busyAction}
               onCommentDraftChange={(postId, value) => setCommentDrafts((current) => ({ ...current, [postId]: value }))}
               onCommentSubmit={handleCommentSubmit}
+              onToggleComments={togglePostComments}
               onDeletePost={(postId) => runAction(postId, () => deleteWallPost(postId), t('wall.postDeleted'))}
               onModerateDeletePost={(postId) =>
                 runAction(postId, () => moderateDeleteWallPost(postId), t('wall.postDeleted'))
