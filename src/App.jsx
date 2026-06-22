@@ -88,6 +88,7 @@ function readInitialPageFromPath() {
 }
 
 function OfflineNotice() {
+  const { t } = useLanguage();
   const [isOnline, setIsOnline] = useState(() => (typeof navigator === 'undefined' ? true : navigator.onLine));
 
   useEffect(() => {
@@ -109,8 +110,8 @@ function OfflineNotice() {
 
   return (
     <aside className="offline-notice-banner" role="status" aria-live="polite">
-      <strong>You are offline</strong>
-      <span>Live guild data requires an internet connection.</span>
+      <strong>{t('app.offlineTitle')}</strong>
+      <span>{t('app.offlineBody')}</span>
     </aside>
   );
 }

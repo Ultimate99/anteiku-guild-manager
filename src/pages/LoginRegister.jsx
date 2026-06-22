@@ -44,12 +44,37 @@ export function LoginRegister() {
   const [mode, setMode] = useState('sign-in');
   const [form, setForm] = useState(initialForm);
   const [guilds, setGuilds] = useState([]);
+  const [guildLoading, setGuildLoading] = useState(false);
   const [guildError, setGuildError] = useState('');
+  const [guildLoadRequest, setGuildLoadRequest] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const isCompletingProfile = accessState === 'needs_profile';
   const isPasswordResetMode = mode === 'forgot-password';
+  const isRegistrationMode = mode === 'register' || isCompletingProfile;
   const displayNotice = notice ? translateAuthFeedback(notice, t) : '';
   const displayError = error ? translateAuthFeedback(error, t) : '';
+  const displayGuildError =
+    guildError === 'empty'
+      ? t('auth.guildLoadEmpty')
+      : guildError === 'load_failed'
+        ? t('auth.guildLoadFailed')
+        : '';
+  const registrationGuildUnavailable =
+    isRegistrationMode && (guildLoading || Boolean(guildError) || guilds.length === 0);
+  const submitDisabled = !isSupabaseConfigured || submitting || registrationGuildUnavailable;
+  const backendStatus = useMemo(() => {
+    if (!isSupabaseConfigured) {
+      return {
+        label: t('auth.backendSetupNeeded'),
+        tone: 'danger',
+      };
+    }
+
+    return {
+      label: t('auth.backendReady'),
+      tone: 'success',
+    };
+  }, [isSupabaseConfigured, t]);
 
   useEffect(() => {
     if (isCompletingProfile) {
@@ -61,6 +86,19 @@ export function LoginRegister() {
     let mounted = true;
 
     async function loadGuilds() {
+      if (!isSupabaseConfigured) {
+        setGuilds([]);
+        setGuildError('');
+        setForm((current) => ({
+          ...current,
+          requestedGuildId: '',
+        }));
+        return;
+      }
+
+      setGuildLoading(true);
+      setGuildError('');
+
       try {
         const coreGuilds = await getCoreGuilds();
 
@@ -69,13 +107,25 @@ export function LoginRegister() {
         }
 
         setGuilds(coreGuilds);
+        setGuildError(coreGuilds.length ? '' : 'empty');
         setForm((current) => ({
           ...current,
-          requestedGuildId: current.requestedGuildId || coreGuilds[0]?.id || '',
+          requestedGuildId: coreGuilds.some((guild) => guild.id === current.requestedGuildId)
+            ? current.requestedGuildId
+            : coreGuilds[0]?.id || '',
         }));
       } catch (loadError) {
         if (mounted) {
-          setGuildError(loadError.message);
+          setGuilds([]);
+          setGuildError('load_failed');
+          setForm((current) => ({
+            ...current,
+            requestedGuildId: '',
+          }));
+        }
+      } finally {
+        if (mounted) {
+          setGuildLoading(false);
         }
       }
     }
@@ -85,7 +135,7 @@ export function LoginRegister() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [guildLoadRequest]);
 
   const normalizedUsername = useMemo(() => form.username.trim().toLowerCase(), [form.username]);
 
@@ -117,6 +167,10 @@ export function LoginRegister() {
         return;
       }
 
+      if (registrationGuildUnavailable) {
+        throw new Error(t('auth.errors.guildListUnavailable'));
+      }
+
       if (!form.requestedGuildId) {
         throw new Error(t('auth.errors.chooseGuild'));
       }
@@ -145,11 +199,9 @@ export function LoginRegister() {
   }
 
   return (
-    <div className="stack">
+    <div className="stack auth-entry-stack">
       <section className="panel hero-panel member-compact-panel auth-hero-panel">
-        <StatusBadge tone={isSupabaseConfigured ? 'success' : 'danger'}>
-          {isSupabaseConfigured ? t('common.ready') : t('common.setupNeeded')}
-        </StatusBadge>
+        <StatusBadge tone={backendStatus.tone}>{backendStatus.label}</StatusBadge>
         <h3>{t('auth.enterGuild')}</h3>
         <p>{t('auth.registerForGuildApproval')}</p>
       </section>
@@ -227,10 +279,16 @@ export function LoginRegister() {
               <select
                 value={form.requestedGuildId}
                 onChange={(event) => updateField('requestedGuildId', event.target.value)}
+                disabled={guildLoading || Boolean(guildError) || guilds.length === 0}
+                data-state={guildError ? 'error' : guildLoading ? 'loading' : 'ready'}
                 required
               >
                 <option value="" disabled>
-                  {t('auth.chooseGuild')}
+                  {guildLoading
+                    ? t('auth.loadingGuilds')
+                    : guildError
+                      ? t('auth.guildUnavailable')
+                      : t('auth.chooseGuild')}
                 </option>
                 {guilds.map((guild) => (
                   <option key={guild.id} value={guild.id}>
@@ -238,7 +296,23 @@ export function LoginRegister() {
                   </option>
                 ))}
               </select>
+              {guildLoading ? <small className="field-state-copy">{t('auth.loadingGuilds')}</small> : null}
             </label>
+            {displayGuildError ? (
+              <div className="auth-guild-feedback">
+                <p className={guildError === 'empty' ? 'warning-line' : 'error-line'}>{displayGuildError}</p>
+                {guildError === 'load_failed' ? (
+                  <button
+                    type="button"
+                    className="secondary-action compact-action auth-retry-action"
+                    onClick={() => setGuildLoadRequest((current) => current + 1)}
+                    disabled={guildLoading}
+                  >
+                    {t('auth.retryGuilds')}
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
           </>
         ) : null}
 
@@ -256,9 +330,8 @@ export function LoginRegister() {
 
         {displayNotice ? <p className="notice-line">{displayNotice}</p> : null}
         {displayError ? <p className="error-line">{displayError}</p> : null}
-        {guildError ? <p className="error-line">{guildError}</p> : null}
 
-        <button type="submit" className="primary-action" disabled={!isSupabaseConfigured || submitting}>
+        <button type="submit" className="primary-action" disabled={submitDisabled}>
           {submitting
             ? t('common.working')
             : isPasswordResetMode && !isCompletingProfile
