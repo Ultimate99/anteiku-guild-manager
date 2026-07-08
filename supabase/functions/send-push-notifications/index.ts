@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.8';
 import webpush from 'npm:web-push@3.6.7';
+import { isAuthorizedSender } from './auth.ts';
 
 type PushOutboxRow = {
   id: string;
@@ -103,6 +104,29 @@ Deno.serve(async (request) => {
   if (request.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed.' }), {
       status: 405,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  let pushSenderSecret: string;
+
+  try {
+    pushSenderSecret = requireEnv('PUSH_SENDER_SECRET');
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        error: error instanceof Error ? error.message : 'Push sender authorization is not configured.',
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    );
+  }
+
+  if (!isAuthorizedSender(request, pushSenderSecret)) {
+    return new Response(JSON.stringify({ error: 'Unauthorized.' }), {
+      status: 401,
       headers: { 'Content-Type': 'application/json' },
     });
   }

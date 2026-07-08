@@ -54,7 +54,11 @@ Production rollout:
 - Manual production push smoke passed: permission granted, subscription registered, preferences saved, test notification received, notification click opened the app, disable flow worked or is available, and no CP/private/admin data appeared.
 
 Safety notes:
+- Before the sender authorization hardening is deployed, configure server-only `PUSH_SENDER_SECRET` in Supabase Edge Function secrets.
+- Invoke `send-push-notifications` with either `Authorization: Bearer <PUSH_SENDER_SECRET>` or `x-cron-secret: <PUSH_SENDER_SECRET>`.
+- The function-specific platform JWT check is disabled because the handler performs mandatory shared-secret authentication before creating its service-role client.
 - Frontend must never receive or store a service-role key.
+- `PUSH_SENDER_SECRET` must never be committed, printed, exposed to frontend code, or placed in Vercel public env.
 - `VAPID_PRIVATE_KEY` must never be committed or exposed to frontend/Vercel public env.
 - Push payloads must remain fixed server-generated text and route metadata only.
 - Do not include normal CP values, email, auth IDs, audit/admin/private metadata, or arbitrary user content in push payloads.
